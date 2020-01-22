@@ -1,0 +1,83 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: circleci/rust:latest
+    steps:
+      - checkout
+      - run:
+          name: build
+          command: |
+            rustc --version
+            cargo --version
+            cargo build
+      - run:
+          name: build --release
+          command: |
+            rustc --version
+            cargo --version
+            cargo build --release
+
+  build_wasm:
+    docker:
+      - image: circleci/rust:latest
+    steps:
+      - checkout
+      - run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - run:
+          name: versions
+          command: |
+            rustc --version
+            cargo --version
+            wasm-pack --version
+#      - run:
+#          name: build
+#          command: |
+#            rustc --version
+#            cargo --version
+#            cargo build
+
+  checks:
+    docker:
+      - image: circleci/rust:latest
+    steps:
+      - checkout
+      - run: rustup component add clippy
+      - run: cargo install cargo-audit
+      - run:
+          name: rustfmt
+          command: |
+            cargo fmt --version
+            cargo fmt -- --check
+      - run:
+          name: clippy
+          command: |
+            cargo clippy --version
+            cargo clippy --all-features
+      - run:
+          name: audit
+          command: |
+            cargo audit --version
+            cargo audit
+
+  tests:
+    docker:
+      - image: circleci/rust:latest
+    steps:
+      - checkout
+      - run:
+          name: test --all-features
+          command: |
+            rustc --version
+            cargo --version
+            cargo test --lib --all-features
+
+workflows:
+  version: 2
+  build_all:
+    jobs:
+      - build
+      - build_wasm
+      - checks
+      - tests
