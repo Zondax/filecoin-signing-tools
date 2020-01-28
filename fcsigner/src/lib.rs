@@ -35,10 +35,10 @@ pub fn verify_signature() -> Result<bool, ()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{verify_signature};
+    use crate::verify_signature;
 
     #[test]
     fn verify_random_signature_fails() {
-        assert_eq!( verify_signature().expect("error while verifying"), false )
+        assert_eq!(verify_signature().expect("error while verifying"), false)
     }
 }

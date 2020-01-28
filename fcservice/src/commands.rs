@@ -60,10 +60,7 @@ impl Configurable<FcserviceConfig> for FcserviceCmd {
     ///
     /// This can be safely deleted if you don't want to override config
     /// settings from command-line options.
-    fn process_config(
-        &self,
-        config: FcserviceConfig,
-    ) -> Result<FcserviceConfig, FrameworkError> {
+    fn process_config(&self, config: FcserviceConfig) -> Result<FcserviceConfig, FrameworkError> {
         match self {
             FcserviceCmd::Start(cmd) => cmd.override_config(config),
             _ => Ok(config),
