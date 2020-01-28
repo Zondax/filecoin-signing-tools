@@ -25,7 +25,7 @@ impl Runnable for StartCmd {
     /// Start the application.
     fn run(&self) {
         let config = app_config();
-        println!("Hello, {}!", &config.hello.recipient);
+        println!("Remote URL: {}", &config.remote_node.url);
     }
 }
 
@@ -37,9 +37,9 @@ impl config::Override<FcserviceConfig> for StartCmd {
         &self,
         mut config: FcserviceConfig,
     ) -> Result<FcserviceConfig, FrameworkError> {
-        if !self.recipient.is_empty() {
-            config.hello.recipient = self.recipient.join(" ");
-        }
+//        if !self.recipient.is_empty() {
+//            config.remote_node.url = self.recipient.join(" ");
+//        }
 
         Ok(config)
     }

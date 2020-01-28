@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 #[serde(deny_unknown_fields)]
 pub struct FcserviceConfig {
     /// An example configuration section
-    pub hello: ExampleSection,
+    pub remote_node: RemoteNodeSection,
 }
 
 /// Default configuration settings.
@@ -21,25 +21,28 @@ pub struct FcserviceConfig {
 impl Default for FcserviceConfig {
     fn default() -> Self {
         Self {
-            hello: ExampleSection::default(),
+            remote_node: RemoteNodeSection::default(),
         }
     }
 }
 
-/// Example configuration section.
+/// Remote Node configuration section.
 ///
 /// Delete this and replace it with your actual configuration structs.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
-pub struct ExampleSection {
-    /// Example configuration value
-    pub recipient: String,
+pub struct RemoteNodeSection {
+    /// Remote node hostname (JSON RPC service)
+    pub url: String,
+    /// JSON web token
+    pub jwt: String,
 }
 
-impl Default for ExampleSection {
+impl Default for RemoteNodeSection {
     fn default() -> Self {
         Self {
-            recipient: "world".to_owned(),
+            url: "http://127.0.0.1".to_owned(),
+            jwt: "".to_owned(),
         }
     }
 }
