@@ -31,12 +31,10 @@ jobs:
             rustc --version
             cargo --version
             wasm-pack --version
-#      - run:
-#          name: build
-#          command: |
-#            rustc --version
-#            cargo --version
-#            cargo build
+      - run:
+          name: build
+          command: |
+            wasm-pack build fcwebsigner/
 
   checks:
     docker:
