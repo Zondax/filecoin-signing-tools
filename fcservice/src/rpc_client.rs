@@ -31,13 +31,14 @@ impl TestClient {
 }
 
 pub fn start(url: &str) {
-    let run = jsonrpc_core_client::transports::http::connect(url)
-        .and_then(|client: TestClient| {
-            async {
-                let result = client.hello("http").await;
-                drop(client);
-                println!("{:?}", result);
-            }
-        }).map_err(|e| {});
-    run.wait();
+    // TODO: enable and fix this
+//    let run = jsonrpc_core_client::transports::http::connect(url)
+//        .and_then(|client: TestClient| {
+//            async {
+//                let result = client.hello("http").await;
+//                drop(client);
+//                println!("{:?}", result);
+//            }
+//        }).map_err(|e| {});
+//    run.wait();
 }

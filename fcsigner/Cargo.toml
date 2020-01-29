@@ -5,12 +5,15 @@ authors = ["Zondax <info@zondax.ch>"]
 edition = "2018"
 
 [dependencies]
-serde = "1.0.102"
-serde_json = "1.0.41"
-serde_cbor = "0.10.2"
 num = "0.2.1"
 
+# FIXME: local source until ferret goes public
+message = { path = "../../ferret/vm/message" }
+address = { path = "../../ferret/vm/address" }
+
+# FIXME: Check API compatibility
 parity-secp256k1 = "0.7.0"
 
+# FIXME: confirm compatibility with WASM target
 [dependencies.rand]
 version = "0.7.3"
