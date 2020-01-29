@@ -1,0 +1,67 @@
+{
+  "name": "@zondax/ledger-filecoin",
+  "version": "0.0.0",
+  "description": "Node API for Filecoin App (Ledger Nano S/X)",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zondax/ledger-filecoin-js.git"
+  },
+  "keywords": [
+    "Ledger",
+    "Javascript",
+    "Filecoin"
+  ],
+  "author": "Zondax GmbH",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/zondax/ledger-filecoin-js/issues"
+  },
+  "homepage": "https://github.com/zondax/ledger-filecoin-js",
+  "dependencies": {
+    "@babel/runtime": "^7.8.3",
+    "@ledgerhq/hw-transport": "^5.7.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.8.3",
+    "@babel/core": "^7.8.3",
+    "@babel/node": "^7.8.3",
+    "@babel/plugin-transform-runtime": "^7.8.3",
+    "@babel/preset-env": "^7.8.3",
+    "babel-eslint": "^10.0.3",
+    "babel-jest": "^25.1.0",
+    "eslint": "^6.7.2",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-config-prettier": "^6.7.0",
+    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-jest": "^23.6.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "eslint-plugin-vue": "^6.1.2",
+    "jest": "^25.1.0",
+    "jest-serial-runner": "^1.1.0",
+    "prettier": "^1.19.1",
+    "fcwebsigner" : "^0.0.1"
+  },
+  "scripts": {
+    "build": "babel src --out-dir dist",
+    "test:unit": "jest -c jest.config.unit.js",
+    "test:integration": "jest -c jest.config.integration.js --runInBand --detectOpenHandles"
+  },
+  "moduleDirectories": [
+    "node_modules",
+    "dist"
+  ],
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

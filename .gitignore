@@ -11,3 +11,4 @@ Cargo.lock
 
 /.idea
 examples/fcservice.toml
+examples/wasm/node_modules
