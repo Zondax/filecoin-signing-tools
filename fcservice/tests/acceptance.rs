@@ -56,8 +56,8 @@ fn start_with_args() {
 #[test]
 fn start_with_config_no_args() {
     let mut config = FcserviceConfig::default();
-    config.remote_node.host = "configured recipient".to_owned();
-    let expected_line = format!("Hello, {}!", &config.remote_node.host);
+    config.remote_node.url = "configured recipient".to_owned();
+    let expected_line = format!("Hello, {}!", &config.remote_node.url);
 
     let mut runner = RUNNER.clone();
     let mut cmd = runner.config(&config).arg("start").capture_stdout().run();
@@ -69,7 +69,7 @@ fn start_with_config_no_args() {
 #[test]
 fn start_with_config_and_args() {
     let mut config = FcserviceConfig::default();
-    config.remote_node.host = "configured recipient".to_owned();
+    config.remote_node.url = "configured recipient".to_owned();
 
     let mut runner = RUNNER.clone();
     let mut cmd = runner

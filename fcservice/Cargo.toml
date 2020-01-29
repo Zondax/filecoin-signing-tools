@@ -10,6 +10,17 @@ serde = { version = "1", features = ["serde_derive"] }
 thiserror = "1"
 fcsigner = {path = "../fcsigner"}
 
+jsonrpc-core = "14.0.5"
+jsonrpc-derive = "14.0.5"
+jsonrpc-http-server = "14.0.5"
+
+[dependencies.futures]
+futures = "0.3.1"
+
+[dependencies.jsonrpc-core-client]
+version = "14.0.5"
+features = ["http"]
+
 [dependencies.abscissa_core]
 version = "0.5.1"
 # optional: use `gimli` to capture backtraces

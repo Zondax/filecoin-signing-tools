@@ -6,6 +6,9 @@ use crate::prelude::*;
 
 use crate::config::FcserviceConfig;
 use abscissa_core::{config, Command, FrameworkError, Options, Runnable};
+use crate::rpc_server;
+use crate::rpc_client;
+use std::net::SocketAddr;
 
 /// `start` subcommand
 ///
@@ -25,7 +28,12 @@ impl Runnable for StartCmd {
     /// Start the application.
     fn run(&self) {
         let config = app_config();
-        println!("Remote URL: {}", &config.remote_node.url);
+        println!("Remote URL    : {}", &config.remote_node.url);
+        println!("Local address : {}", &config.service.address);
+
+        rpc_client::start(&config.remote_node.url);
+        let server_addr: SocketAddr = "127.0.0.1:3030".parse().unwrap();
+        rpc_server::start(&server_addr);
     }
 }
 
