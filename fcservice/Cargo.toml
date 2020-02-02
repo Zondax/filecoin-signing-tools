@@ -6,20 +6,16 @@ edition = "2018"
 
 [dependencies]
 gumdrop = "0.7"
+anyhow = "1.0"
+thiserror = "1.0"
 serde = { version = "1", features = ["serde_derive"] }
-thiserror = "1"
+serde_json = "1.0.45"
 fcsigner = {path = "../fcsigner"}
-
+tokio = { version = "0.2", features = ["full", "time"] }
+reqwest = { version = "0.10.1", features = ["json", "gzip"] }
+warp = "0.2.1"
 jsonrpc-core = "14.0.5"
-jsonrpc-derive = "14.0.5"
-jsonrpc-http-server = "14.0.5"
-
-[dependencies.futures]
-futures = "0.3.1"
-
-[dependencies.jsonrpc-core-client]
-version = "14.0.5"
-features = ["http"]
+lru = "0.4.3"
 
 [dependencies.abscissa_core]
 version = "0.5.1"

@@ -20,6 +20,4 @@ pub mod commands;
 pub mod config;
 pub mod error;
 pub mod prelude;
-mod rpc_server;
-mod rpc_client;
-mod rpc_api;
+mod service;

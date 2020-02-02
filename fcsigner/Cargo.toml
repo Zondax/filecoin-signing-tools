@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 num = "0.2.1"
+anyhow = "1.0"
 
 # FIXME: local source until ferret goes public
 message = { path = "../../ferret/vm/message" }
