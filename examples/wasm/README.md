@@ -1,18 +1,42 @@
-# ledger-filecoin-js
+# Filecoin Wasm ES modules
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![npm version](https://badge.fury.io/js/%40zondax%2Fledger-filecoin.svg)](https://badge.fury.io/js/%40zondax%2Fledger-filecoin)
-[![CircleCI](https://circleci.com/gh/Zondax/ledger-filecoin-js.svg?style=shield)](https://circleci.com/gh/Zondax/ledger-filecoin-js)
-[![CodeFactor](https://www.codefactor.io/repository/github/zondax/ledger-filecoin-js/badge)](https://www.codefactor.io/repository/github/zondax/ledger-filecoin-js)
 
-This package provides a basic client library to communicate with the Filecoin App running in a Ledger Nano S/X
+Example of ES module using wasm.
 
-We recommend using the npmjs package in order to receive updates/fixes.
+Also run test (without framework) in ES modules (no commonJS).
 
-This repo also includes a simple Vue example for WebUSB.
+## NOTES
 
-![Example](docs/example.png)
+Be sure your `package.json` in `fcwebsigner` look like this :
+```
+{
+  "name": "fcwebsigner",
+  "collaborators": [
+    "Zondax <info@zondax.ch>"
+  ],
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "fcwebsigner_bg.wasm",
+    "fcwebsigner.mjs",
+    "fcwebsigner.d.ts"
+  ],
+  "main": "fcwebsigner.mjs",
+  "types": "fcwebsigner.d.ts",
+  "sideEffects": "false"
+}
+```
 
-## Notes
+And rename `fcwebsigner.js` into `fcwebsigner.mjs`.
 
-Use `yarn install` to avoid issues.
+Don't forget to link with the library for development :
+```
+yarn link fcwebsigner
+```
+
+
+### Run tests
+
+```
+npm test
+```
