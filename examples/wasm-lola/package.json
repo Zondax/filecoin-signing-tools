@@ -1,0 +1,11 @@
+{
+  "name": "wasm-lola",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --experimental-wasm-modules ./tests/index.mjs ./fcwebsigner-test.mjs"
+  },
+  "author": "",
+  "license": "ISC"
+}
