@@ -1,11 +1,10 @@
 {
-  "name": "wasm-lola",
+  "name": "wasm-example",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "license": "Apache-2.0",
   "scripts": {
-    "test": "node --experimental-wasm-modules ./tests/index.mjs ./fcwebsigner-test.mjs"
-  },
-  "author": "",
-  "license": "ISC"
+    "test:integration": "node --experimental-wasm-modules ./tests/index.mjs ./fcwebsigner-test.mjs"
+  }
 }

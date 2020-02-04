@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rustwasm/create-wasm-app.git"
+    "url": "git+https://github.com/Zondax/filecoin-rs/tree/master/examples/wasm"
   },
   "keywords": [
     "webassembly",
