@@ -29,11 +29,10 @@ pub async fn get_nonce() -> Result<u64, anyhow::Error> {
     // Handle response
     let nonce = match resp {
         Response::Single(o) => {
-            // TODO: too many abstractiosn to get the result?
+            // TODO: too many abstractions to get the result?
             let result = CoreResult::<Value>::from(o)?;
 
-            // FIXME: remove this unwrap
-            result.as_u64().unwrap()
+            result.as_u64().expect("FIXME")
         }
         _ => {
             // FIXME: return a proper error here

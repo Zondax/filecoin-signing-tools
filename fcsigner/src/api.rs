@@ -8,20 +8,19 @@ use vm::{MethodNum, Serialized, TokenAmount};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UnsignedMessageUserAPI {
-    to: String,
-    from: String,
-    nonce: u64,
-    value: String,
-    // bigint
-    gas_price: String,
-    gas_limit: String,
-    method: u64,
-    params: String,
+    pub to: String,
+    pub from: String,
+    pub nonce: u64,
+    pub value: String,
+    pub gas_price: String,
+    pub gas_limit: String,
+    pub method: u64,
+    pub params: String,
 }
 
 impl From<UnsignedMessageUserAPI> for UnsignedMessage {
     fn from(message_api: UnsignedMessageUserAPI) -> UnsignedMessage {
-        let to = Address::from_str(&message_api.to).unwrap();
+        let to = Address::from_str(&message_api.to).expect("FIXME");
         let value = BigUint::from_str(&message_api.value).expect("could not read value");
         let gas_limit =
             BigUint::from_str(&message_api.gas_limit).expect("could not read gas_limit");
@@ -30,17 +29,17 @@ impl From<UnsignedMessageUserAPI> for UnsignedMessage {
 
         UnsignedMessage::builder()
             .to(to)
-            .from(Address::from_str(&message_api.from).unwrap())
+            .from(Address::from_str(&message_api.from).expect("FIXME"))
             .sequence(message_api.nonce)
             .value(TokenAmount(value))
             // FIXME:
             .method_num(MethodNum::new(message_api.method))
             // FIXME:
-            .params(Serialized::new(decode(message_api.params).unwrap()))
+            .params(Serialized::new(decode(message_api.params).expect("FIXME")))
             .gas_limit(gas_limit)
             .gas_price(gas_price)
             .build()
-            .unwrap()
+            .expect("FIXME")
     }
 }
 
@@ -91,7 +90,7 @@ mod tests {
     #[test]
     fn json_to_cbor() {
         let message_api: UnsignedMessageUserAPI =
-            serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE).unwrap();
+            serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE).expect("FIXME");
         println!("{:?}", message_api);
 
         let message = UnsignedMessage::from(message_api);
@@ -107,7 +106,7 @@ mod tests {
 
     #[test]
     fn cbor_to_json() {
-        let cbor_buffer = decode(EXAMPLE_CBOR_DATA).unwrap();
+        let cbor_buffer = decode(EXAMPLE_CBOR_DATA).expect("FIXME");
 
         let message: UnsignedMessage = from_slice(&cbor_buffer).expect("could not decode cbor");
         println!("{:?}", message);

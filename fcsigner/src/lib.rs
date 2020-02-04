@@ -3,7 +3,7 @@ use forest_encoding::{from_slice, to_vec};
 use forest_message::UnsignedMessage;
 use hex::{decode, encode};
 
-mod api;
+pub mod api;
 
 pub fn key_generate() {
     // TODO: return keypair (pub/priv + address)
