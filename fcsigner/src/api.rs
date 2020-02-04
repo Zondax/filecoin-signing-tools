@@ -54,9 +54,9 @@ impl From<UnsignedMessage> for UnsignedMessageUserAPI {
             to: unsigned_message.to().to_string(),
             from: unsigned_message.from().to_string(),
             nonce: unsigned_message.sequence(),
-            value: value,
-            gas_price: gas_price,
-            gas_limit: gas_limit,
+            value,
+            gas_price,
+            gas_limit,
             // FIXME: cannot extract method byte. Set always as 0
             method: 0,
             // FIXME: need a proper way to serialize parameters, for now

@@ -1,8 +1,8 @@
 ////! Fcservice RPC Client
 
+use jsonrpc_core::Result as CoreResult;
 use jsonrpc_core::{Id, MethodCall, Params, Response, Version};
 use serde_json::value::Value;
-use jsonrpc_core::Result as CoreResult;
 
 pub async fn get_nonce() -> Result<u64, anyhow::Error> {
     // FIXME: use configuration parameters instead

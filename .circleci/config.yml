@@ -1,4 +1,4 @@
-version: 2
+version: 2.0
 
 jobs:
   build:
@@ -59,7 +59,7 @@ jobs:
             cargo audit --version
             cargo audit
 
-  tests:
+  tests_rust:
     docker:
       - image: circleci/rust:latest
     steps:

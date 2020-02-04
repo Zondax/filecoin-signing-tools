@@ -3,8 +3,8 @@
 /// App-local prelude includes `app_reader()`/`app_writer()`/`app_config()`
 /// accessors along with logging macros.
 use crate::config::FcserviceConfig;
-use abscissa_core::{config, Command, FrameworkError, Options, Runnable};
 use crate::service;
+use abscissa_core::{config, Command, FrameworkError, Options, Runnable};
 
 /// `start` subcommand
 ///
