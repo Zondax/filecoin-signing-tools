@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import {hello} from 'fcwebsigner';
+import {hello, verify_signature} from 'fcwebsigner';
 
 test('Hello world', () => {
     assert.equal(hello(), 123);
@@ -9,3 +9,7 @@ test('Hello world', () => {
 test('Hello world fail', () => {
     // assert.equal(hello(), 124);
 });
+
+test('Verify signature', () => {
+  assert.equal(verify_signature(), false);
+})
