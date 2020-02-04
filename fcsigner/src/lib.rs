@@ -1,3 +1,5 @@
+mod api;
+
 pub fn key_generate() {
     // TODO: return keypair (pub/priv + address)
 }

@@ -59,7 +59,7 @@ jobs:
             cargo audit --version
             cargo audit
 
-  test_rust:
+  tests_rust:
     docker:
       - image: circleci/rust:latest
     steps:
@@ -110,4 +110,4 @@ workflows:
       - build
       - build_wasm
       - checks
-      - tests
+      - tests_rust
