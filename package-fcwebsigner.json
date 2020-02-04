@@ -12,5 +12,6 @@
   ],
   "main": "fcwebsigner.mjs",
   "types": "fcwebsigner.d.ts",
+  "type": "module",
   "sideEffects": "false"
 }

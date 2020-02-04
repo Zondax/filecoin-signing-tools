@@ -1,5 +1,4 @@
 deps:
-	#curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 	cargo install wasm-pack --version 0.8.1
 
 build_wasm:

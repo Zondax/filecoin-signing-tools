@@ -24,7 +24,7 @@ jobs:
       - image: circleci/rust:latest
     steps:
       - checkout
-      - run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - run: cargo install wasm-pack --version 0.8.1
       - run:
           name: versions
           command: |
@@ -59,7 +59,7 @@ jobs:
             cargo audit --version
             cargo audit
 
-  tests:
+  test_rust:
     docker:
       - image: circleci/rust:latest
     steps:
@@ -70,6 +70,23 @@ jobs:
             rustc --version
             cargo --version
             cargo test --lib --all-features
+
+  test_wasm:
+    docker:
+      - image: circleci/rust:latest
+    steps:
+      - checkout
+      - run: cargo install wasm-pack --version 0.8.1
+      - run:
+          name: versions
+          command: |
+            rustc --version
+            cargo --version
+            wasm-pack --version
+      - run:
+          name: build
+          command: |
+            wasm-pack build fcwebsigner/
 
 workflows:
   version: 2
