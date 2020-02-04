@@ -3,6 +3,9 @@ deps:
 
 build_wasm:
 	wasm-pack build fcwebsigner/
+	cp package-fcwebsigner.json fcwebsigner/pkg/package.json
+	cp fcwebsigner/pkg/fcwebsigner.js fcwebsigner/pkg/fcwebsigner.mjs
+
 
 link_wasm:
 	cd fcwebsigner/pkg && yarn link
