@@ -1,23 +1,20 @@
 const axios = require('axios');
 
-const URL = "http://127.0.0.1:3030/v0";
-const JWT = "";
-
-async function main() {
+export async function callMethod(url, method, params, id, jwt = "") {
     try {
         const answer = await axios.post(
-            URL,
+            url,
             {
                 jsonrpc: '2.0',
-                method: `key_generate`,
-                params: [],
-                id: 1,
+                method: `${method}`,
+                params: [...params],
+                id,
             },
             {
                 headers: {
                     'Content-Type': 'application/json',
                     Accept: '*/*',
-                    Authorization: `Bearer ${JWT}`,
+                    Authorization: `Bearer ${jwt}`,
                 },
             },
         );
@@ -27,7 +24,3 @@ async function main() {
         return e.message;
     }
 }
-
-main()
-    .then(out => console.log(out))
-    .catch(err => console.error(err));
