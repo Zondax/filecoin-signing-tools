@@ -78,4 +78,4 @@ workflows:
       - build
       - build_wasm
       - checks
-      - tests
+      - tests_rust
