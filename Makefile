@@ -3,6 +3,7 @@ deps:
 
 build_wasm:
 	wasm-pack build fcwebsigner/
+	# temporary workaround
 	cp package-fcwebsigner.json fcwebsigner/pkg/package.json
 	cp fcwebsigner/pkg/fcwebsigner.js fcwebsigner/pkg/fcwebsigner.mjs
 
