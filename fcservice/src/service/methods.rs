@@ -1,7 +1,7 @@
 //////! Fcservice RPC Client
 
-use jsonrpc_core::{MethodCall, Value, Version, Output, Success, Id};
 use crate::service::client::get_nonce;
+use jsonrpc_core::{Id, MethodCall, Output, Success, Value, Version};
 
 // FIXME: improve error types, move to thiserror?
 pub async fn method_key_generate(_c: MethodCall) -> Output {

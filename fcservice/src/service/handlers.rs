@@ -18,27 +18,25 @@ pub async fn get_api_v0() -> Result<impl warp::Reply, warp::Rejection> {
 
 pub async fn post_api_v0(request: Call) -> Result<impl warp::Reply, warp::Rejection> {
     let reply = match request {
-        Call::MethodCall(c) if c.method == "key_generate" => {
-            methods::method_key_generate(c).await
-        }
-//        Call::MethodCall(c) if c.method == "key_derive" => {
-//            methods::method_key_derive(c).await
-//        }
-//        Call::MethodCall(c) if c.method == "transaction_create" => {
-//            Ok(c.method.to_string())
-//        }
-//        Call::MethodCall(c) if c.method == "transaction_parse" => {
-//            Ok(c.method.to_string())
-//        }
-//        Call::MethodCall(c) if c.method == "sign_transaction" => {
-//            Ok(c.method.to_string())
-//        }
-//        Call::MethodCall(c) if c.method == "sign_message" => {
-//            Ok(c.method.to_string())
-//        }
-//        Call::MethodCall(c) if c.method == "verify_signature" => {
-//            Ok(c.method.to_string())
-//        }
+        Call::MethodCall(c) if c.method == "key_generate" => methods::method_key_generate(c).await,
+        //        Call::MethodCall(c) if c.method == "key_derive" => {
+        //            methods::method_key_derive(c).await
+        //        }
+        //        Call::MethodCall(c) if c.method == "transaction_create" => {
+        //            Ok(c.method.to_string())
+        //        }
+        //        Call::MethodCall(c) if c.method == "transaction_parse" => {
+        //            Ok(c.method.to_string())
+        //        }
+        //        Call::MethodCall(c) if c.method == "sign_transaction" => {
+        //            Ok(c.method.to_string())
+        //        }
+        //        Call::MethodCall(c) if c.method == "sign_message" => {
+        //            Ok(c.method.to_string())
+        //        }
+        //        Call::MethodCall(c) if c.method == "verify_signature" => {
+        //            Ok(c.method.to_string())
+        //        }
         Call::MethodCall(_) => {
             return Err(warp::reject::not_found());
         }

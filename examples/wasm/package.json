@@ -41,7 +41,7 @@
     "jest": "^25.1.0",
     "jest-serial-runner": "^1.1.0",
     "prettier": "^1.19.1",
-    "fcwebsigner" : "^0.0.1"
+    "fcwebsigner" : "^0"
   },
   "scripts": {
     "build": "babel src --out-dir dist",
