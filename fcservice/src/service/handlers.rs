@@ -46,5 +46,11 @@ pub async fn post_api_v0(request: Call) -> Result<impl warp::Reply, warp::Reject
         }
     };
 
-    Ok(warp::reply::json(&reply))
+    match reply {
+        Ok(ok_reply) => Ok(warp::reply::json(&ok_reply)),
+        Err(err) => {
+            println!("{:?}", err);
+            return Err(warp::reject::not_found());
+        }
+    }
 }

@@ -59,7 +59,7 @@ pub struct ServiceSection {
 impl Default for ServiceSection {
     fn default() -> Self {
         Self {
-            address: "127.0.0.1:303".to_owned(),
+            address: "127.0.0.1:3030".to_owned(),
         }
     }
 }
