@@ -2,6 +2,7 @@ deps:
 	cargo install wasm-pack --version 0.8.1
 
 build_wasm:
+	rm -rf fcwebsigner/pkg/
 	wasm-pack build fcwebsigner/
 	# temporary workaround
 	cp package-fcwebsigner.json fcwebsigner/pkg/package.json
