@@ -1,8 +1,11 @@
 deps:
-	curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+	cargo install wasm-pack --version 0.8.1
 
 build_wasm:
 	wasm-pack build fcwebsigner/
+	# temporary workaround
+	cp package-fcwebsigner.json fcwebsigner/pkg/package.json
+	cp fcwebsigner/pkg/fcwebsigner.js fcwebsigner/pkg/fcwebsigner.mjs
 
 link_wasm:
 	cd fcwebsigner/pkg && yarn link
