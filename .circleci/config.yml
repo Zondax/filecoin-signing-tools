@@ -24,7 +24,7 @@ jobs:
       - image: circleci/rust:latest
     steps:
       - checkout
-      - run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - run: cargo install wasm-pack --version 0.8.1
       - run:
           name: versions
           command: |
@@ -70,6 +70,38 @@ jobs:
             rustc --version
             cargo --version
             cargo test --lib --all-features
+
+  test_wasm:
+    docker:
+      - image: circleci/rust:latest
+    steps:
+      - checkout
+      - run:
+          name: install node + yarn + n
+          command: |
+            sudo apt install nodejs
+            sudo curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+            echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+            sudo apt update && sudo apt install yarn
+            sudo yarn global add n
+            sudo n latest -q
+      - run:
+          name: install node + yarn + n
+          command: |
+            make deps
+            make build_wasm
+            make link_wasm
+            make test_wasm
+#      - run:
+#          name: versions
+#          command: |
+#            rustc --version
+#            cargo --version
+#            wasm-pack --version
+#      - run:
+#          name: build
+#          command: |
+#            wasm-pack build fcwebsigner/
 
 workflows:
   version: 2

@@ -14,3 +14,5 @@ Cargo.lock
 /examples/wasm/node_modules
 /examples/jsonrpc/.idea/
 /examples/jsonrpc/node_modules
+
+examples/wasm/yarn-error.log
