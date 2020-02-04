@@ -10,5 +10,7 @@ Cargo.lock
 **/*.rs.bk
 
 /.idea
-examples/fcservice.toml
-examples/wasm/node_modules
+/examples/fcservice.toml
+/examples/wasm/node_modules
+/examples/jsonrpc/.idea/
+/examples/jsonrpc/node_modules

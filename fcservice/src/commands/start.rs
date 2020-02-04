@@ -1,14 +1,10 @@
 //! `start` subcommand - example of how to write a subcommand
 
 /// App-local prelude includes `app_reader()`/`app_writer()`/`app_config()`
-/// accessors along with logging macros. Customize as you see fit.
-use crate::prelude::*;
-
+/// accessors along with logging macros.
 use crate::config::FcserviceConfig;
 use abscissa_core::{config, Command, FrameworkError, Options, Runnable};
-use crate::rpc_server;
-use crate::rpc_client;
-use std::net::SocketAddr;
+use crate::service;
 
 /// `start` subcommand
 ///
@@ -21,19 +17,13 @@ use std::net::SocketAddr;
 pub struct StartCmd {
     /// To whom are we saying hello?
     #[options(free)]
-    recipient: Vec<String>,
+    remote_url: String,
 }
 
 impl Runnable for StartCmd {
     /// Start the application.
     fn run(&self) {
-        let config = app_config();
-        println!("Remote URL    : {}", &config.remote_node.url);
-        println!("Local address : {}", &config.service.address);
-
-        rpc_client::start(&config.remote_node.url);
-        let server_addr: SocketAddr = "127.0.0.1:3030".parse().unwrap();
-        rpc_server::start(&server_addr);
+        service::service_main();
     }
 }
 
@@ -45,9 +35,9 @@ impl config::Override<FcserviceConfig> for StartCmd {
         &self,
         mut config: FcserviceConfig,
     ) -> Result<FcserviceConfig, FrameworkError> {
-//        if !self.recipient.is_empty() {
-//            config.remote_node.url = self.recipient.join(" ");
-//        }
+        if !self.remote_url.is_empty() {
+            config.remote_node.url = self.remote_url.to_string();
+        }
 
         Ok(config)
     }
