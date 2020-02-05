@@ -18,16 +18,14 @@ pub async fn get_api_v0() -> Result<impl warp::Reply, warp::Rejection> {
 
 pub async fn post_api_v0(request: Call) -> Result<impl warp::Reply, warp::Rejection> {
     let reply = match request {
-        Call::MethodCall(c) if c.method == "key_generate" => methods::method_key_generate(c).await,
-        //        Call::MethodCall(c) if c.method == "key_derive" => {
-        //            methods::method_key_derive(c).await
-        //        }
-        //        Call::MethodCall(c) if c.method == "transaction_create" => {
-        //            Ok(c.method.to_string())
-        //        }
-        //        Call::MethodCall(c) if c.method == "transaction_parse" => {
-        //            Ok(c.method.to_string())
-        //        }
+        Call::MethodCall(c) if c.method == "key_generate" => methods::key_generate(c).await,
+        Call::MethodCall(c) if c.method == "key_derive" => methods::key_derive(c).await,
+        Call::MethodCall(c) if c.method == "transaction_create" => {
+            methods::transaction_create(c).await
+        }
+        Call::MethodCall(c) if c.method == "transaction_parse" => {
+            methods::transaction_parse(c).await
+        }
         //        Call::MethodCall(c) if c.method == "sign_transaction" => {
         //            Ok(c.method.to_string())
         //        }
@@ -48,5 +46,11 @@ pub async fn post_api_v0(request: Call) -> Result<impl warp::Reply, warp::Reject
         }
     };
 
-    Ok(warp::reply::json(&reply))
+    match reply {
+        Ok(ok_reply) => Ok(warp::reply::json(&ok_reply)),
+        Err(err) => {
+            println!("{:?}", err);
+            return Err(warp::reject::not_found());
+        }
+    }
 }
