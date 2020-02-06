@@ -107,7 +107,15 @@ workflows:
   version: 2
   build_all:
     jobs:
-      - build
-      - build_wasm
       - checks
-      - tests_rust
+      - build:
+          requires:
+            - checks
+      - tests_rust:
+          requires:
+            - build
+
+      - build_wasm:
+          requires:
+            - checks
+
