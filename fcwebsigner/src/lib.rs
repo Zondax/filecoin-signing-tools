@@ -109,6 +109,6 @@ pub fn verify_signature() -> bool {
 
     match resp {
         Ok(_bool) => return _bool,
-        Err(()) => return false,
+        Err(_) => return false,
     }
 }
