@@ -5,6 +5,10 @@ deps:
 	cargo install wasm-pack --version 0.8.1
 	cargo install cargo-audit
 	cargo install cargo-tree
+	cargo install cargo-license
+	cargo install cargo-outdated
+	cargo install sccache
+	echo "Remember to add export RUSTC_WRAPPER=sccache to your environment."
 
 build_wasm:
 	rm -rf fcwebsigner/pkg/
