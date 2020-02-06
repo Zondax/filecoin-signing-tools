@@ -1,3 +1,6 @@
+hooks:
+	git config core.hooksPath .githooks
+
 deps:
 	cargo install wasm-pack --version 0.8.1
 
