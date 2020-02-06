@@ -12,6 +12,11 @@ default = ["console_error_panic_hook"]
 
 [dependencies]
 wasm-bindgen = "0.2"
+tiny-bip39 = "0.7.0"
+tiny-hderive = "0.2.1"
+# This library need to be reviewed (need pure rust implementation)
+libsecp256k1 = "0.3.4"
+hex = "0.4.0"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
