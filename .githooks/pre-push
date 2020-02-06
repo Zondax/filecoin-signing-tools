@@ -2,3 +2,5 @@
 set -e
 echo 'rustfmt'
 cargo fmt -- --check
+echo 'audit'
+cargo audit
