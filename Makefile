@@ -3,6 +3,8 @@ hooks:
 
 deps:
 	cargo install wasm-pack --version 0.8.1
+	cargo install cargo-audit
+	cargo install cargo-tree
 
 build_wasm:
 	rm -rf fcwebsigner/pkg/
