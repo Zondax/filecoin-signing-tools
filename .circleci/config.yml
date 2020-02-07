@@ -14,12 +14,14 @@ commands:
     steps:
       - restore_cache:
           name: Restore sccache cache
-          key: sccache-cache-stable-{{ arch }}-{{ .Environment.CIRCLE_JOB }}
+          key: sccache-cache-stable-{{ arch }}
+#          key: sccache-cache-stable-{{ arch }}-{{ .Environment.CIRCLE_JOB }}
   save-sccache-cache:
     steps:
       - save_cache:
           name: Save sccache cache
-          key: sccache-cache-stable-{{ arch }}-{{ .Environment.CIRCLE_JOB }}-{{ epoch }}
+#          key: sccache-cache-stable-{{ arch }}-{{ .Environment.CIRCLE_JOB }}-{{ epoch }}
+          key: sccache-cache-stable-{{ arch }}-{{ epoch }}
           paths:
             - "~/.cache/sccache"
 
