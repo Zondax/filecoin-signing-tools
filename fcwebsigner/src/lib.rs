@@ -1,11 +1,11 @@
 mod utils;
 
 use crate::utils::set_panic_hook;
-use wasm_bindgen::prelude::*;
 use fcsigner;
+use wasm_bindgen::prelude::*;
 
-use bip39::{Mnemonic, Language, Seed};
-use secp256k1::{SecretKey, PublicKey};
+use bip39::{Language, Mnemonic, Seed};
+use secp256k1::{PublicKey, SecretKey};
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -20,7 +20,7 @@ pub struct Keypair {
     // hexstring of the private key
     prvkey: String,
     // Address in the string format
-    address: String
+    address: String,
 }
 
 #[wasm_bindgen]
@@ -57,7 +57,7 @@ pub fn key_generate() -> Keypair {
     let keypair = Keypair {
         pubkey: String::from("Public key!"),
         prvkey: String::from("Private key!"),
-        address: String::from("Address!")
+        address: String::from("Address!"),
     };
 
     return keypair;
@@ -79,18 +79,17 @@ pub fn key_derive(_mnemonic: String, _path: String) -> Keypair {
             let keypair = Keypair {
                 pubkey: String::from("We only have seed!"),
                 prvkey: String::from("We only have seed!"),
-                address: String::from("We only have seed!")
+                address: String::from("We only have seed!"),
             };
 
             return keypair;
-
         }
 
         Err(err) => {
             let keypair = Keypair {
                 pubkey: String::from("Error!"),
                 prvkey: String::from("Error!"),
-                address: String::from("Error!")
+                address: String::from("Error!"),
             };
 
             return keypair;
@@ -101,7 +100,7 @@ pub fn key_derive(_mnemonic: String, _path: String) -> Keypair {
 #[wasm_bindgen]
 pub fn verify_signature() -> bool {
     set_panic_hook();
-    let resp  = fcsigner::verify_signature();
+    let resp = fcsigner::verify_signature();
 
     match resp {
         Ok(_bool) => return _bool,
