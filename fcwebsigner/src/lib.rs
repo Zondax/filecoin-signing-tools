@@ -5,7 +5,6 @@ use wasm_bindgen::prelude::*;
 use fcsigner;
 
 use bip39::{Mnemonic, Language, Seed};
-use tiny_hderive::bip32::ExtendedPrivKey;
 use secp256k1::{SecretKey, PublicKey};
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -76,21 +75,18 @@ pub fn key_derive(_mnemonic: String, _path: String) -> Keypair {
     match result_mnemonic {
         Ok(mnemonic) => {
             let seed = Seed::new(&mnemonic, "");
-            let ext = ExtendedPrivKey::derive(seed.as_ref(), _path.as_str()).unwrap();
-
-            let secret_key = SecretKey::parse(&ext.secret()).unwrap();
-            let public_key = PublicKey::from_secret_key(&secret_key);
 
             let keypair = Keypair {
-                pubkey: utils::to_hex_string(&public_key.serialize_compressed()),
-                prvkey: utils::to_hex_string(&ext.secret()),
-                address: String::from("Address!")
+                pubkey: String::from("We only have seed!"),
+                prvkey: String::from("We only have seed!"),
+                address: String::from("We only have seed!")
             };
 
             return keypair;
+
         }
 
-        Err(_) => {
+        Err(err) => {
             let keypair = Keypair {
                 pubkey: String::from("Error!"),
                 prvkey: String::from("Error!"),
