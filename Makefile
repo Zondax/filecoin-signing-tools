@@ -22,3 +22,13 @@ link_wasm:
 
 test_wasm:
 	cd examples/wasm && yarn run test:integration
+
+checks:
+	cargo fmt -- --check
+	cargo clippy --all-features
+	cargo audit
+
+ci:
+	# prepreprocess
+	circleci config process .circleci/config.yml > .circleci/tmp.yml
+	circleci local execute -c .circleci/tmp.yml

@@ -1,4 +1,27 @@
-version: 2.0
+version: 2.1
+
+commands:
+  setup-sccache:
+    steps:
+      - run:
+          name: Install sccache
+          command: |
+            cargo install sccache
+            sccache --version
+            echo 'export "RUSTC_WRAPPER"="sccache"' >> $BASH_ENV
+            echo 'export "SCCACHE_CACHE_SIZE"="1G"' >> $BASH_ENV
+  restore-sccache-cache:
+    steps:
+      - restore_cache:
+          name: Restore sccache cache
+          key: sccache-cache-stable-{{ arch }}-{{ .Environment.CIRCLE_JOB }}
+  save-sccache-cache:
+    steps:
+      - save_cache:
+          name: Save sccache cache
+          key: sccache-cache-stable-{{ arch }}-{{ .Environment.CIRCLE_JOB }}-{{ epoch }}
+          paths:
+            - "~/.cache/sccache"
 
 jobs:
   build:
@@ -6,41 +29,8 @@ jobs:
       - image: circleci/rust:latest
     steps:
       - checkout
-      - run:
-          name: build
-          command: |
-            rustc --version
-            cargo --version
-            cargo build
-      - run:
-          name: build --release
-          command: |
-            rustc --version
-            cargo --version
-            cargo build --release
-
-  build_wasm:
-    docker:
-      - image: circleci/rust:latest
-    steps:
-      - checkout
-      - run: cargo install wasm-pack --version 0.8.1
-      - run:
-          name: versions
-          command: |
-            rustc --version
-            cargo --version
-            wasm-pack --version
-      - run:
-          name: build
-          command: |
-            wasm-pack build fcwebsigner/
-
-  checks:
-    docker:
-      - image: circleci/rust:latest
-    steps:
-      - checkout
+      - setup-sccache
+      - restore-sccache-cache
       - run: rustup component add clippy
       - run: cargo install cargo-audit
       - run:
@@ -48,6 +38,12 @@ jobs:
           command: |
             cargo fmt --version
             cargo fmt -- --check
+      - run:
+          name: build
+          command: |
+            rustc --version
+            cargo --version
+            cargo build
       - run:
           name: clippy
           command: |
@@ -58,24 +54,31 @@ jobs:
           command: |
             cargo audit --version
             cargo audit
+      - save-sccache-cache
 
   tests_rust:
     docker:
       - image: circleci/rust:latest
     steps:
       - checkout
+      - setup-sccache
+      - restore-sccache-cache
       - run:
           name: test --all-features
           command: |
             rustc --version
             cargo --version
             cargo test --lib --all-features
+      - save-sccache-cache
 
-  test_wasm:
+  tests_wasm:
     docker:
       - image: circleci/rust:latest
     steps:
       - checkout
+      - setup-sccache
+      - restore-sccache-cache
+
       - run:
           name: install node + yarn + n
           command: |
@@ -92,30 +95,17 @@ jobs:
             make build_wasm
             make link_wasm
             make test_wasm
-#      - run:
-#          name: versions
-#          command: |
-#            rustc --version
-#            cargo --version
-#            wasm-pack --version
-#      - run:
-#          name: build
-#          command: |
-#            wasm-pack build fcwebsigner/
+
+      - save-sccache-cache
 
 workflows:
   version: 2
   build_all:
     jobs:
-      - checks
-      - build:
-          requires:
-            - checks
+      - build
       - tests_rust:
           requires:
             - build
-
-      - build_wasm:
+      - tests_wasm:
           requires:
-            - checks
-
+            - build
