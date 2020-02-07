@@ -1,14 +1,6 @@
-hooks:
-	git config core.hooksPath .githooks
 
-deps:
+deps_wasm:
 	cargo install wasm-pack --version 0.8.1
-	cargo install cargo-audit
-	cargo install cargo-tree
-	cargo install cargo-license
-	cargo install cargo-outdated
-	cargo install sccache
-	echo "Remember to add export RUSTC_WRAPPER=sccache to your environment."
 
 build_wasm:
 	wasm-pack build fcwebsigner/
@@ -23,10 +15,21 @@ link_wasm:
 test_wasm:
 	cd examples/wasm && yarn run test:integration
 
+deps: deps_wasm
+	cargo install cargo-audit
+	cargo install cargo-tree
+	cargo install cargo-license
+	cargo install cargo-outdated
+	cargo install sccache
+	echo "Remember to add export RUSTC_WRAPPER=sccache to your environment."
+
 checks:
 	cargo fmt -- --check
 	cargo clippy --all-features
 	cargo audit
+
+hooks:
+	git config core.hooksPath .githooks
 
 ci:
 	# prepreprocess

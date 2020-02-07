@@ -93,7 +93,7 @@ jobs:
       - run:
           name: install node + yarn + n
           command: |
-            make deps
+            make deps_wasm
             make build_wasm
             make link_wasm
             make test_wasm
