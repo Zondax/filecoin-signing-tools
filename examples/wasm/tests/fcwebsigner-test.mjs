@@ -27,6 +27,21 @@ test('Parse Cbor Transaction', () => {
   assert.equal(JSON.stringify(transaction), transaction_parse(cbor_transaction))
 })
 
+test('Parse Cbor Transaction fail', () => {
+  let cbor_transaction_extra_bytes = cbor_transaction + "00";
+
+  try {
+    transaction_parse(cbor_transaction_extra_bytes);
+  } catch (e) {
+    console.log(e);
+  }
+
+  assert.throws(
+    () => transaction_parse(cbor_transaction_extra_bytes),
+    "Extra byte added should not be able to parse"
+  );
+})
+
 test('Create Transaction', () => {
   assert.equal(cbor_transaction,transaction_create(JSON.stringify(transaction)))
 });
@@ -44,9 +59,14 @@ test('Create Transaction Fail (missing nonce)', () => {
 
   try {
     transaction_create(JSON.stringify(unvalid_transaction));
-  } catch(e) {
-    assert.equal(e, "Error");
+  } catch (e) {
+    console.log(e);
   }
+
+  assert.throws(
+    () => transaction_create(JSON.stringify(unvalid_transaction)),
+    "Should be missing nonce field"
+  );
 
 });
 

@@ -28,20 +28,23 @@ pub fn transaction_create(unsigned_message_api: String) -> Result<String, JsValu
         Ok(decode_unsigned_message_api) => {
             match fcsigner::transaction_create(decode_unsigned_message_api) {
                 Ok(cbor_hexstring) => Ok(cbor_hexstring.into()),
-                Err(_) => Err(JsValue::from_str("Error")),
+                Err(_) => Err(JsValue::from_str("Error converting the transcation to CBOR")),
             }
         }
-        Err(_) => Err(JsValue::from_str("Error")),
+        Err(err) => Err(JsValue::from_str(format!("{}",std::io::Error::from(err)).as_str())),
     }
 }
 
 #[wasm_bindgen]
-pub fn transaction_parse(cbor_hexstring: String) -> String {
-    let message_parsed_result = fcsigner::transaction_parse(cbor_hexstring);
-
-    match message_parsed_result {
-        Ok(message_parsed) => serde_json::to_string(&message_parsed).unwrap().into(),
-        Err(_) => "Error".into(),
+pub fn transaction_parse(cbor_hexstring: String) -> Result<String, JsValue> {
+    match fcsigner::transaction_parse(cbor_hexstring) {
+        Ok(message_parsed) => {
+            match serde_json::to_string(&message_parsed) {
+                Ok(transaction) => Ok(transaction.into()),
+                Err(err) => Err(JsValue::from_str(format!("{}",std::io::Error::from(err)).as_str())),
+            }
+        },
+        Err(_) => Err(JsValue::from_str("Error parsing the CBOR transaction")),
     }
 }
 
