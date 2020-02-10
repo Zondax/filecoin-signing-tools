@@ -34,7 +34,8 @@ pub async fn transaction_parse(_c: MethodCall) -> anyhow::Result<Output> {
 pub async fn example_something_else_and_retrieve_nonce(_c: MethodCall) -> anyhow::Result<Output> {
     // FIXME: add lru cache
 
-    let nonce = get_nonce().await?;
+    let addr = String::from("some_address");
+    let nonce = get_nonce(&addr).await?;
 
     let so = Output::Success(Success {
         jsonrpc: Some(Version::V2),
