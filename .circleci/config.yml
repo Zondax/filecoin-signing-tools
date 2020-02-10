@@ -1,15 +1,6 @@
 version: 2.1
 
 commands:
-  setup-sccache:
-    steps:
-      - run:
-          name: Install sccache
-          command: |
-            cargo install sccache
-            sccache --version
-            echo 'export "RUSTC_WRAPPER"="sccache"' >> $BASH_ENV
-            echo 'export "SCCACHE_CACHE_SIZE"="1G"' >> $BASH_ENV
   restore-sccache-cache:
     steps:
       - restore_cache:
@@ -24,28 +15,14 @@ commands:
           key: sccache-cache-stable-{{ arch }}-{{ epoch }}
           paths:
             - "~/.cache/sccache"
-  setup-node:
-    steps:
-      - run:
-          name: install node + yarn + n
-          command: |
-            sudo apt install nodejs
-            sudo curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-            echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-            sudo apt update && sudo apt install yarn
-            sudo yarn global add n
-            sudo n latest -q
 
 jobs:
   build:
     docker:
-      - image: circleci/rust:latest
+      - image: zondax/rust-ci:latest
     steps:
       - checkout
-      - setup-sccache
       - restore-sccache-cache
-      - run: rustup component add clippy
-      - run: cargo install cargo-audit
       - run:
           name: rustfmt
           command: |
@@ -71,10 +48,9 @@ jobs:
 
   tests_rust:
     docker:
-      - image: circleci/rust:latest
+      - image: zondax/rust-ci:latest
     steps:
       - checkout
-      - setup-sccache
       - restore-sccache-cache
       - run:
           name: test --all-features
@@ -82,16 +58,14 @@ jobs:
             rustc --version
             cargo --version
             cargo test --lib --all-features
-      - save-sccache-cache
+      # No need to save this in cache
 
   tests_wasm:
     docker:
-      - image: circleci/rust:latest
+      - image: zondax/rust-ci:latest
     steps:
       - checkout
-      - setup-sccache
       - restore-sccache-cache
-      - setup-node
       - run:
           name: build wasm
           command: |
@@ -102,15 +76,13 @@ jobs:
           name: run tests
           command: |
             make test_wasm
-
-      - save-sccache-cache
+      # No need to save this in cache
 
   tests_service:
     docker:
-      - image: circleci/rust:latest
+      - image: zondax/rust-ci:latest
     steps:
       - checkout
-      - setup-sccache
       - restore-sccache-cache
       - run: cargo build
       - run:
@@ -118,7 +90,6 @@ jobs:
           background: true
           command: |
             cargo run -- start
-      - setup-node
       - run:
           name: install node dependencies
           command: |
@@ -134,8 +105,7 @@ jobs:
             cd examples/jsonrpc
             yarn run test:unit
             yarn run test:integration
-
-      - save-sccache-cache
+      # No need to save this in cache
 
 workflows:
   build_all:
