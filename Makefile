@@ -32,7 +32,9 @@ checks:
 hooks:
 	git config core.hooksPath .githooks
 
+# prepreprocess circleci config so it can be ran locally
+# Usage example:
+# make ci JOB=test_service
 ci:
-	# prepreprocess
 	circleci config process .circleci/config.yml > .circleci/tmp.yml
-	circleci local execute -c .circleci/tmp.yml
+	circleci build -c .circleci/tmp.yml --job ${JOB}

@@ -24,6 +24,17 @@ commands:
           key: sccache-cache-stable-{{ arch }}-{{ epoch }}
           paths:
             - "~/.cache/sccache"
+  setup-node:
+    steps:
+      - run:
+          name: install node + yarn + n
+          command: |
+            sudo apt install nodejs
+            sudo curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+            echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+            sudo apt update && sudo apt install yarn
+            sudo yarn global add n
+            sudo n latest -q
 
 jobs:
   build:
@@ -80,28 +91,52 @@ jobs:
       - checkout
       - setup-sccache
       - restore-sccache-cache
-
+      - setup-node
       - run:
-          name: install node + yarn + n
-          command: |
-            sudo apt install nodejs
-            sudo curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-            echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-            sudo apt update && sudo apt install yarn
-            sudo yarn global add n
-            sudo n latest -q
-      - run:
-          name: install node + yarn + n
+          name: build wasm
           command: |
             make deps_wasm
             make build_wasm
             make link_wasm
+      - run:
+          name: run tests
+          command: |
             make test_wasm
 
       - save-sccache-cache
 
+  tests_service:
+    docker:
+      - image: circleci/rust:latest
+    steps:
+      - checkout
+#      - setup-sccache
+#      - restore-sccache-cache
+#      - run: cargo build
+#      - run:
+#          name: start service
+#          command: |
+#            cargo run -- start &
+#      - setup-nod
+#      - run:
+#          name: install node dependencies
+#          command: |
+#            cd examples/jsonrpc
+#            yarn install
+      - run: ls .circleci
+      - run:
+          name: wait for service to be available
+          command: .circleci/wait_for_port.sh 3030
+#      - run:
+#          name: run jsonrpc tests
+#          command: |
+#            cd examples/jsonrpc
+#            yarn run test:unit
+#            yarn run test:integration
+#
+#      - save-sccache-cache
+
 workflows:
-  version: 2
   build_all:
     jobs:
       - build
@@ -109,5 +144,8 @@ workflows:
           requires:
             - build
       - tests_wasm:
+          requires:
+            - build
+      - tests_service:
           requires:
             - build
