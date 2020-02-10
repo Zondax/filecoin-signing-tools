@@ -3,6 +3,9 @@ use forest_encoding::{from_slice, to_vec};
 use forest_message::UnsignedMessage;
 use hex::{decode, encode};
 
+use secp256k1::{SecretKey, sign, Message, Signature};
+use blake2b_simd::Params;
+
 pub mod api;
 
 pub fn key_generate() {
@@ -34,9 +37,34 @@ pub fn transaction_parse(cbor_hexstring: String) -> anyhow::Result<UnsignedMessa
     Ok(message_user_api)
 }
 
-pub fn sign_transaction() {
+pub fn sign_transaction(unsigned_message_api: UnsignedMessageUserAPI, prvkey: SecretKey) -> anyhow::Result<Signature> {
     // TODO: tx params, private key
     // TODO: return signed transaction as CBOR
+
+    // tx params as JSON
+    let message = UnsignedMessage::from(unsigned_message_api);
+    let message_cbor: Vec<u8> = to_vec(&message)?;
+
+    let message_hashed = Params::new()
+         .hash_length(32)
+         .to_state()
+         .update(&message_cbor)
+         .finalize();
+
+     let cid = encode("0171a0e40220");
+     let cid_hashed = Params::new()
+         .hash_length(32)
+         .to_state()
+         .update(&cid.as_bytes())
+         .update(message_hashed.as_bytes())
+         .finalize();
+
+     let message_digest =
+         Message::parse_slice(cid_hashed.as_bytes())?;
+
+    let (signed_transaction, recovery_id) = sign(&message_digest, &prvkey);
+
+    Ok(signed_transaction)
 }
 
 pub fn sign_message() {

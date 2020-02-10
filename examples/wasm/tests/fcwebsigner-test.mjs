@@ -1,5 +1,8 @@
 import * as assert from 'assert';
-import {hello, verify_signature, transaction_parse, transaction_create} from 'fcwebsigner';
+import secp256k1 from 'secp256k1';
+import {hello, verify_signature, transaction_parse, transaction_create, sign_transaction} from 'fcwebsigner';
+import bip32 from 'bip32'
+import {getDigest} from './utils.mjs'
 
 const cbor_transaction = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040";
 
@@ -13,6 +16,9 @@ const transaction = {
   "method": 0,
   "params": ""
 }
+
+const prv_root_key = "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5"
+let node = bip32.fromBase58(prv_root_key)
 
 test('Hello world', () => {
     assert.equal(hello(), 123);
@@ -69,6 +75,30 @@ test('Create Transaction Fail (missing nonce)', () => {
   );
 
 });
+
+test('Sign Transaction', () => {
+  let child = node.derivePath("m/44'/461'/0/0/0")
+
+  try {
+    var signature = sign_transaction(JSON.stringify(transaction), child.privateKey.toString("hex"));
+  } catch(e) {
+    console.log(e)
+  }
+
+  signature = Buffer.from(signature, 'hex')
+  let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'))
+
+  console.log("Signature :",signature)
+  console.log("Digest :", message_digest)
+  console.log("Public key :", child.publicKey)
+
+  assert.equal(
+    true,
+    secp256k1.ecdsaVerify(signature, message_digest, child.publicKey)
+  )
+
+});
+
 
 test('Verify signature', () => {
   assert.equal(verify_signature(), false);
