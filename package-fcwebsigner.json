@@ -6,10 +6,11 @@
   "version": "0.1.0",
   "files": [
     "fcwebsigner_bg.wasm",
-    "fcwebsigner.mjs",
     "fcwebsigner.js",
+    "fcwebsigner.mjs",
     "fcwebsigner.d.ts"
   ],
+  "type": "module",
   "main": "fcwebsigner.mjs",
   "types": "fcwebsigner.d.ts",
   "type": "module",
