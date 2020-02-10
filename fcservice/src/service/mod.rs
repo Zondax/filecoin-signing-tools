@@ -2,6 +2,7 @@ use crate::prelude::*;
 use crate::service::handlers::{get_api_v0, get_status, post_api_v0};
 use jsonrpc_core::Call;
 use std::net::SocketAddr;
+use std::process;
 use warp::Filter;
 
 mod client;
@@ -39,5 +40,14 @@ pub async fn service_main() {
         .or(path_v0_post)
         .with(warp::log("MAIN"));
 
-    warp::serve(routes).run(addr).await;
+    let server = warp::serve(routes);
+
+    let (addr, fut) = server.try_bind_ephemeral(addr).unwrap_or_else(|e| {
+        println!("Error connecting: {}", e);
+        process::exit(1);
+    });
+
+    println!("listening on http://{}", addr);
+
+    fut.await;
 }
