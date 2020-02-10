@@ -22,27 +22,31 @@ pub fn key_generate() {
     fcsigner::key_generate();
 }
 
-#[wasm_bindgen(catch)]
+#[wasm_bindgen]
 pub fn transaction_create(unsigned_message_api: String) -> Result<String, JsValue> {
     match serde_json::from_str(unsigned_message_api.as_str()) {
         Ok(decode_unsigned_message_api) => {
             match fcsigner::transaction_create(decode_unsigned_message_api) {
                 Ok(cbor_hexstring) => Ok(cbor_hexstring.into()),
-                Err(_) => Err(JsValue::from_str("Error converting the transcation to CBOR")),
+                Err(_) => Err(JsValue::from_str(
+                    "Error converting the transcation to CBOR",
+                )),
             }
         }
-        Err(err) => Err(JsValue::from_str(format!("{}",std::io::Error::from(err)).as_str())),
+        Err(err) => Err(JsValue::from_str(
+            format!("{}", std::io::Error::from(err)).as_str(),
+        )),
     }
 }
 
 #[wasm_bindgen]
 pub fn transaction_parse(cbor_hexstring: String) -> Result<String, JsValue> {
     match fcsigner::transaction_parse(cbor_hexstring) {
-        Ok(message_parsed) => {
-            match serde_json::to_string(&message_parsed) {
-                Ok(transaction) => Ok(transaction.into()),
-                Err(err) => Err(JsValue::from_str(format!("{}",std::io::Error::from(err)).as_str())),
-            }
+        Ok(message_parsed) => match serde_json::to_string(&message_parsed) {
+            Ok(transaction) => Ok(transaction.into()),
+            Err(err) => Err(JsValue::from_str(
+                format!("{}", std::io::Error::from(err)).as_str(),
+            )),
         },
         Err(_) => Err(JsValue::from_str("Error parsing the CBOR transaction")),
     }

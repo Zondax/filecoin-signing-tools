@@ -47,7 +47,7 @@ test('Create Transaction', () => {
 });
 
 test('Create Transaction Fail (missing nonce)', () => {
-  let unvalid_transaction = {
+  let invalid_transaction = {
     "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
     "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
     "value": "100000",
@@ -58,13 +58,13 @@ test('Create Transaction Fail (missing nonce)', () => {
   }
 
   try {
-    transaction_create(JSON.stringify(unvalid_transaction));
+    transaction_create(JSON.stringify(invalid_transaction));
   } catch (e) {
     console.log(e);
   }
 
   assert.throws(
-    () => transaction_create(JSON.stringify(unvalid_transaction)),
+    () => transaction_create(JSON.stringify(invalid_transaction)),
     "Should be missing nonce field"
   );
 
