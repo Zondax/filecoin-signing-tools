@@ -29,12 +29,6 @@ jobs:
             cargo fmt --version
             cargo fmt -- --check
       - run:
-          name: build
-          command: |
-            rustc --version
-            cargo --version
-            cargo build
-      - run:
           name: clippy
           command: |
             cargo clippy --version
