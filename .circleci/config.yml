@@ -110,31 +110,32 @@ jobs:
       - image: circleci/rust:latest
     steps:
       - checkout
-#      - setup-sccache
-#      - restore-sccache-cache
-#      - run: cargo build
-#      - run:
-#          name: start service
-#          command: |
-#            cargo run -- start &
-#      - setup-nod
-#      - run:
-#          name: install node dependencies
-#          command: |
-#            cd examples/jsonrpc
-#            yarn install
+      - setup-sccache
+      - restore-sccache-cache
+      - run: cargo build
+      - run:
+          name: start service
+          background: true
+          command: |
+            cargo run -- start
+      - setup-node
+      - run:
+          name: install node dependencies
+          command: |
+            cd examples/jsonrpc
+            yarn install
       - run: ls .circleci
       - run:
           name: wait for service to be available
           command: .circleci/wait_for_port.sh 3030
-#      - run:
-#          name: run jsonrpc tests
-#          command: |
-#            cd examples/jsonrpc
-#            yarn run test:unit
-#            yarn run test:integration
-#
-#      - save-sccache-cache
+      - run:
+          name: run jsonrpc tests
+          command: |
+            cd examples/jsonrpc
+            yarn run test:unit
+            yarn run test:integration
+
+      - save-sccache-cache
 
 workflows:
   build_all:
