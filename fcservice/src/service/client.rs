@@ -11,10 +11,7 @@ use std::sync::Mutex;
 static CALL_ID: AtomicU64 = AtomicU64::new(1);
 
 lazy_static! {
-    static ref NONCE_CACHE: Mutex<LruCache::<String, u64>> = Mutex::new({
-        let mut c = LruCache::new(100);
-        c
-    });
+    static ref NONCE_CACHE: Mutex<LruCache::<String, u64>> = Mutex::new(LruCache::new(100));
 }
 
 fn get_cached_nonce(addr: &str) -> Option<u64> {
