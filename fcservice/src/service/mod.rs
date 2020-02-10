@@ -21,7 +21,10 @@ pub async fn service_main() {
     println!("Remote URL    : {}", &config.remote_node.url);
     println!("Local address : {}", &config.service.address);
 
-    let addr: SocketAddr = config.service.address.parse().expect("Invalid address");
+    let addr: SocketAddr = config.service.address.parse().unwrap_or_else(|e| {
+        println!("Address {} is invalid: {}", &config.service.address, e);
+        process::exit(1);
+    });
 
     // Define path handlers
     let path_v0_get = warp::path!("v0").and(warp::get()).and_then(get_api_v0);
