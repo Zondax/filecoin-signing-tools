@@ -6,8 +6,10 @@ import { callMethod } from "../src";
 const URL = "http://127.0.0.1:3030/v0";
 
 test("key_generate", async () => {
-  const response = await callMethod(URL, "key_generate", [], 1);
-  console.log(response);
+  // FIXME: Disabled until this is implemented
+  // const response = await callMethod(URL, "key_generate", [], 1);
+  // // TODO: Check results
+  // console.log(response);
 });
 
 test("transaction_create", async () => {
@@ -26,5 +28,6 @@ test("transaction_create", async () => {
     },
     1,
   );
+  // TODO: Check results
   console.log(response);
 });
