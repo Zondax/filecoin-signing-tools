@@ -91,22 +91,26 @@ pub fn sign_message() {
 }
 
 #[wasm_bindgen]
-pub fn verify_signature(signature_hex: String, message_hex: String, pubkey_hex: String) -> Result<bool, JsValue> {
+pub fn verify_signature(
+    signature_hex: String,
+    message_hex: String,
+    pubkey_hex: String,
+) -> Result<bool, JsValue> {
     set_panic_hook();
 
     let signature = match utils::from_hex_string(&signature_hex) {
         Ok(signature) => signature,
-        Err(err) => return Err(JsValue::from_str("Error decoding signature"))
+        Err(err) => return Err(JsValue::from_str("Error decoding signature")),
     };
 
     let pubkey = match utils::from_hex_string(&pubkey_hex) {
         Ok(pubkey) => pubkey,
-        Err(err) => return Err(JsValue::from_str("Error decoding public key"))
+        Err(err) => return Err(JsValue::from_str("Error decoding public key")),
     };
 
     let message = match utils::from_hex_string(&message_hex) {
         Ok(message) => message,
-        Err(err) => return Err(JsValue::from_str("Error decoding message"))
+        Err(err) => return Err(JsValue::from_str("Error decoding message")),
     };
 
     let resp = fcsigner::verify_signature(&signature, &message, &pubkey);
