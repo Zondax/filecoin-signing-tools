@@ -4,7 +4,7 @@ use forest_message::UnsignedMessage;
 use hex::{decode, encode, FromHex};
 
 use blake2b_simd::Params;
-use secp256k1::{sign, Message, SecretKey, Signature};
+use secp256k1::{sign, verify, Message, SecretKey, Signature, PublicKey, PublicKeyFormat};
 
 pub mod api;
 
@@ -41,9 +41,6 @@ pub fn sign_transaction(
     unsigned_message_api: UnsignedMessageUserAPI,
     prvkey: SecretKey,
 ) -> anyhow::Result<Signature> {
-    // TODO: tx params, private key
-    // TODO: return signed transaction as CBOR
-
     // tx params as JSON
     let message = UnsignedMessage::from(unsigned_message_api);
     let message_cbor: Vec<u8> = to_vec(&message)?;
@@ -74,10 +71,12 @@ pub fn sign_message() {
     // TODO: return signature
 }
 
-pub fn verify_signature() -> anyhow::Result<bool> {
-    // TODO: receive pubkey, signature, message
-    // TODO: true is valid
-    Ok(false)
+pub fn verify_signature(signature_bytes: &[u8], message_bytes: &[u8], publickey_bytes: &[u8]) -> anyhow::Result<bool> {
+    let signature = Signature::parse_slice(signature_bytes)?;
+    let message = Message::parse_slice(message_bytes)?;
+    let publickey = PublicKey::parse_slice(publickey_bytes, Option::Some(PublicKeyFormat::Compressed))?;
+
+    Ok(verify(&message, &signature, &publickey))
 }
 
 #[cfg(test)]

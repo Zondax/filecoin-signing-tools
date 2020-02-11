@@ -101,5 +101,11 @@ test('Sign Transaction', () => {
 
 
 test('Verify signature', () => {
-  assert.equal(verify_signature(), false);
+  let child = node.derivePath("m/44'/461'/0/0/0");
+  let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'));
+
+  let signature = secp256k1.ecdsaSign(message_digest, child.privateKey);
+  signature = Buffer.from(signature.signature)
+
+  assert.equal(verify_signature(signature.toString('hex'), message_digest.toString('hex'), child.publicKey.toString('hex')), true);
 })
