@@ -1,10 +1,10 @@
 use crate::api::UnsignedMessageUserAPI;
 use forest_encoding::{from_slice, to_vec};
 use forest_message::UnsignedMessage;
-use hex::{decode, encode};
+use hex::{decode, encode, FromHex};
 
-use secp256k1::{SecretKey, sign, Message, Signature};
 use blake2b_simd::Params;
+use secp256k1::{sign, Message, SecretKey, Signature};
 
 pub mod api;
 
@@ -37,7 +37,10 @@ pub fn transaction_parse(cbor_hexstring: String) -> anyhow::Result<UnsignedMessa
     Ok(message_user_api)
 }
 
-pub fn sign_transaction(unsigned_message_api: UnsignedMessageUserAPI, prvkey: SecretKey) -> anyhow::Result<Signature> {
+pub fn sign_transaction(
+    unsigned_message_api: UnsignedMessageUserAPI,
+    prvkey: SecretKey,
+) -> anyhow::Result<Signature> {
     // TODO: tx params, private key
     // TODO: return signed transaction as CBOR
 
@@ -46,21 +49,20 @@ pub fn sign_transaction(unsigned_message_api: UnsignedMessageUserAPI, prvkey: Se
     let message_cbor: Vec<u8> = to_vec(&message)?;
 
     let message_hashed = Params::new()
-         .hash_length(32)
-         .to_state()
-         .update(&message_cbor)
-         .finalize();
+        .hash_length(32)
+        .to_state()
+        .update(&message_cbor)
+        .finalize();
 
-     let cid = encode("0171a0e40220");
-     let cid_hashed = Params::new()
-         .hash_length(32)
-         .to_state()
-         .update(&cid.as_bytes())
-         .update(message_hashed.as_bytes())
-         .finalize();
+    let cid = Vec::from_hex("0171a0e40220")?;
+    let cid_hashed = Params::new()
+        .hash_length(32)
+        .to_state()
+        .update(&cid)
+        .update(message_hashed.as_bytes())
+        .finalize();
 
-     let message_digest =
-         Message::parse_slice(cid_hashed.as_bytes())?;
+    let message_digest = Message::parse_slice(cid_hashed.as_bytes())?;
 
     let (signed_transaction, recovery_id) = sign(&message_digest, &prvkey);
 

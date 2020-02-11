@@ -88,9 +88,9 @@ test('Sign Transaction', () => {
   signature = Buffer.from(signature, 'hex')
   let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'))
 
-  console.log("Signature :",signature)
-  console.log("Digest :", message_digest)
-  console.log("Public key :", child.publicKey)
+  console.log("Signature :",signature.toString('hex'))
+  console.log("Digest :", message_digest.toString('hex'))
+  console.log("Public key :", child.publicKey.toString('hex'))
 
   assert.equal(
     true,
