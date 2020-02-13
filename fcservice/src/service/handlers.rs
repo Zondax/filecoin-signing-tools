@@ -4,15 +4,15 @@ use jsonrpc_core::Call;
 
 use crate::service::error::ServiceError;
 use crate::service::methods;
-use warp::Rejection;
+use warp::{Rejection, Reply};
 
-pub async fn get_status() -> Result<impl warp::Reply, warp::Rejection> {
+pub async fn get_status() -> Result<impl Reply, Rejection> {
     let message = "Filecoin Signing Service".to_string();
     Ok(warp::reply::html(message))
     // TODO: return some information about the service status
 }
 
-pub async fn get_api_v0() -> Result<impl warp::Reply, warp::Rejection> {
+pub async fn get_api_v0() -> Result<impl Reply, Rejection> {
     println!("Received JSONRPC GET. ");
     // TODO: return some information about the service API?
     Ok(warp::reply::html("Document API here?".to_string()))
@@ -20,7 +20,7 @@ pub async fn get_api_v0() -> Result<impl warp::Reply, warp::Rejection> {
 
 impl warp::reject::Reject for ServiceError {}
 
-pub async fn post_api_v0(request: Call) -> Result<impl warp::Reply, warp::Rejection> {
+pub async fn post_api_v0(request: Call) -> Result<impl Reply, Rejection> {
     let reply = match request {
         Call::MethodCall(c) if c.method == "key_generate" => methods::key_generate(c).await,
         Call::MethodCall(c) if c.method == "key_derive" => methods::key_derive(c).await,
@@ -52,9 +52,7 @@ pub async fn post_api_v0(request: Call) -> Result<impl warp::Reply, warp::Reject
 
     match reply {
         Ok(ok_reply) => Ok(warp::reply::json(&ok_reply)),
-        Err(err) => {
-            return Err(warp::reject::custom(err));
-        }
+        Err(err) => Err(warp::reject::custom(err)),
     }
 }
 
