@@ -1,8 +1,10 @@
+use crate::error::SignerError;
 use forest_address::Address;
 use forest_message::{Message, UnsignedMessage};
 use hex::decode;
 use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
+use std::convert::TryFrom;
 use std::str::FromStr;
 use vm::{MethodNum, Serialized, TokenAmount};
 
@@ -18,44 +20,44 @@ pub struct UnsignedMessageUserAPI {
     pub params: String,
 }
 
-impl From<UnsignedMessageUserAPI> for UnsignedMessage {
-    fn from(message_api: UnsignedMessageUserAPI) -> UnsignedMessage {
-        let to = Address::from_str(&message_api.to).expect("FIXME");
-        let value = BigUint::from_str(&message_api.value).expect("could not read value");
-        let gas_limit =
-            BigUint::from_str(&message_api.gas_limit).expect("could not read gas_limit");
-        let gas_price =
-            BigUint::from_str(&message_api.gas_price).expect("could not read gas_price");
+impl TryFrom<UnsignedMessageUserAPI> for UnsignedMessage {
+    type Error = SignerError;
 
-        UnsignedMessage::builder()
+    fn try_from(message_api: UnsignedMessageUserAPI) -> Result<UnsignedMessage, Self::Error> {
+        let to = Address::from_str(&message_api.to)
+            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+        let from = Address::from_str(&message_api.from)
+            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+        let value = BigUint::from_str(&message_api.value)?;
+        let gas_limit = BigUint::from_str(&message_api.gas_limit)?;
+        let gas_price = BigUint::from_str(&message_api.gas_price)?;
+        let params = Serialized::new(decode(message_api.params)?);
+
+        let tmp = UnsignedMessage::builder()
             .to(to)
-            .from(Address::from_str(&message_api.from).expect("FIXME"))
+            .from(from)
             .sequence(message_api.nonce)
             .value(TokenAmount(value))
-            // FIXME:
             .method_num(MethodNum::new(message_api.method))
-            // FIXME:
-            .params(Serialized::new(decode(message_api.params).expect("FIXME")))
+            .params(params)
             .gas_limit(gas_limit)
             .gas_price(gas_price)
             .build()
-            .expect("FIXME")
+            .map_err(|err| SignerError::GenericString(err))?;
+
+        Ok(tmp)
     }
 }
 
 impl From<UnsignedMessage> for UnsignedMessageUserAPI {
     fn from(unsigned_message: UnsignedMessage) -> UnsignedMessageUserAPI {
-        let value = unsigned_message.value().0.to_string();
-        let gas_price = unsigned_message.gas_price().to_string();
-        let gas_limit = unsigned_message.gas_limit().to_string();
-
         UnsignedMessageUserAPI {
             to: unsigned_message.to().to_string(),
             from: unsigned_message.from().to_string(),
             nonce: unsigned_message.sequence(),
-            value,
-            gas_price,
-            gas_limit,
+            value: unsigned_message.value().0.to_string(),
+            gas_price: unsigned_message.gas_price().to_string(),
+            gas_limit: unsigned_message.gas_limit().to_string(),
             // FIXME: cannot extract method byte. Set always as 0
             method: 0,
             // FIXME: need a proper way to serialize parameters, for now
@@ -71,6 +73,7 @@ mod tests {
     use forest_encoding::{from_slice, to_vec};
     use forest_message::UnsignedMessage;
     use hex::{decode, encode};
+    use std::convert::TryFrom;
 
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
         {
@@ -93,7 +96,7 @@ mod tests {
             serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE).expect("FIXME");
         println!("{:?}", message_api);
 
-        let message = UnsignedMessage::from(message_api);
+        let message = UnsignedMessage::try_from(message_api).expect("FIXME");
 
         let message_cbor: Vec<u8> = to_vec(&message).expect("Cbor serialization failed");
         let message_cbor_hex = encode(message_cbor);
@@ -111,7 +114,8 @@ mod tests {
         let message: UnsignedMessage = from_slice(&cbor_buffer).expect("could not decode cbor");
         println!("{:?}", message);
 
-        let message_user_api = UnsignedMessageUserAPI::from(message);
+        let message_user_api =
+            UnsignedMessageUserAPI::try_from(message).expect("could not convert message");
 
         let message_user_api_json =
             serde_json::to_string_pretty(&message_user_api).expect("could not serialize as JSON");

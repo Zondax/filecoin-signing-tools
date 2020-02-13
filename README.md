@@ -3,6 +3,8 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![CircleCI](https://circleci.com/gh/Zondax/filecoin-rs.svg?style=shield&circle-token=51b2d5fe68c0eb73436dace6f47fa0a387169ef5)](https://circleci.com/gh/Zondax/filecoin-rs)
 
+**library names are subject to change**
+
 This repository provides the following:
 
 - Filecoin service
@@ -31,16 +33,11 @@ Provides a backend service that will be typically used by exchanges.
 - CBOR <-> JSON serialization and deserialization
 - Secp256k1 signing, etc.
 - Can be compiled as WASM
-- API specs (preliminary)
-    - Keygen(): returns private key, public key and an address
-    - Derive(mnemonic, derivation path): returns private key, public key and an address
-    - ConstructUnsignedTransaction(parameters): returns an unsigned transaction
-    - SignTransaction(unsignedTx, privateKey) returns a signed payload.
-    - ParseTransaction(signedTx or unsignedTx) returns the transaction as json or some other serialized format including the Tx hash as a field when available
-    - SignMsg(message, privateKey) returns a signature
-    - Verify(publicKey, signature, message) returns true if the signature is valid
+- API specs (work in progress)
 
-# JS integration examples
+# Examples (Work in progress)
 
-- provide examples on how to use the signing service
-- provide examples on how to use the signing library when compiled as WASM
+- *examples/jsonrpc* minimal JS examples/integration tests for signing service
+- *examples/www* how to use the signing library when compiled as WASM from a browser
+- *examples/wasm* integration tests written in JS for WASM
+

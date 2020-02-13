@@ -1,5 +1,7 @@
 ////! Fcservice RPC Client
 
+use crate::service::error::RemoteNode::{EmptyNonce, InvalidNonce};
+use crate::service::error::ServiceError;
 use jsonrpc_core::Result as CoreResult;
 use jsonrpc_core::{Id, MethodCall, Params, Response, Version};
 use lazy_static::lazy_static;
@@ -18,7 +20,7 @@ fn cache_get_nonce(addr: &str) -> Option<u64> {
     // Retrieve from cache
     let mut cache = NONCE_CACHE.lock().expect("mutex lock failed");
     let nonce = cache.get(&addr.to_owned());
-    nonce.and_then(|v| Some(*v)).or_else(|| None)
+    nonce.copied().or_else(|| None)
 }
 
 fn cache_put_nonce(addr: &str, nonce: u64) {
@@ -27,11 +29,11 @@ fn cache_put_nonce(addr: &str, nonce: u64) {
 }
 
 fn cache_len() -> usize {
-    let mut cache = NONCE_CACHE.lock().expect("mutex lock failed");
+    let cache = NONCE_CACHE.lock().expect("mutex lock failed");
     cache.len()
 }
 
-pub async fn get_nonce(addr: &str) -> Result<u64, anyhow::Error> {
+pub async fn get_nonce(addr: &str) -> Result<u64, ServiceError> {
     if let Some(nonce) = cache_get_nonce(addr) {
         return Ok(nonce);
     }
@@ -64,13 +66,9 @@ pub async fn get_nonce(addr: &str) -> Result<u64, anyhow::Error> {
         Response::Single(o) => {
             // TODO: too many abstractions to get the result?
             let result = CoreResult::<Value>::from(o)?;
-
-            result.as_u64().expect("FIXME")
+            result.as_u64().ok_or(EmptyNonce)?
         }
-        _ => {
-            // FIXME: return a proper error here
-            0
-        }
+        _ => return Err(ServiceError::RemoteNode(InvalidNonce)),
     };
 
     cache_put_nonce(addr, nonce);

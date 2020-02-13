@@ -6,7 +6,6 @@ edition = "2018"
 
 [dependencies]
 gumdrop = "0.7"
-anyhow = "1.0"
 thiserror = "1.0"
 serde = { version = "1", features = ["serde_derive"] }
 serde_json = "1.0.45"
@@ -29,3 +28,4 @@ version = "0.5.1"
 [dev-dependencies]
 abscissa_core = { version = "0.5.1", features = ["testing"] }
 once_cell = "1.2"
+futures-await-test = "0.3"

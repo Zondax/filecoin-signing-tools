@@ -6,6 +6,7 @@ use std::process;
 use warp::Filter;
 
 mod client;
+mod error;
 mod handlers;
 mod methods;
 mod utils;
