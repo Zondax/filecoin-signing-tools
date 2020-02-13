@@ -1,11 +1,11 @@
 ////! Fcservice RPC Client
 
-use jsonrpc_core::{Call, Id, MethodCall, Version};
+use jsonrpc_core::{Call, MethodCall, Version};
 
 use crate::service::error::ServiceError;
 use crate::service::error::ServiceError::{Signer, JSONRPC};
 use crate::service::methods;
-use warp::{Future, Rejection, Reply};
+use warp::{Rejection, Reply};
 
 pub async fn get_status() -> Result<impl Reply, Rejection> {
     let message = "Filecoin Signing Service".to_string();
@@ -61,6 +61,7 @@ mod tests {
     use crate::service::handlers::post_api_v0;
     use futures_await_test::async_test;
     use jsonrpc_core::{Call, Id, MethodCall, Params, Version};
+    use warp::Reply;
 
     #[test]
     fn do_nothing() {}
@@ -76,12 +77,9 @@ mod tests {
 
         let response = post_api_v0(bad_call).await;
 
-        match response {
-            Ok(_) => assert!(false),
-            Err(e) => {
-                assert!(e.is_not_found());
-            }
-        }
+        assert!(response.is_err());
+        let err = response.err().unwrap();
+        assert!(err.is_not_found());
     }
 
     #[async_test]
@@ -93,12 +91,14 @@ mod tests {
             id: Id::Num(1),
         });
 
-        let response = post_api_v0(bad_call).await;
-        match response {
-            Ok(_) => assert!(false),
-            Err(e) => {
-                println!("{:?}", e);
-            }
-        }
+        let reply = post_api_v0(bad_call).await.unwrap();
+
+        let response = reply.into_response();
+
+        assert_eq!(response.status(), 200);
+
+        let (parts, body) = response.into_parts();
+        let s = format!("{:?}", body);
+        println!("{}", s);
     }
 }
