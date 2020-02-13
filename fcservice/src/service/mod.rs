@@ -5,6 +5,7 @@ use std::net::SocketAddr;
 use std::process;
 use warp::Filter;
 
+mod cache;
 mod client;
 mod error;
 mod handlers;
