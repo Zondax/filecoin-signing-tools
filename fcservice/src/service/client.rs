@@ -1,5 +1,6 @@
 ////! Fcservice RPC Client
 
+use crate::service::error::RemoteNode::{EmptyNonce, InvalidNonce};
 use crate::service::error::ServiceError;
 use jsonrpc_core::Result as CoreResult;
 use jsonrpc_core::{Id, MethodCall, Params, Response, Version};
@@ -65,13 +66,9 @@ pub async fn get_nonce(addr: &str) -> Result<u64, ServiceError> {
         Response::Single(o) => {
             // TODO: too many abstractions to get the result?
             let result = CoreResult::<Value>::from(o)?;
-
-            result.as_u64().expect("FIXME")
+            result.as_u64().ok_or(EmptyNonce)?
         }
-        _ => {
-            // FIXME: return a proper error here
-            0
-        }
+        _ => return Err(ServiceError::RemoteNode(InvalidNonce)),
     };
 
     cache_put_nonce(addr, nonce);

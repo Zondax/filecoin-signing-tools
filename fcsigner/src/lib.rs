@@ -3,6 +3,7 @@ use crate::error::SignerError;
 use forest_encoding::{from_slice, to_vec};
 use forest_message::UnsignedMessage;
 use hex::{decode, encode};
+use std::convert::TryFrom;
 
 pub mod api;
 pub mod error;
@@ -20,7 +21,7 @@ pub fn transaction_create(
     unsigned_message_api: UnsignedMessageUserAPI,
 ) -> Result<String, SignerError> {
     // tx params as JSON
-    let message = UnsignedMessage::from(unsigned_message_api);
+    let message = UnsignedMessage::try_from(unsigned_message_api)?;
     let message_cbor: Vec<u8> = to_vec(&message)?;
     let message_cbor_hex = encode(message_cbor);
 
