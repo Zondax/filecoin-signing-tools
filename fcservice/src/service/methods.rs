@@ -4,9 +4,9 @@ use crate::service::client::get_nonce;
 use crate::service::error::ServiceError;
 use crate::service::utils::{from_hex_string, to_hex_string};
 use fcsigner::api::UnsignedMessageUserAPI;
-use jsonrpc_core::types::params::Params;
 use jsonrpc_core::{Id, MethodCall, Success, Version};
 use secp256k1::SecretKey;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 pub async fn key_generate(_c: MethodCall) -> Result<Success, ServiceError> {
@@ -34,16 +34,19 @@ pub async fn transaction_parse(_c: MethodCall) -> Result<Success, ServiceError> 
     Err(ServiceError::NotImplemented)
 }
 
-pub async fn sign_transaction(c: MethodCall) -> Result<Success, ServiceError> {
-    let y = c.params.parse::<Vec<Value>>()?;
+#[derive(Debug, Deserialize, Serialize)]
+pub struct SignTransactionParamsAPI {
+    pub transaction: UnsignedMessageUserAPI,
+    pub prvkey_hex: String,
+}
 
-    // Review : Doesn't seem right... but working.
-    let t: UnsignedMessageUserAPI = serde_json::from_str(&y[0].to_string())?;
-    let prvkey_hex: String = serde_json::from_value(y[1].clone())?;
-    let prvkey_bytes = from_hex_string(&prvkey_hex)?;
+pub async fn sign_transaction(c: MethodCall) -> Result<Success, ServiceError> {
+    let params = c.params.parse::<SignTransactionParamsAPI>()?;
+
+    let prvkey_bytes = from_hex_string(&params.prvkey_hex)?;
     let secret_key = SecretKey::parse_slice(&prvkey_bytes)?;
 
-    let signature = fcsigner::sign_transaction(t, secret_key)?;
+    let signature = fcsigner::sign_transaction(params.transaction, secret_key)?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),
@@ -54,17 +57,19 @@ pub async fn sign_transaction(c: MethodCall) -> Result<Success, ServiceError> {
     Ok(so)
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+pub struct VerifySignatureParamsAPI {
+    pub signature_hex: String,
+    pub message_hex: String,
+    pub pubkey_hex: String,
+}
+
 pub async fn verify_signature(c: MethodCall) -> Result<Success, ServiceError> {
-    let y = c.params.parse::<Vec<Value>>()?;
+    let params = c.params.parse::<VerifySignatureParamsAPI>()?;
 
-    let signature_hex: String = serde_json::from_value(y[0].clone())?;
-    let signature = from_hex_string(&signature_hex)?;
-
-    let message_hex: String = serde_json::from_value(y[1].clone())?;
-    let message = from_hex_string(&message_hex)?;
-
-    let pubkey_hex: String = serde_json::from_value(y[2].clone())?;
-    let pubkey = from_hex_string(&pubkey_hex)?;
+    let signature = from_hex_string(&params.signature_hex)?;
+    let message = from_hex_string(&params.message_hex)?;
+    let pubkey = from_hex_string(&params.pubkey_hex)?;
 
     let result = fcsigner::verify_signature(&signature, &message, &pubkey)?;
 
