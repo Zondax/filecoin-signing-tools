@@ -1,12 +1,12 @@
+use crate::error::SignerError;
 use forest_address::Address;
 use forest_message::{Message, UnsignedMessage};
 use hex::decode;
 use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
+use std::convert::TryFrom;
 use std::str::FromStr;
 use vm::{MethodNum, Serialized, TokenAmount};
-use std::convert::TryFrom;
-use crate::error::SignerError;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UnsignedMessageUserAPI {
@@ -24,8 +24,10 @@ impl TryFrom<UnsignedMessageUserAPI> for UnsignedMessage {
     type Error = SignerError;
 
     fn try_from(message_api: UnsignedMessageUserAPI) -> Result<UnsignedMessage, Self::Error> {
-        let to = Address::from_str(&message_api.to).map_err(|err| SignerError::GenericString(err.to_string()))?;
-        let from = Address::from_str(&message_api.from).map_err(|err| SignerError::GenericString(err.to_string()))?;
+        let to = Address::from_str(&message_api.to)
+            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+        let from = Address::from_str(&message_api.from)
+            .map_err(|err| SignerError::GenericString(err.to_string()))?;
         let value = BigUint::from_str(&message_api.value)?;
         let gas_limit = BigUint::from_str(&message_api.gas_limit)?;
         let gas_price = BigUint::from_str(&message_api.gas_price)?;
@@ -112,7 +114,8 @@ mod tests {
         let message: UnsignedMessage = from_slice(&cbor_buffer).expect("could not decode cbor");
         println!("{:?}", message);
 
-        let message_user_api = UnsignedMessageUserAPI::try_from(message).expect("could not convert message");
+        let message_user_api =
+            UnsignedMessageUserAPI::try_from(message).expect("could not convert message");
 
         let message_user_api_json =
             serde_json::to_string_pretty(&message_user_api).expect("could not serialize as JSON");
