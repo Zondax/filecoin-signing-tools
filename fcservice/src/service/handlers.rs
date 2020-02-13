@@ -1,8 +1,9 @@
 ////! Fcservice RPC Client
 
-use jsonrpc_core::Call;
+use jsonrpc_core::{Call, Id, Version};
 
 use crate::service::error::ServiceError;
+use crate::service::error::ServiceError::{Signer, JSONRPC};
 use crate::service::methods;
 use warp::{Rejection, Reply};
 
@@ -52,6 +53,15 @@ pub async fn post_api_v0(request: Call) -> Result<impl Reply, Rejection> {
 
     match reply {
         Ok(ok_reply) => Ok(warp::reply::json(&ok_reply)),
+        Err(JSONRPC(err)) => Ok(warp::reply::json(&err)),
+        Err(Signer(err)) => {
+            let jsorerr = jsonrpc_core::Failure {
+                jsonrpc: Some(Version::V2),
+                error: jsonrpc_core::Error::invalid_params(format!("{}", err)),
+                id: Id::Num(0),
+            };
+            Ok(warp::reply::json(&jsorerr))
+        }
         Err(err) => Err(warp::reject::custom(err)),
     }
 }
