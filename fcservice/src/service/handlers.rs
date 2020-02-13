@@ -26,15 +26,11 @@ pub async fn post_api_v0(request: Call) -> Result<impl warp::Reply, warp::Reject
         Call::MethodCall(c) if c.method == "transaction_parse" => {
             methods::transaction_parse(c).await
         }
-        Call::MethodCall(c) if c.method == "sign_transaction" => {
-            methods::sign_transaction(c).await
-        }
+        Call::MethodCall(c) if c.method == "sign_transaction" => methods::sign_transaction(c).await,
         //      Call::MethodCall(c) if c.method == "sign_message" => {
         //            Ok(c.method.to_string())
         //        }
-        Call::MethodCall(c) if c.method == "verify_signature" => {
-            methods::verify_signature(c).await
-        }
+        Call::MethodCall(c) if c.method == "verify_signature" => methods::verify_signature(c).await,
         Call::MethodCall(_) => {
             return Err(warp::reject::not_found());
         }
