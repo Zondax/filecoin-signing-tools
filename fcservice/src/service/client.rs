@@ -19,7 +19,7 @@ fn cache_get_nonce(addr: &str) -> Option<u64> {
     // Retrieve from cache
     let mut cache = NONCE_CACHE.lock().expect("mutex lock failed");
     let nonce = cache.get(&addr.to_owned());
-    nonce.and_then(|v| Some(*v)).or_else(|| None)
+    nonce.copied().or_else(|| None)
 }
 
 fn cache_put_nonce(addr: &str, nonce: u64) {
@@ -28,7 +28,7 @@ fn cache_put_nonce(addr: &str, nonce: u64) {
 }
 
 fn cache_len() -> usize {
-    let mut cache = NONCE_CACHE.lock().expect("mutex lock failed");
+    let cache = NONCE_CACHE.lock().expect("mutex lock failed");
     cache.len()
 }
 
