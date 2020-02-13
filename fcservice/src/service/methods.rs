@@ -30,19 +30,19 @@ pub async fn transaction_parse(_c: MethodCall) -> Result<Success, ServiceError> 
     Err(ServiceError::NotImplemented)
 }
 
-pub async fn example_something_else_and_retrieve_nonce(
-    _c: MethodCall,
-) -> Result<Success, ServiceError> {
-    // FIXME: add lru cache
+#[cfg(test)]
+mod tests {
+    use crate::service::client::get_nonce;
+    use futures_await_test::async_test;
 
-    let addr = String::from("some_address");
-    let nonce = get_nonce(&addr).await?;
+    #[async_test]
+    async fn example_something_else_and_retrieve_nonce() {
+        // FIXME: use configuration parameters instead
+        let url = "https://lotus-dev.temporal.cloud/rpc/v0";
+        let jwt = "some_token";
+        let addr = "t1jdlfl73voaiblrvn2yfivvn5ifucwwv5f26nfza";
 
-    let so = Success {
-        jsonrpc: Some(Version::V2),
-        result: Value::from(nonce),
-        id: Id::Num(1),
-    };
-
-    Ok(so)
+        let nonce = get_nonce(&url, &jwt, &addr).await;
+        assert!(nonce.is_ok());
+    }
 }

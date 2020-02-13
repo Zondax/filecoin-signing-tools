@@ -63,9 +63,6 @@ mod tests {
     use jsonrpc_core::{Call, Id, MethodCall, Params, Version};
     use warp::Reply;
 
-    #[test]
-    fn do_nothing() {}
-
     #[async_test]
     async fn returns_jsonrpc_error_not_found() {
         let bad_call = Call::from(MethodCall {
