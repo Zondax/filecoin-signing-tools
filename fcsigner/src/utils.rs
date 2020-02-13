@@ -1,30 +1,16 @@
 use std::{fmt, fmt::Write};
+use thiserror::Error;
 
 /// DecoderError
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Error, Debug)]
 pub enum HexDecodeError {
-    /// String length is invalid and could not be decoded
+    /// Invalid length 0 or odd number of characters
+    #[error("Invalid length 0 or odd number of characters")]
     InvalidLength,
     /// hex value could not be decoded
-    ParseInt(std::num::ParseIntError),
+    #[error("ParseInt error")]
+    ParseInt(#[from] std::num::ParseIntError),
 }
-
-impl From<std::num::ParseIntError> for HexDecodeError {
-    fn from(e: std::num::ParseIntError) -> Self {
-        HexDecodeError::ParseInt(e)
-    }
-}
-
-impl fmt::Display for HexDecodeError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            HexDecodeError::InvalidLength => "Invalid length 0 or odd number of characters".fmt(f),
-            HexDecodeError::ParseInt(e) => e.fmt(f),
-        }
-    }
-}
-
-impl std::error::Error for HexDecodeError {}
 
 /// convert array to hexstring
 pub fn to_hex_string(data: &[u8]) -> String {
