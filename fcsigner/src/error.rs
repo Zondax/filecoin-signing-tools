@@ -1,5 +1,7 @@
 use thiserror::Error;
 
+//type Something = <UnsignedMessage as TryFrom>::Error;
+
 /// Signer Error
 #[derive(Error, Debug)]
 pub enum SignerError {
@@ -12,4 +14,10 @@ pub enum SignerError {
     /// Hex error
     #[error("Hex error")]
     Hex(#[from] hex::FromHexError),
+    // InvalidBigInt error
+    #[error("InvalidBigInt error")]
+    InvalidBigInt(#[from] num_bigint_chainsafe::ParseBigIntError),
+    // Generic error message
+    #[error("Error: `{0}`")]
+    GenericString(String),
 }

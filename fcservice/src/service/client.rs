@@ -8,6 +8,7 @@ use lru::LruCache;
 use serde_json::value::Value;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
+use crate::service::error::RemoteNode::{EmptyNonce, InvalidNonce};
 
 static CALL_ID: AtomicU64 = AtomicU64::new(1);
 
@@ -65,13 +66,9 @@ pub async fn get_nonce(addr: &str) -> Result<u64, ServiceError> {
         Response::Single(o) => {
             // TODO: too many abstractions to get the result?
             let result = CoreResult::<Value>::from(o)?;
-
-            result.as_u64().expect("FIXME")
+            result.as_u64().ok_or(EmptyNonce)?
         }
-        _ => {
-            // FIXME: return a proper error here
-            0
-        }
+        _ => return Err(ServiceError::RemoteNode(InvalidNonce))
     };
 
     cache_put_nonce(addr, nonce);
