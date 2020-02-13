@@ -3,6 +3,7 @@
 use jsonrpc_core::Call;
 
 use crate::service::methods;
+use warp::Rejection;
 
 pub async fn get_status() -> Result<impl warp::Reply, warp::Rejection> {
     let message = "Filecoin Signing Service".to_string();
@@ -15,6 +16,11 @@ pub async fn get_api_v0() -> Result<impl warp::Reply, warp::Rejection> {
     // TODO: return some information about the service API?
     Ok(warp::reply::html("Document API here?".to_string()))
 }
+
+#[derive(Debug)]
+struct JsonRPCError(anyhow::Error);
+
+impl warp::reject::Reject for JsonRPCError {}
 
 pub async fn post_api_v0(request: Call) -> Result<impl warp::Reply, warp::Rejection> {
     let reply = match request {
@@ -49,8 +55,54 @@ pub async fn post_api_v0(request: Call) -> Result<impl warp::Reply, warp::Reject
     match reply {
         Ok(ok_reply) => Ok(warp::reply::json(&ok_reply)),
         Err(err) => {
-            println!("{:?}", err);
-            Err(warp::reject::not_found())
+            return Err(warp::reject::custom(JsonRPCError(err)));
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::service::handlers::post_api_v0;
+    use futures_await_test::async_test;
+    use jsonrpc_core::{Call, Id, MethodCall, Params, Version};
+
+    #[test]
+    fn do_nothing() {}
+
+    #[async_test]
+    async fn returns_jsonrpc_error_not_found() {
+        let bad_call = Call::from(MethodCall {
+            jsonrpc: Some(Version::V2),
+            method: "invalid method".to_owned(),
+            params: Params::None,
+            id: Id::Num(1),
+        });
+
+        let response = post_api_v0(bad_call).await;
+
+        match response {
+            Ok(_) => assert!(false),
+            Err(e) => {
+                assert!(e.is_not_found());
+            }
+        }
+    }
+
+    #[async_test]
+    async fn returns_jsonrpc_error_bad_params() {
+        let bad_call = Call::from(MethodCall {
+            jsonrpc: Some(Version::V2),
+            method: "transaction_create".to_owned(),
+            params: Params::None,
+            id: Id::Num(1),
+        });
+
+        let response = post_api_v0(bad_call).await;
+        match response {
+            Ok(_) => assert!(false),
+            Err(e) => {
+                println!("{:?}", e);
+            }
         }
     }
 }
