@@ -1,9 +1,11 @@
 use crate::api::UnsignedMessageUserAPI;
+use crate::error::SignerError;
 use forest_encoding::{from_slice, to_vec};
 use forest_message::UnsignedMessage;
 use hex::{decode, encode};
 
 pub mod api;
+pub mod error;
 
 pub fn key_generate() {
     // TODO: return keypair (pub/priv + address)
@@ -14,7 +16,9 @@ pub fn key_derive() {
     // TODO: return keypair (pub/priv + address)
 }
 
-pub fn transaction_create(unsigned_message_api: UnsignedMessageUserAPI) -> anyhow::Result<String> {
+pub fn transaction_create(
+    unsigned_message_api: UnsignedMessageUserAPI,
+) -> Result<String, SignerError> {
     // tx params as JSON
     let message = UnsignedMessage::from(unsigned_message_api);
     let message_cbor: Vec<u8> = to_vec(&message)?;
@@ -24,7 +28,7 @@ pub fn transaction_create(unsigned_message_api: UnsignedMessageUserAPI) -> anyho
     Ok(message_cbor_hex)
 }
 
-pub fn transaction_parse(cbor_hexstring: String) -> anyhow::Result<UnsignedMessageUserAPI> {
+pub fn transaction_parse(cbor_hexstring: String) -> Result<UnsignedMessageUserAPI, SignerError> {
     // FIXME: Extend to both unsigned and sign txs
 
     let cbor_buffer = decode(cbor_hexstring)?;
@@ -44,7 +48,7 @@ pub fn sign_message() {
     // TODO: return signature
 }
 
-pub fn verify_signature() -> anyhow::Result<bool> {
+pub fn verify_signature() -> Result<bool, SignerError> {
     // TODO: receive pubkey, signature, message
     // TODO: true is valid
     Ok(false)

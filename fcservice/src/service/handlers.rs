@@ -5,7 +5,7 @@ use jsonrpc_core::Call;
 use crate::service::methods;
 
 pub async fn get_status() -> Result<impl warp::Reply, warp::Rejection> {
-    let message = format!("Filecoin Signing Service");
+    let message = "Filecoin Signing Service".to_string();
     Ok(warp::reply::html(message))
     // TODO: return some information about the service status
 }
@@ -13,7 +13,7 @@ pub async fn get_status() -> Result<impl warp::Reply, warp::Rejection> {
 pub async fn get_api_v0() -> Result<impl warp::Reply, warp::Rejection> {
     println!("Received JSONRPC GET. ");
     // TODO: return some information about the service API?
-    Ok(warp::reply::html(format!("Document API here?")))
+    Ok(warp::reply::html("Document API here?".to_string()))
 }
 
 pub async fn post_api_v0(request: Call) -> Result<impl warp::Reply, warp::Rejection> {
@@ -41,7 +41,7 @@ pub async fn post_api_v0(request: Call) -> Result<impl warp::Reply, warp::Reject
         Call::Notification(_n) => {
             return Err(warp::reject::not_found());
         }
-        Call::Invalid { id: _ } => {
+        Call::Invalid { .. } => {
             return Err(warp::reject::not_found());
         }
     };
@@ -50,7 +50,7 @@ pub async fn post_api_v0(request: Call) -> Result<impl warp::Reply, warp::Reject
         Ok(ok_reply) => Ok(warp::reply::json(&ok_reply)),
         Err(err) => {
             println!("{:?}", err);
-            return Err(warp::reject::not_found());
+            Err(warp::reject::not_found())
         }
     }
 }

@@ -6,10 +6,11 @@ edition = "2018"
 
 [dependencies]
 num = { version = "0.2.1", features = ["serde"] }
-anyhow = "1.0"
+thiserror = "1.0.10"
 
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.45"
+serde_cbor = "0.11.1"
 hex = "0.4.0"
 
 vm = { git = "https://github.com/zondax/forest", branch="master" }
