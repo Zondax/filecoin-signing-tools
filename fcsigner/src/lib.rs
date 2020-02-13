@@ -2,7 +2,7 @@ use crate::api::UnsignedMessageUserAPI;
 use crate::error::SignerError;
 use forest_encoding::{from_slice, to_vec};
 use forest_message::UnsignedMessage;
-use hex::{decode, encode};
+use hex::{decode, encode, FromHex};
 use std::convert::TryFrom;
 
 use blake2b_simd::Params;
@@ -45,9 +45,9 @@ pub fn transaction_parse(cbor_hexstring: String) -> Result<UnsignedMessageUserAP
 pub fn sign_transaction(
     unsigned_message_api: UnsignedMessageUserAPI,
     prvkey: SecretKey,
-) -> anyhow::Result<Signature> {
+) -> Result<Signature, SignerError> {
     // tx params as JSON
-    let message = UnsignedMessage::from(unsigned_message_api);
+    let message = UnsignedMessage::try_from(unsigned_message_api)?;
     let message_cbor: Vec<u8> = to_vec(&message)?;
 
     let message_hashed = Params::new()
@@ -87,14 +87,4 @@ pub fn verify_signature(
         PublicKey::parse_slice(publickey_bytes, Option::Some(PublicKeyFormat::Compressed))?;
 
     Ok(verify(&message, &signature, &publickey))
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::verify_signature;
-
-    #[test]
-    fn verify_random_signature_fails() {
-        assert_eq!(verify_signature().expect("error while verifying"), false)
-    }
 }

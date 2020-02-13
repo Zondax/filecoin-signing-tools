@@ -2,11 +2,12 @@
 
 use crate::service::client::get_nonce;
 use crate::service::error::ServiceError;
+use crate::service::utils::{from_hex_string, to_hex_string};
 use fcsigner::api::UnsignedMessageUserAPI;
 use jsonrpc_core::types::params::Params;
-use jsonrpc_core::{Id, MethodCall, Output, Success, Value, Version};
+use jsonrpc_core::{Id, MethodCall, Success, Version};
 use secp256k1::SecretKey;
-use jsonrpc_core::{Id, MethodCall, Success, Value, Version};
+use serde_json::Value;
 
 pub async fn key_generate(_c: MethodCall) -> Result<Success, ServiceError> {
     Err(ServiceError::NotImplemented)
@@ -33,7 +34,7 @@ pub async fn transaction_parse(_c: MethodCall) -> Result<Success, ServiceError> 
     Err(ServiceError::NotImplemented)
 }
 
-pub async fn sign_transaction(c: MethodCall) -> anyhow::Result<Output> {
+pub async fn sign_transaction(c: MethodCall) -> Result<Success, ServiceError> {
     let y = c.params.parse::<Vec<Value>>()?;
 
     // Review : Doesn't seem right... but working.
@@ -44,16 +45,16 @@ pub async fn sign_transaction(c: MethodCall) -> anyhow::Result<Output> {
 
     let signature = fcsigner::sign_transaction(t, secret_key)?;
 
-    let so = Output::Success(Success {
+    let so = Success {
         jsonrpc: Some(Version::V2),
         result: Value::from(to_hex_string(&signature.serialize())),
         id: Id::Num(1),
-    });
+    };
 
     Ok(so)
 }
 
-pub async fn verify_signature(c: MethodCall) -> anyhow::Result<Output> {
+pub async fn verify_signature(c: MethodCall) -> Result<Success, ServiceError> {
     let y = c.params.parse::<Vec<Value>>()?;
 
     let signature_hex: String = serde_json::from_value(y[0].clone())?;
@@ -67,11 +68,11 @@ pub async fn verify_signature(c: MethodCall) -> anyhow::Result<Output> {
 
     let result = fcsigner::verify_signature(&signature, &message, &pubkey)?;
 
-    let so = Output::Success(Success {
+    let so = Success {
         jsonrpc: Some(Version::V2),
         result: Value::from(result),
         id: Id::Num(1),
-    });
+    };
 
     Ok(so)
 }
