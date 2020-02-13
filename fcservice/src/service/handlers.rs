@@ -1,11 +1,11 @@
 ////! Fcservice RPC Client
 
-use jsonrpc_core::{Call, Id, Version};
+use jsonrpc_core::{Call, Id, MethodCall, Version};
 
 use crate::service::error::ServiceError;
 use crate::service::error::ServiceError::{Signer, JSONRPC};
 use crate::service::methods;
-use warp::{Rejection, Reply};
+use warp::{Future, Rejection, Reply};
 
 pub async fn get_status() -> Result<impl Reply, Rejection> {
     let message = "Filecoin Signing Service".to_string();
@@ -21,49 +21,39 @@ pub async fn get_api_v0() -> Result<impl Reply, Rejection> {
 
 impl warp::reject::Reject for ServiceError {}
 
-pub async fn post_api_v0(request: Call) -> Result<impl Reply, Rejection> {
-    let reply = match request {
-        Call::MethodCall(c) if c.method == "key_generate" => methods::key_generate(c).await,
-        Call::MethodCall(c) if c.method == "key_derive" => methods::key_derive(c).await,
-        Call::MethodCall(c) if c.method == "transaction_create" => {
-            methods::transaction_create(c).await
-        }
-        Call::MethodCall(c) if c.method == "transaction_parse" => {
-            methods::transaction_parse(c).await
-        }
-        //        Call::MethodCall(c) if c.method == "sign_transaction" => {
-        //            Ok(c.method.to_string())
-        //        }
-        //        Call::MethodCall(c) if c.method == "sign_message" => {
-        //            Ok(c.method.to_string())
-        //        }
-        //        Call::MethodCall(c) if c.method == "verify_signature" => {
-        //            Ok(c.method.to_string())
-        //        }
-        Call::MethodCall(_) => {
-            return Err(warp::reject::not_found());
-        }
-        Call::Notification(_n) => {
-            return Err(warp::reject::not_found());
-        }
-        Call::Invalid { .. } => {
-            return Err(warp::reject::not_found());
-        }
+pub async fn post_api_v0_methods(method_call: MethodCall) -> Result<impl Reply, Rejection> {
+    let method_id = method_call.id.clone();
+
+    let reply = match &method_call.method[..] {
+        "key_generate" => methods::key_generate(method_call).await,
+        "key_derive" => methods::key_derive(method_call).await,
+        "transaction_create" => methods::transaction_create(method_call).await,
+        "transaction_parse" => methods::transaction_parse(method_call).await,
+        _ => return Err(warp::reject::not_found()),
     };
 
     match reply {
         Ok(ok_reply) => Ok(warp::reply::json(&ok_reply)),
         Err(JSONRPC(err)) => Ok(warp::reply::json(&err)),
         Err(Signer(err)) => {
-            let jsorerr = jsonrpc_core::Failure {
+            let json_err = jsonrpc_core::Failure {
                 jsonrpc: Some(Version::V2),
                 error: jsonrpc_core::Error::invalid_params(format!("{}", err)),
-                id: Id::Num(0),
+                id: method_id,
             };
-            Ok(warp::reply::json(&jsorerr))
+            Ok(warp::reply::json(&json_err))
         }
         Err(err) => Err(warp::reject::custom(err)),
     }
+}
+
+pub async fn post_api_v0(request: Call) -> Result<impl Reply, Rejection> {
+    return match request {
+        Call::MethodCall(c) => post_api_v0_methods(c).await,
+        _ => {
+            return Err(warp::reject::not_found());
+        }
+    };
 }
 
 #[cfg(test)]
