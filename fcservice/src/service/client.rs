@@ -4,7 +4,6 @@ use crate::service::cache::{cache_get_nonce, cache_put_nonce};
 use crate::service::error::RemoteNode::{EmptyNonce, InvalidNonce};
 use crate::service::error::ServiceError;
 use jsonrpc_core::response::Output::Success;
-use jsonrpc_core::Result as CoreResult;
 use jsonrpc_core::{Id, MethodCall, Params, Response, Version};
 use serde_json::value::Value;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -41,4 +40,22 @@ pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceE
 
     cache_put_nonce(addr, nonce);
     Ok(nonce)
+}
+
+pub async fn is_mainnet(url: &str, jwt: &str) -> Result<bool, ServiceError> {
+    // FIXME: Check if the node behind the url is running mainnet or not
+    // FIXME: https://github.com/Zondax/filecoin-rs/issues/32
+    Err(ServiceError::NotImplemented)
+}
+
+pub async fn send_signed_tx(url: &str, jwt: &str) -> Result<bool, ServiceError> {
+    // FIXME: Check if the node (url) is running mainnet or not
+    // FIXME: https://github.com/Zondax/filecoin-rs/issues/33
+    Err(ServiceError::NotImplemented)
+}
+
+pub async fn get_status(url: &str, jwt: &str) -> Result<bool, ServiceError> {
+    // FIXME: Get tx status
+    // FIXME: https://github.com/Zondax/filecoin-rs/issues/34
+    Err(ServiceError::NotImplemented)
 }

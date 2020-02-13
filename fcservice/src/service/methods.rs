@@ -1,6 +1,5 @@
 //////! Fcservice RPC Client
 
-use crate::service::client::get_nonce;
 use crate::service::error::ServiceError;
 use fcsigner::api::UnsignedMessageUserAPI;
 use jsonrpc_core::{Id, MethodCall, Success, Value, Version};
@@ -35,6 +34,7 @@ mod tests {
     use crate::service::client::get_nonce;
     use futures_await_test::async_test;
 
+    #[ignore]
     #[async_test]
     async fn example_something_else_and_retrieve_nonce() {
         // FIXME: use configuration parameters instead

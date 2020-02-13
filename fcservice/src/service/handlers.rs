@@ -94,7 +94,7 @@ mod tests {
 
         assert_eq!(response.status(), 200);
 
-        let (parts, body) = response.into_parts();
+        let (_parts, body) = response.into_parts();
         let s = format!("{:?}", body);
         println!("{}", s);
     }
