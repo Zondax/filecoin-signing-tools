@@ -20,6 +20,8 @@ pub fn hello() -> u8 {
 
 #[wasm_bindgen]
 pub fn key_generate() {
+    set_panic_hook();
+
     // TODO: return keypair (pub/priv + address)
     fcsigner::key_generate();
 }
@@ -60,6 +62,8 @@ pub fn transaction_parse(cbor_hexstring: String) -> Result<String, JsValue> {
 
 #[wasm_bindgen]
 pub fn sign_transaction(unsigned_message_api: String, prvkey: String) -> Result<String, JsValue> {
+    set_panic_hook();
+
     let decode_unsigned_message_api = match serde_json::from_str(unsigned_message_api.as_str()) {
         Ok(decode_unsigned_message_api) => decode_unsigned_message_api,
         Err(err) => {
@@ -86,6 +90,8 @@ pub fn sign_transaction(unsigned_message_api: String, prvkey: String) -> Result<
 
 #[wasm_bindgen]
 pub fn sign_message() {
+    set_panic_hook();
+
     // TODO: message ?
     // TODO: return signature
 }

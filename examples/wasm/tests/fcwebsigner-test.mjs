@@ -1,9 +1,14 @@
 import * as assert from 'assert';
 import secp256k1 from 'secp256k1';
-import {hello, verify_signature, transaction_parse, transaction_create, sign_transaction} from 'fcwebsigner';
+import {verify_signature, transaction_parse, transaction_create, sign_transaction} from 'fcwebsigner';
 import bip32 from 'bip32'
 import {getDigest} from './utils.mjs'
 
+//////////////////////////////////
+//
+//     Initiate variable
+//
+////////////////////////////////
 const cbor_transaction = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040";
 
 const transaction = {
@@ -20,31 +25,21 @@ const transaction = {
 const prv_root_key = "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5"
 let node = bip32.fromBase58(prv_root_key)
 
-test('Hello world', () => {
-    assert.equal(hello(), 123);
-});
-
-// FIXME: Disabled to avoid having CI issues. Move to a standard test runner
-test('Hello world fail', () => {
-    // assert.equal(hello(), 124);
-});
-
+//////////////////////////////////
+//
+//     Tests
+//
+////////////////////////////////
 test('Parse Cbor Transaction', () => {
   assert.equal(JSON.stringify(transaction), transaction_parse(cbor_transaction))
 })
 
-test('Parse Cbor Transaction fail', () => {
+test('Parse Cbor Transaction fail (extra bytes)', () => {
   let cbor_transaction_extra_bytes = cbor_transaction + "00";
-
-  try {
-    transaction_parse(cbor_transaction_extra_bytes);
-  } catch (e) {
-    console.log(e);
-  }
 
   assert.throws(
     () => transaction_parse(cbor_transaction_extra_bytes),
-    "Extra byte added should not be able to parse"
+    /Error parsing the CBOR transaction/
   );
 })
 
@@ -63,15 +58,9 @@ test('Create Transaction Fail (missing nonce)', () => {
     "params": ""
   }
 
-  try {
-    transaction_create(JSON.stringify(invalid_transaction));
-  } catch (e) {
-    console.log(e);
-  }
-
   assert.throws(
     () => transaction_create(JSON.stringify(invalid_transaction)),
-    "Should be missing nonce field"
+    /missing field `nonce`/
   );
 
 });
@@ -82,7 +71,7 @@ test('Sign Transaction', () => {
   try {
     var signature = sign_transaction(JSON.stringify(transaction), child.privateKey.toString("hex"));
   } catch(e) {
-    console.log(e)
+    assert.fail(e);
   }
 
   signature = Buffer.from(signature, 'hex')
