@@ -45,7 +45,16 @@ test("transaction_testvectors", async () => {
     }
 
     let response = await callMethod(URL, "transaction_create", tc.message, i);
-    console.log(response);
-    //expect(response).toEqual(tc.encoded_tx_hex);
+
+    if (response.error) {
+      console.log("Error", response);
+      expect(tc.valid).toEqual(false);
+    } else {
+      console.log("Testcase ------------------------------------------------------------------------------------");
+      console.log(tc.description);
+      console.log("Reply", response);
+      expect(response.result).toEqual(tc.encoded_tx_hex);
+    }
+
   }
 });
