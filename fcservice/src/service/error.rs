@@ -1,5 +1,5 @@
-use crate::service::utils::HexDecodeError;
 use fcsigner::error::SignerError;
+use fcsigner::utils::HexDecodeError;
 use thiserror::Error;
 
 /// RemoteNode Error

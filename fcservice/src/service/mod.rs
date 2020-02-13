@@ -9,7 +9,6 @@ mod client;
 mod error;
 mod handlers;
 mod methods;
-mod utils;
 
 fn jsonrpc_body() -> impl Filter<Extract = (Call,), Error = warp::Rejection> + Clone {
     // When accepting a body, we want a JSON body and to reject huge payloads)...

@@ -10,6 +10,7 @@ use secp256k1::{sign, verify, Message, PublicKey, PublicKeyFormat, SecretKey, Si
 
 pub mod api;
 pub mod error;
+pub mod utils;
 
 pub fn key_generate() {
     // TODO: return keypair (pub/priv + address)

@@ -2,8 +2,8 @@
 
 use crate::service::client::get_nonce;
 use crate::service::error::ServiceError;
-use crate::service::utils::{from_hex_string, to_hex_string};
 use fcsigner::api::UnsignedMessageUserAPI;
+use fcsigner::utils::{from_hex_string, to_hex_string};
 use jsonrpc_core::{Id, MethodCall, Success, Version};
 use secp256k1::SecretKey;
 use serde::{Deserialize, Serialize};
