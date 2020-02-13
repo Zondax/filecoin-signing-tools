@@ -1,24 +1,11 @@
 use crate::api::UnsignedMessageUserAPI;
+use crate::error::SignerError;
 use forest_encoding::{from_slice, to_vec};
 use forest_message::UnsignedMessage;
 use hex::{decode, encode};
-use thiserror::Error;
 
 pub mod api;
-
-/// Signer Error
-#[derive(Error, Debug)]
-pub enum SignerError {
-    ///  CBOR error
-    #[error("CBOR error")]
-    CBOR(#[from] serde_cbor::Error),
-    /// Secp256k1 error
-    #[error("secp256k1 error")]
-    Secp256k1(#[from] secp256k1::Error),
-    /// Hex error
-    #[error("Hex error")]
-    Hex(#[from] hex::FromHexError),
-}
+pub mod error;
 
 pub fn key_generate() {
     // TODO: return keypair (pub/priv + address)

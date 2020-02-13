@@ -1,5 +1,6 @@
 ////! Fcservice RPC Client
 
+use crate::service::error::ServiceError;
 use jsonrpc_core::Result as CoreResult;
 use jsonrpc_core::{Id, MethodCall, Params, Response, Version};
 use lazy_static::lazy_static;
@@ -31,7 +32,7 @@ fn cache_len() -> usize {
     cache.len()
 }
 
-pub async fn get_nonce(addr: &str) -> Result<u64, anyhow::Error> {
+pub async fn get_nonce(addr: &str) -> Result<u64, ServiceError> {
     if let Some(nonce) = cache_get_nonce(addr) {
         return Ok(nonce);
     }

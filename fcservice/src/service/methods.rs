@@ -1,19 +1,19 @@
 //////! Fcservice RPC Client
 
 use crate::service::client::get_nonce;
+use crate::service::error::ServiceError;
 use fcsigner::api::UnsignedMessageUserAPI;
 use jsonrpc_core::{Id, MethodCall, Output, Success, Value, Version};
 
-// FIXME: improve error types, move to thiserror?
-pub async fn key_generate(_c: MethodCall) -> anyhow::Result<Output> {
-    Err(anyhow::anyhow!("not implemented"))
+pub async fn key_generate(_c: MethodCall) -> Result<Output, ServiceError> {
+    Err(ServiceError::NotImplemented)
 }
 
-pub async fn key_derive(_c: MethodCall) -> anyhow::Result<Output> {
-    Err(anyhow::anyhow!("not implemented"))
+pub async fn key_derive(_c: MethodCall) -> Result<Output, ServiceError> {
+    Err(ServiceError::NotImplemented)
 }
 
-pub async fn transaction_create(c: MethodCall) -> anyhow::Result<Output> {
+pub async fn transaction_create(c: MethodCall) -> Result<Output, ServiceError> {
     let y = c.params.parse::<UnsignedMessageUserAPI>()?;
     let cbor_hexstring = fcsigner::transaction_create(y)?;
 
@@ -26,12 +26,13 @@ pub async fn transaction_create(c: MethodCall) -> anyhow::Result<Output> {
     Ok(so)
 }
 
-pub async fn transaction_parse(_c: MethodCall) -> anyhow::Result<Output> {
-    Err(anyhow::anyhow!("not implemented"))
+pub async fn transaction_parse(_c: MethodCall) -> Result<Output, ServiceError> {
+    Err(ServiceError::NotImplemented)
 }
 
-// FIXME: improve error types, move to thiserror?
-pub async fn example_something_else_and_retrieve_nonce(_c: MethodCall) -> anyhow::Result<Output> {
+pub async fn example_something_else_and_retrieve_nonce(
+    _c: MethodCall,
+) -> Result<Output, ServiceError> {
     // FIXME: add lru cache
 
     let addr = String::from("some_address");

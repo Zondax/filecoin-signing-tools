@@ -1,7 +1,7 @@
+mod error;
 mod utils;
 
 use crate::utils::set_panic_hook;
-use fcsigner;
 use wasm_bindgen::prelude::*;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
