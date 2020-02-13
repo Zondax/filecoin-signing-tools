@@ -2,6 +2,7 @@
 
 use jsonrpc_core::Call;
 
+use crate::service::error::ServiceError;
 use crate::service::methods;
 use warp::Rejection;
 
@@ -17,10 +18,7 @@ pub async fn get_api_v0() -> Result<impl warp::Reply, warp::Rejection> {
     Ok(warp::reply::html("Document API here?".to_string()))
 }
 
-#[derive(Debug)]
-struct JsonRPCError(anyhow::Error);
-
-impl warp::reject::Reject for JsonRPCError {}
+impl warp::reject::Reject for ServiceError {}
 
 pub async fn post_api_v0(request: Call) -> Result<impl warp::Reply, warp::Rejection> {
     let reply = match request {
@@ -55,7 +53,7 @@ pub async fn post_api_v0(request: Call) -> Result<impl warp::Reply, warp::Reject
     match reply {
         Ok(ok_reply) => Ok(warp::reply::json(&ok_reply)),
         Err(err) => {
-            return Err(warp::reject::custom(JsonRPCError(err)));
+            return Err(warp::reject::custom(err));
         }
     }
 }
