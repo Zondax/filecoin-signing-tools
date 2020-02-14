@@ -1,10 +1,29 @@
 /* eslint-disable no-console */
-import {test} from "jest";
-import {callMethod} from "../src";
+import { test, expect } from "jest";
+import { callMethod } from "../src";
+import * as bip32 from "bip32";
+import {getDigest} from './utils.js'
+import secp256k1 from 'secp256k1';
 import fs from 'fs';
 
 // FIXME: fcservice is expected to be running
 const URL = "http://127.0.0.1:3030/v0";
+
+const cbor_transaction = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040";
+
+const transaction = {
+  "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+  "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
+  "nonce": 1,
+  "value": "100000",
+  "gas_price": "2500",
+  "gas_limit": "25000",
+  "method": 0,
+  "params": ""
+};
+
+const prv_root_key = "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5";
+let node = bip32.fromBase58(prv_root_key);
 
 test("key_generate", async () => {
   // FIXME: Disabled until this is implemented
@@ -17,20 +36,11 @@ test("transaction_create", async () => {
   const response = await callMethod(
     URL,
     "transaction_create",
-    {
-      to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-      from: "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
-      nonce: 1,
-      value: "100000",
-      gas_price: "2500",
-      gas_limit: "25000",
-      method: 0,
-      params: "",
-    },
+    transaction,
     1,
   );
-  // TODO: Check results
-  console.log(response);
+
+  expect(response.result).toBe(cbor_transaction);
 });
 
 test("transaction_testvectors", async () => {
@@ -57,4 +67,45 @@ test("transaction_testvectors", async () => {
     }
 
   }
+});
+
+test("sign_transaction", async () => {
+  let child = node.derivePath("m/44'/461'/0/0/0");
+
+  const response = await callMethod(
+    URL,
+    "sign_transaction",
+    [transaction, child.privateKey.toString("hex")],
+    1,
+  );
+
+  let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'));
+  // Remove V from result to verify signature
+  let result = secp256k1.ecdsaVerify(Buffer.from(response.result, "hex").slice(0,-1), message_digest, child.publicKey);
+
+  expect(result).toBeTruthy();
+});
+
+test("verify_signature", async () => {
+  let child = node.derivePath("m/44'/461'/0/0/0");
+
+  let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'));
+
+  let signature = secp256k1.ecdsaSign(message_digest, child.privateKey);
+
+  // v = 27 + (y % 2) (https://bitcoin.stackexchange.com/questions/38351/ecdsa-v-r-s-what-is-v)
+  let v = 27 + (signature.recid % 2);
+
+  // Concat v value at the end of the signature
+  let signatureRSV = Buffer.from(signature.signature).toString('hex') + Buffer.from([v]).toString('hex');
+
+
+  const response = await callMethod(
+    URL,
+    "verify_signature",
+    [signatureRSV, message_digest.toString('hex')],
+    1,
+  );
+
+  expect(response.result).toBeTruthy();
 });

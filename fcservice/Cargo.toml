@@ -16,6 +16,8 @@ warp = "0.2.1"
 jsonrpc-core = "14.0.5"
 lru = "0.4.3"
 lazy_static = "1.4.0"
+libsecp256k1 = "0.3.4"
+blake2b_simd = "0.5.10"
 
 [dependencies.abscissa_core]
 version = "0.5.1"

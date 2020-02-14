@@ -21,6 +21,7 @@ forest_encoding = { git = "https://github.com/zondax/forest", branch="master" }
 num_bigint_chainsafe =  { package="num-bigint", git = "https://github.com/austinabell/num-bigint", rev = "f7084a9ed5a2b08d9bfb67790cb4ce9212193f31", features = ["serde_derive"] }
 
 libsecp256k1 = "0.3.4"
+blake2b_simd = "0.5.10"
 
 # FIXME: confirm compatibility with WASM target
 [dependencies.rand]

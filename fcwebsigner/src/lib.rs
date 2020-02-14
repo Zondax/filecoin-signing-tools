@@ -4,6 +4,9 @@ mod utils;
 use crate::utils::set_panic_hook;
 use wasm_bindgen::prelude::*;
 
+use fcsigner::api::UnsignedMessageUserAPI;
+use fcsigner::utils::{from_hex_string, to_hex_string};
+
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
 #[cfg(feature = "wee_alloc")]
@@ -11,54 +14,82 @@ use wasm_bindgen::prelude::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-pub fn hello() -> u8 {
-    set_panic_hook();
-    123
-}
-
-#[wasm_bindgen]
 pub fn key_generate() {
+    set_panic_hook();
+
     // TODO: return keypair (pub/priv + address)
     fcsigner::key_generate();
 }
 
 #[wasm_bindgen]
-pub fn transaction_create(unsigned_message_api: String) -> Result<String, JsValue> {
-    match serde_json::from_str(unsigned_message_api.as_str()) {
-        Ok(decode_unsigned_message_api) => {
-            match fcsigner::transaction_create(decode_unsigned_message_api) {
-                Ok(cbor_hexstring) => Ok(cbor_hexstring),
-                Err(_) => Err(JsValue::from_str(
-                    "Error converting the transcation to CBOR",
-                )),
-            }
-        }
-        Err(err) => Err(JsValue::from_str(
-            format!("{}", std::io::Error::from(err)).as_str(),
-        )),
-    }
+pub fn transaction_create(unsigned_message_string: String) -> Result<String, JsValue> {
+    set_panic_hook();
+
+    let unsigned_message: UnsignedMessageUserAPI =
+        serde_json::from_str(&unsigned_message_string)
+            .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
+
+    let cbor_hexstring = fcsigner::transaction_create(unsigned_message)
+        .map_err(|e| JsValue::from(format!("Error converting to CBOR: {}", e)))?;
+
+    Ok(cbor_hexstring)
 }
 
 #[wasm_bindgen]
 pub fn transaction_parse(cbor_hexstring: String) -> Result<String, JsValue> {
-    match fcsigner::transaction_parse(cbor_hexstring) {
-        Ok(message_parsed) => match serde_json::to_string(&message_parsed) {
-            Ok(transaction) => Ok(transaction),
-            Err(err) => Err(JsValue::from_str(
-                format!("{}", std::io::Error::from(err)).as_str(),
-            )),
-        },
-        Err(_) => Err(JsValue::from_str("Error parsing the CBOR transaction")),
-    }
+    set_panic_hook();
+
+    let message_parsed =
+        fcsigner::transaction_parse(cbor_hexstring).map_err(|e| JsValue::from(e.to_string()))?;
+
+    let tx = serde_json::to_string(&message_parsed).map_err(|e| JsValue::from(e.to_string()))?;
+
+    Ok(tx)
 }
 
 #[wasm_bindgen]
-pub fn verify_signature() -> bool {
+pub fn sign_transaction(
+    unsigned_message_string: String,
+    private_key: String,
+) -> Result<String, JsValue> {
     set_panic_hook();
-    let resp = fcsigner::verify_signature();
 
-    match resp {
-        Ok(_bool) => _bool,
-        Err(_) => false,
-    }
+    let unsigned_message: UnsignedMessageUserAPI =
+        serde_json::from_str(&unsigned_message_string)
+            .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
+    let privatekey_bytes =
+        from_hex_string(&private_key).map_err(|e| JsValue::from(e.to_string()))?;
+
+    let resp = fcsigner::sign_transaction(unsigned_message, &privatekey_bytes);
+
+    return match resp {
+        // Return R, S & V in one hex string
+        Ok((signed_message, v)) => {
+            Ok([to_hex_string(&signed_message), format!("{:02x}", &v)].concat())
+        }
+        Err(_) => Err(JsValue::from_str("Error signing transaction")),
+    };
+}
+
+#[wasm_bindgen]
+pub fn sign_message() {
+    set_panic_hook();
+
+    // TODO: message ?
+    // TODO: return signature
+}
+
+#[wasm_bindgen]
+pub fn verify_signature(signature_hex: String, message_hex: String) -> Result<bool, JsValue> {
+    set_panic_hook();
+
+    let signature = from_hex_string(&signature_hex).map_err(|e| JsValue::from(e.to_string()))?;
+    let message = from_hex_string(&message_hex).map_err(|e| JsValue::from(e.to_string()))?;
+
+    let resp = fcsigner::verify_signature(&signature, &message);
+
+    return match resp {
+        Ok(_bool) => Ok(_bool),
+        Err(_) => Err(JsValue::from_str("Error verifying signature")),
+    };
 }

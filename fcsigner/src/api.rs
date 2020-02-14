@@ -103,8 +103,6 @@ mod tests {
 
         println!("{:?}", message_cbor_hex);
         assert_eq!(EXAMPLE_CBOR_DATA, message_cbor_hex)
-
-        // FIXME: Add checks
     }
 
     #[test]
