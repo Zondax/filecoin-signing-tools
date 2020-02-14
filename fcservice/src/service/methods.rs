@@ -1,6 +1,5 @@
 //////! Fcservice RPC Client
 
-use crate::service::client::get_nonce;
 use crate::service::error::ServiceError;
 use fcsigner::api::UnsignedMessageUserAPI;
 use fcsigner::utils::{from_hex_string, to_hex_string};
@@ -79,19 +78,20 @@ pub async fn verify_signature(c: MethodCall) -> Result<Success, ServiceError> {
     Ok(so)
 }
 
-pub async fn example_something_else_and_retrieve_nonce(
-    _c: MethodCall,
-) -> Result<Success, ServiceError> {
-    // FIXME: add lru cache
+#[cfg(test)]
+mod tests {
+    use crate::service::client::get_nonce;
+    use futures_await_test::async_test;
 
-    let addr = String::from("some_address");
-    let nonce = get_nonce(&addr).await?;
+    #[ignore]
+    #[async_test]
+    async fn example_something_else_and_retrieve_nonce() {
+        // FIXME: use configuration parameters instead
+        let url = "https://lotus-dev.temporal.cloud/rpc/v0";
+        let jwt = "some_token";
+        let addr = "t1jdlfl73voaiblrvn2yfivvn5ifucwwv5f26nfza";
 
-    let so = Success {
-        jsonrpc: Some(Version::V2),
-        result: Value::from(nonce),
-        id: Id::Num(1),
-    };
-
-    Ok(so)
+        let nonce = get_nonce(&url, &jwt, &addr).await;
+        assert!(nonce.is_ok());
+    }
 }
