@@ -3,8 +3,9 @@
 use jsonrpc_core::{Call, MethodCall, Version};
 
 use crate::service::error::ServiceError;
-use crate::service::error::ServiceError::{Signer, JSONRPC};
+use crate::service::error::ServiceError::{RemoteNode, Secp256k1, Signer, JSONRPC};
 use crate::service::methods;
+use jsonrpc_core::error::ErrorCode::ServerError;
 use warp::{Rejection, Reply};
 
 pub async fn get_status() -> Result<impl Reply, Rejection> {
@@ -36,16 +37,26 @@ pub async fn post_api_v0_methods(method_call: MethodCall) -> Result<impl Reply, 
 
     match reply {
         Ok(ok_reply) => Ok(warp::reply::json(&ok_reply)),
-        Err(JSONRPC(err)) => Ok(warp::reply::json(&err)),
-        Err(Signer(err)) => {
+        Err(JSONRPC(err)) => {
             let json_err = jsonrpc_core::Failure {
                 jsonrpc: Some(Version::V2),
-                error: jsonrpc_core::Error::invalid_params(format!("{}", err)),
+                error: err,
                 id: method_id,
             };
             Ok(warp::reply::json(&json_err))
         }
-        Err(err) => Err(warp::reject::custom(err)),
+        Err(err) => {
+            let json_err = jsonrpc_core::Failure {
+                jsonrpc: Some(Version::V2),
+                error: jsonrpc_core::Error {
+                    code: ServerError(0),
+                    message: err.to_string(),
+                    data: None,
+                },
+                id: method_id,
+            };
+            Ok(warp::reply::json(&json_err))
+        }
     }
 }
 

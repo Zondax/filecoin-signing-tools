@@ -42,19 +42,19 @@ pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceE
     Ok(nonce)
 }
 
-pub async fn is_mainnet(url: &str, jwt: &str) -> Result<bool, ServiceError> {
+pub async fn is_mainnet(_url: &str, _jwt: &str) -> Result<bool, ServiceError> {
     // FIXME: Check if the node behind the url is running mainnet or not
     // FIXME: https://github.com/Zondax/filecoin-rs/issues/32
     Err(ServiceError::NotImplemented)
 }
 
-pub async fn send_signed_tx(url: &str, jwt: &str) -> Result<bool, ServiceError> {
+pub async fn send_signed_tx(_url: &str, _jwt: &str) -> Result<bool, ServiceError> {
     // FIXME: Check if the node (url) is running mainnet or not
     // FIXME: https://github.com/Zondax/filecoin-rs/issues/33
     Err(ServiceError::NotImplemented)
 }
 
-pub async fn get_status(url: &str, jwt: &str) -> Result<bool, ServiceError> {
+pub async fn get_status(_url: &str, _jwt: &str) -> Result<bool, ServiceError> {
     // FIXME: Get tx status
     // FIXME: https://github.com/Zondax/filecoin-rs/issues/34
     Err(ServiceError::NotImplemented)

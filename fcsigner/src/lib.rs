@@ -2,13 +2,13 @@ use crate::api::UnsignedMessageUserAPI;
 use crate::error::SignerError;
 use forest_encoding::{from_slice, to_vec};
 use forest_message::UnsignedMessage;
-use hex::{decode, encode, FromHex};
+use hex::{decode, encode};
 use std::convert::TryFrom;
 
 use blake2b_simd::Params;
-use secp256k1::{
-    recover, sign, verify, Message, PublicKey, PublicKeyFormat, RecoveryId, SecretKey, Signature,
-};
+use secp256k1::{recover, sign, verify, Message, RecoveryId, SecretKey, Signature};
+
+static CID_PREFIX: &'static [u8] = &[0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20];
 
 pub mod api;
 pub mod error;
@@ -61,11 +61,10 @@ pub fn sign_transaction(
         .update(&message_cbor)
         .finalize();
 
-    let cid = Vec::from_hex("0171a0e40220")?;
     let cid_hashed = Params::new()
         .hash_length(32)
         .to_state()
-        .update(&cid)
+        .update(&CID_PREFIX)
         .update(message_hashed.as_bytes())
         .finalize();
 
@@ -89,4 +88,13 @@ pub fn verify_signature(signature_bytes: &[u8], message_bytes: &[u8]) -> Result<
     let publickey = recover(&message, &signature, &recovery_id)?;
 
     Ok(verify(&message, &signature, &publickey))
+}
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    fn empty() {
+        // FIXME:
+    }
 }
