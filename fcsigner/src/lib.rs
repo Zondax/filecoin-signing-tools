@@ -6,7 +6,9 @@ use hex::{decode, encode, FromHex};
 use std::convert::TryFrom;
 
 use blake2b_simd::Params;
-use secp256k1::{sign, verify, Message, PublicKey, PublicKeyFormat, SecretKey, Signature};
+use secp256k1::{
+    recover, sign, verify, Message, PublicKey, PublicKeyFormat, RecoveryId, SecretKey, Signature,
+};
 
 pub mod api;
 pub mod error;
@@ -45,11 +47,13 @@ pub fn transaction_parse(cbor_hexstring: String) -> Result<UnsignedMessageUserAP
 
 pub fn sign_transaction(
     unsigned_message_api: UnsignedMessageUserAPI,
-    prvkey: SecretKey,
-) -> Result<Signature, SignerError> {
+    privatekey_bytes: &[u8],
+) -> Result<([u8; 64], u8), SignerError> {
     // tx params as JSON
     let message = UnsignedMessage::try_from(unsigned_message_api)?;
     let message_cbor: Vec<u8> = to_vec(&message)?;
+
+    let secret_key = SecretKey::parse_slice(&privatekey_bytes)?;
 
     let message_hashed = Params::new()
         .hash_length(32)
@@ -67,9 +71,10 @@ pub fn sign_transaction(
 
     let message_digest = Message::parse_slice(cid_hashed.as_bytes())?;
 
-    let (signed_transaction, recovery_id) = sign(&message_digest, &prvkey);
+    let (signed_transaction, recovery_id) = sign(&message_digest, &secret_key);
+    let v = 27 + (recovery_id.serialize() % 2);
 
-    Ok(signed_transaction)
+    Ok((signed_transaction.serialize(), v))
 }
 
 pub fn sign_message() {
@@ -77,15 +82,12 @@ pub fn sign_message() {
     // TODO: return signature
 }
 
-pub fn verify_signature(
-    signature_bytes: &[u8],
-    message_bytes: &[u8],
-    publickey_bytes: &[u8],
-) -> Result<bool, SignerError> {
-    let signature = Signature::parse_slice(signature_bytes)?;
+pub fn verify_signature(signature_bytes: &[u8], message_bytes: &[u8]) -> Result<bool, SignerError> {
+    let signature = Signature::parse_slice(&signature_bytes[..64])?;
+    let recovery_id = RecoveryId::parse_rpc(signature_bytes[64])?;
     let message = Message::parse_slice(message_bytes)?;
-    let publickey =
-        PublicKey::parse_slice(publickey_bytes, Option::Some(PublicKeyFormat::Compressed))?;
+
+    let publickey = recover(&message, &signature, &recovery_id)?;
 
     Ok(verify(&message, &signature, &publickey))
 }

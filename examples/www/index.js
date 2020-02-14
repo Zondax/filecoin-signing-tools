@@ -33,6 +33,7 @@ let child = node.derivePath("m/44'/461'/0/0/0");
 
 let signature = wasm.sign_transaction(JSON.stringify(transaction), child.privateKey.toString('hex'));
 
+// Signature RSV !
 document.getElementById("signature").innerHTML = signature;
 
 /////////////////////////////////
@@ -50,7 +51,7 @@ let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'));
 let elt = document.getElementById("verify");
 
 // Verify message
-if (wasm.verify_signature(signature, message_digest.toString('hex'), child.publicKey.toString('hex'))) {
+if (wasm.verify_signature(signature, message_digest.toString('hex'))) {
   elt.innerHTML = '✔ Signature valid';
 } else {
   elt.innerHTML = '❌ Signature invalid';

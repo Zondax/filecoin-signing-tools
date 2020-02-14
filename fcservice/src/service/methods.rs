@@ -5,7 +5,6 @@ use crate::service::error::ServiceError;
 use fcsigner::api::UnsignedMessageUserAPI;
 use fcsigner::utils::{from_hex_string, to_hex_string};
 use jsonrpc_core::{Id, MethodCall, Success, Version};
-use secp256k1::SecretKey;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -44,13 +43,13 @@ pub async fn sign_transaction(c: MethodCall) -> Result<Success, ServiceError> {
     let params = c.params.parse::<SignTransactionParamsAPI>()?;
 
     let prvkey_bytes = from_hex_string(&params.prvkey_hex)?;
-    let secret_key = SecretKey::parse_slice(&prvkey_bytes)?;
+    //let secret_key = SecretKey::parse_slice(&prvkey_bytes)?;
 
-    let signature = fcsigner::sign_transaction(params.transaction, secret_key)?;
+    let (signed_message, v) = fcsigner::sign_transaction(params.transaction, &prvkey_bytes)?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),
-        result: Value::from(to_hex_string(&signature.serialize())),
+        result: Value::from([to_hex_string(&signed_message), format!("{:02x}", &v)].concat()),
         id: Id::Num(1),
     };
 
@@ -61,7 +60,6 @@ pub async fn sign_transaction(c: MethodCall) -> Result<Success, ServiceError> {
 pub struct VerifySignatureParamsAPI {
     pub signature_hex: String,
     pub message_hex: String,
-    pub pubkey_hex: String,
 }
 
 pub async fn verify_signature(c: MethodCall) -> Result<Success, ServiceError> {
@@ -69,9 +67,8 @@ pub async fn verify_signature(c: MethodCall) -> Result<Success, ServiceError> {
 
     let signature = from_hex_string(&params.signature_hex)?;
     let message = from_hex_string(&params.message_hex)?;
-    let pubkey = from_hex_string(&params.pubkey_hex)?;
 
-    let result = fcsigner::verify_signature(&signature, &message, &pubkey)?;
+    let result = fcsigner::verify_signature(&signature, &message)?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),

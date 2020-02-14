@@ -80,7 +80,8 @@ test("sign_transaction", async () => {
   );
 
   let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'));
-  let result = secp256k1.ecdsaVerify(Buffer.from(response.result, "hex"), message_digest, child.publicKey);
+  // Remove V from result to verify signature
+  let result = secp256k1.ecdsaVerify(Buffer.from(response.result, "hex").slice(0,-1), message_digest, child.publicKey);
 
   expect(result).toBeTruthy();
 });
@@ -91,12 +92,18 @@ test("verify_signature", async () => {
   let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'));
 
   let signature = secp256k1.ecdsaSign(message_digest, child.privateKey);
-  signature = Buffer.from(signature.signature);
+
+  // v = 27 + (y % 2) (https://bitcoin.stackexchange.com/questions/38351/ecdsa-v-r-s-what-is-v)
+  let v = 27 + (signature.recid % 2);
+
+  // Concat v value at the end of the signature
+  let signatureRSV = Buffer.from(signature.signature).toString('hex') + Buffer.from([v]).toString('hex');
+
 
   const response = await callMethod(
     URL,
     "verify_signature",
-    [signature.toString('hex'), message_digest.toString('hex'), child.publicKey.toString("hex")],
+    [signatureRSV, message_digest.toString('hex')],
     1,
   );
 

@@ -6,7 +6,6 @@ use wasm_bindgen::prelude::*;
 
 use fcsigner::api::UnsignedMessageUserAPI;
 use fcsigner::utils::{from_hex_string, to_hex_string};
-use secp256k1::SecretKey;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -50,35 +49,26 @@ pub fn transaction_parse(cbor_hexstring: String) -> Result<String, JsValue> {
 
 #[wasm_bindgen]
 pub fn sign_transaction(
-    unsigned_message_api: String,
+    unsigned_message_string: String,
     private_key: String,
 ) -> Result<String, JsValue> {
     set_panic_hook();
 
-    // FIXME
+    let unsigned_message: UnsignedMessageUserAPI =
+        serde_json::from_str(&unsigned_message_string)
+            .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
+    let privatekey_bytes =
+        from_hex_string(&private_key).map_err(|e| JsValue::from(e.to_string()))?;
 
-    let decode_unsigned_message_api = match serde_json::from_str(unsigned_message_api.as_str()) {
-        Ok(decode_unsigned_message_api) => decode_unsigned_message_api,
-        Err(err) => {
-            return Err(JsValue::from_str(
-                format!("{}", std::io::Error::from(err)).as_str(),
-            ));
+    let resp = fcsigner::sign_transaction(unsigned_message, &privatekey_bytes);
+
+    return match resp {
+        // Return R, S & V in one hex string
+        Ok((signed_message, v)) => {
+            Ok([to_hex_string(&signed_message), format!("{:02x}", &v)].concat())
         }
+        Err(_) => Err(JsValue::from_str("Error signing transaction")),
     };
-    let secret_key = match from_hex_string(&private_key) {
-        Ok(private_key) => match SecretKey::parse_slice(&private_key) {
-            Ok(secret_key) => secret_key,
-            Err(_) => return Err(JsValue::from_str("Error while parsing private key")),
-        },
-        Err(_) => return Err(JsValue::from_str("Error while converting key from hex")),
-    };
-
-    let signed_message = match fcsigner::sign_transaction(decode_unsigned_message_api, secret_key) {
-        Ok(signed_message) => signed_message,
-        Err(_) => return Err(JsValue::from_str("Error signing message")),
-    };
-
-    Ok(to_hex_string(&signed_message.serialize()))
 }
 
 #[wasm_bindgen]
@@ -90,18 +80,13 @@ pub fn sign_message() {
 }
 
 #[wasm_bindgen]
-pub fn verify_signature(
-    signature_hex: String,
-    message_hex: String,
-    pubkey_hex: String,
-) -> Result<bool, JsValue> {
+pub fn verify_signature(signature_hex: String, message_hex: String) -> Result<bool, JsValue> {
     set_panic_hook();
 
     let signature = from_hex_string(&signature_hex).map_err(|e| JsValue::from(e.to_string()))?;
-    let pubkey = from_hex_string(&pubkey_hex).map_err(|e| JsValue::from(e.to_string()))?;
     let message = from_hex_string(&message_hex).map_err(|e| JsValue::from(e.to_string()))?;
 
-    let resp = fcsigner::verify_signature(&signature, &message, &pubkey);
+    let resp = fcsigner::verify_signature(&signature, &message);
 
     return match resp {
         Ok(_bool) => Ok(_bool),
