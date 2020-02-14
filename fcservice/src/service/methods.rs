@@ -42,7 +42,6 @@ pub async fn sign_transaction(c: MethodCall) -> Result<Success, ServiceError> {
     let params = c.params.parse::<SignTransactionParamsAPI>()?;
 
     let prvkey_bytes = from_hex_string(&params.prvkey_hex)?;
-    //let secret_key = SecretKey::parse_slice(&prvkey_bytes)?;
 
     let (signed_message, v) = fcsigner::sign_transaction(params.transaction, &prvkey_bytes)?;
 

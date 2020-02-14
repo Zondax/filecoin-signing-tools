@@ -71,6 +71,7 @@ test("transaction_testvectors", async () => {
 
 test("sign_transaction", async () => {
   let child = node.derivePath("m/44'/461'/0/0/0");
+  let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'));
 
   const response = await callMethod(
     URL,
@@ -79,12 +80,41 @@ test("sign_transaction", async () => {
     1,
   );
 
-  let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'));
+  let signatureBuffer = Buffer.from(response.result, "hex").slice(0,-1);
+
+  // compare signature
+  let signatureCompare = secp256k1.ecdsaSign(message_digest, child.privateKey);
+
+  expect(Buffer.from(signatureCompare.signature)).toEqual(signatureBuffer);
+
   // Remove V from result to verify signature
-  let result = secp256k1.ecdsaVerify(Buffer.from(response.result, "hex").slice(0,-1), message_digest, child.publicKey);
+  let result = secp256k1.ecdsaVerify(signatureBuffer, message_digest, child.publicKey);
 
   expect(result).toBeTruthy();
 });
+
+test("sign_invalid_transaction", async () => {
+  let child = node.derivePath("m/44'/461'/0/0/0");
+  let invalid_transaction = {
+    "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+    "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
+    "value": "100000",
+    "gas_price": "2500",
+    "gas_limit": "25000",
+    "method": 0,
+    "params": ""
+  };
+
+  const response = await callMethod(
+    URL,
+    "sign_transaction",
+    [invalid_transaction, child.privateKey.toString("hex")],
+    1,
+  );
+
+  console.log("INVALID SIGNATURE RESPONSE :",response);
+
+})
 
 test("verify_signature", async () => {
   let child = node.derivePath("m/44'/461'/0/0/0");
