@@ -72,9 +72,8 @@ pub fn sign_transaction(
     let message_digest = Message::parse_slice(cid_hashed.as_bytes())?;
 
     let (signed_transaction, recovery_id) = sign(&message_digest, &secret_key);
-    let v = 27 + (recovery_id.serialize() % 2);
 
-    Ok((signed_transaction.serialize(), v))
+    Ok((signed_transaction.serialize(), recovery_id.serialize()))
 }
 
 pub fn sign_message() {
@@ -84,7 +83,7 @@ pub fn sign_message() {
 
 pub fn verify_signature(signature_bytes: &[u8], message_bytes: &[u8]) -> Result<bool, SignerError> {
     let signature = Signature::parse_slice(&signature_bytes[..64])?;
-    let recovery_id = RecoveryId::parse_rpc(signature_bytes[64])?;
+    let recovery_id = RecoveryId::parse(signature_bytes[64])?;
     let message = Message::parse_slice(message_bytes)?;
 
     let publickey = recover(&message, &signature, &recovery_id)?;

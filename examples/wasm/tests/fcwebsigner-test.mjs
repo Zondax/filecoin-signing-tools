@@ -88,8 +88,8 @@ test('Sign Transaction', () => {
     secp256k1.ecdsaVerify(signature.slice(0,-1), message_digest, child.publicKey)
   )
 
-  // Verify V value which is tha last byte of the signature
-  assert.equal(0x1c, signature[64]);
+  // Verify recovery id which is the last byte of the signature
+  assert.equal(0x01, signature[64]);
 
 });
 
@@ -100,11 +100,8 @@ test('Verify signature', () => {
   // Get hex signature in the format (R,S)
   let signature = secp256k1.ecdsaSign(message_digest, child.privateKey);
 
-  // v = 27 + (y % 2) (https://bitcoin.stackexchange.com/questions/38351/ecdsa-v-r-s-what-is-v)
-  let v = 27 + (signature.recid % 2);
-
   // Concat v value at the end of the signature
-  let signatureRSV = Buffer.from(signature.signature).toString('hex') + Buffer.from([v]).toString('hex');
+  let signatureRSV = Buffer.from(signature.signature).toString('hex') + Buffer.from([signature.recid]).toString('hex');
 
   console.log("RSV signature :", signatureRSV);
   console.log("Digest :", message_digest.toString('hex'))

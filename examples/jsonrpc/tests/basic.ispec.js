@@ -93,11 +93,8 @@ test("verify_signature", async () => {
 
   let signature = secp256k1.ecdsaSign(message_digest, child.privateKey);
 
-  // v = 27 + (y % 2) (https://bitcoin.stackexchange.com/questions/38351/ecdsa-v-r-s-what-is-v)
-  let v = 27 + (signature.recid % 2);
-
   // Concat v value at the end of the signature
-  let signatureRSV = Buffer.from(signature.signature).toString('hex') + Buffer.from([v]).toString('hex');
+  let signatureRSV = Buffer.from(signature.signature).toString('hex') + Buffer.from([signature.recid]).toString('hex');
 
 
   const response = await callMethod(
