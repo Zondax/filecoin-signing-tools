@@ -33,7 +33,6 @@ pub struct TransctionParseParamsAPI {
     pub cbor_hex: String,
 }
 
-
 pub async fn transaction_parse(c: MethodCall) -> Result<Success, ServiceError> {
     let params = c.params.parse::<TransctionParseParamsAPI>()?;
     let message_parsed = fcsigner::transaction_parse(params.cbor_hex)?;
