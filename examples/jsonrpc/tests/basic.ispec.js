@@ -112,8 +112,10 @@ test("sign_invalid_transaction", async () => {
     1,
   );
 
-  console.log("INVALID SIGNATURE RESPONSE :",response);
-
+  // Verify we have an error message
+  expect(response).toHaveProperty('error');
+  // Verify we have the corrcet error message 'missing nonce'
+  expect(response.error.message).toMatch(/missing field `nonce`/);
 })
 
 test("verify_signature", async () => {
@@ -135,4 +137,35 @@ test("verify_signature", async () => {
   );
 
   expect(response.result).toBeTruthy();
+});
+
+test("verify_invalid_signature", async () => {
+  let child = node.derivePath("m/44'/461'/0/0/0");
+
+  let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'));
+
+  let signature = secp256k1.ecdsaSign(message_digest, child.privateKey);
+
+  // replace 1 byte
+  let invalid_signature = Buffer.from(signature.signature);
+  invalid_signature[5] = 1;
+
+  console.log(Buffer.from(signature.signature).toString('hex'));
+  console.log(invalid_signature.toString('hex'));
+
+  // Concat v value at the end of the signature
+  let signatureRSV = invalid_signature.toString('hex') + Buffer.from([signature.recid]).toString('hex');
+
+
+  const response = await callMethod(
+    URL,
+    "verify_signature",
+    [signatureRSV, message_digest.toString('hex')],
+    1,
+  );
+
+  let result = secp256k1.ecdsaVerify(invalid_signature, message_digest, child.publicKey);
+  console.log(result);
+  console.log(response);
+  expect(response.result).toBeFalsy();
 });
