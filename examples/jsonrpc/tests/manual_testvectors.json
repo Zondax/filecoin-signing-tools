@@ -288,6 +288,22 @@
         "encoded_tx_hex": "885401000000000000000000000000000000000000005401000000000000000000000000000000000000000144000186a0430009c4430061a80040"
     },
     {
+      "description": "Address protocol 0 Invalid payload length of 21 bytes",
+      "encoded_tx": "iFYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVgAAAAAAAAAAAAAAAAAAAAAAAAAAAAABRAABhqBDAAnEQwBhqABA",
+      "valid": false,
+      "testnet": false,
+      "message": {
+          "to": "f00000000000000000000000000000000000000000000",
+          "from": "f00",
+          "nonce": 1,
+          "value": "100000",
+          "gas_price": "2500",
+          "gas_limit": "25000",
+          "method": 0
+      },
+      "encoded_tx_hex": "88560000000000000000000000000000000000000000000056000000000000000000000000000000000000000000000144000186a0430009c4430061a80040"
+    },
+    {
         "description": "Address protocol 2 Invalid payload length of 21 bytes",
         "encoded_tx": "iFYCAAAAAAAAAAAAAAAAAAAAAAAAAAAAVgIAAAAAAAAAAAAAAAAAAAAAAAAAAAABRAABhqBDAAnEQwBhqABA",
         "valid": false,
