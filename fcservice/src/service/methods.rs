@@ -28,8 +28,24 @@ pub async fn transaction_create(c: MethodCall) -> Result<Success, ServiceError> 
     Ok(so)
 }
 
-pub async fn transaction_parse(_c: MethodCall) -> Result<Success, ServiceError> {
-    Err(ServiceError::NotImplemented)
+#[derive(Debug, Deserialize, Serialize)]
+pub struct TransctionParseParamsAPI {
+    pub cbor_hex: String,
+}
+
+
+pub async fn transaction_parse(c: MethodCall) -> Result<Success, ServiceError> {
+    let params = c.params.parse::<TransctionParseParamsAPI>()?;
+    let message_parsed = fcsigner::transaction_parse(params.cbor_hex)?;
+    let tx = serde_json::to_string(&message_parsed)?;
+
+    let so = Success {
+        jsonrpc: Some(Version::V2),
+        result: Value::from(tx),
+        id: Id::Num(1),
+    };
+
+    Ok(so)
 }
 
 #[derive(Debug, Deserialize, Serialize)]

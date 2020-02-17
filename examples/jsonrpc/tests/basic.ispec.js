@@ -43,6 +43,17 @@ test("transaction_create", async () => {
   expect(response.result).toBe(cbor_transaction);
 });
 
+test("transaction_parse", async () => {
+  const response = await callMethod(
+    URL,
+    "transaction_parse",
+    [cbor_transaction],
+    1,
+  );
+
+  expect(response.result).toBe(JSON.stringify(transaction));
+});
+
 test("transaction_testvectors", async () => {
   let rawData = fs.readFileSync('tests/manual_testvectors.json');
   let jsonData = JSON.parse(rawData);

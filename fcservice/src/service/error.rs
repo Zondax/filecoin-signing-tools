@@ -1,5 +1,6 @@
 use fcsigner::error::SignerError;
 use fcsigner::utils::HexDecodeError;
+use serde_json::error::Error;
 use thiserror::Error;
 
 /// RemoteNode Error
@@ -39,4 +40,7 @@ pub enum ServiceError {
     /// HexDecode Error
     #[error("Error decoding hex strings")]
     HexDecode(#[from] HexDecodeError),
+    /// Serde Json Error
+    #[error("Error serializing serde_json")]
+    Error(#[from] serde_json::error::Error),
 }
