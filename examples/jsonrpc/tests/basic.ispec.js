@@ -147,15 +147,18 @@ test("verify_invalid_signature", async () => {
   let signature = secp256k1.ecdsaSign(message_digest, child.privateKey);
 
   // replace 1 byte
-  let invalid_signature = Buffer.from(signature.signature);
-  invalid_signature[5] = 1;
+  //let invalid_signature = Buffer.from(signature.signature);
+  //let invalid_signature = Buffer.concat([Buffer.alloc(2), Buffer.from(signature.signature).slice(2,64)]);
+  let invalid_signature = Buffer.concat([Buffer.from(signature.signature).slice(0,36), Buffer.alloc(28)]);
 
+  console.log(child.privateKey.toString('hex'));
   console.log(Buffer.from(signature.signature).toString('hex'));
   console.log(invalid_signature.toString('hex'));
 
   // Concat v value at the end of the signature
   let signatureRSV = invalid_signature.toString('hex') + Buffer.from([signature.recid]).toString('hex');
 
+  console.log(message_digest.toString('hex'));
 
   const response = await callMethod(
     URL,
