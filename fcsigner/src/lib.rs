@@ -6,19 +6,33 @@ use forest_message::UnsignedMessage;
 use hex::{decode, encode};
 use std::convert::TryFrom;
 
+use bip39::{Language, Mnemonic, MnemonicType};
+use blake2b_simd::Params;
+use secp256k1::{recover, sign, verify, Message, RecoveryId, SecretKey, Signature};
 use secp256k1::{recover, sign, verify, Message, RecoveryId, SecretKey, Signature};
 
 pub mod api;
+mod bip44;
 pub mod error;
 pub mod utils;
 
-pub fn key_generate() {
-    // TODO: return keypair (pub/priv + address)
+//    let privkey = secp256k1::SecretKey::random(&mut OsRng);
+//    let pubkey = secp256k1::PublicKey::from_secret_key(&privkey);
+//    let address = "";
+
+pub fn key_generate_mnemonic() -> Result<String, SignerError> {
+    let mnemonic = Mnemonic::new(MnemonicType::Words24, Language::English);
+    Ok(mnemonic.to_string())
 }
 
-pub fn key_derive() {
-    // TODO mnemonic + path
+pub fn key_derive(mnemonic: String, path: Vec<u32>) -> Result<String, SignerError> {
+    let mnemonic = Mnemonic::from_phrase(&mnemonic, Language::English).expect("FIXME");
+    let entropy = mnemonic.entropy();
+
+    // derive key (seed + path)
     // TODO: return keypair (pub/priv + address)
+
+    Ok("".to_string())
 }
 
 pub fn transaction_create(
@@ -146,4 +160,14 @@ mod tests {
             !verify_signature(&signature_with_recovery_id, EXAMPLE_CBOR_DATA.as_bytes()).unwrap()
         );
     }
+    
+    #[test]
+    fn generate_mnemonic() {
+        let mnemonic = key_generate_mnemonic().expect("could not generate mnemonic");
+        println!("{}", mnemonic);
+
+        let word_count = mnemonic.split_ascii_whitespace().count();
+        assert_eq!(word_count, 24)
+    }
 }
+

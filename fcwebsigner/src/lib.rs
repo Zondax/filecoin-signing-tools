@@ -16,9 +16,8 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 #[wasm_bindgen]
 pub fn key_generate() {
     set_panic_hook();
-
-    // TODO: return keypair (pub/priv + address)
-    fcsigner::key_generate();
+    // FIXME:
+    fcsigner::key_generate_mnemonic();
 }
 
 #[wasm_bindgen]

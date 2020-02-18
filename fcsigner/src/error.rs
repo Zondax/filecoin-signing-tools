@@ -1,3 +1,4 @@
+use hmac::crypto_mac::InvalidKeyLength;
 use thiserror::Error;
 
 //type Something = <UnsignedMessage as TryFrom>::Error;
@@ -20,4 +21,8 @@ pub enum SignerError {
     // Generic error message
     #[error("Error: `{0}`")]
     GenericString(String),
+
+    /// InvalidKeyLength error
+    #[error("InvalidKeyLength error")]
+    InvalidKeyLength(#[from] InvalidKeyLength),
 }
