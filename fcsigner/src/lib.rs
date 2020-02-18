@@ -92,11 +92,11 @@ pub fn verify_signature(signature_bytes: &[u8], message_bytes: &[u8]) -> Result<
 
 #[cfg(test)]
 mod tests {
-    use crate::{verify_signature, sign_transaction};
-    use hex::{decode};
-    use blake2b_simd::Params;
-    use secp256k1::{sign, verify, Message, RecoveryId, SecretKey, Signature};
     use crate::api::UnsignedMessageUserAPI;
+    use crate::{sign_transaction, verify_signature};
+    use blake2b_simd::Params;
+    use hex::decode;
+    use secp256k1::{sign, verify, Message, RecoveryId, SecretKey, Signature};
 
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
         {
@@ -113,9 +113,7 @@ mod tests {
     const EXAMPLE_CBOR_DATA: &str =
         "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040";
 
-
     static CID_PREFIX: &'static [u8] = &[0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20];
-
 
     #[test]
     fn empty() {
@@ -124,7 +122,8 @@ mod tests {
 
     #[test]
     fn verify_invalid_signature() {
-        let prvkey = decode("f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a").unwrap();
+        let prvkey =
+            decode("f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a").unwrap();
         let message_user_api: UnsignedMessageUserAPI =
             serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE).expect("FIXME");
         let (signature, recoveryid) = sign_transaction(message_user_api, &prvkey).unwrap();
@@ -146,12 +145,15 @@ mod tests {
 
         let mut signature_with_recovery_id = [&signature[..], &[recoveryid]].concat();
 
-        assert!(verify_signature(&signature_with_recovery_id, &message_digest.serialize()).unwrap());
+        assert!(
+            verify_signature(&signature_with_recovery_id, &message_digest.serialize()).unwrap()
+        );
 
         signature_with_recovery_id[5] = 0x01;
         signature_with_recovery_id[34] = 0x00;
 
-        assert!(!verify_signature(&signature_with_recovery_id, &message_digest.serialize()).unwrap());
-
+        assert!(
+            !verify_signature(&signature_with_recovery_id, &message_digest.serialize()).unwrap()
+        );
     }
 }
