@@ -6,6 +6,8 @@ import {getDigest} from './utils.js'
 import secp256k1 from 'secp256k1';
 import fs from 'fs';
 
+const tests_vectors_path = "../manual_testvectors.json";
+
 // FIXME: fcservice is expected to be running
 const URL = "http://127.0.0.1:3030/v0";
 
@@ -55,7 +57,7 @@ test("transaction_parse", async () => {
 });
 
 test("transaction_testvectors", async () => {
-  let rawData = fs.readFileSync('tests/manual_testvectors.json');
+  let rawData = fs.readFileSync(tests_vectors_path);
   let jsonData = JSON.parse(rawData);
 
   for (let i = 0; i < jsonData.length; i += 1) {
@@ -79,7 +81,7 @@ test("transaction_testvectors", async () => {
   }
 });
 
-let rawData = fs.readFileSync('tests/manual_testvectors.json');
+let rawData = fs.readFileSync(tests_vectors_path);
 let jsonData = JSON.parse(rawData);
 
 for (let i = 0; i < jsonData.length; i += 1) {
