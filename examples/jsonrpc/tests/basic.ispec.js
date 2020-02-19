@@ -9,11 +9,11 @@ import fs from 'fs';
 // FIXME: fcservice is expected to be running
 const URL = "http://127.0.0.1:3030/v0";
 
-const cbor_transaction = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040";
+const cbor_transaction = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040";
 
 const transaction = {
   "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-  "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
+  "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
   "nonce": 1,
   "value": "100000",
   "gas_price": "2500",
@@ -128,15 +128,16 @@ test("verify_signature", async () => {
   // Concat v value at the end of the signature
   let signatureRSV = Buffer.from(signature.signature).toString('hex') + Buffer.from([signature.recid]).toString('hex');
 
-
   const response = await callMethod(
     URL,
     "verify_signature",
-    [signatureRSV, message_digest.toString('hex')],
+    [signatureRSV, cbor_transaction],
     1,
   );
 
-  expect(response.result).toBeTruthy();
+  console.log(response);
+
+  expect(response.result).toEqual(true);
 });
 
 test("verify_invalid_signature", async () => {
@@ -146,29 +147,23 @@ test("verify_invalid_signature", async () => {
 
   let signature = secp256k1.ecdsaSign(message_digest, child.privateKey);
 
-  // replace 1 byte
-  //let invalid_signature = Buffer.from(signature.signature);
-  //let invalid_signature = Buffer.concat([Buffer.alloc(2), Buffer.from(signature.signature).slice(2,64)]);
+  // Tampered signature
   let invalid_signature = Buffer.concat([Buffer.from(signature.signature).slice(0,36), Buffer.alloc(28)]);
 
-  console.log(child.privateKey.toString('hex'));
-  console.log(Buffer.from(signature.signature).toString('hex'));
-  console.log(invalid_signature.toString('hex'));
-
-  // Concat v value at the end of the signature
+  // Concat recovery id value at the end of the signature
   let signatureRSV = invalid_signature.toString('hex') + Buffer.from([signature.recid]).toString('hex');
-
-  console.log(message_digest.toString('hex'));
 
   const response = await callMethod(
     URL,
     "verify_signature",
-    [signatureRSV, message_digest.toString('hex')],
+    [signatureRSV, cbor_transaction],
     1,
   );
 
-  let result = secp256k1.ecdsaVerify(invalid_signature, message_digest, child.publicKey);
-  console.log(result);
   console.log(response);
-  expect(response.result).toBeFalsy();
+
+  let result = secp256k1.ecdsaVerify(invalid_signature, message_digest, child.publicKey);
+  
+  expect(result).toEqual(false);
+  expect(response.result).toEqual(false);
 });

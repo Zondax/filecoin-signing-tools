@@ -1,6 +1,10 @@
 use crate::utils::HexDecodeError::InvalidLength;
 use std::fmt::Write;
 use thiserror::Error;
+use blake2b_simd::Params;
+use std::convert::{TryInto};
+
+static CID_PREFIX: &'static [u8] = &[0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20];
 
 /// DecoderError
 #[derive(Error, Debug, PartialEq)]
@@ -36,10 +40,28 @@ pub fn from_hex_string(s: &str) -> Result<Vec<u8>, HexDecodeError> {
     Ok(vec)
 }
 
+pub fn get_digest(message: &[u8]) -> [u8;32] {
+    let message_hashed = Params::new()
+        .hash_length(32)
+        .to_state()
+        .update(message)
+        .finalize();
+
+    let cid_hashed = Params::new()
+        .hash_length(32)
+        .to_state()
+        .update(&CID_PREFIX)
+        .update(message_hashed.as_bytes())
+        .finalize();
+
+    cid_hashed.as_bytes().try_into().unwrap()
+}
+
 #[cfg(test)]
 mod tests {
     use crate::utils::HexDecodeError::InvalidLength;
-    use crate::utils::{from_hex_string, HexDecodeError};
+    use crate::utils::{from_hex_string, HexDecodeError, get_digest};
+    use hex::{encode, decode};
 
     #[test]
     fn empty_string() {
@@ -65,6 +87,17 @@ mod tests {
         // weird open issue
         // https://github.com/rust-lang/rust/issues/22639#issuecomment-379490291
         assert_eq!(err.to_string(), "ParseInt error");
+    }
+
+    #[test]
+    fn test_digest_message() {
+        // TODO
+        const EXAMPLE_CBOR_DATA: &str =
+            "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040";
+
+        let message_digest = get_digest(&decode(EXAMPLE_CBOR_DATA.as_bytes()).unwrap());
+
+        assert_eq!(encode(message_digest), "5a51287d2e5401b75014da0f050c8db96fe0bacdad75fce964520ca063b697e1");
     }
 
     #[test]

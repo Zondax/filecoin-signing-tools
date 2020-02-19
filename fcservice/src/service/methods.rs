@@ -64,9 +64,8 @@ pub async fn verify_signature(c: MethodCall) -> Result<Success, ServiceError> {
     let params = c.params.parse::<VerifySignatureParamsAPI>()?;
 
     let signature = from_hex_string(&params.signature_hex)?;
-    let message = from_hex_string(&params.message_hex)?;
 
-    let result = fcsigner::verify_signature(&signature, &message)?;
+    let result = fcsigner::verify_signature(&signature, &params.message_hex.as_bytes())?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),
