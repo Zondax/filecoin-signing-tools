@@ -1,8 +1,8 @@
 use crate::utils::HexDecodeError::InvalidLength;
+use blake2b_simd::Params;
+use std::convert::TryInto;
 use std::fmt::Write;
 use thiserror::Error;
-use blake2b_simd::Params;
-use std::convert::{TryInto};
 
 static CID_PREFIX: &'static [u8] = &[0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20];
 
@@ -40,7 +40,7 @@ pub fn from_hex_string(s: &str) -> Result<Vec<u8>, HexDecodeError> {
     Ok(vec)
 }
 
-pub fn get_digest(message: &[u8]) -> [u8;32] {
+pub fn get_digest(message: &[u8]) -> [u8; 32] {
     let message_hashed = Params::new()
         .hash_length(32)
         .to_state()
@@ -60,8 +60,8 @@ pub fn get_digest(message: &[u8]) -> [u8;32] {
 #[cfg(test)]
 mod tests {
     use crate::utils::HexDecodeError::InvalidLength;
-    use crate::utils::{from_hex_string, HexDecodeError, get_digest};
-    use hex::{encode, decode};
+    use crate::utils::{from_hex_string, get_digest, HexDecodeError};
+    use hex::{decode, encode};
 
     #[test]
     fn empty_string() {
@@ -97,7 +97,10 @@ mod tests {
 
         let message_digest = get_digest(&decode(EXAMPLE_CBOR_DATA.as_bytes()).unwrap());
 
-        assert_eq!(encode(message_digest), "5a51287d2e5401b75014da0f050c8db96fe0bacdad75fce964520ca063b697e1");
+        assert_eq!(
+            encode(message_digest),
+            "5a51287d2e5401b75014da0f050c8db96fe0bacdad75fce964520ca063b697e1"
+        );
     }
 
     #[test]

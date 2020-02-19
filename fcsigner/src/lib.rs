@@ -1,10 +1,10 @@
 use crate::api::UnsignedMessageUserAPI;
 use crate::error::SignerError;
+use forest_address::Address;
 use forest_encoding::{from_slice, to_vec};
 use forest_message::UnsignedMessage;
-use forest_address::Address;
 use hex::{decode, encode};
-use std::convert::{TryFrom};
+use std::convert::TryFrom;
 
 use secp256k1::{recover, sign, verify, Message, RecoveryId, SecretKey, Signature};
 
@@ -68,7 +68,10 @@ pub fn sign_message() {
 }
 
 // REVIEW: We expect the CBOR transaction as an hex string... Might be confusing
-pub fn verify_signature(signature_bytes: &[u8], cbor_hexstring: &[u8]) -> Result<bool, SignerError> {
+pub fn verify_signature(
+    signature_bytes: &[u8],
+    cbor_hexstring: &[u8],
+) -> Result<bool, SignerError> {
     let signature = Signature::parse_slice(&signature_bytes[..64])?;
     let recovery_id = RecoveryId::parse(signature_bytes[64])?;
 
@@ -143,5 +146,4 @@ mod tests {
             !verify_signature(&signature_with_recovery_id, EXAMPLE_CBOR_DATA.as_bytes()).unwrap()
         );
     }
-
 }
