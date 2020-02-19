@@ -9,11 +9,11 @@ import {getDigest} from './utils.mjs'
 //     Initiate variable
 //
 ////////////////////////////////
-const cbor_transaction = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040";
+const cbor_transaction = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040";
 
 const transaction = {
   "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-  "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
+  "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
   "nonce": 1,
   "value": "100000",
   "gas_price": "2500",
@@ -88,8 +88,8 @@ test('Sign Transaction', () => {
     secp256k1.ecdsaVerify(signature.slice(0,-1), message_digest, child.publicKey)
   )
 
-  // Verify V value which is tha last byte of the signature
-  assert.equal(0x1c, signature[64]);
+  // Verify recovery id which is the last byte of the signature
+  assert.equal(0x01, signature[64]);
 
 });
 
@@ -100,14 +100,11 @@ test('Verify signature', () => {
   // Get hex signature in the format (R,S)
   let signature = secp256k1.ecdsaSign(message_digest, child.privateKey);
 
-  // v = 27 + (y % 2) (https://bitcoin.stackexchange.com/questions/38351/ecdsa-v-r-s-what-is-v)
-  let v = 27 + (signature.recid % 2);
-
   // Concat v value at the end of the signature
-  let signatureRSV = Buffer.from(signature.signature).toString('hex') + Buffer.from([v]).toString('hex');
+  let signatureRSV = Buffer.from(signature.signature).toString('hex') + Buffer.from([signature.recid]).toString('hex');
 
   console.log("RSV signature :", signatureRSV);
-  console.log("Digest :", message_digest.toString('hex'))
+  console.log("CBOR Transaction hex :", cbor_transaction)
 
-  assert.equal(verify_signature(signatureRSV, message_digest.toString('hex')), true);
+  assert.equal(verify_signature(signatureRSV, cbor_transaction), true);
 })

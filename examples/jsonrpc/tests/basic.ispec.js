@@ -9,11 +9,11 @@ import fs from 'fs';
 // FIXME: fcservice is expected to be running
 const URL = "http://127.0.0.1:3030/v0";
 
-const cbor_transaction = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040";
+const cbor_transaction = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040";
 
 const transaction = {
   "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-  "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
+  "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
   "nonce": 1,
   "value": "100000",
   "gas_price": "2500",
@@ -71,6 +71,7 @@ test("transaction_testvectors", async () => {
 
 test("sign_transaction", async () => {
   let child = node.derivePath("m/44'/461'/0/0/0");
+  let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'));
 
   const response = await callMethod(
     URL,
@@ -79,12 +80,43 @@ test("sign_transaction", async () => {
     1,
   );
 
-  let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'));
+  let signatureBuffer = Buffer.from(response.result, "hex").slice(0,-1);
+
+  // compare signature
+  let signatureCompare = secp256k1.ecdsaSign(message_digest, child.privateKey);
+
+  expect(Buffer.from(signatureCompare.signature)).toEqual(signatureBuffer);
+
   // Remove V from result to verify signature
-  let result = secp256k1.ecdsaVerify(Buffer.from(response.result, "hex").slice(0,-1), message_digest, child.publicKey);
+  let result = secp256k1.ecdsaVerify(signatureBuffer, message_digest, child.publicKey);
 
   expect(result).toBeTruthy();
 });
+
+test("sign_invalid_transaction", async () => {
+  let child = node.derivePath("m/44'/461'/0/0/0");
+  let invalid_transaction = {
+    "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+    "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
+    "value": "100000",
+    "gas_price": "2500",
+    "gas_limit": "25000",
+    "method": 0,
+    "params": ""
+  };
+
+  const response = await callMethod(
+    URL,
+    "sign_transaction",
+    [invalid_transaction, child.privateKey.toString("hex")],
+    1,
+  );
+
+  // Verify we have an error message
+  expect(response).toHaveProperty('error');
+  // Verify we have the corrcet error message 'missing nonce'
+  expect(response.error.message).toMatch(/missing field `nonce`/);
+})
 
 test("verify_signature", async () => {
   let child = node.derivePath("m/44'/461'/0/0/0");
@@ -93,19 +125,45 @@ test("verify_signature", async () => {
 
   let signature = secp256k1.ecdsaSign(message_digest, child.privateKey);
 
-  // v = 27 + (y % 2) (https://bitcoin.stackexchange.com/questions/38351/ecdsa-v-r-s-what-is-v)
-  let v = 27 + (signature.recid % 2);
-
   // Concat v value at the end of the signature
-  let signatureRSV = Buffer.from(signature.signature).toString('hex') + Buffer.from([v]).toString('hex');
-
+  let signatureRSV = Buffer.from(signature.signature).toString('hex') + Buffer.from([signature.recid]).toString('hex');
 
   const response = await callMethod(
     URL,
     "verify_signature",
-    [signatureRSV, message_digest.toString('hex')],
+    [signatureRSV, cbor_transaction],
     1,
   );
 
-  expect(response.result).toBeTruthy();
+  console.log(response);
+
+  expect(response.result).toEqual(true);
+});
+
+test("verify_invalid_signature", async () => {
+  let child = node.derivePath("m/44'/461'/0/0/0");
+
+  let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'));
+
+  let signature = secp256k1.ecdsaSign(message_digest, child.privateKey);
+
+  // Tampered signature
+  let invalid_signature = Buffer.concat([Buffer.from(signature.signature).slice(0,36), Buffer.alloc(28)]);
+
+  // Concat recovery id value at the end of the signature
+  let signatureRSV = invalid_signature.toString('hex') + Buffer.from([signature.recid]).toString('hex');
+
+  const response = await callMethod(
+    URL,
+    "verify_signature",
+    [signatureRSV, cbor_transaction],
+    1,
+  );
+
+  console.log(response);
+
+  let result = secp256k1.ecdsaVerify(invalid_signature, message_digest, child.publicKey);
+  
+  expect(result).toEqual(false);
+  expect(response.result).toEqual(false);
 });

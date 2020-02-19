@@ -42,7 +42,6 @@ pub async fn sign_transaction(c: MethodCall) -> Result<Success, ServiceError> {
     let params = c.params.parse::<SignTransactionParamsAPI>()?;
 
     let prvkey_bytes = from_hex_string(&params.prvkey_hex)?;
-    //let secret_key = SecretKey::parse_slice(&prvkey_bytes)?;
 
     let (signed_message, v) = fcsigner::sign_transaction(params.transaction, &prvkey_bytes)?;
 
@@ -65,9 +64,8 @@ pub async fn verify_signature(c: MethodCall) -> Result<Success, ServiceError> {
     let params = c.params.parse::<VerifySignatureParamsAPI>()?;
 
     let signature = from_hex_string(&params.signature_hex)?;
-    let message = from_hex_string(&params.message_hex)?;
 
-    let result = fcsigner::verify_signature(&signature, &message)?;
+    let result = fcsigner::verify_signature(&signature, &params.message_hex.as_bytes())?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),
