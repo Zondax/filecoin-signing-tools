@@ -47,7 +47,7 @@ test("transaction_parse", async () => {
   const response = await callMethod(
     URL,
     "transaction_parse",
-    [cbor_transaction],
+    [cbor_transaction, true],
     1,
   );
 
@@ -76,9 +76,40 @@ test("transaction_testvectors", async () => {
       console.log("Reply", response);
       expect(response.result).toEqual(tc.encoded_tx_hex);
     }
-
   }
 });
+
+let rawData = fs.readFileSync('tests/manual_testvectors.json');
+let jsonData = JSON.parse(rawData);
+
+for (let i = 0; i < jsonData.length; i += 1) {
+  let tc = jsonData[i];
+  if (!tc.message.params) {
+    tc.message["params"] = ""
+  }
+
+
+  if (!tc.testnet) {
+    // FIXME: No way to as for testnet format in fcsigner yet
+    console.log("FIX ME")
+    continue;
+  };
+
+  // Create test case for each
+  test("Parse Transaction : " + tc.description, async () => {
+    let response = await callMethod(URL, "transaction_parse", [tc.encoded_tx_hex, tc.testnet], i);
+
+
+    if (tc.valid) {
+      console.log(response);
+      expect(JSON.parse(response.result)).toEqual(tc.message);
+    } else {
+      console.log(response.error);
+      expect(response).toHaveProperty('error');
+    }
+
+  })
+}
 
 test("sign_transaction", async () => {
   let child = node.derivePath("m/44'/461'/0/0/0");

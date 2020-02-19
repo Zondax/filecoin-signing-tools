@@ -31,11 +31,12 @@ pub async fn transaction_create(c: MethodCall) -> Result<Success, ServiceError> 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TransctionParseParamsAPI {
     pub cbor_hex: String,
+    pub testnet: bool,
 }
 
 pub async fn transaction_parse(c: MethodCall) -> Result<Success, ServiceError> {
     let params = c.params.parse::<TransctionParseParamsAPI>()?;
-    let message_parsed = fcsigner::transaction_parse(params.cbor_hex)?;
+    let message_parsed = fcsigner::transaction_parse(params.cbor_hex, params.testnet)?;
     let tx = serde_json::to_string(&message_parsed)?;
 
     let so = Success {
