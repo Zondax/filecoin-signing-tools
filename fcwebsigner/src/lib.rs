@@ -40,7 +40,7 @@ pub fn transaction_parse(cbor_hexstring: String) -> Result<String, JsValue> {
     set_panic_hook();
 
     let message_parsed =
-        fcsigner::transaction_parse(cbor_hexstring).map_err(|e| JsValue::from(e.to_string()))?;
+        fcsigner::transaction_parse(cbor_hexstring.as_bytes()).map_err(|e| JsValue::from(e.to_string()))?;
 
     let tx = serde_json::to_string(&message_parsed).map_err(|e| JsValue::from(e.to_string()))?;
 
@@ -84,9 +84,8 @@ pub fn verify_signature(signature_hex: String, message_hex: String) -> Result<bo
     set_panic_hook();
 
     let signature = from_hex_string(&signature_hex).map_err(|e| JsValue::from(e.to_string()))?;
-    let message = from_hex_string(&message_hex).map_err(|e| JsValue::from(e.to_string()))?;
 
-    let resp = fcsigner::verify_signature(&signature, &message);
+    let resp = fcsigner::verify_signature(&signature, &message_hex.as_bytes());
 
     return match resp {
         Ok(_bool) => Ok(_bool),
