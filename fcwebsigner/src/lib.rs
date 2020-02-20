@@ -58,37 +58,22 @@ pub fn key_generate() -> Keypair {
     return keypair;
 }
 #[wasm_bindgen]
-pub fn key_derive(_mnemonic: String, _path: String) -> Keypair {
+pub fn key_derive(mnemonic: String, path: String) -> Result<Keypair, JsValue> {
     // TODO mnemonic + path
     // TODO: return keypair (pub/priv + address)
 
     set_panic_hook();
 
-    let result_mnemonic = Mnemonic::from_phrase(_mnemonic.as_str(), Language::English);
+    let (prvkey, publickey, address) = fcsigner::key_derive(mnemonic, path)
+        .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
 
-    match result_mnemonic {
-        Ok(mnemonic) => {
-            let seed = Seed::new(&mnemonic, "");
+    let keypair = Keypair {
+        pubkey: publickey,
+        prvkey: prvkey,
+        address: address,
+    };
 
-            let keypair = Keypair {
-                pubkey: String::from("We only have seed!"),
-                prvkey: String::from("We only have seed!"),
-                address: String::from("We only have seed!"),
-            };
-
-            return keypair;
-        }
-
-        Err(err) => {
-            let keypair = Keypair {
-                pubkey: String::from("Error!"),
-                prvkey: String::from("Error!"),
-                address: String::from("Error!"),
-            };
-
-            return keypair;
-        }
-    }
+    Ok(keypair)
 }
 
 #[wasm_bindgen]

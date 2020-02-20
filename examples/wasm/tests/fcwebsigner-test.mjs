@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import secp256k1 from 'secp256k1';
-import {verify_signature, transaction_parse, transaction_create, sign_transaction} from 'fcwebsigner';
+import {key_derive, key_generate, verify_signature, transaction_parse, transaction_create, sign_transaction} from 'fcwebsigner';
 import bip32 from 'bip32'
 import {getDigest} from './utils.mjs'
 
@@ -77,10 +77,16 @@ test('Key Generate', () => {
 })
 
 test('Key Derive', () => {
-  let keypair = key_derive("equip will roof matter pink blind book anxiety banner elbow sun young", "m/44'/161'/0/0/1");
+  let child = node.derivePath("m/44'/461'/0/0/1");
+
+  let keypair = key_derive("equip will roof matter pink blind book anxiety banner elbow sun young", "m/44'/461'/0/0/1");
 
   console.log("Pubkey :", keypair.pubkey);
   console.log("Prvkey :", keypair.prvkey);
+  console.log("Address :", keypair.address);
+
+  assert.equal(child.privateKey.toString("hex"), keypair.prvkey);
+
 })
 
 test('Verify signature', () => {

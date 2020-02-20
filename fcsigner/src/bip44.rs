@@ -9,7 +9,48 @@ use std::convert::TryFrom;
 use std::fmt;
 use zeroize::Zeroize;
 
-struct Bip44Path([u32; 5]);
+const HARDENED_BIT: u32 = 1 << 31;
+
+pub struct Bip44Path(pub [u32; 5]);
+
+impl Bip44Path {
+    pub fn from_slice(path: &[u32]) -> Result<Bip44Path, SignerError> {
+        let mut path_array : [u32;5] = Default::default();
+        if path.len() != 5 {
+            return Err(SignerError::GenericString("Invalid length for path".to_string()));
+        };
+
+        path_array.copy_from_slice(path);
+
+        Ok(Bip44Path(path_array))
+    }
+
+    pub fn from_string(path: String) -> Result<Bip44Path, SignerError> {
+        let mut path = path.split('/');
+
+        if path.next() != Some("m") {
+            return Err(SignerError::GenericString("Path should start with `m`".to_string()));
+        };
+
+        let result = path.map(|index| {
+            let (index_to_parse, mask) = if index.ends_with('\'') {
+                // Remove the last character and harden index
+                (&index[..index.len()-1],HARDENED_BIT)
+            } else {
+                (index,0)
+            };
+
+            // FIX ME
+            let child_index : u32 = index_to_parse.parse().unwrap();
+
+            (child_index | mask)
+        }).collect::<Vec<u32>>();
+
+        let bip44Path = Bip44Path::from_slice(&result)?;
+
+        Ok(bip44Path)
+    }
+}
 
 const HMAC_SEED: &'static [u8; 12] = b"Bitcoin seed";
 
@@ -17,7 +58,7 @@ const HMAC_SEED: &'static [u8; 12] = b"Bitcoin seed";
 #[zeroize(drop)]
 struct ChainCode([u8; 32]);
 
-struct ExtendedSecretKey {
+pub struct ExtendedSecretKey {
     secret_key: SecretKey,
     chain_code: ChainCode,
 }
@@ -51,7 +92,7 @@ impl TryFrom<Seed> for ExtendedSecretKey {
 }
 
 impl ExtendedSecretKey {
-    fn new(secret_key: SecretKey, chain_code: &[u8]) -> Result<Self, SignerError> {
+    pub fn new(secret_key: SecretKey, chain_code: &[u8]) -> Result<Self, SignerError> {
         let mut tmp = ChainCode {
             0: Default::default(),
         };
@@ -64,17 +105,17 @@ impl ExtendedSecretKey {
     }
 
     #[inline]
-    fn secret_key(&self) -> [u8; SECRET_KEY_SIZE] {
+    pub fn secret_key(&self) -> [u8; SECRET_KEY_SIZE] {
         self.secret_key.serialize()
     }
 
     #[inline]
-    fn public_key(&self) -> [u8; COMPRESSED_PUBLIC_KEY_SIZE] {
+    pub fn public_key(&self) -> [u8; COMPRESSED_PUBLIC_KEY_SIZE] {
         let pubkey = PublicKey::from_secret_key(&self.secret_key);
         pubkey.serialize_compressed()
     }
 
-    fn derive_child_key(&self, child_index: u32) -> Result<ExtendedSecretKey, SignerError> {
+    pub fn derive_child_key(&self, child_index: u32) -> Result<ExtendedSecretKey, SignerError> {
         let mut hmac = Hmac::<Sha512>::new_varkey(&self.chain_code.0)?;
 
         if child_index & 0x8000_0000u32 == 0 {
@@ -97,7 +138,7 @@ impl ExtendedSecretKey {
         ExtendedSecretKey::new(child_secret_key, &child_chain_code)
     }
 
-    fn derive_bip44(&self, path: Bip44Path) -> Result<ExtendedSecretKey, SignerError> {
+    pub fn derive_bip44(&self, path: Bip44Path) -> Result<ExtendedSecretKey, SignerError> {
         let child0 = self.derive_child_key(path.0[0])?;
         let child1 = child0.derive_child_key(path.0[1])?;
         let child2 = child1.derive_child_key(path.0[2])?;
@@ -113,6 +154,8 @@ mod tests {
     use crate::bip44::{Bip44Path, ExtendedSecretKey};
     use bip39::{Language, Mnemonic, Seed};
     use std::convert::TryFrom;
+
+    const HARDENED_BIT: u32 = 1 << 31;
 
     #[test]
     fn generate_mnemonic() {
@@ -138,4 +181,14 @@ mod tests {
         println!("{}", esk);
         // FIXME: Add checks & more test cases
     }
+
+    #[test]
+    fn create_derive_path() {
+        let path_string = "m/44'/461'/0/0/0";
+
+        let result = Bip44Path::from_string(path_string.to_string()).unwrap();
+
+        // FIX ME: need a way to compare bip44Path
+    }
+
 }
