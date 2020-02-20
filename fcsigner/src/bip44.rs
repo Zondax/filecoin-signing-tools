@@ -15,9 +15,11 @@ pub struct Bip44Path(pub [u32; 5]);
 
 impl Bip44Path {
     pub fn from_slice(path: &[u32]) -> Result<Bip44Path, SignerError> {
-        let mut path_array : [u32;5] = Default::default();
+        let mut path_array: [u32; 5] = Default::default();
         if path.len() != 5 {
-            return Err(SignerError::GenericString("Invalid length for path".to_string()));
+            return Err(SignerError::GenericString(
+                "Invalid length for path".to_string(),
+            ));
         };
 
         path_array.copy_from_slice(path);
@@ -29,22 +31,26 @@ impl Bip44Path {
         let mut path = path.split('/');
 
         if path.next() != Some("m") {
-            return Err(SignerError::GenericString("Path should start with `m`".to_string()));
+            return Err(SignerError::GenericString(
+                "Path should start with `m`".to_string(),
+            ));
         };
 
-        let result = path.map(|index| {
-            let (index_to_parse, mask) = if index.ends_with('\'') {
-                // Remove the last character and harden index
-                (&index[..index.len()-1],HARDENED_BIT)
-            } else {
-                (index,0)
-            };
+        let result = path
+            .map(|index| {
+                let (index_to_parse, mask) = if index.ends_with('\'') {
+                    // Remove the last character and harden index
+                    (&index[..index.len() - 1], HARDENED_BIT)
+                } else {
+                    (index, 0)
+                };
 
-            // FIX ME
-            let child_index : u32 = index_to_parse.parse().unwrap();
+                // FIX ME
+                let child_index: u32 = index_to_parse.parse().unwrap();
 
-            (child_index | mask)
-        }).collect::<Vec<u32>>();
+                (child_index | mask)
+            })
+            .collect::<Vec<u32>>();
 
         let bip44Path = Bip44Path::from_slice(&result)?;
 
@@ -190,5 +196,4 @@ mod tests {
 
         // FIX ME: need a way to compare bip44Path
     }
-
 }
