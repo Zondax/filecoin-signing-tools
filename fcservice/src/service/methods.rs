@@ -36,7 +36,7 @@ pub struct TransctionParseParamsAPI {
 
 pub async fn transaction_parse(c: MethodCall) -> Result<Success, ServiceError> {
     let params = c.params.parse::<TransctionParseParamsAPI>()?;
-    let message_parsed = fcsigner::transaction_parse(params.cbor_hex, params.testnet)?;
+    let message_parsed = fcsigner::transaction_parse(params.cbor_hex.as_bytes(), params.testnet)?;
     let tx = serde_json::to_string(&message_parsed)?;
 
     let so = Success {

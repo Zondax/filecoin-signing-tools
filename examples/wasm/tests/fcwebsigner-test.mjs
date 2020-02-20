@@ -150,7 +150,7 @@ for (let i = 0; i < jsonData.length; i += 1) {
 
   // Create test case for each
   test("Parse Transaction : " + tc.description, () => {
-    let result = transaction_parse(cbor_transaction, tc.testnet);
+    let result = transaction_parse(tc.encoded_tx_hex, tc.testnet);
 
     if (tc.valid) {
       assert.equal(JSON.stringify(tc.message),result);

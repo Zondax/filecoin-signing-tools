@@ -78,7 +78,9 @@ pub fn verify_signature(
     let signature = Signature::parse_slice(&signature_bytes[..64])?;
     let recovery_id = RecoveryId::parse(signature_bytes[64])?;
 
-    let tx = transaction_parse(&cbor_hexstring)?;
+    // Should be default network here
+    //  For now only testnet
+    let tx = transaction_parse(&cbor_hexstring, true)?;
 
     // Decode the CBOR transaction hex string into CBOR transaction buffer
     let cbor_buffer = decode(cbor_hexstring)?;
