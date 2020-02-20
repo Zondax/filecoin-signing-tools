@@ -33,7 +33,10 @@ pub fn transaction_create(
     Ok(message_cbor_hex)
 }
 
-pub fn transaction_parse(cbor_hexstring: &[u8], testnet: bool) -> Result<UnsignedMessageUserAPI, SignerError> {
+pub fn transaction_parse(
+    cbor_hexstring: &[u8],
+    testnet: bool,
+) -> Result<UnsignedMessageUserAPI, SignerError> {
     // FIXME: Extend to both unsigned and sign txs
 
     let cbor_buffer = decode(cbor_hexstring)?;

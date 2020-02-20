@@ -39,13 +39,8 @@ pub fn transaction_create(unsigned_message_string: String) -> Result<String, JsV
 pub fn transaction_parse(cbor_hexstring: String, network: bool) -> Result<String, JsValue> {
     set_panic_hook();
 
-<<<<<<< HEAD
-    let message_parsed =
-        fcsigner::transaction_parse(cbor_hexstring.as_bytes(), network).map_err(|e| JsValue::from(e.to_string()))?;
-=======
-    let message_parsed = fcsigner::transaction_parse(cbor_hexstring, network)
+    let message_parsed = fcsigner::transaction_parse(cbor_hexstring.as_bytes(), network)
         .map_err(|e| JsValue::from(e.to_string()))?;
->>>>>>> rustfmt
 
     let tx = serde_json::to_string(&message_parsed).map_err(|e| JsValue::from(e.to_string()))?;
 
