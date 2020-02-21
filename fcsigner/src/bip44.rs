@@ -159,6 +159,7 @@ impl ExtendedSecretKey {
 mod tests {
     use crate::bip44::{Bip44Path, ExtendedSecretKey};
     use bip39::{Language, Mnemonic, Seed};
+    use hex::encode;
     use std::convert::TryFrom;
 
     const HARDENED_BIT: u32 = 1 << 31;
@@ -172,8 +173,10 @@ mod tests {
         let master = ExtendedSecretKey::try_from(seed).unwrap();
 
         println!("{}", master);
-        // FIXME: Add checks & more test cases
-        //assert_eq!(master.private_key())
+        assert_eq!(
+            encode(master.secret_key()),
+            "fe2445a3beb060041a7bb0fdb5d4438c21db408bd71294066381798d96b75221"
+        );
     }
 
     #[test]
@@ -186,7 +189,10 @@ mod tests {
         let esk = master.derive_bip44(Bip44Path([0, 0, 0, 0, 0])).unwrap();
 
         println!("{}", esk);
-        // FIXME: Add checks & more test cases
+        assert_eq!(
+            encode(esk.secret_key()),
+            "7149916f222b5f0708965836f09a963f7633dff59679c23203cd161a8b963043"
+        );
     }
 
     #[test]
@@ -195,6 +201,10 @@ mod tests {
 
         let result = Bip44Path::from_string(path_string.to_string()).unwrap();
 
-        // FIX ME: need a way to compare bip44Path
+        assert_eq!(result.0[0], (44 | HARDENED_BIT));
+        assert_eq!(result.0[1], (461 | HARDENED_BIT));
+        assert_eq!(result.0[2], 0);
+        assert_eq!(result.0[3], 0);
+        assert_eq!(result.0[4], 0);
     }
 }
