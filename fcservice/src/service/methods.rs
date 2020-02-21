@@ -40,7 +40,7 @@ pub async fn key_derive(c: MethodCall) -> Result<Success, ServiceError> {
     let result = KeyDeriveResultApi {
         prvkey,
         pubkey,
-        address
+        address,
     };
 
     let result_json = serde_json::to_value(&result)?;
