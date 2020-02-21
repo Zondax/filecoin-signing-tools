@@ -23,7 +23,8 @@ pub fn key_generate_mnemonic() -> Result<String, SignerError> {
 }
 
 pub fn key_derive(mnemonic: String, path: String) -> Result<(String, String, String), SignerError> {
-    let mnemonic = Mnemonic::from_phrase(&mnemonic, Language::English).expect("FIXME");
+    let mnemonic = Mnemonic::from_phrase(&mnemonic, Language::English)
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let seed = Seed::new(&mnemonic, "");
 
