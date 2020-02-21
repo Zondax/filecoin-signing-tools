@@ -7,12 +7,51 @@ use jsonrpc_core::{Id, MethodCall, Success, Version};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-pub async fn key_generate(_c: MethodCall) -> Result<Success, ServiceError> {
-    Err(ServiceError::NotImplemented)
+pub async fn key_generate_mnemonic(_c: MethodCall) -> Result<Success, ServiceError> {
+    let mnemonic = fcsigner::key_generate_mnemonic()?;
+
+    let so = Success {
+        jsonrpc: Some(Version::V2),
+        result: Value::from(mnemonic),
+        id: Id::Num(1),
+    };
+
+    Ok(so)
 }
 
-pub async fn key_derive(_c: MethodCall) -> Result<Success, ServiceError> {
-    Err(ServiceError::NotImplemented)
+#[derive(Debug, Deserialize, Serialize)]
+pub struct KeyDeriveParamsAPI {
+    pub mnemonic: String,
+    pub path: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct KeyDeriveResultApi {
+    pub prvkey: String,
+    pub pubkey: String,
+    pub address: String,
+}
+
+pub async fn key_derive(c: MethodCall) -> Result<Success, ServiceError> {
+    let y = c.params.parse::<KeyDeriveParamsAPI>()?;
+
+    let (prvkey, pubkey, address) = fcsigner::key_derive(y.mnemonic, y.path)?;
+
+    let result = KeyDeriveResultApi {
+        prvkey,
+        pubkey,
+        address
+    };
+
+    let result_json = serde_json::to_value(&result)?;
+
+    let so = Success {
+        jsonrpc: Some(Version::V2),
+        result: result_json,
+        id: Id::Num(1),
+    };
+
+    Ok(so)
 }
 
 pub async fn transaction_create(c: MethodCall) -> Result<Success, ServiceError> {
