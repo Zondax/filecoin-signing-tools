@@ -2,6 +2,7 @@ mod error;
 mod utils;
 
 use crate::utils::set_panic_hook;
+use fcsigner;
 use wasm_bindgen::prelude::*;
 
 use fcsigner::api::UnsignedMessageUserAPI;
@@ -14,11 +15,47 @@ use fcsigner::utils::{from_hex_string, to_hex_string};
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-pub fn key_generate() {
+pub struct Keypair {
+    // hexstring of the compressed public key
+    pubkey: String,
+    // hexstring of the private key
+    prvkey: String,
+    // Address in the string format
+    address: String,
+}
+
+#[wasm_bindgen]
+impl Keypair {
+    #[wasm_bindgen(getter)]
+    pub fn pubkey(&self) -> String {
+        self.pubkey.clone()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn prvkey(&self) -> String {
+        self.prvkey.clone()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn address(&self) -> String {
+        self.address.clone()
+    }
+}
+
+#[wasm_bindgen]
+pub fn key_derive(mnemonic: String, path: String) -> Result<Keypair, JsValue> {
     set_panic_hook();
 
-    // TODO: return keypair (pub/priv + address)
-    fcsigner::key_generate();
+    let (prvkey, publickey, address) = fcsigner::key_derive(mnemonic, path)
+        .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
+
+    let keypair = Keypair {
+        pubkey: publickey,
+        prvkey: prvkey,
+        address: address,
+    };
+
+    Ok(keypair)
 }
 
 #[wasm_bindgen]

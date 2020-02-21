@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import secp256k1 from 'secp256k1';
-import {verify_signature, transaction_parse, transaction_create, sign_transaction} from 'fcwebsigner';
+import {key_derive, verify_signature, transaction_parse, transaction_create, sign_transaction} from 'fcwebsigner';
 import bip32 from 'bip32';
-import {getDigest} from './utils.mjs';
+import {getDigest} from './utils.mjs' 
 import fs from 'fs';
 
 //////////////////////////////////
@@ -10,6 +10,9 @@ import fs from 'fs';
 //     Initiate variable
 //
 ////////////////////////////////
+
+const mnemonic_example = "equip will roof matter pink blind book anxiety banner elbow sun young";
+
 const cbor_transaction = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040";
 
 const transaction = {
@@ -65,6 +68,32 @@ test('Create Transaction Fail (missing nonce)', () => {
   );
 
 });
+
+/*test('Key Generate Mnemonic', () => {
+  // Can't get a random number to generate mnemonic
+  // panicked at 'could not initialize thread_rng: getrandom: this target is not supported', ~/.cargo/registry/src/github.com-1ecc6299db9ec823/rand-0.7.3/src/rngs/thread.rs:65:17
+})*/
+
+test('Key Derive', () => {
+  let child = node.derivePath("m/44'/461'/0/0/1");
+
+  let keypair = key_derive(mnemonic_example, "m/44'/461'/0/0/1");
+
+  console.log("Pubkey :", keypair.pubkey);
+  console.log("Prvkey :", keypair.prvkey);
+  console.log("Address :", keypair.address);
+
+  assert.equal(child.privateKey.toString("hex"), keypair.prvkey);
+
+})
+
+test('Key Derive Invalid Path', () => {
+
+  assert.throws(
+    () => key_derive(mnemonic_example, "m/44'/461'/a/0/1"),
+    /Cannot parse integer/
+  );
+})
 
 test('Sign Transaction', () => {
   let child = node.derivePath("m/44'/461'/0/0/0")

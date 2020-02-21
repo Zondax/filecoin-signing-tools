@@ -11,6 +11,8 @@ const tests_vectors_path = "../manual_testvectors.json";
 // FIXME: fcservice is expected to be running
 const URL = "http://127.0.0.1:3030/v0";
 
+const mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
+
 const cbor_transaction = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040";
 
 const transaction = {
@@ -27,11 +29,43 @@ const transaction = {
 const prv_root_key = "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5";
 let node = bip32.fromBase58(prv_root_key);
 
-test("key_generate", async () => {
-  // FIXME: Disabled until this is implemented
-  // const response = await callMethod(URL, "key_generate", [], 1);
-  // // TODO: Check results
-  // console.log(response);
+test("key_generate_mnemonic", async () => {
+  const response = await callMethod(URL, "key_generate_mnemonic", [], 1);
+  console.log(response);
+
+  // Do we have a results
+  expect(response).toHaveProperty("result");
+  // Verify we have 24 words
+  expect(response.result.split(" ").length).toBe(24);
+});
+
+test("key_derive", async () => {
+  const path = "m/44'/461'/0/0/0";
+  const response = await callMethod(URL, "key_derive", [mnemonic, path], 1);
+  let child = node.derivePath(path);
+  console.log(response)
+
+  // Do we have a results
+  expect(response).toHaveProperty("result");
+  expect(response.result.prvkey).toEqual(child.privateKey.toString("hex"));
+  expect(response.result.pubkey).toEqual(child.publicKey.toString("hex"));
+  expect(response.result.address).toEqual("t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka");
+});
+
+test("key_derive missing all parameters", async () => {
+  const response = await callMethod(URL, "key_derive", [], 1);
+  console.log(response);
+
+  expect(response).toHaveProperty("error");
+  expect(response.error.message).toMatch(/Invalid params/);
+});
+
+test("key_derive missing 1 parameters", async () => {
+  const response = await callMethod(URL, "key_derive", [mnemonic], 1);
+  console.log(response);
+
+  expect(response).toHaveProperty("error");
+  expect(response.error.message).toMatch(/Invalid params/);
 });
 
 test("transaction_create", async () => {
@@ -207,7 +241,7 @@ test("verify_invalid_signature", async () => {
   console.log(response);
 
   let result = secp256k1.ecdsaVerify(invalid_signature, message_digest, child.publicKey);
-  
+
   expect(result).toEqual(false);
   expect(response.result).toEqual(false);
 });

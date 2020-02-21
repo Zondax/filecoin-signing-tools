@@ -12,6 +12,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.45"
 serde_cbor = "0.11.1"
 hex = "0.4.0"
+getrandom="0.1.14"
 
 vm = { git = "https://github.com/zondax/forest", branch="master" }
 forest_message = { git = "https://github.com/zondax/forest", branch="master" }
@@ -22,7 +23,7 @@ num_bigint_chainsafe =  { package="num-bigint", git = "https://github.com/austin
 
 libsecp256k1 = "0.3.4"
 blake2b_simd = "0.5.10"
-
-# FIXME: confirm compatibility with WASM target
-[dependencies.rand]
-version = "0.7.3"
+tiny-bip39 = "0.7.0"
+hmac = "0.7.1"
+zeroize = { version = "1.1", default-features = false, features = ["zeroize_derive"] }
+sha2 = "0.8.1"
