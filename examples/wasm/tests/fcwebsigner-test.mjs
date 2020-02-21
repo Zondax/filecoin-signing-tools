@@ -1,6 +1,8 @@
 import * as assert from 'assert';
 import secp256k1 from 'secp256k1';
 import {key_derive, verify_signature, transaction_parse, transaction_create, sign_transaction} from 'fcwebsigner';
+import bip32 from 'bip32';
+import {getDigest} from './utils.mjs' 
 import fs from 'fs';
 
 //////////////////////////////////
