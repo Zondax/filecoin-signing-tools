@@ -49,8 +49,8 @@ impl Bip44Path {
                 let child_index = index_to_parse.parse::<u32>()?;
 
                 Ok(child_index | mask)
-
-            }).collect::<Result<Vec<u32>, std::num::ParseIntError>>()?;
+            })
+            .collect::<Result<Vec<u32>, std::num::ParseIntError>>()?;
 
         let bip44Path = Bip44Path::from_slice(&result)?;
 

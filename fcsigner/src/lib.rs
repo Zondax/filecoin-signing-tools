@@ -17,7 +17,6 @@ mod bip44;
 pub mod error;
 pub mod utils;
 
-
 pub fn key_generate_mnemonic() -> Result<String, SignerError> {
     let mnemonic = Mnemonic::new(MnemonicType::Words24, Language::English);
     Ok(mnemonic.to_string())
