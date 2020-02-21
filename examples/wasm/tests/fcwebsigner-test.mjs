@@ -1,8 +1,7 @@
 import * as assert from 'assert';
 import secp256k1 from 'secp256k1';
 import {key_derive, verify_signature, transaction_parse, transaction_create, sign_transaction} from 'fcwebsigner';
-import bip32 from 'bip32'
-import {getDigest} from './utils.mjs'
+import fs from 'fs';
 
 //////////////////////////////////
 //
@@ -137,3 +136,51 @@ test('Verify signature', () => {
 
   assert.equal(verify_signature(signatureRSV, cbor_transaction), true);
 })
+
+//////////////////////////////////
+//
+//     Tests vectors
+//
+////////////////////////////////
+const tests_vectors_path = "../manual_testvectors.json";
+
+let rawData = fs.readFileSync(tests_vectors_path);
+let jsonData = JSON.parse(rawData);
+
+for (let i = 0; i < jsonData.length; i += 1) {
+  let tc = jsonData[i];
+  if (!tc.message.params) {
+    tc.message["params"] = ""
+  }
+
+  // Create test case for each
+  test("Create Transaction : " + tc.description, () => {
+    if (tc.valid) {
+      // Valid doesn't throw
+      let result = transaction_create(JSON.stringify(tc.message));
+      assert.equal(tc.encoded_tx_hex,result);
+    } else {
+      // Not valid throw error
+      // TODO: Add error type to manual_testvectors.json file
+      assert.throws(
+        () => transaction_create(JSON.stringify(tc.message)),
+        /Error/
+      );
+    }
+  })
+
+  if (!tc.testnet) {
+    // FIXME: No way to specify network in fcsigner yet for address string format
+    console.log("FIX ME")
+    continue;
+  };
+
+  // Create test case for each
+  test("Parse Transaction : " + tc.description, () => {
+    let result = transaction_parse(tc.encoded_tx_hex, tc.testnet);
+
+    if (tc.valid) {
+      assert.equal(JSON.stringify(tc.message),result);
+    }
+  })
+}

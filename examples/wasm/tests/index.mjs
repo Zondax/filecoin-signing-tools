@@ -18,11 +18,11 @@ function run() {
 			t.fn();
 			// If there is no exception
 			// that means it ran correctly
-			console.log('✔', t.name);
+			console.log('\x1b[32m✔', t.name, '\x1b[0m');
 		} catch (e) {
 			// Exceptions, if any, are caught
 			// and the test is considered failed
-			console.log('❌', t.name);
+			console.log('\x1b[31m✗\x1b[0m  \x1b[41m', t.name, '\x1b[49m');
 			// log the stack of the error
 			console.error('\x1b[31m', e.stack, '\x1b[0m');
 
