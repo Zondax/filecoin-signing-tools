@@ -17,9 +17,6 @@ mod bip44;
 pub mod error;
 pub mod utils;
 
-//    let privkey = secp256k1::SecretKey::random(&mut OsRng);
-//    let pubkey = secp256k1::PublicKey::from_secret_key(&privkey);
-//    let address = "";
 
 pub fn key_generate_mnemonic() -> Result<String, SignerError> {
     let mnemonic = Mnemonic::new(MnemonicType::Words24, Language::English);

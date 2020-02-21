@@ -46,11 +46,11 @@ impl Bip44Path {
                 };
 
                 // FIX ME
-                let child_index: u32 = index_to_parse.parse().unwrap();
+                let child_index = index_to_parse.parse::<u32>()?;
 
-                (child_index | mask)
-            })
-            .collect::<Vec<u32>>();
+                Ok(child_index | mask)
+
+            }).collect::<Result<Vec<u32>, std::num::ParseIntError>>()?;
 
         let bip44Path = Bip44Path::from_slice(&result)?;
 
@@ -124,7 +124,7 @@ impl ExtendedSecretKey {
     pub fn derive_child_key(&self, child_index: u32) -> Result<ExtendedSecretKey, SignerError> {
         let mut hmac = Hmac::<Sha512>::new_varkey(&self.chain_code.0)?;
 
-        if child_index & 0x8000_0000u32 == 0 {
+        if child_index & HARDENED_BIT == 0 {
             // Not hardened
             hmac.input(&self.public_key());
             hmac.input(&child_index.to_be_bytes());
@@ -173,6 +173,7 @@ mod tests {
 
         println!("{}", master);
         // FIXME: Add checks & more test cases
+        //assert_eq!(master.private_key())
     }
 
     #[test]

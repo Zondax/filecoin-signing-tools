@@ -43,25 +43,7 @@ impl Keypair {
 }
 
 #[wasm_bindgen]
-pub fn key_generate() -> Keypair {
-    // TODO: return keypair (pub/priv + address)
-    // fcsigner::key_generate();
-
-    set_panic_hook();
-
-    let keypair = Keypair {
-        pubkey: String::from("Public key!"),
-        prvkey: String::from("Private key!"),
-        address: String::from("Address!"),
-    };
-
-    return keypair;
-}
-#[wasm_bindgen]
 pub fn key_derive(mnemonic: String, path: String) -> Result<Keypair, JsValue> {
-    // TODO mnemonic + path
-    // TODO: return keypair (pub/priv + address)
-
     set_panic_hook();
 
     let (prvkey, publickey, address) = fcsigner::key_derive(mnemonic, path)

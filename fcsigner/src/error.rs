@@ -1,5 +1,6 @@
 use hmac::crypto_mac::InvalidKeyLength;
 use thiserror::Error;
+use std::num::ParseIntError;
 
 //type Something = <UnsignedMessage as TryFrom>::Error;
 
@@ -25,4 +26,7 @@ pub enum SignerError {
     /// InvalidKeyLength error
     #[error("InvalidKeyLength error")]
     InvalidKeyLength(#[from] InvalidKeyLength),
+
+    #[error("Cannot parse integer")]
+    ParseIntError(#[from] ParseIntError),
 }
