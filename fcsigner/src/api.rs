@@ -34,7 +34,7 @@ pub enum MessageTxUserAPI {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-#[serde(tag = "type")]
+#[serde(untagged)]
 pub enum MessageTx {
     UnsignedMessage(UnsignedMessage),
     SignedMessage(SignedMessage),
