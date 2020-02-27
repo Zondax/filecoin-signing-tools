@@ -1,11 +1,12 @@
-use crate::api::UnsignedMessageUserAPI;
+use crate::api::{UnsignedMessageUserAPI, SignedMessageUserAPI, MessageTxUserAPI, MessageTx};
 use crate::error::SignerError;
 use crate::utils::to_hex_string;
 use forest_address::Address;
 use forest_encoding::{from_slice, to_vec};
-use forest_message::UnsignedMessage;
+use forest_message::{UnsignedMessage, SignedMessage};
 use hex::{decode, encode};
 use std::convert::TryFrom;
+use serde::{Deserialize, Serialize};
 
 use crate::bip44::{Bip44Path, ExtendedSecretKey};
 use bip39::{Language, Mnemonic, MnemonicType, Seed};
@@ -16,6 +17,21 @@ pub mod api;
 mod bip44;
 pub mod error;
 pub mod utils;
+
+
+/*enum MessageTxUserAPI {
+    UnsignedMessageUserAPI(UnsignedMessageUserAPI),
+    SignedMessageUserAPI(SignedMessageUserAPI),
+}
+
+impl From<MessageTx> for UnsignedMessageUserAPI {
+    fn from(message_tx: MessageTx) -> UnsignedMessageUserAPI {
+        match message_tx {
+            MessageTx::UnsignedMessage => message_tx,
+            MessageTx::SignedMessage => None,
+        }
+    }
+}*/
 
 pub fn key_generate_mnemonic() -> Result<String, SignerError> {
     let mnemonic = Mnemonic::new(MnemonicType::Words24, Language::English);
@@ -36,7 +52,7 @@ pub fn key_derive(mnemonic: String, path: String) -> Result<(String, String, Str
 
     let prvkey = encode(esk.secret_key());
     let publickey = to_hex_string(&esk.public_key());
-    let address = Address::new_secp256k1(esk.public_key().to_vec())
+    let address = Address::new_secp256k1(&esk.public_key().to_vec())
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     Ok((prvkey, publickey, address.to_string()))
@@ -57,12 +73,16 @@ pub fn transaction_create(
 pub fn transaction_parse(
     cbor_hexstring: &[u8],
     testnet: bool,
-) -> Result<UnsignedMessageUserAPI, SignerError> {
+) -> Result<MessageTxUserAPI, SignerError> {
     // FIXME: Extend to both unsigned and sign txs
 
     let cbor_buffer = decode(cbor_hexstring)?;
-    let message: UnsignedMessage = from_slice(&cbor_buffer)?;
-    let message_user_api = UnsignedMessageUserAPI::from(message);
+    println!("ok");
+    let message: MessageTx = from_slice(&cbor_buffer)?;
+    println!("wtf");
+    // let message = from_slice(&cbor_buffer)?;
+    let message_user_api = MessageTxUserAPI::from(message);
+    println!("get message");
 
     Ok(message_user_api)
 }
@@ -111,11 +131,16 @@ pub fn verify_signature(
 
     let publickey = recover(&message, &signature, &recovery_id)?;
 
-    let from = Address::new_secp256k1(publickey.serialize_compressed().to_vec())
+    let from = Address::new_secp256k1(&publickey.serialize_compressed().to_vec())
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
+    let txFrom = match tx {
+        MessageTxUserAPI::UnsignedMessageUserAPI(tx) => tx.from,
+        MessageTxUserAPI::SignedMessageUserAPI(tx) => tx.message.from,
+    };
+
     // Compare recovered public key with the public key from the transaction
-    if tx.from != from.to_string() {
+    if txFrom != from.to_string() {
         return Ok(false);
     }
 
@@ -124,8 +149,8 @@ pub fn verify_signature(
 
 #[cfg(test)]
 mod tests {
-    use crate::api::UnsignedMessageUserAPI;
-    use crate::{key_derive, key_generate_mnemonic, sign_transaction, verify_signature};
+    use crate::api::{UnsignedMessageUserAPI, MessageTxUserAPI};
+    use crate::{key_derive, key_generate_mnemonic, sign_transaction, verify_signature, transaction_parse};
     use hex::decode;
 
     // NOTE: not the same transaction used in other tests.
@@ -143,6 +168,9 @@ mod tests {
 
     const EXAMPLE_CBOR_DATA: &str =
         "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040";
+
+    const SIGNED_MESSAGE_CBOR: &str =
+        "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a800405841541025CA93D7D15508854520549F6A3C1582FBDE1A511F21B12DCB3E49E8BDFF3EB824CD8236C66B120B45941FD07252908131FFB1DFFA003813B9F2BDD0C2F601";
 
     const EXAMPLE_PRIVATE_KEY: &str =
         "f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a";
@@ -193,5 +221,16 @@ mod tests {
 
         println!("{}", prvkey);
         assert_eq!(prvkey, EXAMPLE_PRIVATE_KEY.to_string());
+    }
+
+    #[test]
+    fn parse_signed_transaction() {
+        let unsigned_tx = transaction_parse(EXAMPLE_CBOR_DATA.as_bytes(), true).expect("FIX ME");
+        let to = match unsigned_tx {
+            MessageTxUserAPI::UnsignedMessageUserAPI(tx) => tx.to,
+            MessageTxUserAPI::SignedMessageUserAPI(tx) => tx.message.to,
+        };
+
+        println!("{}", to.to_string());
     }
 }

@@ -1,7 +1,7 @@
 use crate::error::SignerError;
 use forest_address::Address;
-use forest_message::{Message, UnsignedMessage};
-use hex::decode;
+use forest_message::{Message, UnsignedMessage, SignedMessage};
+use hex::{decode, encode};
 use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
@@ -19,6 +19,55 @@ pub struct UnsignedMessageUserAPI {
     pub method: u64,
     pub params: String,
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct SignedMessageUserAPI {
+    pub message: UnsignedMessageUserAPI,
+    pub signature: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(tag = "type")]
+pub enum MessageTxUserAPI {
+    UnsignedMessageUserAPI(UnsignedMessageUserAPI),
+    SignedMessageUserAPI(SignedMessageUserAPI),
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(tag = "type")]
+pub enum MessageTx {
+    UnsignedMessage(UnsignedMessage),
+    SignedMessage(SignedMessage),
+}
+
+impl From<MessageTx> for MessageTxUserAPI {
+    fn from(message_tx: MessageTx) -> MessageTxUserAPI {
+        match message_tx {
+            MessageTx::UnsignedMessage(message_tx) => MessageTxUserAPI::UnsignedMessageUserAPI(UnsignedMessageUserAPI::from(message_tx)),
+            MessageTx::SignedMessage(message_tx) => MessageTxUserAPI::SignedMessageUserAPI(SignedMessageUserAPI::from(message_tx)),
+        }
+    }
+}
+
+/*#[repr(C)]
+#[derive(Debug, Deserialize, Serialize)]
+pub union MessageUserApi<'a> {
+    unsigned_message: &'a UnsignedMessageUserAPI,
+    signed_message: &'a SignedMessageUserAPI,
+}
+
+impl From<SignedMessage> for MessageUserApi<'a> {
+    fn from(signed_message: SignedMessage) -> MessageUserApi<'a> {
+        let message = SignedMessageUserAPI {
+            message: signed_message.message(),
+            signature: signed_message.signature(),
+        };
+
+        MessageUserApi {
+            signed_message: &message
+        }
+    }
+}*/
 
 impl TryFrom<UnsignedMessageUserAPI> for UnsignedMessage {
     type Error = SignerError;
@@ -66,6 +115,16 @@ impl From<UnsignedMessage> for UnsignedMessageUserAPI {
         }
     }
 }
+
+impl From<SignedMessage> for SignedMessageUserAPI {
+    fn from(signed_message: SignedMessage) -> SignedMessageUserAPI {
+        SignedMessageUserAPI {
+            message: UnsignedMessageUserAPI::from(signed_message.message().clone()),
+            signature: encode(signed_message.signature().bytes()),
+        }
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
