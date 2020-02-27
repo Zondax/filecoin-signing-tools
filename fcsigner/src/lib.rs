@@ -1,12 +1,12 @@
-use crate::api::{UnsignedMessageUserAPI, SignedMessageUserAPI, MessageTxUserAPI, MessageTx};
+use crate::api::{MessageTx, MessageTxUserAPI, SignedMessageUserAPI, UnsignedMessageUserAPI};
 use crate::error::SignerError;
 use crate::utils::to_hex_string;
 use forest_address::Address;
 use forest_encoding::{from_slice, to_vec};
-use forest_message::{UnsignedMessage, SignedMessage};
+use forest_message::{SignedMessage, UnsignedMessage};
 use hex::{decode, encode};
-use std::convert::TryFrom;
 use serde::{Deserialize, Serialize};
+use std::convert::TryFrom;
 
 use crate::bip44::{Bip44Path, ExtendedSecretKey};
 use bip39::{Language, Mnemonic, MnemonicType, Seed};
@@ -17,7 +17,6 @@ pub mod api;
 mod bip44;
 pub mod error;
 pub mod utils;
-
 
 /*enum MessageTxUserAPI {
     UnsignedMessageUserAPI(UnsignedMessageUserAPI),
@@ -149,8 +148,10 @@ pub fn verify_signature(
 
 #[cfg(test)]
 mod tests {
-    use crate::api::{UnsignedMessageUserAPI, MessageTxUserAPI};
-    use crate::{key_derive, key_generate_mnemonic, sign_transaction, verify_signature, transaction_parse};
+    use crate::api::{MessageTxUserAPI, UnsignedMessageUserAPI};
+    use crate::{
+        key_derive, key_generate_mnemonic, sign_transaction, transaction_parse, verify_signature,
+    };
     use hex::decode;
 
     // NOTE: not the same transaction used in other tests.

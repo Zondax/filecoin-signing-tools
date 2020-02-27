@@ -1,6 +1,6 @@
 use crate::error::SignerError;
 use forest_address::Address;
-use forest_message::{Message, UnsignedMessage, SignedMessage};
+use forest_message::{Message, SignedMessage, UnsignedMessage};
 use hex::{decode, encode};
 use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
@@ -43,8 +43,12 @@ pub enum MessageTx {
 impl From<MessageTx> for MessageTxUserAPI {
     fn from(message_tx: MessageTx) -> MessageTxUserAPI {
         match message_tx {
-            MessageTx::UnsignedMessage(message_tx) => MessageTxUserAPI::UnsignedMessageUserAPI(UnsignedMessageUserAPI::from(message_tx)),
-            MessageTx::SignedMessage(message_tx) => MessageTxUserAPI::SignedMessageUserAPI(SignedMessageUserAPI::from(message_tx)),
+            MessageTx::UnsignedMessage(message_tx) => {
+                MessageTxUserAPI::UnsignedMessageUserAPI(UnsignedMessageUserAPI::from(message_tx))
+            }
+            MessageTx::SignedMessage(message_tx) => {
+                MessageTxUserAPI::SignedMessageUserAPI(SignedMessageUserAPI::from(message_tx))
+            }
         }
     }
 }
@@ -124,7 +128,6 @@ impl From<SignedMessage> for SignedMessageUserAPI {
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
