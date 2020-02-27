@@ -53,26 +53,6 @@ impl From<MessageTx> for MessageTxUserAPI {
     }
 }
 
-/*#[repr(C)]
-#[derive(Debug, Deserialize, Serialize)]
-pub union MessageUserApi<'a> {
-    unsigned_message: &'a UnsignedMessageUserAPI,
-    signed_message: &'a SignedMessageUserAPI,
-}
-
-impl From<SignedMessage> for MessageUserApi<'a> {
-    fn from(signed_message: SignedMessage) -> MessageUserApi<'a> {
-        let message = SignedMessageUserAPI {
-            message: signed_message.message(),
-            signature: signed_message.signature(),
-        };
-
-        MessageUserApi {
-            signed_message: &message
-        }
-    }
-}*/
-
 impl TryFrom<UnsignedMessageUserAPI> for UnsignedMessage {
     type Error = SignerError;
 
