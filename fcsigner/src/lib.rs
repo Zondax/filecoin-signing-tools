@@ -3,7 +3,7 @@ use crate::error::SignerError;
 use crate::utils::to_hex_string;
 use forest_address::Address;
 use forest_encoding::{from_slice, to_vec};
-use forest_message::{UnsignedMessage};
+use forest_message::UnsignedMessage;
 use hex::{decode, encode};
 use std::convert::TryFrom;
 
@@ -57,7 +57,6 @@ pub fn transaction_parse(
     cbor_hexstring: &[u8],
     _testnet: bool,
 ) -> Result<MessageTxUserAPI, SignerError> {
-
     let cbor_buffer = decode(cbor_hexstring)?;
     let message: MessageTx = from_slice(&cbor_buffer)?;
     let message_user_api = MessageTxUserAPI::from(message);
@@ -198,8 +197,7 @@ mod tests {
     fn derive_child_key() {
         let mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
         let path = "m/44'/461'/0/0/0";
-        let (prvkey, _, _) =
-            key_derive(mnemonic.to_string(), path.to_string()).expect("FIX ME");
+        let (prvkey, _, _) = key_derive(mnemonic.to_string(), path.to_string()).expect("FIX ME");
 
         println!("{}", prvkey);
         assert_eq!(prvkey, EXAMPLE_PRIVATE_KEY.to_string());
@@ -214,8 +212,10 @@ mod tests {
         };
 
         println!("{}", to.to_string());
-        assert_eq!(to.to_string(), "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
-
+        assert_eq!(
+            to.to_string(),
+            "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()
+        );
     }
 
     #[test]
@@ -227,7 +227,9 @@ mod tests {
         };
 
         println!("{}", to.to_string());
-        assert_eq!(to.to_string(), "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
-
+        assert_eq!(
+            to.to_string(),
+            "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()
+        );
     }
 }
