@@ -1,5 +1,5 @@
 use crate::error::SignerError;
-use forest_address::Address;
+use forest_address::{Address, Network};
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use hex::{decode, encode};
 use num_bigint_chainsafe::BigUint;
@@ -38,6 +38,61 @@ pub enum MessageTxUserAPI {
 pub enum MessageTx {
     UnsignedMessage(UnsignedMessage),
     SignedMessage(SignedMessage),
+}
+
+pub struct MessageTxNetwork {
+    pub message_tx: MessageTx,
+    pub testnet: bool,
+}
+
+impl From<MessageTxNetwork> for MessageTxUserAPI {
+    fn from(message_tx_network: MessageTxNetwork) -> MessageTxUserAPI {
+        let mut network = Network::Mainnet;
+
+        if message_tx_network.testnet {
+            network = Network::Testnet;
+        }
+
+        match message_tx_network.message_tx {
+            MessageTx::UnsignedMessage(message_tx) => {
+                let mut to_address: forest_address::Address = message_tx.to().to_owned();
+                to_address.set_network(network);
+
+                let mut from_address: forest_address::Address = message_tx.from().to_owned();
+                from_address.set_network(network);
+
+                let tmp = UnsignedMessageUserAPI::from(message_tx);
+
+                let unsigned_message_user_api = UnsignedMessageUserAPI {
+                    to: to_address.to_string(),
+                    from: from_address.to_string(),
+                    ..tmp
+                };
+
+                MessageTxUserAPI::UnsignedMessageUserAPI(unsigned_message_user_api)
+            }
+            MessageTx::SignedMessage(message_tx) => {
+                let mut to_address: forest_address::Address = message_tx.to().to_owned();
+                to_address.set_network(network);
+
+                let mut from_address: forest_address::Address = message_tx.from().to_owned();
+                from_address.set_network(network);
+
+                let tmp = UnsignedMessageUserAPI::from(message_tx.message().clone());
+
+                let unsigned_message_user_api = UnsignedMessageUserAPI {
+                    to: to_address.to_string(),
+                    from: from_address.to_string(),
+                    ..tmp
+                };
+
+                MessageTxUserAPI::SignedMessageUserAPI(SignedMessageUserAPI {
+                    message: unsigned_message_user_api,
+                    signature: encode(message_tx.signature().bytes()),
+                })
+            }
+        }
+    }
 }
 
 impl From<MessageTx> for MessageTxUserAPI {

@@ -1,9 +1,9 @@
-use crate::api::{MessageTx, MessageTxUserAPI, UnsignedMessageUserAPI};
+use crate::api::{MessageTx, MessageTxNetwork, MessageTxUserAPI, UnsignedMessageUserAPI};
 use crate::error::SignerError;
 use crate::utils::to_hex_string;
 use forest_address::Address;
 use forest_encoding::{from_slice, to_vec};
-use forest_message::UnsignedMessage;
+use forest_message;
 use hex::{decode, encode};
 use std::convert::TryFrom;
 
@@ -45,7 +45,7 @@ pub fn transaction_create(
     unsigned_message_api: UnsignedMessageUserAPI,
 ) -> Result<String, SignerError> {
     // tx params as JSON
-    let message = UnsignedMessage::try_from(unsigned_message_api)?;
+    let message = forest_message::UnsignedMessage::try_from(unsigned_message_api)?;
     let message_cbor: Vec<u8> = to_vec(&message)?;
     let message_cbor_hex = encode(message_cbor);
 
@@ -55,13 +55,17 @@ pub fn transaction_create(
 
 pub fn transaction_parse(
     cbor_hexstring: &[u8],
-    _testnet: bool,
+    testnet: bool,
 ) -> Result<MessageTxUserAPI, SignerError> {
-    // FIXME: Support both mainnet & testnet #48
-
     let cbor_buffer = decode(cbor_hexstring)?;
     let message: MessageTx = from_slice(&cbor_buffer)?;
-    let message_user_api = MessageTxUserAPI::from(message);
+
+    let message_tx_with_network = MessageTxNetwork {
+        message_tx: message,
+        testnet: testnet,
+    };
+
+    let message_user_api = MessageTxUserAPI::from(message_tx_with_network);
 
     Ok(message_user_api)
 }
@@ -71,7 +75,7 @@ pub fn sign_transaction(
     privatekey_bytes: &[u8],
 ) -> Result<([u8; 64], u8), SignerError> {
     // tx params as JSON
-    let message = UnsignedMessage::try_from(unsigned_message_api)?;
+    let message = forest_message::UnsignedMessage::try_from(unsigned_message_api)?;
     let message_cbor: Vec<u8> = to_vec(&message)?;
 
     let secret_key = SecretKey::parse_slice(&privatekey_bytes)?;
@@ -216,7 +220,7 @@ mod tests {
         let unsigned_tx = transaction_parse(EXAMPLE_CBOR_DATA.as_bytes(), true).expect("FIX ME");
         let to = match unsigned_tx {
             MessageTxUserAPI::UnsignedMessageUserAPI(tx) => tx.to,
-            MessageTxUserAPI::SignedMessageUserAPI(tx) => panic!("Should be a Unsigned Message!"),
+            MessageTxUserAPI::SignedMessageUserAPI(_) => panic!("Should be a Unsigned Message!"),
         };
 
         println!("{}", to.to_string());
@@ -230,7 +234,7 @@ mod tests {
     fn parse_signed_transaction() {
         let signed_tx = transaction_parse(SIGNED_MESSAGE_CBOR.as_bytes(), true).expect("FIX ME");
         let signature = match signed_tx {
-            MessageTxUserAPI::UnsignedMessageUserAPI(tx) => panic!("Should be a Signed Message!"),
+            MessageTxUserAPI::UnsignedMessageUserAPI(_) => panic!("Should be a Signed Message!"),
             MessageTxUserAPI::SignedMessageUserAPI(tx) => tx.signature,
         };
 
@@ -238,6 +242,86 @@ mod tests {
         assert_eq!(
             signature,
             "541025ca93d7d15508854520549f6a3c1582fbde1a511f21b12dcb3e49e8bdff3eb824cd8236c66b120b45941fd07252908131ffb1dffa003813b9f2bdd0c2f601".to_string()
+        );
+    }
+
+    #[test]
+    fn parse_transaction_with_network() {
+        let unsigned_tx_mainnet =
+            transaction_parse(EXAMPLE_CBOR_DATA.as_bytes(), false).expect("FIX ME");
+        let (to, from) = match unsigned_tx_mainnet {
+            MessageTxUserAPI::UnsignedMessageUserAPI(tx) => (tx.to, tx.from),
+            MessageTxUserAPI::SignedMessageUserAPI(_) => panic!("Should be a Unsigned Message!"),
+        };
+
+        println!("{}", to.to_string());
+        assert_eq!(
+            to.to_string(),
+            "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()
+        );
+        assert_eq!(
+            from.to_string(),
+            "f1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka".to_string()
+        );
+    }
+
+    #[test]
+    fn parse_transaction_with_network_testnet() {
+        let unsigned_tx_testnet =
+            transaction_parse(EXAMPLE_CBOR_DATA.as_bytes(), true).expect("FIX ME");
+        let (to, from) = match unsigned_tx_testnet {
+            MessageTxUserAPI::UnsignedMessageUserAPI(tx) => (tx.to, tx.from),
+            MessageTxUserAPI::SignedMessageUserAPI(_) => panic!("Should be a Unsigned Message!"),
+        };
+
+        println!("{}", to.to_string());
+        assert_eq!(
+            to.to_string(),
+            "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()
+        );
+        assert_eq!(
+            from.to_string(),
+            "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka".to_string()
+        );
+    }
+
+    #[test]
+    fn parse_transaction_signed_with_network() {
+        let signed_tx_mainnet =
+            transaction_parse(SIGNED_MESSAGE_CBOR.as_bytes(), false).expect("FIX ME");
+        let (to, from) = match signed_tx_mainnet {
+            MessageTxUserAPI::UnsignedMessageUserAPI(_) => panic!("Should be a Signed Message!"),
+            MessageTxUserAPI::SignedMessageUserAPI(tx) => (tx.message.to, tx.message.from),
+        };
+
+        println!("{}", to.to_string());
+        assert_eq!(
+            to.to_string(),
+            "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()
+        );
+        assert_eq!(
+            from.to_string(),
+            "f1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka".to_string()
+        );
+    }
+
+    #[test]
+    fn parse_transaction_signed_with_network_testnet() {
+        let signed_tx_testnet =
+            transaction_parse(SIGNED_MESSAGE_CBOR.as_bytes(), true).expect("FIX ME");
+        let (to, from) = match signed_tx_testnet {
+            MessageTxUserAPI::UnsignedMessageUserAPI(_) => panic!("Should be a Signed Message!"),
+            MessageTxUserAPI::SignedMessageUserAPI(tx) => (tx.message.to, tx.message.from),
+        };
+
+        println!("{}", to.to_string());
+        assert_eq!(
+            to.to_string(),
+            "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()
+        );
+        assert_eq!(
+            from.to_string(),
+            "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka".to_string()
         );
     }
 }
