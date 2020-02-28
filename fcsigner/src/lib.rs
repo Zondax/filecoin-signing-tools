@@ -57,6 +57,8 @@ pub fn transaction_parse(
     cbor_hexstring: &[u8],
     _testnet: bool,
 ) -> Result<MessageTxUserAPI, SignerError> {
+    // FIXME: Support both mainnet & testnet #48
+
     let cbor_buffer = decode(cbor_hexstring)?;
     let message: MessageTx = from_slice(&cbor_buffer)?;
     let message_user_api = MessageTxUserAPI::from(message);
@@ -148,9 +150,14 @@ mod tests {
     const EXAMPLE_CBOR_DATA: &str =
         "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040";
 
-    // FIXME: Invalid CBOR signed message
-    // signature = 541025CA93D7D15508854520549F6A3C1582FBDE1A511F21B12DCB3E49E8BDFF3EB824CD8236C66B120B45941FD07252908131FFB1DFFA003813B9F2BDD0C2F601
-    // signature with sig_type : 01541025CA93D7D15508854520549F6A3C1582FBDE1A511F21B12DCB3E49E8BDFF3EB824CD8236C66B120B45941FD07252908131FFB1DFFA003813B9F2BDD0C2F601
+    /* signed message :
+     [
+      // unsigned message
+      [h'01FD1D0F4DFCD7E99AFCB99A8326B7DC459D32C628', h'010F323F4709E8E4DB0C1D4CD374F9F35201D26FB2', 1, h'000186A0', h'0009C4', h'0061A8', 0, h''],
+      // Signature (sig_type + signatureRS + recoveryID)
+      h'01541025CA93D7D15508854520549F6A3C1582FBDE1A511F21B12DCB3E49E8BDFF3EB824CD8236C66B120B45941FD07252908131FFB1DFFA003813B9F2BDD0C2F601'
+     ]
+    */
     const SIGNED_MESSAGE_CBOR: &str =
         "82885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040584201541025CA93D7D15508854520549F6A3C1582FBDE1A511F21B12DCB3E49E8BDFF3EB824CD8236C66B120B45941FD07252908131FFB1DFFA003813B9F2BDD0C2F601";
 
@@ -209,7 +216,7 @@ mod tests {
         let unsigned_tx = transaction_parse(EXAMPLE_CBOR_DATA.as_bytes(), true).expect("FIX ME");
         let to = match unsigned_tx {
             MessageTxUserAPI::UnsignedMessageUserAPI(tx) => tx.to,
-            MessageTxUserAPI::SignedMessageUserAPI(tx) => tx.message.to,
+            MessageTxUserAPI::SignedMessageUserAPI(tx) => panic!("Should be a Unsigned Message!"),
         };
 
         println!("{}", to.to_string());
@@ -221,16 +228,16 @@ mod tests {
 
     #[test]
     fn parse_signed_transaction() {
-        let unsigned_tx = transaction_parse(SIGNED_MESSAGE_CBOR.as_bytes(), true).expect("FIX ME");
-        let to = match unsigned_tx {
-            MessageTxUserAPI::UnsignedMessageUserAPI(tx) => tx.to,
-            MessageTxUserAPI::SignedMessageUserAPI(tx) => tx.message.to,
+        let signed_tx = transaction_parse(SIGNED_MESSAGE_CBOR.as_bytes(), true).expect("FIX ME");
+        let signature = match signed_tx {
+            MessageTxUserAPI::UnsignedMessageUserAPI(tx) => panic!("Should be a Signed Message!"),
+            MessageTxUserAPI::SignedMessageUserAPI(tx) => tx.signature,
         };
 
-        println!("{}", to.to_string());
+        println!("{}", signature);
         assert_eq!(
-            to.to_string(),
-            "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()
+            signature,
+            "541025ca93d7d15508854520549f6a3c1582fbde1a511f21b12dcb3e49e8bdff3eb824cd8236c66b120b45941fd07252908131ffb1dffa003813b9f2bdd0c2f601".to_string()
         );
     }
 }

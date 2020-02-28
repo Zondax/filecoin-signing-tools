@@ -27,7 +27,7 @@ pub struct SignedMessageUserAPI {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-#[serde(tag = "type")]
+#[serde(untagged)]
 pub enum MessageTxUserAPI {
     UnsignedMessageUserAPI(UnsignedMessageUserAPI),
     SignedMessageUserAPI(SignedMessageUserAPI),
