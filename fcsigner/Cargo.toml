@@ -19,7 +19,9 @@ forest_message = { git = "https://github.com/zondax/forest", branch="master" }
 forest_address = { git = "https://github.com/zondax/forest", branch="master" }
 forest_encoding = { git = "https://github.com/zondax/forest", branch="master" }
 
-num_bigint_chainsafe =  { package="num-bigint", git = "https://github.com/austinabell/num-bigint", rev = "f7084a9ed5a2b08d9bfb67790cb4ce9212193f31", features = ["serde_derive"] }
+#num_bigint_chainsafe =  { package="num-bigint", git = "https://github.com/austinabell/num-bigint", rev = "f7084a9ed5a2b08d9bfb67790cb4ce9212193f31", features = ["serde_derive"] }
+
+num_bigint_chainsafe = { package = "forest_bigint", git = "https://github.com/zondax/forest", branch="master"}
 
 libsecp256k1 = "0.3.4"
 blake2b_simd = "0.5.10"

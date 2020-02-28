@@ -52,9 +52,9 @@ impl Bip44Path {
             })
             .collect::<Result<Vec<u32>, std::num::ParseIntError>>()?;
 
-        let bip44Path = Bip44Path::from_slice(&result)?;
+        let bip44_path = Bip44Path::from_slice(&result)?;
 
-        Ok(bip44Path)
+        Ok(bip44_path)
     }
 }
 

@@ -1,7 +1,7 @@
 use crate::error::SignerError;
 use forest_address::Address;
-use forest_message::{Message, UnsignedMessage};
-use hex::decode;
+use forest_message::{Message, SignedMessage, UnsignedMessage};
+use hex::{decode, encode};
 use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
@@ -18,6 +18,39 @@ pub struct UnsignedMessageUserAPI {
     pub gas_limit: String,
     pub method: u64,
     pub params: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct SignedMessageUserAPI {
+    pub message: UnsignedMessageUserAPI,
+    pub signature: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(tag = "type")]
+pub enum MessageTxUserAPI {
+    UnsignedMessageUserAPI(UnsignedMessageUserAPI),
+    SignedMessageUserAPI(SignedMessageUserAPI),
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(untagged)]
+pub enum MessageTx {
+    UnsignedMessage(UnsignedMessage),
+    SignedMessage(SignedMessage),
+}
+
+impl From<MessageTx> for MessageTxUserAPI {
+    fn from(message_tx: MessageTx) -> MessageTxUserAPI {
+        match message_tx {
+            MessageTx::UnsignedMessage(message_tx) => {
+                MessageTxUserAPI::UnsignedMessageUserAPI(UnsignedMessageUserAPI::from(message_tx))
+            }
+            MessageTx::SignedMessage(message_tx) => {
+                MessageTxUserAPI::SignedMessageUserAPI(SignedMessageUserAPI::from(message_tx))
+            }
+        }
+    }
 }
 
 impl TryFrom<UnsignedMessageUserAPI> for UnsignedMessage {
@@ -63,6 +96,15 @@ impl From<UnsignedMessage> for UnsignedMessageUserAPI {
             // FIXME: need a proper way to serialize parameters, for now
             // only method=0 is supported for keep empty
             params: "".to_owned(),
+        }
+    }
+}
+
+impl From<SignedMessage> for SignedMessageUserAPI {
+    fn from(signed_message: SignedMessage) -> SignedMessageUserAPI {
+        SignedMessageUserAPI {
+            message: UnsignedMessageUserAPI::from(signed_message.message().clone()),
+            signature: encode(signed_message.signature().bytes()),
         }
     }
 }
