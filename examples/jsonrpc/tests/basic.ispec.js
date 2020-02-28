@@ -121,20 +121,20 @@ let jsonData = JSON.parse(rawData);
 for (let i = 0; i < jsonData.length; i += 1) {
   let tc = jsonData[i];
   if (!tc.message.params) {
-    tc.message["params"] = ""
+    tc.message["params"] = "";
   }
 
-
-  if (!tc.testnet) {
-    // FIXME: No way to as for testnet format in fcsigner yet
-    console.log("FIX ME")
+  if (tc.not_implemented) {
+    // FIXME: Protocol 0 parsing not implemented in forest
+    // FIXME: should handle the case when address have 0 byte (issue #53)
+    // FIXME: doesn't fail for empty value #54
+    console.log("FIX ME");
     continue;
   };
 
   // Create test case for each
   test("Parse Transaction : " + tc.description, async () => {
     let response = await callMethod(URL, "transaction_parse", [tc.encoded_tx_hex, tc.testnet], i);
-
 
     if (tc.valid) {
       console.log(response);

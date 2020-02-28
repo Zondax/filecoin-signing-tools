@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import secp256k1 from 'secp256k1';
 import {key_derive, verify_signature, transaction_parse, transaction_create, sign_transaction} from 'fcwebsigner';
 import bip32 from 'bip32';
-import {getDigest} from './utils.mjs' 
+import {getDigest} from './utils.mjs'
 import fs from 'fs';
 
 //////////////////////////////////
@@ -35,7 +35,7 @@ let node = bip32.fromBase58(prv_root_key)
 //
 ////////////////////////////////
 test('Parse Cbor Transaction', () => {
-  assert.equal(JSON.stringify(transaction), transaction_parse(cbor_transaction))
+  assert.equal(JSON.stringify(transaction), transaction_parse(cbor_transaction, true))
 })
 
 test('Parse Cbor Transaction fail (extra bytes)', () => {
@@ -171,18 +171,26 @@ for (let i = 0; i < jsonData.length; i += 1) {
     }
   })
 
-  if (!tc.testnet) {
-    // FIXME: No way to specify network in fcsigner yet for address string format
-    console.log("FIX ME")
+  if (tc.not_implemented) {
+    // FIXME: Protocol 0 parsing not implemented in forest
+    // FIXME: should handle the case when address have 0 byte (issue #53)
+    // FIXME: doesn't fail for empty value #54
+    console.log("FIX ME");
     continue;
   };
 
   // Create test case for each
   test("Parse Transaction : " + tc.description, () => {
-    let result = transaction_parse(tc.encoded_tx_hex, tc.testnet);
-
     if (tc.valid) {
+      let result = transaction_parse(tc.encoded_tx_hex, tc.testnet);
       assert.equal(JSON.stringify(tc.message),result);
+    } else {
+      // Not valid throw error
+      // TODO: Add error type to manual_testvectors.json file
+      assert.throws(
+        () => transaction_parse(tc.encoded_tx_hex, tc.testnet),
+        /error/
+      );
     }
   })
 }

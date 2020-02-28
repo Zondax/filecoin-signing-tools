@@ -4,6 +4,7 @@
         "encoded_tx": "iEBAAEIAAEIAAEIAAABA",
         "valid": false,
         "testnet": false,
+        "not_implemented": true,
         "message": {
             "to": "",
             "from": "",
@@ -292,6 +293,7 @@
       "encoded_tx": "iFYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVgAAAAAAAAAAAAAAAAAAAAAAAAAAAAABRAABhqBDAAnEQwBhqABA",
       "valid": false,
       "testnet": false,
+      "not_implemented": true,
       "message": {
           "to": "f00000000000000000000000000000000000000000000",
           "from": "f00",
@@ -404,6 +406,7 @@
         "encoded_tx": "iFUB0VAFBOTRrD6JrIkaRQJYb6vZtBdVAbiCYZ1GVY89njFtEbSNzyETJwJqAUEAQwAJxEMAYagAQA==",
         "valid": false,
         "testnet": false,
+        "not_implemented": true,
         "message": {
             "to": "f12fiakbhe2gwd5cnmrenekasyn6v5tnaxaqizq6a",
             "from": "f1xcbgdhkgkwht3hrrnui3jdopeejsoatkzmoltqy",
@@ -413,6 +416,6 @@
             "gas_limit": "25000",
             "method": 0
         },
-        "encoded_tx_hex": "885501d1500504e4d1ac3e89ac891a4502586fabd9b4175501b882619d46558f3d9e316d11b48dcf211327026a014100430009c4430061a80040"
+        "encoded_tx_hex": "885501d1500504e4d1ac3e89ac891a4502586fabd9b4175501b882619d46558f3d9e316d11b48dcf211327026a01430009c4430061a80040"
     }
 ]
