@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import secp256k1 from 'secp256k1';
-import {key_derive, verify_signature, transaction_parse, transaction_create, sign_transaction} from 'fcwebsigner';
+import {key_generate_mnemonic, key_derive, verify_signature, transaction_parse, transaction_create, sign_transaction} from 'fcwebsigner';
 import bip32 from 'bip32';
 import {getDigest} from './utils.mjs'
 import fs from 'fs';
@@ -69,10 +69,12 @@ test('Create Transaction Fail (missing nonce)', () => {
 
 });
 
-/*test('Key Generate Mnemonic', () => {
+test('Key Generate Mnemonic', () => {
   // Can't get a random number to generate mnemonic
   // panicked at 'could not initialize thread_rng: getrandom: this target is not supported', ~/.cargo/registry/src/github.com-1ecc6299db9ec823/rand-0.7.3/src/rngs/thread.rs:65:17
-})*/
+
+  console.log(key_generate_mnemonic());
+});
 
 test('Key Derive', () => {
   let child = node.derivePath("m/44'/461'/0/0/1");
