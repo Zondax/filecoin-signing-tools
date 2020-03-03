@@ -22,11 +22,13 @@ pub enum SignerError {
     // Generic error message
     #[error("Error: `{0}`")]
     GenericString(String),
-
-    /// InvalidKeyLength error
-    #[error("InvalidKeyLength error")]
-    InvalidKeyLength(#[from] InvalidKeyLength),
-
     #[error("Cannot parse integer")]
     ParseIntError(#[from] ParseIntError),
+}
+
+// We need to use from because InvalidKeyLength does not implement as_dyn_err
+impl From<InvalidKeyLength> for SignerError {
+    fn from(err: InvalidKeyLength) -> SignerError {
+        SignerError::GenericString(err.to_string())
+    }
 }
