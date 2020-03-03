@@ -1,0 +1,269 @@
+{
+	"info": {
+		"_postman_id": "6a68bd37-ed28-42bb-93b9-2d72d255b9ef",
+		"name": "fcservice",
+		"description": "fcservice api documentation",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "key_generate_mnemonic",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"jsonrpc\": \"2.0\", \"id\":\"curltest\", \"method\": \"key_generate_mnemonic\", \"params\": []}",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:3030/v0/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3030",
+					"path": [
+						"v0",
+						""
+					]
+				},
+				"description": "Generate a mnemonic"
+			},
+			"response": []
+		},
+		{
+			"name": "key_derive",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"jsonrpc\": \"2.0\", \"id\":\"curltest\", \"method\": \"key_derive\", \"params\": [\"equip will roof matter pink blind book anxiety banner elbow sun young\", \"m/44'/461'/0/0/0\"]}",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:3030/v0/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3030",
+					"path": [
+						"v0",
+						""
+					]
+				},
+				"description": "Return a child private/public key pair and the address associated following the path given and using the mnemonic as seed."
+			},
+			"response": []
+		},
+		{
+			"name": "transaction_create",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"jsonrpc\": \"2.0\", \"id\":\"curltest\", \"method\": \"transaction_create\", \"params\": {\"to\": \"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy\", \"from\": \"t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka\", \"nonce\": 1, \"value\": \"100000\", \"gas_price\": \"2500\",\"gas_limit\": \"25000\", \"method\": 0, \"params\": \"\"}}",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:3030/v0/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3030",
+					"path": [
+						"v0",
+						""
+					]
+				},
+				"description": "Create a transaction from the given parameters."
+			},
+			"response": []
+		},
+		{
+			"name": "transaction_parse",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"jsonrpc\": \"2.0\", \"id\":\"curltest\", \"method\": \"transaction_parse\", \"params\": [\"885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040\", true]}",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:3030/v0/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3030",
+					"path": [
+						"v0",
+						""
+					]
+				},
+				"description": "Parse CBOR transaction and return it as json"
+			},
+			"response": []
+		},
+		{
+			"name": "sign_transaction",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"jsonrpc\": \"2.0\", \"id\":\"curltest\", \"method\": \"sign_transaction\", \"params\": [{\n  \"to\": \"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy\",\n  \"from\": \"t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka\",\n  \"nonce\": 1,\n  \"value\": \"100000\",\n  \"gas_price\": \"2500\",\n  \"gas_limit\": \"25000\",\n  \"method\": 0,\n  \"params\": \"\"\n}, \"f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a\"]}",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:3030/v0/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3030",
+					"path": [
+						"v0",
+						""
+					]
+				},
+				"description": "Sign transaction"
+			},
+			"response": []
+		},
+		{
+			"name": "verify_signature",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"jsonrpc\": \"2.0\", \"id\":\"curltest\", \"method\": \"verify_signature\", \"params\": [\"541025ca93d7d15508854520549f6a3c1582fbde1a511f21b12dcb3e49e8bdff3eb824cd8236c66b120b45941fd07252908131ffb1dffa003813b9f2bdd0c2f601\", \"885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040\"]}",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:3030/v0/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3030",
+					"path": [
+						"v0",
+						""
+					]
+				},
+				"description": "Verify a signature"
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
