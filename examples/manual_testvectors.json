@@ -4,7 +4,6 @@
         "encoded_tx": "iEBAAEIAAEIAAEIAAABA",
         "valid": false,
         "testnet": false,
-        "not_implemented": true,
         "message": {
             "to": "",
             "from": "",
