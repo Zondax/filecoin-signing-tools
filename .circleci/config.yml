@@ -136,11 +136,12 @@ workflows:
       - tests_service:
           requires:
             - build
-      - docs_publish:
-          requires:
-            - tests_rust
-            - tests_wasm
-            - tests_service
-          filters:
-            branches:
-              only: master
+      # Disabling until repository is public
+#      - docs_publish:
+#          requires:
+#            - tests_rust
+#            - tests_wasm
+#            - tests_service
+#          filters:
+#            branches:
+#              only: master
