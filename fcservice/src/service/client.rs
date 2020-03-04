@@ -1,9 +1,9 @@
 ////! Fcservice RPC Client
 
 use crate::service::cache::{cache_get_nonce, cache_put_nonce};
-use crate::service::error::RemoteNode::{EmptyNonce, InvalidNonce};
+use crate::service::error::RemoteNode::{EmptyNonce, InvalidNonce, InvalidStatusRequest, JSONRPC};
 use crate::service::error::ServiceError;
-use jsonrpc_core::response::Output::Success;
+use jsonrpc_core::response::Output::{Success, Failure};
 use jsonrpc_core::{Id, MethodCall, Params, Response, Version};
 use serde_json::value::Value;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -11,46 +11,33 @@ use std::sync::atomic::{AtomicU64, Ordering};
 static CALL_ID: AtomicU64 = AtomicU64::new(1);
 
 pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceError> {
-    println!("NOOOOO");
 
     if let Some(nonce) = cache_get_nonce(addr) {
-        println!("get cache");
         return Ok(nonce);
     }
 
     let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
 
-    println!("got caller ID");
-
     // Prepare request
     let m = MethodCall {
         jsonrpc: Some(Version::V2),
         method: "Filecoin.MpoolGetNonce".to_owned(),
-        params: Params::Array(vec![Value::from("t02")]),
+        params: Params::Array(vec![Value::from(addr)]),
         id: Id::Num(call_id),
     };
 
     // Build request
     let client = reqwest::Client::new();
-    let builder = client.post(url).bearer_auth(jwt).json(&m);
-
-    println!("Ready to send");
+    let request = client.post(url).bearer_auth(jwt).json(&m).build()?;
 
     // Send and wait for response
-    let kek = builder.send().await?;
-
-    println!("Wait what ?");
+    let kek = client.execute(request).await?;
 
     let resp = kek.json::<Response>().await?;
 
-    println!("si si");
-
     // Handle response
     let nonce = match resp {
-        Response::Single(Success(s)) => {
-            println!("wut");
-            s.result.as_u64().ok_or(EmptyNonce)?
-        },
+        Response::Single(Success(s)) => s.result.as_u64().ok_or(EmptyNonce)?,
         _ => return Err(ServiceError::RemoteNode(InvalidNonce)),
     };
 
@@ -70,32 +57,34 @@ pub async fn send_signed_tx(_url: &str, _jwt: &str) -> Result<bool, ServiceError
     Err(ServiceError::NotImplemented)
 }
 
-pub async fn get_status(url: &str, jwt: &str, cid_message: &str) -> Result<bool, ServiceError> {
-    // FIXME: Get tx status
-    // FIXME: https://github.com/Zondax/filecoin-rs/issues/34
-
+pub async fn get_status(url: &str, jwt: &str, cid_message: Value) -> Result<Value, ServiceError> {
     let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
 
     // Prepare request
     let m = MethodCall {
         jsonrpc: Some(Version::V2),
         method: "Filecoin.ChainGetMessage".to_owned(),
-        params: Params::Array(vec![]),
+        params: Params::Array(vec![Value::from(cid_message)]),
         id: Id::Num(call_id),
     };
 
     // Build request
     let client = reqwest::Client::new();
-    let builder = client.post(url).bearer_auth(jwt).json(&m);
+    let request = client.post(url).bearer_auth(jwt).json(&m).build()?;
 
     // Send and wait for response
-    let resp = builder.send().await?.json::<Response>().await?;
+    let resp = client.execute(request).await?;
+
+    let ok = resp.json::<Response>().await?;
 
     // Handle response
-    let transaction = match resp {
-        Response::Single(Success(s)) => s.result.as_u64().ok_or(0),
-        _ => return Err(ServiceError::RemoteNode(JSONRPC)),
+    let transaction_status = match ok {
+        Response::Single(Success(s)) => s.result,
+        // REVIEW: if not mined yet return
+        // "error":{"code":1,"message":"blockstore: block not found"}
+        Response::Single(Failure(f)) => return Err(ServiceError::RemoteNode(JSONRPC(f.error))),
+        _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
     };
 
-    Ok(true)
+    Ok(transaction_status)
 }

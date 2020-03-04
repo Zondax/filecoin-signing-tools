@@ -7,6 +7,7 @@ use fcsigner::utils::{from_hex_string, to_hex_string};
 use jsonrpc_core::{Id, MethodCall, Success, Version};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use serde_json::json;
 
 pub async fn key_generate_mnemonic(_c: MethodCall) -> Result<Success, ServiceError> {
     let mnemonic = fcsigner::key_generate_mnemonic()?;
@@ -144,9 +145,9 @@ pub async fn get_status(c: MethodCall) -> Result<Success, ServiceError> {
     let url = "http://192.168.1.38:1234/rpc/v0";
     let jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
 
-    let params = "{\"/\":\"bafy2bzaceaxm23epjsmh75yvzcecsrbavlmkcxnva66bkdebdcnyw3bjrc74u\"}";
+    let params = json!({"/": params.cid_message.to_string()});
 
-    let status = client::get_status(&url, &jwt, &params).await?;
+    let status = client::get_status(&url, &jwt, params).await?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),

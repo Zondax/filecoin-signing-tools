@@ -245,3 +245,22 @@ test("verify_invalid_signature", async () => {
   expect(result).toEqual(false);
   expect(response.result).toEqual(false);
 });
+
+test("get_status", async () => {
+  let message_cid = "bafy2bzacea2ob4bctlucgp2okbczqvk5ctx4jqjapslz57mbcmnnzyftgeqgu";
+  const response = await callMethod(URL, "get_status", [message_cid], 1);
+  console.log(response);
+
+  // Do we have a results
+  expect(response).toHaveProperty("result");
+  expect(response.result).toEqual({
+        "From": "t3wjxuftije2evjmzo2yoy5ghfe2o42mavrpmwuzooghzcxdhqjdu7kn6dvkzf4ko37w7sfnnzdzstcjmeooea",
+        "GasLimit": "1000",
+        "GasPrice": "0",
+        "Method": 0,
+        "Nonce": 66867,
+        "Params": "",
+        "To": "t1lv32q33y64xs64pnyn6om7ftirax5ikspkumwsa",
+        "Value": "5000000000000000"
+    });
+});
