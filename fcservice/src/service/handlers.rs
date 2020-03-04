@@ -32,6 +32,7 @@ pub async fn post_api_v0_methods(method_call: MethodCall) -> Result<impl Reply, 
         "transaction_parse" => methods::transaction_parse(method_call).await,
         "sign_transaction" => methods::sign_transaction(method_call).await,
         "verify_signature" => methods::verify_signature(method_call).await,
+        "get_status" => methods::get_status(method_call).await,
         _ => return Err(warp::reject::not_found()),
     };
 

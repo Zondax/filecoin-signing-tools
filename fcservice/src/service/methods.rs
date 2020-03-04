@@ -1,6 +1,7 @@
 //////! Fcservice RPC Client
 
 use crate::service::error::ServiceError;
+use crate::service::client;
 use fcsigner::api::UnsignedMessageUserAPI;
 use fcsigner::utils::{from_hex_string, to_hex_string};
 use jsonrpc_core::{Id, MethodCall, Success, Version};
@@ -131,20 +132,61 @@ pub async fn verify_signature(c: MethodCall) -> Result<Success, ServiceError> {
     Ok(so)
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+pub struct GetStatusParamsAPI {
+    pub cid_message: String,
+}
+
+pub async fn get_status(c: MethodCall) -> Result<Success, ServiceError> {
+    let params = c.params.parse::<GetStatusParamsAPI>()?;
+
+    // FIXME: get from file configuration
+    let url = "http://192.168.1.38:1234/rpc/v0";
+    let jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
+
+    let params = "{\"/\":\"bafy2bzaceaxm23epjsmh75yvzcecsrbavlmkcxnva66bkdebdcnyw3bjrc74u\"}";
+
+    let status = client::get_status(&url, &jwt, &params).await?;
+
+    let so = Success {
+        jsonrpc: Some(Version::V2),
+        result: Value::from(status),
+        id: Id::Num(1),
+    };
+
+    Ok(so)
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::service::client::get_nonce;
+    use crate::service::client::{get_nonce, get_status};
     use futures_await_test::async_test;
 
-    #[ignore]
     #[async_test]
+    #[ignore]
     async fn example_something_else_and_retrieve_nonce() {
         // FIXME: use configuration parameters instead
-        let url = "https://lotus-dev.temporal.cloud/rpc/v0";
-        let jwt = "some_token";
-        let addr = "t1jdlfl73voaiblrvn2yfivvn5ifucwwv5f26nfza";
+        let url = "http://192.168.1.38:1234/rpc/v0";
+        let jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
+        let addr = "t02";
+
+        // FIXME: Doesn't work without tokio runtime ?
 
         let nonce = get_nonce(&url, &jwt, &addr).await;
+
         assert!(nonce.is_ok());
+    }
+
+    #[async_test]
+    #[ignore]
+    async fn example_get_status_transaction() {
+        // FIXME: use configuration parameters instead
+        let url = "http://192.168.1.38:1234/rpc/v0";
+        let jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
+        let params = "{\"/\":\"bafy2bzaceaxm23epjsmh75yvzcecsrbavlmkcxnva66bkdebdcnyw3bjrc74u\"}";
+
+        let status = get_status(&url, &jwt, &params).await;
+
+        assert!(false);
     }
 }

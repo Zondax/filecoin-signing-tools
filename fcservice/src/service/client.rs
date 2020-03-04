@@ -11,17 +11,22 @@ use std::sync::atomic::{AtomicU64, Ordering};
 static CALL_ID: AtomicU64 = AtomicU64::new(1);
 
 pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceError> {
+    println!("NOOOOO");
+
     if let Some(nonce) = cache_get_nonce(addr) {
+        println!("get cache");
         return Ok(nonce);
     }
 
     let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
 
+    println!("got caller ID");
+
     // Prepare request
     let m = MethodCall {
         jsonrpc: Some(Version::V2),
         method: "Filecoin.MpoolGetNonce".to_owned(),
-        params: Params::Array(vec![Value::from(addr)]),
+        params: Params::Array(vec![Value::from("t02")]),
         id: Id::Num(call_id),
     };
 
@@ -29,12 +34,23 @@ pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceE
     let client = reqwest::Client::new();
     let builder = client.post(url).bearer_auth(jwt).json(&m);
 
+    println!("Ready to send");
+
     // Send and wait for response
-    let resp = builder.send().await?.json::<Response>().await?;
+    let kek = builder.send().await?;
+
+    println!("Wait what ?");
+
+    let resp = kek.json::<Response>().await?;
+
+    println!("si si");
 
     // Handle response
     let nonce = match resp {
-        Response::Single(Success(s)) => s.result.as_u64().ok_or(EmptyNonce)?,
+        Response::Single(Success(s)) => {
+            println!("wut");
+            s.result.as_u64().ok_or(EmptyNonce)?
+        },
         _ => return Err(ServiceError::RemoteNode(InvalidNonce)),
     };
 
@@ -54,8 +70,32 @@ pub async fn send_signed_tx(_url: &str, _jwt: &str) -> Result<bool, ServiceError
     Err(ServiceError::NotImplemented)
 }
 
-pub async fn get_status(_url: &str, _jwt: &str) -> Result<bool, ServiceError> {
+pub async fn get_status(url: &str, jwt: &str, cid_message: &str) -> Result<bool, ServiceError> {
     // FIXME: Get tx status
     // FIXME: https://github.com/Zondax/filecoin-rs/issues/34
-    Err(ServiceError::NotImplemented)
+
+    let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
+
+    // Prepare request
+    let m = MethodCall {
+        jsonrpc: Some(Version::V2),
+        method: "Filecoin.ChainGetMessage".to_owned(),
+        params: Params::Array(vec![]),
+        id: Id::Num(call_id),
+    };
+
+    // Build request
+    let client = reqwest::Client::new();
+    let builder = client.post(url).bearer_auth(jwt).json(&m);
+
+    // Send and wait for response
+    let resp = builder.send().await?.json::<Response>().await?;
+
+    // Handle response
+    let transaction = match resp {
+        Response::Single(Success(s)) => s.result.as_u64().ok_or(0),
+        _ => return Err(ServiceError::RemoteNode(JSONRPC)),
+    };
+
+    Ok(true)
 }
