@@ -1,13 +1,13 @@
 //////! Fcservice RPC Client
 
-use crate::service::error::ServiceError;
 use crate::service::client;
+use crate::service::error::ServiceError;
 use fcsigner::api::UnsignedMessageUserAPI;
 use fcsigner::utils::{from_hex_string, to_hex_string};
 use jsonrpc_core::{Id, MethodCall, Success, Version};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use serde_json::json;
+use serde_json::Value;
 
 pub async fn key_generate_mnemonic(_c: MethodCall) -> Result<Success, ServiceError> {
     let mnemonic = fcsigner::key_generate_mnemonic()?;

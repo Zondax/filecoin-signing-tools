@@ -3,7 +3,7 @@
 use crate::service::cache::{cache_get_nonce, cache_put_nonce};
 use crate::service::error::RemoteNode::{EmptyNonce, InvalidNonce, InvalidStatusRequest, JSONRPC};
 use crate::service::error::ServiceError;
-use jsonrpc_core::response::Output::{Success, Failure};
+use jsonrpc_core::response::Output::{Failure, Success};
 use jsonrpc_core::{Id, MethodCall, Params, Response, Version};
 use serde_json::value::Value;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -11,7 +11,6 @@ use std::sync::atomic::{AtomicU64, Ordering};
 static CALL_ID: AtomicU64 = AtomicU64::new(1);
 
 pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceError> {
-
     if let Some(nonce) = cache_get_nonce(addr) {
         return Ok(nonce);
     }
