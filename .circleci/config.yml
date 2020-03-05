@@ -101,6 +101,28 @@ jobs:
             yarn run test:integration
       # No need to save this in cache
 
+  docs_publish:
+    docker:
+      - image: circleci/node:lts
+    steps:
+      - checkout
+      - run: yarn
+      - run: yarn build
+      - add_ssh_keys:
+          fingerprints:
+            - "01:f2:c9:e2:64:68:8e:20:52:41:de:1a:bd:19:83:5b"
+      - run:
+          name: Install and configure dependencies
+          command: |
+            yarn global add gh-pages@2.2.0
+            git config user.email "ci-build@zondax.ch"
+            git config user.name "ci-build"
+      - run:
+          name: Deploy docs to gh-pages branch
+          command: |
+            $(yarn global bin)/gh-pages --message "[skip ci] Updates" --dist docs/.vuepress/dist
+
+
 workflows:
   build_all:
     jobs:
@@ -114,3 +136,12 @@ workflows:
       - tests_service:
           requires:
             - build
+      # Disabling until repository is public
+#      - docs_publish:
+#          requires:
+#            - tests_rust
+#            - tests_wasm
+#            - tests_service
+#          filters:
+#            branches:
+#              only: master

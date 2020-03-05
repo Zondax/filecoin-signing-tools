@@ -17,3 +17,4 @@ Cargo.lock
 
 examples/wasm/yarn-error.log
 /.circleci/tmp.yml
+/node_modules
