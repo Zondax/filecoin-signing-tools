@@ -162,31 +162,26 @@ pub async fn get_status(c: MethodCall) -> Result<Success, ServiceError> {
 mod tests {
     use crate::service::client::{get_nonce, get_status};
     use futures_await_test::async_test;
+    use serde_json::json;
 
-    #[async_test]
-    #[ignore]
+    const TEST_URL: &str = "http://86.192.13.13:1234/rpc/v0";
+    const JWT: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
+
+    #[tokio::test]
     async fn example_something_else_and_retrieve_nonce() {
-        // FIXME: use configuration parameters instead
-        let url = "http://192.168.1.38:1234/rpc/v0";
-        let jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
         let addr = "t02";
 
-        // FIXME: Doesn't work without tokio runtime ?
-
-        let nonce = get_nonce(&url, &jwt, &addr).await;
+        let nonce = get_nonce(&TEST_URL, &JWT, &addr).await;
 
         assert!(nonce.is_ok());
     }
 
-    #[async_test]
-    #[ignore]
+    #[tokio::test]
     async fn example_get_status_transaction() {
-        // FIXME: use configuration parameters instead
-        let url = "http://192.168.1.38:1234/rpc/v0";
-        let jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
-        let params = "{\"/\":\"bafy2bzaceaxm23epjsmh75yvzcecsrbavlmkcxnva66bkdebdcnyw3bjrc74u\"}";
+        let params =
+            json!({ "/": "bafy2bzaceaxm23epjsmh75yvzcecsrbavlmkcxnva66bkdebdcnyw3bjrc74u" });
 
-        let status = get_status(&url, &jwt, &params).await;
+        let status = get_status(&TEST_URL, &JWT, params).await;
 
         assert!(false);
     }
