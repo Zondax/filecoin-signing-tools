@@ -1,5 +1,6 @@
 //////! Fcservice RPC Client
 
+use crate::config::RemoteNodeSection;
 use crate::service::client;
 use crate::service::error::ServiceError;
 use fcsigner::api::UnsignedMessageUserAPI;
@@ -9,7 +10,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use serde_json::Value;
 
-pub async fn key_generate_mnemonic(_c: MethodCall) -> Result<Success, ServiceError> {
+pub async fn key_generate_mnemonic(
+    _c: MethodCall,
+    _: RemoteNodeSection,
+) -> Result<Success, ServiceError> {
     let mnemonic = fcsigner::key_generate_mnemonic()?;
 
     let so = Success {
@@ -34,7 +38,7 @@ pub struct KeyDeriveResultApi {
     pub address: String,
 }
 
-pub async fn key_derive(c: MethodCall) -> Result<Success, ServiceError> {
+pub async fn key_derive(c: MethodCall, _: RemoteNodeSection) -> Result<Success, ServiceError> {
     let y = c.params.parse::<KeyDeriveParamsAPI>()?;
 
     let (prvkey, pubkey, address) = fcsigner::key_derive(y.mnemonic, y.path)?;
@@ -56,7 +60,10 @@ pub async fn key_derive(c: MethodCall) -> Result<Success, ServiceError> {
     Ok(so)
 }
 
-pub async fn transaction_create(c: MethodCall) -> Result<Success, ServiceError> {
+pub async fn transaction_create(
+    c: MethodCall,
+    _: RemoteNodeSection,
+) -> Result<Success, ServiceError> {
     let y = c.params.parse::<UnsignedMessageUserAPI>()?;
     let cbor_hexstring = fcsigner::transaction_create(y)?;
 
@@ -75,7 +82,10 @@ pub struct TransctionParseParamsAPI {
     pub testnet: bool,
 }
 
-pub async fn transaction_parse(c: MethodCall) -> Result<Success, ServiceError> {
+pub async fn transaction_parse(
+    c: MethodCall,
+    _: RemoteNodeSection,
+) -> Result<Success, ServiceError> {
     let params = c.params.parse::<TransctionParseParamsAPI>()?;
     let message_parsed = fcsigner::transaction_parse(params.cbor_hex.as_bytes(), params.testnet)?;
     let tx = serde_json::to_string(&message_parsed)?;
@@ -95,7 +105,10 @@ pub struct SignTransactionParamsAPI {
     pub prvkey_hex: String,
 }
 
-pub async fn sign_transaction(c: MethodCall) -> Result<Success, ServiceError> {
+pub async fn sign_transaction(
+    c: MethodCall,
+    _: RemoteNodeSection,
+) -> Result<Success, ServiceError> {
     let params = c.params.parse::<SignTransactionParamsAPI>()?;
 
     let prvkey_bytes = from_hex_string(&params.prvkey_hex)?;
@@ -117,7 +130,10 @@ pub struct VerifySignatureParamsAPI {
     pub message_hex: String,
 }
 
-pub async fn verify_signature(c: MethodCall) -> Result<Success, ServiceError> {
+pub async fn verify_signature(
+    c: MethodCall,
+    _: RemoteNodeSection,
+) -> Result<Success, ServiceError> {
     let params = c.params.parse::<VerifySignatureParamsAPI>()?;
 
     let signature = from_hex_string(&params.signature_hex)?;
@@ -138,15 +154,11 @@ pub struct GetStatusParamsAPI {
     pub cid_message: String,
 }
 
-pub async fn get_status(c: MethodCall) -> Result<Success, ServiceError> {
-    // FIXME: get from file configuration
-    let url = "http://86.192.13.13:1234/rpc/v0";
-    let jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
-
+pub async fn get_status(c: MethodCall, config: RemoteNodeSection) -> Result<Success, ServiceError> {
     let call_params = c.params.parse::<GetStatusParamsAPI>()?;
     let params = json!({"/": call_params.cid_message.to_string()});
 
-    let status = client::get_status(&url, &jwt, params).await?;
+    let status = client::get_status(&config.url, &config.jwt, params).await?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),
@@ -159,9 +171,13 @@ pub async fn get_status(c: MethodCall) -> Result<Success, ServiceError> {
 
 #[cfg(test)]
 mod tests {
+    use crate::config::RemoteNodeSection;
     use crate::service::methods::get_status;
     use jsonrpc_core::{Id, MethodCall, Params, Version};
     use serde_json::json;
+
+    const TEST_URL: &str = "http://86.192.13.13:1234/rpc/v0";
+    const JWT: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
 
     #[tokio::test]
     async fn example_get_status_transaction() {
@@ -176,7 +192,12 @@ mod tests {
             id: Id::Num(0),
         };
 
-        let status = get_status(mc).await;
+        let config = RemoteNodeSection {
+            url: TEST_URL.to_string(),
+            jwt: JWT.to_string(),
+        };
+
+        let status = get_status(mc, config).await;
 
         println!("{:?}", status);
     }
