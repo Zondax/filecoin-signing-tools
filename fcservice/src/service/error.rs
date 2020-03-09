@@ -1,6 +1,6 @@
 use fcsigner::error::SignerError;
 use fcsigner::utils::HexDecodeError;
-use serde_json::error::Error;
+use serde_json;
 use thiserror::Error;
 
 /// RemoteNode Error

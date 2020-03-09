@@ -139,13 +139,12 @@ pub struct GetStatusParamsAPI {
 }
 
 pub async fn get_status(c: MethodCall) -> Result<Success, ServiceError> {
-    let params = c.params.parse::<GetStatusParamsAPI>()?;
-
     // FIXME: get from file configuration
-    let url = "http://192.168.1.38:1234/rpc/v0";
+    let url = "http://86.192.13.13:1234/rpc/v0";
     let jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
 
-    let params = json!({"/": params.cid_message.to_string()});
+    let call_params = c.params.parse::<GetStatusParamsAPI>()?;
+    let params = json!({"/": call_params.cid_message.to_string()});
 
     let status = client::get_status(&url, &jwt, params).await?;
 
@@ -160,29 +159,25 @@ pub async fn get_status(c: MethodCall) -> Result<Success, ServiceError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::service::client::{get_nonce, get_status};
-    use futures_await_test::async_test;
+    use crate::service::methods::get_status;
+    use jsonrpc_core::{Id, MethodCall, Params, Version};
     use serde_json::json;
-
-    const TEST_URL: &str = "http://86.192.13.13:1234/rpc/v0";
-    const JWT: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
-
-    #[tokio::test]
-    async fn example_something_else_and_retrieve_nonce() {
-        let addr = "t02";
-
-        let nonce = get_nonce(&TEST_URL, &JWT, &addr).await;
-
-        assert!(nonce.is_ok());
-    }
 
     #[tokio::test]
     async fn example_get_status_transaction() {
-        let params =
-            json!({ "/": "bafy2bzaceaxm23epjsmh75yvzcecsrbavlmkcxnva66bkdebdcnyw3bjrc74u" });
+        let params_str = json!({ "cid_message": "bafy2bzaceaxm23epjsmh75yvzcecsrbavlmkcxnva66bkdebdcnyw3bjrc74u" });
+        let params: Params =
+            serde_json::from_str(&params_str.to_string()).expect("could not deserialize");
 
-        let status = get_status(&TEST_URL, &JWT, params).await;
+        let mc = MethodCall {
+            jsonrpc: Some(Version::V2),
+            method: "get_status".to_string(),
+            params,
+            id: Id::Num(0),
+        };
 
-        assert!(false);
+        let status = get_status(mc).await;
+
+        println!("{:?}", status);
     }
 }

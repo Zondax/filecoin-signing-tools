@@ -87,3 +87,34 @@ pub async fn get_status(url: &str, jwt: &str, cid_message: Value) -> Result<Valu
 
     Ok(transaction_status)
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::service::client::{get_nonce, get_status};
+    use futures_await_test::async_test;
+    use serde_json::json;
+
+    const TEST_URL: &str = "http://86.192.13.13:1234/rpc/v0";
+    const JWT: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
+
+    #[tokio::test]
+    async fn example_something_else_and_retrieve_nonce() {
+        let addr = "t02";
+
+        let nonce = get_nonce(&TEST_URL, &JWT, &addr).await;
+
+        assert!(nonce.is_ok());
+    }
+
+    #[tokio::test]
+    async fn example_get_status_transaction() {
+        let params =
+            json!({ "/": "bafy2bzaceaxm23epjsmh75yvzcecsrbavlmkcxnva66bkdebdcnyw3bjrc74u" });
+
+        let status = get_status(&TEST_URL, &JWT, params).await;
+
+        println!("{:?}", status);
+
+        // FIXME: add checks for two different txs
+    }
+}
