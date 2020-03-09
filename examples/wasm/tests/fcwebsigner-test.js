@@ -1,9 +1,9 @@
-import * as assert from 'assert';
-import secp256k1 from 'secp256k1';
-import {key_generate_mnemonic, key_derive, verify_signature, transaction_parse, transaction_create, sign_transaction} from 'fcwebsigner';
-import bip32 from 'bip32';
-import {getDigest} from './utils.mjs'
-import fs from 'fs';
+const fcwebsigner = require('fcwebsigner');
+const bip32 = require('bip32');
+const getDigest = require('./utils').getDigest;
+const assert = require('assert').strict;
+const fs = require('fs');
+const secp256k1 = require('secp256k1');
 
 //////////////////////////////////
 //
@@ -35,20 +35,20 @@ let node = bip32.fromBase58(prv_root_key)
 //
 ////////////////////////////////
 test('Parse Cbor Transaction', () => {
-  assert.equal(JSON.stringify(transaction), transaction_parse(cbor_transaction, true))
+  assert.equal(JSON.stringify(transaction), fcwebsigner.transaction_parse(cbor_transaction, true))
 })
 
 test('Parse Cbor Transaction fail (extra bytes)', () => {
   let cbor_transaction_extra_bytes = cbor_transaction + "00";
 
   assert.throws(
-    () => transaction_parse(cbor_transaction_extra_bytes),
+    () => fcwebsigner.transaction_parse(cbor_transaction_extra_bytes),
     /CBOR error/
   );
 })
 
 test('Create Transaction', () => {
-  assert.equal(cbor_transaction,transaction_create(JSON.stringify(transaction)))
+  assert.equal(cbor_transaction, fcwebsigner.transaction_create(JSON.stringify(transaction)))
 });
 
 test('Create Transaction Fail (missing nonce)', () => {
@@ -63,7 +63,7 @@ test('Create Transaction Fail (missing nonce)', () => {
   }
 
   assert.throws(
-    () => transaction_create(JSON.stringify(invalid_transaction)),
+    () => fcwebsigner.transaction_create(JSON.stringify(invalid_transaction)),
     /missing field `nonce`/
   );
 
@@ -73,13 +73,17 @@ test('Key Generate Mnemonic', () => {
   // Can't get a random number to generate mnemonic
   // panicked at 'could not initialize thread_rng: getrandom: this target is not supported', ~/.cargo/registry/src/github.com-1ecc6299db9ec823/rand-0.7.3/src/rngs/thread.rs:65:17
 
-  console.log(key_generate_mnemonic());
+  let mnemonic = fcwebsigner.key_generate_mnemonic();
+
+  console.log(mnemonic);
+
+  assert.equal(mnemonic.split(" ").length, 24);
 });
 
 test('Key Derive', () => {
   let child = node.derivePath("m/44'/461'/0/0/1");
 
-  let keypair = key_derive(mnemonic_example, "m/44'/461'/0/0/1");
+  let keypair = fcwebsigner.key_derive(mnemonic_example, "m/44'/461'/0/0/1");
 
   console.log("Pubkey :", keypair.pubkey);
   console.log("Prvkey :", keypair.prvkey);
@@ -92,7 +96,7 @@ test('Key Derive', () => {
 test('Key Derive Invalid Path', () => {
 
   assert.throws(
-    () => key_derive(mnemonic_example, "m/44'/461'/a/0/1"),
+    () => fcwebsigner.key_derive(mnemonic_example, "m/44'/461'/a/0/1"),
     /Cannot parse integer/
   );
 })
@@ -101,7 +105,7 @@ test('Sign Transaction', () => {
   let child = node.derivePath("m/44'/461'/0/0/0")
 
   try {
-    var signature = sign_transaction(JSON.stringify(transaction), child.privateKey.toString("hex"));
+    var signature = fcwebsigner.sign_transaction(JSON.stringify(transaction), child.privateKey.toString("hex"));
   } catch(e) {
     assert.fail(e);
   }
@@ -138,7 +142,7 @@ test('Verify signature', () => {
   console.log("RSV signature :", signatureRSV);
   console.log("CBOR Transaction hex :", cbor_transaction)
 
-  assert.equal(verify_signature(signatureRSV, cbor_transaction), true);
+  assert.equal(fcwebsigner.verify_signature(signatureRSV, cbor_transaction), true);
 })
 
 //////////////////////////////////
@@ -161,13 +165,13 @@ for (let i = 0; i < jsonData.length; i += 1) {
   test("Create Transaction : " + tc.description, () => {
     if (tc.valid) {
       // Valid doesn't throw
-      let result = transaction_create(JSON.stringify(tc.message));
+      let result = fcwebsigner.transaction_create(JSON.stringify(tc.message));
       assert.equal(tc.encoded_tx_hex,result);
     } else {
       // Not valid throw error
       // TODO: Add error type to manual_testvectors.json file
       assert.throws(
-        () => transaction_create(JSON.stringify(tc.message)),
+        () => fcwebsigner.transaction_create(JSON.stringify(tc.message)),
         /Error/
       );
     }
@@ -175,7 +179,6 @@ for (let i = 0; i < jsonData.length; i += 1) {
 
   if (tc.not_implemented) {
     // FIXME: Protocol 0 parsing not implemented in forest
-    // FIXME: should handle the case when address have 0 byte (issue #53)
     // FIXME: doesn't fail for empty value #54
     console.log("FIX ME");
     continue;
@@ -184,13 +187,13 @@ for (let i = 0; i < jsonData.length; i += 1) {
   // Create test case for each
   test("Parse Transaction : " + tc.description, () => {
     if (tc.valid) {
-      let result = transaction_parse(tc.encoded_tx_hex, tc.testnet);
+      let result = fcwebsigner.transaction_parse(tc.encoded_tx_hex, tc.testnet);
       assert.equal(JSON.stringify(tc.message),result);
     } else {
       // Not valid throw error
       // TODO: Add error type to manual_testvectors.json file
       assert.throws(
-        () => transaction_parse(tc.encoded_tx_hex, tc.testnet),
+        () => fcwebsigner.transaction_parse(tc.encoded_tx_hex, tc.testnet),
         /error/
       );
     }

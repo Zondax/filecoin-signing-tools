@@ -39,21 +39,15 @@ const files = process.argv.slice(2);
 
 // expose the test function as a global variable
 global.test = test;
-let promises = []
 
 // Load each file using `import`
 for (let index in files) {
   console.log(files[index])
   // Once a file is loaded, it's tests are
 	// added to the `tests` singleton variable
-	let promise = import(files[index])
-    .catch(e => console.log(e));
-
-  // Becauce import is asynchronous
-  promises.push(promise)
+	require(files[index]);
 }
 
 // Once that all the tests from all the files are
 // added, run them one after the other
-Promise.all(promises)
-  .then(run);
+run();

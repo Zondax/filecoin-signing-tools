@@ -7,12 +7,12 @@
   "files": [
     "fcwebsigner_bg.wasm",
     "fcwebsigner.js",
-    "fcwebsigner.mjs",
-    "fcwebsigner.d.ts"
+    "fcwebsigner_bg.js",
+    "browser/fcwebsigner_bg.wasm",
+    "browser/fcwebsigner.js"
   ],
-  "type": "module",
-  "main": "fcwebsigner.mjs",
-  "types": "fcwebsigner.d.ts",
-  "type": "module",
-  "sideEffects": "false"
+  "main": "./browser/fcwebsigner.js",
+  "exports": {
+    "require" : "./fcwebsigner.js"
+  }
 }
