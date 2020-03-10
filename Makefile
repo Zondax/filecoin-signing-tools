@@ -1,6 +1,6 @@
 
 deps_wasm:
-	cargo install wasm-pack --version 0.8.1
+	cargo install wasm-pack --version 0.8.1 --force
 
 build_wasm:
 	rm -rf fcwebsigner/pkg/
@@ -13,7 +13,10 @@ link_wasm:
 	cd fcwebsigner/pkg && yarn link
 	cd examples/wasm && yarn link "fcwebsigner"
 
-test_wasm:
+test_wasm_unit:
+	wasm-pack test --firefox --chrome --headless ./fcwebsigner
+
+test_wasm_integration:
 	cd examples/wasm && yarn run test:integration
 
 deps: deps_wasm

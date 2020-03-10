@@ -67,9 +67,13 @@ jobs:
             make build_wasm
             make link_wasm
       - run:
-          name: run tests
+          name: tests wasm_unit
           command: |
             make test_wasm
+      - run:
+          name: tests wasm_integration
+          command: |
+            make test_wasm_integration
       # No need to save this in cache
 
   tests_service:
