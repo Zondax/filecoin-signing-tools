@@ -4,14 +4,14 @@
 
 The Rust package can be located at: [crates.io](https://crates.io/) and documentation at [docs.rs](https://docs.rs)
 
-::: warning fcsigner
+::: warning filecoin_signer
 The library name will probably change in the near future
 :::
 
 ```
 key_generate_mnemonic()
 key_derive(mnemonic, path)
-transaction_create(
+transaction_create(unsigned_message: UnsignedMessageUserAPI) -> 
 ```
 
 ## WASM

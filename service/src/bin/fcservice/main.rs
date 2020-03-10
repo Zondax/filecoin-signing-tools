@@ -3,7 +3,7 @@
 #![deny(warnings, missing_docs, trivial_casts, unused_qualifications)]
 #![forbid(unsafe_code)]
 
-use fcservice::application::APPLICATION;
+use filecoin_service::application::APPLICATION;
 
 /// Boot Fcservice
 fn main() {

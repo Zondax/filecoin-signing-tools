@@ -1,14 +1,14 @@
 //////! Fcservice RPC Client
 
 use crate::service::error::ServiceError;
-use fcsigner::api::UnsignedMessageUserAPI;
-use fcsigner::utils::{from_hex_string, to_hex_string};
+use filecoin_signer::api::UnsignedMessageUserAPI;
+use filecoin_signer::utils::{from_hex_string, to_hex_string};
 use jsonrpc_core::{Id, MethodCall, Success, Version};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 pub async fn key_generate_mnemonic(_c: MethodCall) -> Result<Success, ServiceError> {
-    let mnemonic = fcsigner::key_generate_mnemonic()?;
+    let mnemonic = filecoin_signer::key_generate_mnemonic()?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),
@@ -35,7 +35,7 @@ pub struct KeyDeriveResultApi {
 pub async fn key_derive(c: MethodCall) -> Result<Success, ServiceError> {
     let y = c.params.parse::<KeyDeriveParamsAPI>()?;
 
-    let (prvkey, pubkey, address) = fcsigner::key_derive(y.mnemonic, y.path)?;
+    let (prvkey, pubkey, address) = filecoin_signer::key_derive(y.mnemonic, y.path)?;
 
     let result = KeyDeriveResultApi {
         prvkey,
@@ -56,11 +56,11 @@ pub async fn key_derive(c: MethodCall) -> Result<Success, ServiceError> {
 
 pub async fn transaction_create(c: MethodCall) -> Result<Success, ServiceError> {
     let y = c.params.parse::<UnsignedMessageUserAPI>()?;
-    let cbor_hexstring = fcsigner::transaction_create(y)?;
+    let cbor_hexstring = filecoin_signer::transaction_create(y)?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),
-        result: Value::from(cbor_hexstring),
+        result: Value::from(cbor_hexstring.0),
         id: Id::Num(1),
     };
 
@@ -75,7 +75,8 @@ pub struct TransctionParseParamsAPI {
 
 pub async fn transaction_parse(c: MethodCall) -> Result<Success, ServiceError> {
     let params = c.params.parse::<TransctionParseParamsAPI>()?;
-    let message_parsed = fcsigner::transaction_parse(params.cbor_hex.as_bytes(), params.testnet)?;
+    let message_parsed =
+        filecoin_signer::transaction_parse(params.cbor_hex.as_bytes(), params.testnet)?;
     let tx = serde_json::to_string(&message_parsed)?;
 
     let so = Success {
@@ -98,7 +99,7 @@ pub async fn sign_transaction(c: MethodCall) -> Result<Success, ServiceError> {
 
     let prvkey_bytes = from_hex_string(&params.prvkey_hex)?;
 
-    let (signed_message, v) = fcsigner::sign_transaction(params.transaction, &prvkey_bytes)?;
+    let (signed_message, v) = filecoin_signer::sign_transaction(params.transaction, &prvkey_bytes)?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),
@@ -120,7 +121,7 @@ pub async fn verify_signature(c: MethodCall) -> Result<Success, ServiceError> {
 
     let signature = from_hex_string(&params.signature_hex)?;
 
-    let result = fcsigner::verify_signature(&signature, &params.message_hex.as_bytes())?;
+    let result = filecoin_signer::verify_signature(&signature, &params.message_hex.as_bytes())?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),

@@ -1,5 +1,5 @@
-use fcsigner::error::SignerError;
-use fcsigner::utils::HexDecodeError;
+use filecoin_signer::error::SignerError;
+use filecoin_signer::utils::HexDecodeError;
 use serde_json::error::Error;
 use thiserror::Error;
 

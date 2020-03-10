@@ -1,18 +1,17 @@
-
 deps_wasm:
 	cargo install wasm-pack --version 0.8.1
 
 build_wasm: deps_wasm
-	rm -rf fcwasmsigner/pkg/
-	wasm-pack build fcwasmsigner/
+	rm -rf wasm-signer/pkg/
+	wasm-pack build wasm-signer/
 	# temporary workaround
-	cp package-fcwasmsigner.json fcwasmsigner/pkg/package.json
-	cp fcwasmsigner/pkg/fcwasmsigner.js fcwasmsigner/pkg/fcwasmsigner.mjs
+	cp package-wasm-signer.json wasm-signer/pkg/package.json
+	cp wasm-signer/pkg/wasm-signer.js wasm-signer/pkg/wasm-signer.mjs
 
 link_wasm: build_wasm
 	cd examples/wasm && yarn install
-	cd fcwasmsigner/pkg && yarn link
-	cd examples/wasm && yarn link "fcwasmsigner"
+	cd wasm-signer/pkg && yarn link
+	cd examples/wasm && yarn link "wasm-signer"
 
 test_wasm_unit: deps_wasm
 	wasm-pack test --chrome --headless ./fcwasmsigner
@@ -22,13 +21,17 @@ test_wasm_integration: link_wasm
 
 test_wasm: test_wasm_unit test_wasm_integration
 
-deps: deps_wasm
+deps_rust:
 	cargo install cargo-audit
 	cargo install cargo-tree
 	cargo install cargo-license
 	cargo install cargo-outdated
+	cargo install cargo-watch https
 	cargo install sccache
+	yarn install
 	echo "Remember to add export RUSTC_WRAPPER=sccache to your environment."
+
+deps: deps_wasm deps_rust
 
 checks:
 	cargo fmt -- --check
@@ -48,6 +51,10 @@ ci:
 docs_dev:
 	yarn install
 	yarn dev
+
+# Run this to have live refreshing of rust docs
+docs_rust_edit: deps
+	cargo watch -s 'cargo doc && browser-sync start --ss target/doc -s target/doc --directory --no-open'
 
 docs_build:
 	yarn install

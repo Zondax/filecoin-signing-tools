@@ -16,6 +16,8 @@ mod bip44;
 pub mod error;
 pub mod utils;
 
+pub struct CborBuffer(pub String);
+
 pub fn key_generate_mnemonic() -> Result<String, SignerError> {
     let mnemonic = Mnemonic::new(MnemonicType::Words24, Language::English);
     Ok(mnemonic.to_string())
@@ -43,14 +45,16 @@ pub fn key_derive(mnemonic: String, path: String) -> Result<(String, String, Str
     Ok((private_key, public_key, address.to_string()))
 }
 
-pub fn transaction_create(unsigned_message: UnsignedMessageUserAPI) -> Result<String, SignerError> {
+pub fn transaction_create(
+    unsigned_message: UnsignedMessageUserAPI,
+) -> Result<CborBuffer, SignerError> {
     // tx params as JSON
     let message = forest_message::UnsignedMessage::try_from(unsigned_message)?;
     let message_cbor: Vec<u8> = to_vec(&message)?;
     let message_cbor_hex = encode(message_cbor);
 
     // return unsigned transaction serialized as CBOR / hexstring
-    Ok(message_cbor_hex)
+    Ok(CborBuffer(message_cbor_hex))
 }
 
 pub fn transaction_parse(

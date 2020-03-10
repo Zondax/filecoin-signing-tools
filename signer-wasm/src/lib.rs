@@ -1,11 +1,11 @@
 mod error;
 
-use fcsigner;
+use filecoin_signer;
 use wasm_bindgen::prelude::*;
 
-use fcsigner::api::MessageTx::{SignedMessage, UnsignedMessage};
-use fcsigner::api::UnsignedMessageUserAPI;
-use fcsigner::utils::from_hex_string;
+use filecoin_signer::api::MessageTx::{SignedMessage, UnsignedMessage};
+use filecoin_signer::api::UnsignedMessageUserAPI;
+use filecoin_signer::utils::from_hex_string;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -56,7 +56,7 @@ impl Keypair {
 pub fn key_derive(mnemonic: String, path: String) -> Result<Keypair, JsValue> {
     set_panic_hook();
 
-    let (private, public, address) = fcsigner::key_derive(mnemonic, path)
+    let (private, public, address) = filecoin_signer::key_derive(mnemonic, path)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
 
     let keypair = Keypair {
@@ -76,17 +76,17 @@ pub fn transaction_create(unsigned_message_string: String) -> Result<String, JsV
         serde_json::from_str(&unsigned_message_string)
             .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
-    let cbor_hexstring = fcsigner::transaction_create(unsigned_message)
+    let cbor_hexstring = filecoin_signer::transaction_create(unsigned_message)
         .map_err(|e| JsValue::from(format!("Error converting to CBOR: {}", e)))?;
 
-    Ok(cbor_hexstring)
+    Ok(cbor_hexstring.0)
 }
 
 #[wasm_bindgen]
 pub fn transaction_parse(cbor_hexstring: String, network: bool) -> Result<String, JsValue> {
     set_panic_hook();
 
-    let message_parsed = fcsigner::transaction_parse(cbor_hexstring.as_bytes(), network)
+    let message_parsed = filecoin_signer::transaction_parse(cbor_hexstring.as_bytes(), network)
         .map_err(|e| JsValue::from(e.to_string()))?;
 
     let tx = serde_json::to_string(&message_parsed).map_err(|e| JsValue::from(e.to_string()))?;
@@ -108,17 +108,18 @@ pub fn sign_transaction(
     let private_key_bytes =
         from_hex_string(&private_key).map_err(|e| JsValue::from(e.to_string()))?;
 
-    let tmp = fcsigner::sign_transaction(unsigned_message, &private_key_bytes)
+    let tmp = filecoin_signer::sign_transaction(unsigned_message, &private_key_bytes)
         .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()));
 
     let (signature, v) = tmp?;
 
-    // SignedMessage::new()
-
-    let json_signed_message = serde_json::to_string(signed_message)
-        .map_err(|e| Err(JsValue::from_str("Error signing transaction")))?;
-
-    Ok(json_signed_message)
+    // // SignedMessage::new()
+    //
+    // let json_signed_message = serde_json::to_string(signed_message)
+    //     .map_err(|e| Err(JsValue::from_str("Error signing transaction")))?;
+    //
+    // Ok(json_signed_message)
+    Ok("dddd".to_string())
 }
 
 #[wasm_bindgen]
@@ -134,7 +135,7 @@ pub fn verify_signature(signature_hex: String, message_hex: String) -> Result<bo
 
     let signature = from_hex_string(&signature_hex).map_err(|e| JsValue::from(e.to_string()))?;
 
-    let resp = fcsigner::verify_signature(&signature, &message_hex.as_bytes());
+    let resp = filecoin_signer::verify_signature(&signature, &message_hex.as_bytes());
 
     return match resp {
         Ok(_bool) => Ok(_bool),

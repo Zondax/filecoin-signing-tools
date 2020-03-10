@@ -19,7 +19,7 @@
 )]
 
 use abscissa_core::testing::prelude::*;
-use fcservice::config::FcserviceConfig;
+use filecoin_service::config::FcserviceConfig;
 use once_cell::sync::Lazy;
 
 /// Executes your application binary via `cargo run`.

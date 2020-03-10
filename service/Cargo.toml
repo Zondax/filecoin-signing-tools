@@ -1,5 +1,5 @@
 [package]
-name = "fcservice"
+name = "filecoin-service"
 authors = []
 version = "0.1.0"
 edition = "2018"
@@ -9,7 +9,7 @@ gumdrop = "0.7"
 thiserror = "1.0"
 serde = { version = "1", features = ["serde_derive"] }
 serde_json = "1.0.45"
-fcsigner = {path = "../fcsigner"}
+filecoin-signer = {path = "../signer"}
 tokio = { version = "0.2", features = ["full", "time"] }
 reqwest = { version = "0.10.1", features = ["json", "gzip"] }
 warp = "0.2.1"

@@ -1,5 +1,5 @@
 [package]
-name = "fcsigner"
+name = "filecoin-signer"
 version = "0.1.0"
 authors = ["Zondax <info@zondax.ch>"]
 edition = "2018"

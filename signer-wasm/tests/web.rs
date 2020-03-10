@@ -10,8 +10,10 @@ use wasm_bindgen_test::*;
 wasm_bindgen_test_configure!(run_in_browser);
 
 mod tests {
+    use fcwasmsigner::{key_derive, sign_transaction};
+
     #[wasm_bindgen_test]
-    fn keyderive() {
+    fn derive() {
         let mnemonic =
             "equip will roof matter pink blind book anxiety banner elbow sun young".to_string();
 
@@ -50,9 +52,12 @@ mod tests {
     const PRIVATE_KEY: &str = r#"80c56e752ffdd06e3e0d9516e662e7ba883982404045a2c2d4cbe7c87e6c66fe"#;
 
     #[wasm_bindgen_test]
-    fn sign_transaction() {
-        let answer =
-            sign_transaction(EXAMPLE_UNSIGNED_MESSAGE, PRIVATE_KEY).expect("unexpected error");
+    fn sign() {
+        let answer = sign_transaction(
+            EXAMPLE_UNSIGNED_MESSAGE.to_string(),
+            PRIVATE_KEY.to_string(),
+        )
+        .expect("unexpected error");
 
         assert_eq!(
             answer.public(),
