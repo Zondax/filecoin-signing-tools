@@ -1,23 +1,26 @@
 
 deps_wasm:
-	cargo install wasm-pack --version 0.8.1 --force
+	cargo install wasm-pack --version 0.8.1
 
-build_wasm:
+build_wasm: deps_wasm
 	rm -rf fcwasmsigner/pkg/
 	wasm-pack build fcwasmsigner/
 	# temporary workaround
 	cp package-fcwasmsigner.json fcwasmsigner/pkg/package.json
 	cp fcwasmsigner/pkg/fcwasmsigner.js fcwasmsigner/pkg/fcwasmsigner.mjs
 
-link_wasm:
+link_wasm: build_wasm
+	cd examples/wasm && yarn install
 	cd fcwasmsigner/pkg && yarn link
 	cd examples/wasm && yarn link "fcwasmsigner"
 
-test_wasm_unit:
-	wasm-pack test --firefox --chrome --headless ./fcwasmsigner
+test_wasm_unit: deps_wasm
+	wasm-pack test --chrome --headless ./fcwasmsigner
 
-test_wasm_integration:
+test_wasm_integration: link_wasm
 	cd examples/wasm && yarn run test:integration
+
+test_wasm: test_wasm_unit test_wasm_integration
 
 deps: deps_wasm
 	cargo install cargo-audit
