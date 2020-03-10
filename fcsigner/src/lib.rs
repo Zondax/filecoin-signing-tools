@@ -33,19 +33,19 @@ pub fn key_derive(mnemonic: String, path: String) -> Result<(String, String, Str
 
     let esk = master.derive_bip44(bip44_path)?;
 
-    let prvkey = encode(esk.secret_key());
-    let publickey = to_hex_string(&esk.public_key());
+    let private_key = encode(esk.secret_key());
+
+    let public_key = to_hex_string(&esk.public_key());
+
     let address = Address::new_secp256k1(&esk.public_key().to_vec())
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-    Ok((prvkey, publickey, address.to_string()))
+    Ok((private_key, public_key, address.to_string()))
 }
 
-pub fn transaction_create(
-    unsigned_message_api: UnsignedMessageUserAPI,
-) -> Result<String, SignerError> {
+pub fn transaction_create(unsigned_message: UnsignedMessageUserAPI) -> Result<String, SignerError> {
     // tx params as JSON
-    let message = forest_message::UnsignedMessage::try_from(unsigned_message_api)?;
+    let message = forest_message::UnsignedMessage::try_from(unsigned_message)?;
     let message_cbor: Vec<u8> = to_vec(&message)?;
     let message_cbor_hex = encode(message_cbor);
 
@@ -169,34 +169,6 @@ mod tests {
         "f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a";
 
     #[test]
-    fn empty() {
-        // FIXME:
-    }
-
-    #[test]
-    fn verify_invalid_signature() {
-        // Path 44'/461'/0/0/0
-        let prvkey = decode(EXAMPLE_PRIVATE_KEY).unwrap();
-        let message_user_api: UnsignedMessageUserAPI =
-            serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE).expect("FIXME");
-        let (signature, recoveryid) = sign_transaction(message_user_api, &prvkey).unwrap();
-
-        let mut signature_with_recovery_id = [&signature[..], &[recoveryid]].concat();
-
-        assert!(
-            verify_signature(&signature_with_recovery_id, EXAMPLE_CBOR_DATA.as_bytes()).unwrap()
-        );
-
-        // Tampered signature and look if it valid
-        signature_with_recovery_id[5] = 0x01;
-        signature_with_recovery_id[34] = 0x00;
-
-        assert!(
-            !verify_signature(&signature_with_recovery_id, EXAMPLE_CBOR_DATA.as_bytes()).unwrap()
-        );
-    }
-
-    #[test]
     fn generate_mnemonic() {
         let mnemonic = key_generate_mnemonic().expect("could not generate mnemonic");
         println!("{}", mnemonic);
@@ -213,6 +185,11 @@ mod tests {
 
         println!("{}", prvkey);
         assert_eq!(prvkey, EXAMPLE_PRIVATE_KEY.to_string());
+    }
+
+    #[test]
+    fn transaction_create() {
+        // FIXME:
     }
 
     #[test]
@@ -322,6 +299,29 @@ mod tests {
         assert_eq!(
             from.to_string(),
             "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka".to_string()
+        );
+    }
+
+    #[test]
+    fn verify_invalid_signature() {
+        // Path 44'/461'/0/0/0
+        let prvkey = decode(EXAMPLE_PRIVATE_KEY).unwrap();
+        let message_user_api: UnsignedMessageUserAPI =
+            serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE).expect("FIXME");
+        let (signature, recoveryid) = sign_transaction(message_user_api, &prvkey).unwrap();
+
+        let mut signature_with_recovery_id = [&signature[..], &[recoveryid]].concat();
+
+        assert!(
+            verify_signature(&signature_with_recovery_id, EXAMPLE_CBOR_DATA.as_bytes()).unwrap()
+        );
+
+        // Tampered signature and look if it valid
+        signature_with_recovery_id[5] = 0x01;
+        signature_with_recovery_id[34] = 0x00;
+
+        assert!(
+            !verify_signature(&signature_with_recovery_id, EXAMPLE_CBOR_DATA.as_bytes()).unwrap()
         );
     }
 }

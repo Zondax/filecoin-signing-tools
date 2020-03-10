@@ -44,3 +44,11 @@ hooks:
 ci:
 	circleci config process .circleci/config.yml > .circleci/tmp.yml
 	circleci build -c .circleci/tmp.yml --job ${JOB}
+
+docs_dev:
+	yarn install
+	yarn dev
+
+docs_build:
+	yarn install
+	yarn build

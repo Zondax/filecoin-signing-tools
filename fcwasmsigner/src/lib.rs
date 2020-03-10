@@ -1,12 +1,11 @@
 mod error;
-mod utils;
 
-use crate::utils::set_panic_hook;
 use fcsigner;
 use wasm_bindgen::prelude::*;
 
+use fcsigner::api::MessageTx::{SignedMessage, UnsignedMessage};
 use fcsigner::api::UnsignedMessageUserAPI;
-use fcsigner::utils::{from_hex_string, to_hex_string};
+use fcsigner::utils::from_hex_string;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -14,12 +13,23 @@ use fcsigner::utils::{from_hex_string, to_hex_string};
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
+pub fn set_panic_hook() {
+    // When the `console_error_panic_hook` feature is enabled, we can call the
+    // `set_panic_hook` function at least once during initialization, and then
+    // we will get better error messages if our code ever panics.
+    //
+    // For more details see
+    // https://github.com/rustwasm/console_error_panic_hook#readme
+    #[cfg(feature = "console_error_panic_hook")]
+    console_error_panic_hook::set_once();
+}
+
 #[wasm_bindgen]
 pub struct Keypair {
     // hexstring of the compressed public key
-    pubkey: String,
+    public: String,
     // hexstring of the private key
-    prvkey: String,
+    private: String,
     // Address in the string format
     address: String,
 }
@@ -27,13 +37,13 @@ pub struct Keypair {
 #[wasm_bindgen]
 impl Keypair {
     #[wasm_bindgen(getter)]
-    pub fn pubkey(&self) -> String {
-        self.pubkey.clone()
+    pub fn public(&self) -> String {
+        self.public.clone()
     }
 
     #[wasm_bindgen(getter)]
-    pub fn prvkey(&self) -> String {
-        self.prvkey.clone()
+    pub fn private(&self) -> String {
+        self.private.clone()
     }
 
     #[wasm_bindgen(getter)]
@@ -46,13 +56,13 @@ impl Keypair {
 pub fn key_derive(mnemonic: String, path: String) -> Result<Keypair, JsValue> {
     set_panic_hook();
 
-    let (prvkey, publickey, address) = fcsigner::key_derive(mnemonic, path)
+    let (private, public, address) = fcsigner::key_derive(mnemonic, path)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
 
     let keypair = Keypair {
-        pubkey: publickey,
-        prvkey: prvkey,
-        address: address,
+        public,
+        private,
+        address,
     };
 
     Ok(keypair)
@@ -94,24 +104,26 @@ pub fn sign_transaction(
     let unsigned_message: UnsignedMessageUserAPI =
         serde_json::from_str(&unsigned_message_string)
             .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
-    let privatekey_bytes =
+
+    let private_key_bytes =
         from_hex_string(&private_key).map_err(|e| JsValue::from(e.to_string()))?;
 
-    let resp = fcsigner::sign_transaction(unsigned_message, &privatekey_bytes);
+    let tmp = fcsigner::sign_transaction(unsigned_message, &private_key_bytes)
+        .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()));
 
-    return match resp {
-        // Return R, S & V in one hex string
-        Ok((signed_message, v)) => {
-            Ok([to_hex_string(&signed_message), format!("{:02x}", &v)].concat())
-        }
-        Err(_) => Err(JsValue::from_str("Error signing transaction")),
-    };
+    let (signature, v) = tmp?;
+
+    // SignedMessage::new()
+
+    let json_signed_message = serde_json::to_string(signed_message)
+        .map_err(|e| Err(JsValue::from_str("Error signing transaction")))?;
+
+    Ok(json_signed_message)
 }
 
 #[wasm_bindgen]
 pub fn sign_message() {
     set_panic_hook();
-
     // TODO: message ?
     // TODO: return signature
 }

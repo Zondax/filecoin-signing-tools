@@ -139,7 +139,7 @@ impl ExtendedSecretKey {
         let (secret_key_shift, child_chain_code) = hmac_result.split_at(32);
 
         let mut child_secret_key = self.secret_key.clone();
-        child_secret_key.tweak_add_assign(&SecretKey::parse_slice(secret_key_shift)?);
+        child_secret_key.tweak_add_assign(&SecretKey::parse_slice(secret_key_shift)?)?;
 
         ExtendedSecretKey::new(child_secret_key, &child_chain_code)
     }
