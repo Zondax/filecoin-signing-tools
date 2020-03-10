@@ -3,18 +3,18 @@ deps_wasm:
 	cargo install wasm-pack --version 0.8.1 --force
 
 build_wasm:
-	rm -rf fcwebsigner/pkg/
-	wasm-pack build fcwebsigner/
+	rm -rf fcwasmsigner/pkg/
+	wasm-pack build fcwasmsigner/
 	# temporary workaround
-	cp package-fcwebsigner.json fcwebsigner/pkg/package.json
-	cp fcwebsigner/pkg/fcwebsigner.js fcwebsigner/pkg/fcwebsigner.mjs
+	cp package-fcwasmsigner.json fcwasmsigner/pkg/package.json
+	cp fcwasmsigner/pkg/fcwasmsigner.js fcwasmsigner/pkg/fcwasmsigner.mjs
 
 link_wasm:
-	cd fcwebsigner/pkg && yarn link
-	cd examples/wasm && yarn link "fcwebsigner"
+	cd fcwasmsigner/pkg && yarn link
+	cd examples/wasm && yarn link "fcwasmsigner"
 
 test_wasm_unit:
-	wasm-pack test --firefox --chrome --headless ./fcwebsigner
+	wasm-pack test --firefox --chrome --headless ./fcwasmsigner
 
 test_wasm_integration:
 	cd examples/wasm && yarn run test:integration

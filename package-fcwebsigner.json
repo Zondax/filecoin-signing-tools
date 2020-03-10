@@ -1,18 +1,18 @@
 {
-  "name": "fcwebsigner",
+  "name": "fcwasmsigner",
   "collaborators": [
     "Zondax <info@zondax.ch>"
   ],
   "version": "0.1.0",
   "files": [
-    "fcwebsigner_bg.wasm",
-    "fcwebsigner.js",
-    "fcwebsigner.mjs",
-    "fcwebsigner.d.ts"
+    "fcwasmsigner_bg.wasm",
+    "fcwasmsigner.js",
+    "fcwasmsigner.mjs",
+    "fcwasmsigner.d.ts"
   ],
   "type": "module",
-  "main": "fcwebsigner.mjs",
-  "types": "fcwebsigner.d.ts",
+  "main": "fcwasmsigner.mjs",
+  "types": "fcwasmsigner.d.ts",
   "type": "module",
   "sideEffects": "false"
 }

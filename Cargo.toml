@@ -3,5 +3,5 @@
 members = [
     "fcservice",
     "fcsigner",
-    "fcwebsigner"
+    "fcwasmsigner"
 ]
