@@ -287,3 +287,69 @@ test("get_status fail", async () => {
 //
 //   expect(response.result).toBeGreaterThanOrEqual(2);
 // });
+test("send_signed_tx", async () => {
+
+  let account = "t1lv32q33y64xs64pnyn6om7ftirax5ikspkumwsa";
+
+  // Get Nonce
+  // FIXME: not public!
+  const nonce_response = await callMethod(
+    "http://86.192.13.13:1234/rpc/v0",
+    "Filecoin.MpoolGetNonce",
+    [account],
+    1,
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI"
+  )
+
+  console.log(nonce_response.result)
+
+  // Sign message
+  let child = node.derivePath("m/44'/461'/0/0/0");
+
+  const transaction = {
+    "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+    "from": account,
+    "nonce": nonce_response.result,
+    "value": "1",
+    "gas_price": "0",
+    "gas_limit": "0",
+    "method": 0,
+    "params": ""
+  };
+
+  const signature_response = await callMethod(
+    URL,
+    "sign_transaction",
+    [transaction, child.privateKey.toString("hex")],
+    1,
+  );
+
+  console.log(signature_response.result);
+  const signature_hex = signature_response.result;
+
+  let signed_tx = {
+    "Message":{
+      "To":"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+      "From": account,
+      "Nonce":nonce_response.result,
+      "Value":"1",
+      "GasPrice":"0",
+      "GasLimit":"0",
+      "Method":0,
+      "Params":""
+    },
+    "Signature":{
+      "Type":"secp256k1",
+      "Data":"flv4XRkEsKsCZzWVYnRDaiPrgYOgGOdvE03s50C1KUFugkuztZac2AqKtkV/wHrOwa4j3Xcw42p3rzkoqBxMpAA="
+    }
+  }
+
+  const response = await callMethod(
+    URL,
+    "send_signed_tx",
+    [signed_tx],
+    1,
+  );
+
+  console.log(response)
+});
