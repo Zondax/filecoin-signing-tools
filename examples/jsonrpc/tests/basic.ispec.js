@@ -264,3 +264,12 @@ test("get_status", async () => {
         "Value": "5000000000000000"
     });
 });
+
+test("get_status fail", async () => {
+  let message_cid = "bafy2bzaceaxm23epjsmh75yvzcecsrbavlmkcxnva66bkdebdcnyw3bjrc74u";
+  const response = await callMethod(URL, "get_status", [message_cid], 1);
+  console.log(response);
+
+  // Do we have a results
+  expect(response).toHaveProperty("error");
+});
