@@ -3,12 +3,33 @@
 use crate::service::cache::{cache_get_nonce, cache_put_nonce};
 use crate::service::error::RemoteNode::{EmptyNonce, InvalidNonce, InvalidStatusRequest, JSONRPC};
 use crate::service::error::ServiceError;
+use fcsigner::error::SignerError;
 use jsonrpc_core::response::Output::{Failure, Success};
 use jsonrpc_core::{Id, MethodCall, Params, Response, Version};
 use serde_json::value::Value;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 static CALL_ID: AtomicU64 = AtomicU64::new(1);
+
+pub async fn make_rpc_call(url: &str, jwt: &str, m: &MethodCall) -> Result<Response, ServiceError> {
+    let client = reqwest::Client::new();
+    let request = client.post(url).bearer_auth(jwt).json(&m).build()?;
+    let node_answer = client.execute(request).await?;
+
+    ///// FIXME: This block is a workaround for a non-standard Lotus answer
+    let mut workaround = node_answer.json::<serde_json::Value>().await?;
+    let obj = workaround.as_object_mut().unwrap();
+
+    if (obj.contains_key("error")) {
+        obj.remove("result");
+    }
+
+    let fixed_value = serde_json::Value::Object(obj.clone());
+    let resp: Response = serde_json::from_value(fixed_value)?;
+    //////////////////
+
+    Ok(resp)
+}
 
 pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceError> {
     if let Some(nonce) = cache_get_nonce(addr) {
@@ -25,14 +46,7 @@ pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceE
         id: Id::Num(call_id),
     };
 
-    // Build request
-    let client = reqwest::Client::new();
-    let request = client.post(url).bearer_auth(jwt).json(&m).build()?;
-
-    // Send and wait for response
-    let kek = client.execute(request).await?;
-
-    let resp = kek.json::<Response>().await?;
+    let resp = make_rpc_call(url, jwt, &m).await?;
 
     // Handle response
     let nonce = match resp {
@@ -59,25 +73,20 @@ pub async fn send_signed_tx(_url: &str, _jwt: &str) -> Result<bool, ServiceError
 pub async fn get_status(url: &str, jwt: &str, cid_message: Value) -> Result<Value, ServiceError> {
     let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
 
+    let params = Params::Array(vec![Value::from(cid_message)]);
+
     // Prepare request
     let m = MethodCall {
         jsonrpc: Some(Version::V2),
         method: "Filecoin.ChainGetMessage".to_owned(),
-        params: Params::Array(vec![Value::from(cid_message)]),
+        params,
         id: Id::Num(call_id),
     };
 
-    // Build request
-    let client = reqwest::Client::new();
-    let request = client.post(url).bearer_auth(jwt).json(&m).build()?;
-
-    // Send and wait for response
-    let resp = client.execute(request).await?;
-
-    let ok = resp.json::<Response>().await?;
+    let resp = make_rpc_call(url, jwt, &m).await?;
 
     // Handle response
-    let transaction_status = match ok {
+    let result = match resp {
         Response::Single(Success(s)) => s.result,
         // REVIEW: if not mined yet return
         // "error":{"code":1,"message":"blockstore: block not found"}
@@ -85,7 +94,7 @@ pub async fn get_status(url: &str, jwt: &str, cid_message: Value) -> Result<Valu
         _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
     };
 
-    Ok(transaction_status)
+    Ok(result)
 }
 
 #[cfg(test)]
@@ -94,16 +103,26 @@ mod tests {
     use crate::service::error;
     use futures_await_test::async_test;
     use jsonrpc_core::types::error::{Error, ErrorCode};
+    use jsonrpc_core::Response;
     use serde_json::json;
 
     const TEST_URL: &str = "http://86.192.13.13:1234/rpc/v0";
     const JWT: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
 
     #[tokio::test]
+    async fn decode_error() {
+        let data = b"{\"jsonrpc\":\"2.0\",\"id\":1,\"error\":{\"code\":1,\"message\":\"cbor input had wrong number of fields\"}}\n";
+
+        let err: Response = serde_json::from_slice(data).unwrap();
+    }
+
+    #[tokio::test]
     async fn example_something_else_and_retrieve_nonce() {
         let addr = "t02";
 
         let nonce = get_nonce(&TEST_URL, &JWT, &addr).await;
+
+        println!("{:?}", nonce);
 
         assert!(nonce.is_ok());
     }
