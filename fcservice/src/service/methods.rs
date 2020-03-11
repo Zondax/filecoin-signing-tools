@@ -169,6 +169,19 @@ pub async fn get_status(c: MethodCall, config: RemoteNodeSection) -> Result<Succ
     Ok(so)
 }
 
+pub async fn get_nonce(c: MethodCall, config: RemoteNodeSection) -> Result<Success, ServiceError> {
+    let params = c.params.parse::<GetNonceParamsAPI>()?;
+    let result = client::get_nonce(&config.url, &config.jwt, &params.account).await?;
+
+    let so = Success {
+        jsonrpc: Some(Version::V2),
+        result: Value::from(result),
+        id: Id::Num(1),
+    };
+
+    Ok(so)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::config::RemoteNodeSection;

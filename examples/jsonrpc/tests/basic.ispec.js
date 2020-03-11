@@ -273,3 +273,18 @@ test("get_status fail", async () => {
   // Do we have a results
   expect(response).toHaveProperty("error");
 });
+
+test("get_nonce", async () => {
+  const account = "t1lv32q33y64xs64pnyn6om7ftirax5ikspkumwsa";
+
+  const response = await callMethod(
+    URL,
+    "get_nonce",
+    [account],
+    1,
+  );
+
+  console.log(response);
+
+  expect(response.result).toBeGreaterThanOrEqual(2);
+});

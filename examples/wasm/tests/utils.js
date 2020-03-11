@@ -1,14 +1,14 @@
-import blake2 from "blake2";
+const blake2 = require("blake2");
 
 const CID_PREFIX = Buffer.from([0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20]);
 
-export function getCID(message) {
+function getCID(message) {
   const hasher = blake2.createHash("blake2b", { digestLength: 32 });
   hasher.update(message);
   return Buffer.concat([CID_PREFIX, hasher.digest()]);
 }
 
-export function getDigest(message) {
+module.exports.getDigest = function (message) {
   // digest = blake2-256( prefix + blake2b-256(tx) )
 
   const hasher = blake2.createHash("blake2b", { digestLength: 32 });

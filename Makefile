@@ -1,13 +1,14 @@
 
 deps_wasm:
+	cd examples/wasm && yarn install
 	cargo install wasm-pack --version 0.8.1
 
 build_wasm:
 	rm -rf fcwebsigner/pkg/
-	wasm-pack build fcwebsigner/
-	# temporary workaround
+	wasm-pack build --no-typescript --target nodejs fcwebsigner/
+	# temporary workaround to support ESM module and browser without bundler magic
+	wasm-pack build --no-typescript --target browser --out-dir pkg/browser fcwebsigner/
 	cp package-fcwebsigner.json fcwebsigner/pkg/package.json
-	cp fcwebsigner/pkg/fcwebsigner.js fcwebsigner/pkg/fcwebsigner.mjs
 
 link_wasm:
 	cd fcwebsigner/pkg && yarn link
