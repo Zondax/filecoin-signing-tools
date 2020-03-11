@@ -62,10 +62,10 @@ impl Keypair {
 pub fn key_generate_mnemonic() -> Result<String, JsValue> {
     set_panic_hook();
 
-    let mnemonic = fcsigner::key_generate_mnemonic()
+    let mnemonic = filecoin_signer::key_generate_mnemonic()
         .map_err(|e| JsValue::from(format!("Error generating key: {}", e)))?;
 
-    Ok(mnemonic)
+    Ok(mnemonic.0)
 }
 
 #[wasm_bindgen]

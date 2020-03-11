@@ -4,7 +4,7 @@ use crate::service::handlers::{v0_get, v0_get_status, v0_post};
 use jsonrpc_core::Call;
 use std::net::SocketAddr;
 use std::process;
-use std::sync::Arc;
+
 use warp::Filter;
 
 mod cache;

@@ -1,8 +1,8 @@
 {
 	"info": {
 		"_postman_id": "6a68bd37-ed28-42bb-93b9-2d72d255b9ef",
-		"name": "fcservice",
-		"description": "fcservice api documentation",
+		"name": "filecoin-service",
+		"description": "filecoin-service api documentation",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [

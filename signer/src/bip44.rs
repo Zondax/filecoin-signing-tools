@@ -58,7 +58,7 @@ impl Bip44Path {
     }
 }
 
-const HMAC_SEED: &'static [u8; 12] = b"Bitcoin seed";
+const HMAC_SEED: &[u8; 12] = b"Bitcoin seed";
 
 #[derive(Zeroize, Debug)]
 #[zeroize(drop)]

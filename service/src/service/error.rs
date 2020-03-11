@@ -12,6 +12,8 @@ pub enum RemoteNode {
     EmptyNonce,
     #[error("Could not retrieve nonce")]
     InvalidNonce,
+    #[error("Could not retrieve status")]
+    InvalidStatusRequest,
     /// JSONRPC error
     #[error("JSONRPC error")]
     JSONRPC(#[from] jsonrpc_core::types::Error),

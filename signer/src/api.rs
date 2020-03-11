@@ -131,7 +131,7 @@ impl TryFrom<UnsignedMessageAPI> for UnsignedMessage {
             .gas_limit(gas_limit)
             .gas_price(gas_price)
             .build()
-            .map_err(|err| SignerError::GenericString(err))?;
+            .map_err(SignerError::GenericString)?;
 
         Ok(tmp)
     }

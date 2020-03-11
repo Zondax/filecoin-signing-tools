@@ -8,11 +8,12 @@
   "files": [
     "filecoin_signer_wasm_bg.wasm",
     "filecoin_signer_wasm.js",
-    "filecoin_signer_wasm.mjs",
-    "filecoin_signer_wasm.d.ts"
+    "filecoin_signer_wasm_bg.js",
+    "browser/filecoin_signer_wasm_bg.wasm",
+    "browser/filecoin_signer_wasm.js"
   ],
-  "type": "module",
-  "main": "filecoin_signer_wasm.mjs",
-  "types": "filecoin_signer_wasm.d.ts",
-  "sideEffects": "false"
+  "main": "./browser/filecoin_signer_wasm.js",
+  "exports": {
+    "require" : "./filecoin_signer_wasm.js"
+  }
 }

@@ -1,4 +1,4 @@
-//! Fcservice Abscissa Application
+//! Filecoin Service Abscissa Application
 
 use crate::{commands::FcserviceCmd, config::FcserviceConfig};
 use abscissa_core::{

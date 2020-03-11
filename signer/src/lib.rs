@@ -118,7 +118,7 @@ pub fn transaction_parse(
 
     let message_tx_with_network = MessageTxNetwork {
         message_tx: message,
-        testnet: testnet,
+        testnet,
     };
 
     let parsed_message = MessageTxAPI::from(message_tx_with_network);
@@ -130,7 +130,7 @@ pub fn sign_transaction(
     unsigned_message_api: UnsignedMessageAPI,
     secret_key: &SecretKey,
 ) -> Result<Signature, SignerError> {
-    let message = forest_message::UnsignedMessage::try_from(unsigned_message_api.clone())?;
+    let message = forest_message::UnsignedMessage::try_from(unsigned_message_api)?;
     let message_cbor = CborBuffer(to_vec(&message)?);
 
     let secret_key = secp256k1::SecretKey::parse_slice(&secret_key.0)?;

@@ -27,7 +27,7 @@ Others version wont allow the `--experimental-wasm-modules` flag to import wasm
 :::
 
 
-## JSONRPC Service - *fcservice*
+## JSONRPC Service
 
 ### Typical workflows
 

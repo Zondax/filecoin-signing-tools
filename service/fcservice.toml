@@ -1,4 +1,4 @@
-# fcservice - Example configuration file# https://documenter.getpostman.com/view/4872192/SWLh5mUd?version=latest
+# filecoin-service - Example configuration file# https://documenter.getpostman.com/view/4872192/SWLh5mUd?version=latest
 
 [remote_node]
 url = "http://86.192.13.13:1234/rpc/v0"

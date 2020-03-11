@@ -4,7 +4,7 @@ use std::convert::TryInto;
 use std::fmt::Write;
 use thiserror::Error;
 
-static CID_PREFIX: &'static [u8] = &[0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20];
+static CID_PREFIX: &[u8] = &[0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20];
 
 /// DecoderError
 #[derive(Error, Debug, PartialEq)]

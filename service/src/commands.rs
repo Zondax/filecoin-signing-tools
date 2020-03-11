@@ -21,7 +21,7 @@ use abscissa_core::{
 use std::path::PathBuf;
 
 /// Fcservice Configuration Filename
-pub const CONFIG_FILE: &str = "fcservice.toml";
+pub const CONFIG_FILE: &str = "filecoin-service.toml";
 
 /// Fcservice Subcommands
 #[derive(Command, Debug, Options, Runnable)]

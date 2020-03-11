@@ -1,6 +1,6 @@
-# Fcservice
+# Filecoin Service
 
-Fcservice is an application.
+Filecoin Service is an application.
 
 ## Getting Started
 
