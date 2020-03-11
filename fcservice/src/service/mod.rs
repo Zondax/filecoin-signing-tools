@@ -1,8 +1,10 @@
+use crate::config::RemoteNodeSection;
 use crate::prelude::*;
-use crate::service::handlers::{get_api_v0, get_status, post_api_v0};
+use crate::service::handlers::{v0_get, v0_get_status, v0_post};
 use jsonrpc_core::Call;
 use std::net::SocketAddr;
 use std::process;
+use std::sync::Arc;
 use warp::Filter;
 
 mod cache;
@@ -17,6 +19,12 @@ fn jsonrpc_body() -> impl Filter<Extract = (Call,), Error = warp::Rejection> + C
     warp::body::content_length_limit(MAX_SIZE).and(warp::body::json())
 }
 
+fn with_config(
+    config: RemoteNodeSection,
+) -> impl Filter<Extract = (RemoteNodeSection,), Error = std::convert::Infallible> + Clone {
+    warp::any().map(move || config.clone())
+}
+
 #[tokio::main]
 pub async fn service_main() {
     let config = app_config();
@@ -28,16 +36,24 @@ pub async fn service_main() {
         process::exit(1);
     });
 
-    // Define path handlers
-    let path_v0_get = warp::path!("v0").and(warp::get()).and_then(get_api_v0);
+    let path_v0 = warp::path!("v0");
 
-    let path_v0_post = warp::path!("v0")
+    let path_v0_get = path_v0
+        .and(warp::get())
+        .and(with_config(config.remote_node.clone()))
+        .and_then(v0_get);
+
+    let path_v0_post = path_v0
         .and(warp::post())
         .and(jsonrpc_body())
-        .and_then(post_api_v0)
+        .and(with_config(config.remote_node.clone()))
+        .and_then(v0_post)
         .with(warp::log("POST"));
 
-    let path_status_get = warp::path!("status").and(warp::get()).and_then(get_status);
+    let path_status_get = warp::path!("status")
+        .and(warp::get())
+        .and(with_config(config.remote_node.clone()))
+        .and_then(v0_get_status);
 
     // Define route
     let routes = path_status_get

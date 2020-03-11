@@ -1,6 +1,6 @@
 use fcsigner::error::SignerError;
 use fcsigner::utils::HexDecodeError;
-use serde_json::error::Error;
+use serde_json;
 use thiserror::Error;
 
 /// RemoteNode Error
@@ -12,6 +12,8 @@ pub enum RemoteNode {
     EmptyNonce,
     #[error("Could not retrieve nonce")]
     InvalidNonce,
+    #[error("Could not retrieve status")]
+    InvalidStatusRequest,
     /// JSONRPC error
     #[error("JSONRPC error")]
     JSONRPC(#[from] jsonrpc_core::types::Error),
