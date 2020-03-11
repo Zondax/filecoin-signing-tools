@@ -245,3 +245,19 @@ test("verify_invalid_signature", async () => {
   expect(result).toEqual(false);
   expect(response.result).toEqual(false);
 });
+
+
+test("get_nonce", async () => {
+  const account = "t1lv32q33y64xs64pnyn6om7ftirax5ikspkumwsa";
+
+  const response = await callMethod(
+    URL,
+    "get_nonce",
+    [account],
+    1,
+  );
+
+  console.log(response);
+
+  expect(response.result).toBeGreaterThanOrEqual(2);
+});
