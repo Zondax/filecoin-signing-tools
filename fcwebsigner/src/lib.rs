@@ -43,6 +43,16 @@ impl Keypair {
 }
 
 #[wasm_bindgen]
+pub fn key_generate_mnemonic() -> Result<String, JsValue> {
+    set_panic_hook();
+
+    let mnemonic = fcsigner::key_generate_mnemonic()
+        .map_err(|e| JsValue::from(format!("Error generating key: {}", e)))?;
+
+    Ok(mnemonic)
+}
+
+#[wasm_bindgen]
 pub fn key_derive(mnemonic: String, path: String) -> Result<Keypair, JsValue> {
     set_panic_hook();
 
