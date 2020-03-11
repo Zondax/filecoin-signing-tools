@@ -1,7 +1,7 @@
 //////! Fcservice RPC Client
 
-use crate::service::error::ServiceError;
 use crate::service::client;
+use crate::service::error::ServiceError;
 use fcsigner::api::UnsignedMessageUserAPI;
 use fcsigner::utils::{from_hex_string, to_hex_string};
 use jsonrpc_core::{Id, MethodCall, Success, Version};
