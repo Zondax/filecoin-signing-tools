@@ -10,6 +10,15 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 static CALL_ID: AtomicU64 = AtomicU64::new(1);
 
+pub async fn make_rpc_call(url: &str, jwt: &str, m: &MethodCall) -> Result<Response, ServiceError> {
+    let client = reqwest::Client::new();
+    let request = client.post(url).bearer_auth(jwt).json(&m).build()?;
+    let node_answer = client.execute(request).await?;
+
+    let resp = node_answer.json::<Response>().await?;
+    Ok(resp)
+}
+
 pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceError> {
     if let Some(nonce) = cache_get_nonce(addr) {
         return Ok(nonce);
@@ -25,14 +34,7 @@ pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceE
         id: Id::Num(call_id),
     };
 
-    // Build request
-    let client = reqwest::Client::new();
-    let request = client.post(url).bearer_auth(jwt).json(&m).build()?;
-
-    // Send and wait for response
-    let kek = client.execute(request).await?;
-
-    let resp = kek.json::<Response>().await?;
+    let resp = make_rpc_call(url, jwt, &m).await?;
 
     // Handle response
     let nonce = match resp {
@@ -59,25 +61,22 @@ pub async fn send_signed_tx(_url: &str, _jwt: &str) -> Result<bool, ServiceError
 pub async fn get_status(url: &str, jwt: &str, cid_message: Value) -> Result<Value, ServiceError> {
     let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
 
+    let params = Params::Array(vec![Value::from(cid_message)]);
+
+    println!("{:?}", params);
+
     // Prepare request
     let m = MethodCall {
         jsonrpc: Some(Version::V2),
         method: "Filecoin.ChainGetMessage".to_owned(),
-        params: Params::Array(vec![Value::from(cid_message)]),
+        params,
         id: Id::Num(call_id),
     };
 
-    // Build request
-    let client = reqwest::Client::new();
-    let request = client.post(url).bearer_auth(jwt).json(&m).build()?;
-
-    // Send and wait for response
-    let resp = client.execute(request).await?;
-
-    let ok = resp.json::<Response>().await?;
+    let resp = make_rpc_call(url, jwt, &m).await?;
 
     // Handle response
-    let transaction_status = match ok {
+    let result = match resp {
         Response::Single(Success(s)) => s.result,
         // REVIEW: if not mined yet return
         // "error":{"code":1,"message":"blockstore: block not found"}
@@ -85,7 +84,7 @@ pub async fn get_status(url: &str, jwt: &str, cid_message: Value) -> Result<Valu
         _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
     };
 
-    Ok(transaction_status)
+    Ok(result)
 }
 
 #[cfg(test)]
@@ -102,6 +101,8 @@ mod tests {
         let addr = "t02";
 
         let nonce = get_nonce(&TEST_URL, &JWT, &addr).await;
+
+        println!("{:?}", nonce);
 
         assert!(nonce.is_ok());
     }
