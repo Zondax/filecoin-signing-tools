@@ -2,36 +2,49 @@
 
 use jsonrpc_core::{Call, MethodCall, Version};
 
+use crate::config::RemoteNodeSection;
 use crate::service::error::ServiceError;
 use crate::service::error::ServiceError::JSONRPC;
 use crate::service::methods;
 use jsonrpc_core::error::ErrorCode::ServerError;
 use warp::{Rejection, Reply};
 
-pub async fn get_status() -> Result<impl Reply, Rejection> {
+pub async fn v0_get_status(config: RemoteNodeSection) -> Result<impl Reply, Rejection> {
     let message = "Filecoin Signing Service".to_string();
     Ok(warp::reply::html(message))
     // TODO: return some information about the service status
 }
 
-pub async fn get_api_v0() -> Result<impl Reply, Rejection> {
+pub async fn v0_get(config: RemoteNodeSection) -> Result<impl Reply, Rejection> {
     println!("Received JSONRPC GET. ");
     // TODO: return some information about the service API?
     Ok(warp::reply::html("Document API here?".to_string()))
 }
 
-impl warp::reject::Reject for ServiceError {}
+pub async fn v0_post(request: Call, config: RemoteNodeSection) -> Result<impl Reply, Rejection> {
+    return match request {
+        Call::MethodCall(c) => v0_post_methods(c, config).await,
+        _ => {
+            return Err(warp::reject::not_found());
+        }
+    };
+}
 
-pub async fn post_api_v0_methods(method_call: MethodCall) -> Result<impl Reply, Rejection> {
+async fn v0_post_methods(
+    method_call: MethodCall,
+    config: RemoteNodeSection,
+) -> Result<impl Reply, Rejection> {
     let method_id = method_call.id.clone();
 
     let reply = match &method_call.method[..] {
-        "key_generate_mnemonic" => methods::key_generate_mnemonic(method_call).await,
-        "key_derive" => methods::key_derive(method_call).await,
-        "transaction_create" => methods::transaction_create(method_call).await,
-        "transaction_parse" => methods::transaction_parse(method_call).await,
-        "sign_transaction" => methods::sign_transaction(method_call).await,
-        "verify_signature" => methods::verify_signature(method_call).await,
+        "key_generate_mnemonic" => methods::key_generate_mnemonic(method_call, config).await,
+        "key_derive" => methods::key_derive(method_call, config).await,
+        "transaction_create" => methods::transaction_create(method_call, config).await,
+        "transaction_parse" => methods::transaction_parse(method_call, config).await,
+        "sign_transaction" => methods::sign_transaction(method_call, config).await,
+        "verify_signature" => methods::verify_signature(method_call, config).await,
+        "get_status" => methods::get_status(method_call, config).await,
+        "get_nonce" => methods::get_nonce(method_call, config).await,
         _ => return Err(warp::reject::not_found()),
     };
 
@@ -60,21 +73,18 @@ pub async fn post_api_v0_methods(method_call: MethodCall) -> Result<impl Reply, 
     }
 }
 
-pub async fn post_api_v0(request: Call) -> Result<impl Reply, Rejection> {
-    return match request {
-        Call::MethodCall(c) => post_api_v0_methods(c).await,
-        _ => {
-            return Err(warp::reject::not_found());
-        }
-    };
-}
+impl warp::reject::Reject for ServiceError {}
 
 #[cfg(test)]
 mod tests {
-    use crate::service::handlers::post_api_v0;
+    use crate::config::RemoteNodeSection;
+    use crate::service::handlers::v0_post;
     use futures_await_test::async_test;
     use jsonrpc_core::{Call, Id, MethodCall, Params, Version};
     use warp::Reply;
+
+    const TEST_URL: &str = "http://86.192.13.13:1234/rpc/v0";
+    const JWT: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
 
     #[async_test]
     async fn returns_jsonrpc_error_not_found() {
@@ -85,7 +95,12 @@ mod tests {
             id: Id::Num(1),
         });
 
-        let response = post_api_v0(bad_call).await;
+        let config = RemoteNodeSection {
+            url: TEST_URL.to_string(),
+            jwt: JWT.to_string(),
+        };
+
+        let response = v0_post(bad_call, config).await;
 
         assert!(response.is_err());
         let err = response.err().unwrap();
@@ -101,7 +116,12 @@ mod tests {
             id: Id::Num(1),
         });
 
-        let reply = post_api_v0(bad_call).await.unwrap();
+        let config = RemoteNodeSection {
+            url: TEST_URL.to_string(),
+            jwt: JWT.to_string(),
+        };
+
+        let reply = v0_post(bad_call, config).await.unwrap();
 
         let response = reply.into_response();
 
