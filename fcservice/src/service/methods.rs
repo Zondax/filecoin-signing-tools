@@ -1,6 +1,7 @@
 //////! Fcservice RPC Client
 
 use crate::service::error::ServiceError;
+use crate::service::client;
 use fcsigner::api::UnsignedMessageUserAPI;
 use fcsigner::utils::{from_hex_string, to_hex_string};
 use jsonrpc_core::{Id, MethodCall, Success, Version};
@@ -121,6 +122,28 @@ pub async fn verify_signature(c: MethodCall) -> Result<Success, ServiceError> {
     let signature = from_hex_string(&params.signature_hex)?;
 
     let result = fcsigner::verify_signature(&signature, &params.message_hex.as_bytes())?;
+
+    let so = Success {
+        jsonrpc: Some(Version::V2),
+        result: Value::from(result),
+        id: Id::Num(1),
+    };
+
+    Ok(so)
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct GetNonceParamsAPI {
+    pub account: String,
+}
+
+pub async fn get_nonce(c: MethodCall) -> Result<Success, ServiceError> {
+    let params = c.params.parse::<GetNonceParamsAPI>()?;
+
+    let url = "http://86.192.13.13:1234/rpc/v0";
+    let jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
+
+    let result = client::get_nonce(url, jwt, &params.account).await?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),
