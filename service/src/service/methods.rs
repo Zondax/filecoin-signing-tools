@@ -3,7 +3,7 @@
 use crate::config::RemoteNodeSection;
 use crate::service::client;
 use crate::service::error::ServiceError;
-use filecoin_signer::api::UnsignedMessageAPI;
+use filecoin_signer::api::{UnsignedMessageAPI, UnsignedMessageUserAPI};
 use filecoin_signer::utils::{from_hex_string, to_hex_string};
 use filecoin_signer::{CborBuffer, Mnemonic, SecretKey, Signature};
 use jsonrpc_core::{Id, MethodCall, Success, Version};
@@ -11,6 +11,11 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use serde_json::Value;
 use std::convert::TryFrom;
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct SendSignedTxParamsAPI {
+    pub signed_tx: SignedMessageUserAPI,
+}
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SignTransactionParamsAPI {
@@ -183,7 +188,44 @@ pub async fn get_status(c: MethodCall, config: RemoteNodeSection) -> Result<Succ
 
 pub async fn get_nonce(c: MethodCall, config: RemoteNodeSection) -> Result<Success, ServiceError> {
     let params = c.params.parse::<GetNonceParamsAPI>()?;
+
     let result = client::get_nonce(&config.url, &config.jwt, &params.account).await?;
+
+    let so = Success {
+        jsonrpc: Some(Version::V2),
+        result: Value::from(result),
+        id: Id::Num(1),
+    };
+
+    Ok(so)
+}
+
+pub async fn send_signed_tx(
+    c: MethodCall,
+    config: RemoteNodeSection,
+) -> Result<Success, ServiceError> {
+    let call_params = c.params.parse::<SendSignedTxParamsAPI>()?;
+
+    // REVIEW: Ugly ?
+    // TODO: Convert hex signature to base64 signature instead of asking base64 signature
+    let params = json!({
+        "Message": {
+            "To": call_params.signed_tx.message.to,
+            "From": call_params.signed_tx.message.from,
+            "Nonce": call_params.signed_tx.message.nonce,
+            "Value":call_params.signed_tx.message.value,
+            "GasPrice": call_params.signed_tx.message.gas_price,
+            "GasLimit":call_params.signed_tx.message.gas_limit,
+            "Method": call_params.signed_tx.message.method,
+            "Params": call_params.signed_tx.message.params
+        },
+        "Signature":{
+            "Type":"secp256k1",
+            "Data": call_params.signed_tx.signature
+        }
+    });
+
+    let result = client::send_signed_tx(&config.url, &config.jwt, params).await?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),

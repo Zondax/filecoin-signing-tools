@@ -324,25 +324,25 @@ test("send_signed_tx", async () => {
     1,
   );
 
-  console.log(signature_response.result);
   const signature_hex = signature_response.result;
+  const signature_buf = Buffer.from(signature_hex,'hex');
+  const signature_base64 = signature_buf.toString('base64');
+
+  console.log("Signature Base64 :", signature_base64);
 
   let signed_tx = {
-    "Message":{
-      "To":"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-      "From": account,
-      "Nonce":nonce_response.result,
-      "Value":"1",
-      "GasPrice":"0",
-      "GasLimit":"0",
-      "Method":0,
-      "Params":""
+    "message":{
+      "to":"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+      "from": account,
+      "nonce":nonce_response.result,
+      "value":"1",
+      "gas_price":"0",
+      "gas_limit":"0",
+      "method":0,
+      "params":""
     },
-    "Signature":{
-      "Type":"secp256k1",
-      "Data":"flv4XRkEsKsCZzWVYnRDaiPrgYOgGOdvE03s50C1KUFugkuztZac2AqKtkV/wHrOwa4j3Xcw42p3rzkoqBxMpAA="
-    }
-  }
+    "signature": signature_base64
+  };
 
   const response = await callMethod(
     URL,
@@ -352,4 +352,6 @@ test("send_signed_tx", async () => {
   );
 
   console.log(response)
+
+  expect(response).toHaveProperty("result");
 });

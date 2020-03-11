@@ -15,7 +15,7 @@ pub enum RemoteNode {
     #[error("Could not retrieve status")]
     InvalidStatusRequest,
     /// JSONRPC error
-    #[error("JSONRPC error")]
+    #[error("{0}")]
     JSONRPC(#[from] jsonrpc_core::types::Error),
 }
 
@@ -37,7 +37,7 @@ pub enum ServiceError {
     #[error("Service Request error")]
     Request(#[from] reqwest::Error),
     /// Remote Node Request error
-    #[error("Remote Node error")]
+    #[error("Remote Node error: {0}")]
     RemoteNode(#[from] RemoteNode),
     /// HexDecode Error
     #[error("Error decoding hex strings")]

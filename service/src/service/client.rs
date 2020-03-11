@@ -63,10 +63,31 @@ pub async fn is_mainnet(_url: &str, _jwt: &str) -> Result<bool, ServiceError> {
     Err(ServiceError::NotImplemented)
 }
 
-pub async fn send_signed_tx(_url: &str, _jwt: &str) -> Result<bool, ServiceError> {
-    // FIXME: Check if the node (url) is running mainnet or not
-    // FIXME: https://github.com/Zondax/filecoin-rs/issues/33
-    Err(ServiceError::NotImplemented)
+pub async fn send_signed_tx(url: &str, jwt: &str, signed_tx: Value) -> Result<Value, ServiceError> {
+    let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
+
+    println!("{:?}", signed_tx);
+
+    let params = Params::Array(vec![Value::from(signed_tx)]);
+
+    // Prepare request
+    let m = MethodCall {
+        jsonrpc: Some(Version::V2),
+        method: "Filecoin.MpoolPush".to_owned(),
+        params,
+        id: Id::Num(call_id),
+    };
+
+    let resp = make_rpc_call(url, jwt, &m).await?;
+
+    // Handle response
+    let result = match resp {
+        Response::Single(Success(s)) => s.result,
+        Response::Single(Failure(f)) => return Err(ServiceError::RemoteNode(JSONRPC(f.error))),
+        _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
+    };
+
+    Ok(result)
 }
 
 pub async fn get_status(url: &str, jwt: &str, cid_message: Value) -> Result<Value, ServiceError> {
