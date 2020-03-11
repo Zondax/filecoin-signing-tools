@@ -10,6 +10,47 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use serde_json::Value;
 
+#[derive(Debug, Deserialize, Serialize)]
+pub struct SignTransactionParamsAPI {
+    pub transaction: UnsignedMessageUserAPI,
+    pub prvkey_hex: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct GetNonceParamsAPI {
+    pub account: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct KeyDeriveParamsAPI {
+    pub mnemonic: String,
+    pub path: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct KeyDeriveResultAPI {
+    pub prvkey: String,
+    pub pubkey: String,
+    pub address: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct TransctionParseParamsAPI {
+    pub cbor_hex: String,
+    pub testnet: bool,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct VerifySignatureParamsAPI {
+    pub signature_hex: String,
+    pub message_hex: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct GetStatusParamsAPI {
+    pub cid_message: String,
+}
+
 pub async fn key_generate_mnemonic(
     _c: MethodCall,
     _: RemoteNodeSection,
@@ -25,25 +66,12 @@ pub async fn key_generate_mnemonic(
     Ok(so)
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct KeyDeriveParamsAPI {
-    pub mnemonic: String,
-    pub path: String,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct KeyDeriveResultApi {
-    pub prvkey: String,
-    pub pubkey: String,
-    pub address: String,
-}
-
 pub async fn key_derive(c: MethodCall, _: RemoteNodeSection) -> Result<Success, ServiceError> {
     let y = c.params.parse::<KeyDeriveParamsAPI>()?;
 
     let (prvkey, pubkey, address) = fcsigner::key_derive(y.mnemonic, y.path)?;
 
-    let result = KeyDeriveResultApi {
+    let result = KeyDeriveResultAPI {
         prvkey,
         pubkey,
         address,
@@ -76,12 +104,6 @@ pub async fn transaction_create(
     Ok(so)
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct TransctionParseParamsAPI {
-    pub cbor_hex: String,
-    pub testnet: bool,
-}
-
 pub async fn transaction_parse(
     c: MethodCall,
     _: RemoteNodeSection,
@@ -97,12 +119,6 @@ pub async fn transaction_parse(
     };
 
     Ok(so)
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct SignTransactionParamsAPI {
-    pub transaction: UnsignedMessageUserAPI,
-    pub prvkey_hex: String,
 }
 
 pub async fn sign_transaction(
@@ -124,12 +140,6 @@ pub async fn sign_transaction(
     Ok(so)
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct VerifySignatureParamsAPI {
-    pub signature_hex: String,
-    pub message_hex: String,
-}
-
 pub async fn verify_signature(
     c: MethodCall,
     _: RemoteNodeSection,
@@ -147,11 +157,6 @@ pub async fn verify_signature(
     };
 
     Ok(so)
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct GetStatusParamsAPI {
-    pub cid_message: String,
 }
 
 pub async fn get_status(c: MethodCall, config: RemoteNodeSection) -> Result<Success, ServiceError> {

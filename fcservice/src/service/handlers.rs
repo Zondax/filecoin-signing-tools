@@ -44,7 +44,7 @@ async fn v0_post_methods(
         "sign_transaction" => methods::sign_transaction(method_call, config).await,
         "verify_signature" => methods::verify_signature(method_call, config).await,
         "get_status" => methods::get_status(method_call, config).await,
-        "get_nonce" => methods::get_nonce(method_call).await,
+        "get_nonce" => methods::get_nonce(method_call, config).await,
         _ => return Err(warp::reject::not_found()),
     };
 
