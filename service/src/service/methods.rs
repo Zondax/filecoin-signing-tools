@@ -1,18 +1,20 @@
 //////! Fcservice RPC Client
 
 use crate::service::error::ServiceError;
-use filecoin_signer::api::UnsignedMessageUserAPI;
+use filecoin_signer::api::UnsignedMessageAPI;
 use filecoin_signer::utils::{from_hex_string, to_hex_string};
+use filecoin_signer::{CborBuffer, Mnemonic, SecretKey, Signature};
 use jsonrpc_core::{Id, MethodCall, Success, Version};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::convert::TryFrom;
 
 pub async fn key_generate_mnemonic(_c: MethodCall) -> Result<Success, ServiceError> {
     let mnemonic = filecoin_signer::key_generate_mnemonic()?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),
-        result: Value::from(mnemonic),
+        result: Value::from(mnemonic.0),
         id: Id::Num(1),
     };
 
@@ -27,19 +29,20 @@ pub struct KeyDeriveParamsAPI {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct KeyDeriveResultApi {
-    pub prvkey: String,
-    pub pubkey: String,
+    pub public_hexstring: String,
+    pub private_hexstring: String,
     pub address: String,
 }
 
 pub async fn key_derive(c: MethodCall) -> Result<Success, ServiceError> {
-    let y = c.params.parse::<KeyDeriveParamsAPI>()?;
+    let params = c.params.parse::<KeyDeriveParamsAPI>()?;
 
-    let (prvkey, pubkey, address) = filecoin_signer::key_derive(y.mnemonic, y.path)?;
+    let (private, public, address) =
+        filecoin_signer::key_derive(Mnemonic(params.mnemonic), params.path)?;
 
     let result = KeyDeriveResultApi {
-        prvkey,
-        pubkey,
+        public_hexstring: to_hex_string(&public.0[..]),
+        private_hexstring: to_hex_string(&private.0[..]),
         address,
     };
 
@@ -55,8 +58,8 @@ pub async fn key_derive(c: MethodCall) -> Result<Success, ServiceError> {
 }
 
 pub async fn transaction_create(c: MethodCall) -> Result<Success, ServiceError> {
-    let y = c.params.parse::<UnsignedMessageUserAPI>()?;
-    let cbor_hexstring = filecoin_signer::transaction_create(y)?;
+    let y = c.params.parse::<UnsignedMessageAPI>()?;
+    let cbor_hexstring = filecoin_signer::transaction_serialize(y)?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),
@@ -75,8 +78,11 @@ pub struct TransctionParseParamsAPI {
 
 pub async fn transaction_parse(c: MethodCall) -> Result<Success, ServiceError> {
     let params = c.params.parse::<TransctionParseParamsAPI>()?;
-    let message_parsed =
-        filecoin_signer::transaction_parse(params.cbor_hex.as_bytes(), params.testnet)?;
+
+    let cbor_data = CborBuffer(from_hex_string(params.cbor_hex.as_ref()).unwrap());
+
+    let message_parsed = filecoin_signer::transaction_parse(&cbor_data, params.testnet)?;
+
     let tx = serde_json::to_string(&message_parsed)?;
 
     let so = Success {
@@ -90,20 +96,20 @@ pub async fn transaction_parse(c: MethodCall) -> Result<Success, ServiceError> {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SignTransactionParamsAPI {
-    pub transaction: UnsignedMessageUserAPI,
+    pub transaction: UnsignedMessageAPI,
     pub prvkey_hex: String,
 }
 
 pub async fn sign_transaction(c: MethodCall) -> Result<Success, ServiceError> {
     let params = c.params.parse::<SignTransactionParamsAPI>()?;
 
-    let prvkey_bytes = from_hex_string(&params.prvkey_hex)?;
+    let private_key = SecretKey::try_from(params.prvkey_hex)?;
 
-    let (signed_message, v) = filecoin_signer::sign_transaction(params.transaction, &prvkey_bytes)?;
+    let signature = filecoin_signer::sign_transaction(params.transaction, &private_key)?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),
-        result: Value::from([to_hex_string(&signed_message), format!("{:02x}", &v)].concat()),
+        result: Value::from(to_hex_string(&signature.0)),
         id: Id::Num(1),
     };
 
@@ -119,9 +125,10 @@ pub struct VerifySignatureParamsAPI {
 pub async fn verify_signature(c: MethodCall) -> Result<Success, ServiceError> {
     let params = c.params.parse::<VerifySignatureParamsAPI>()?;
 
-    let signature = from_hex_string(&params.signature_hex)?;
+    let signature = Signature::try_from(params.signature_hex)?;
+    let message = CborBuffer(from_hex_string(params.message_hex.as_ref()).unwrap());
 
-    let result = filecoin_signer::verify_signature(&signature, &params.message_hex.as_bytes())?;
+    let result = filecoin_signer::verify_signature(&signature, &message)?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),

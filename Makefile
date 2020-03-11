@@ -2,19 +2,19 @@ deps_wasm:
 	cargo install wasm-pack --version 0.8.1
 
 build_wasm: deps_wasm
-	rm -rf wasm-signer/pkg/
-	wasm-pack build wasm-signer/
+	rm -rf signer-wasm/pkg/
+	wasm-pack build signer-wasm/
 	# temporary workaround
-	cp package-wasm-signer.json wasm-signer/pkg/package.json
-	cp wasm-signer/pkg/wasm-signer.js wasm-signer/pkg/wasm-signer.mjs
+	cp package-signer-wasm.json signer-wasm/pkg/package.json
+	cp signer-wasm/pkg/filecoin_signer_wasm.js signer-wasm/pkg/filecoin_signer_wasm.mjs
 
 link_wasm: build_wasm
 	cd examples/wasm && yarn install
-	cd wasm-signer/pkg && yarn link
-	cd examples/wasm && yarn link "wasm-signer"
+	cd signer-wasm/pkg && yarn link
+	cd examples/wasm && yarn link "filecoin_signer_wasm"
 
 test_wasm_unit: deps_wasm
-	wasm-pack test --chrome --headless ./fcwasmsigner
+	wasm-pack test --chrome --headless ./signer-wasm
 
 test_wasm_integration: link_wasm
 	cd examples/wasm && yarn run test:integration

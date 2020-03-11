@@ -1,30 +1,87 @@
-use crate::api::{MessageTx, MessageTxNetwork, MessageTxUserAPI, UnsignedMessageUserAPI};
+use crate::api::{MessageTx, MessageTxAPI, MessageTxNetwork, UnsignedMessageAPI};
 use crate::error::SignerError;
-use crate::utils::to_hex_string;
+use crate::utils::from_hex_string;
 use forest_address::Address;
 use forest_encoding::{from_slice, to_vec};
 use forest_message;
-use hex::{decode, encode};
 use std::convert::TryFrom;
 
 use crate::bip44::{Bip44Path, ExtendedSecretKey};
-use bip39::{Language, Mnemonic, MnemonicType, Seed};
-use secp256k1::{recover, sign, verify, Message, RecoveryId, SecretKey, Signature};
+use bip39::{Language, MnemonicType, Seed};
+use secp256k1::util::{COMPRESSED_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE};
+use secp256k1::{recover, sign, verify, Message, RecoveryId};
 
 pub mod api;
 mod bip44;
 pub mod error;
 pub mod utils;
 
-pub struct CborBuffer(pub String);
+pub struct Mnemonic(pub String);
 
-pub fn key_generate_mnemonic() -> Result<String, SignerError> {
-    let mnemonic = Mnemonic::new(MnemonicType::Words24, Language::English);
-    Ok(mnemonic.to_string())
+pub struct CborBuffer(pub Vec<u8>);
+
+pub const SIGNATURE_RECOVERY_SIZE: usize = SIGNATURE_SIZE + 1;
+
+pub struct Signature(pub [u8; SIGNATURE_RECOVERY_SIZE]);
+
+pub struct SecretKey(pub [u8; SECRET_KEY_SIZE]);
+
+pub struct PublicKey(pub [u8; COMPRESSED_PUBLIC_KEY_SIZE]);
+
+impl TryFrom<String> for Signature {
+    type Error = SignerError;
+
+    fn try_from(s: String) -> Result<Signature, Self::Error> {
+        let tmp = from_hex_string(&s)?;
+        if tmp.len() != SIGNATURE_RECOVERY_SIZE {
+            return Err(SignerError::GenericString(
+                "Invalid Signature Length".to_string(),
+            ));
+        }
+
+        let mut sk = Signature {
+            0: [0; SIGNATURE_RECOVERY_SIZE],
+        };
+        sk.0.copy_from_slice(&tmp[..SIGNATURE_RECOVERY_SIZE]);
+        Ok(sk)
+    }
 }
 
-pub fn key_derive(mnemonic: String, path: String) -> Result<(String, String, String), SignerError> {
-    let mnemonic = Mnemonic::from_phrase(&mnemonic, Language::English)
+impl TryFrom<String> for SecretKey {
+    type Error = SignerError;
+
+    fn try_from(s: String) -> Result<SecretKey, Self::Error> {
+        let tmp = from_hex_string(&s)?;
+        if tmp.len() != SECRET_KEY_SIZE {
+            return Err(SignerError::GenericString("Invalid Key Length".to_string()));
+        }
+
+        let mut sk = SecretKey {
+            0: [0; SECRET_KEY_SIZE],
+        };
+        sk.0.copy_from_slice(&tmp[..SECRET_KEY_SIZE]);
+        Ok(sk)
+    }
+}
+
+/// Generates a random mnemonic (English - 24 words)
+pub fn key_generate_mnemonic() -> Result<Mnemonic, SignerError> {
+    let mnemonic = bip39::Mnemonic::new(MnemonicType::Words24, Language::English);
+    Ok(Mnemonic(mnemonic.to_string()))
+}
+
+/// Returns a public key, private key and address given a mnemonic and derivation path
+///
+/// # Arguments
+///
+/// * `mnemonic` - A string containing a 24-words English mnemonic
+/// * `path` - A string containing a derivation path
+///
+pub fn key_derive(
+    mnemonic: Mnemonic,
+    path: String,
+) -> Result<(SecretKey, PublicKey, String), SignerError> {
+    let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic.0, Language::English)
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let seed = Seed::new(&mnemonic, "");
@@ -35,62 +92,60 @@ pub fn key_derive(mnemonic: String, path: String) -> Result<(String, String, Str
 
     let esk = master.derive_bip44(bip44_path)?;
 
-    let private_key = encode(esk.secret_key());
-
-    let public_key = to_hex_string(&esk.public_key());
-
     let address = Address::new_secp256k1(&esk.public_key().to_vec())
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-    Ok((private_key, public_key, address.to_string()))
+    Ok((
+        SecretKey(esk.secret_key()),
+        PublicKey(esk.public_key()),
+        address.to_string(),
+    ))
 }
 
-pub fn transaction_create(
-    unsigned_message: UnsignedMessageUserAPI,
+pub fn transaction_serialize(
+    unsigned_message_arg: UnsignedMessageAPI,
 ) -> Result<CborBuffer, SignerError> {
-    // tx params as JSON
-    let message = forest_message::UnsignedMessage::try_from(unsigned_message)?;
-    let message_cbor: Vec<u8> = to_vec(&message)?;
-    let message_cbor_hex = encode(message_cbor);
-
-    // return unsigned transaction serialized as CBOR / hexstring
-    Ok(CborBuffer(message_cbor_hex))
+    let unsigned_message = forest_message::UnsignedMessage::try_from(unsigned_message_arg)?;
+    let message_cbor = CborBuffer(to_vec(&unsigned_message)?);
+    Ok(message_cbor)
 }
 
 pub fn transaction_parse(
-    cbor_hexstring: &[u8],
+    cbor_buffer: &CborBuffer,
     testnet: bool,
-) -> Result<MessageTxUserAPI, SignerError> {
-    let cbor_buffer = decode(cbor_hexstring)?;
-    let message: MessageTx = from_slice(&cbor_buffer)?;
+) -> Result<MessageTxAPI, SignerError> {
+    let message: MessageTx = from_slice(&cbor_buffer.0)?;
 
     let message_tx_with_network = MessageTxNetwork {
         message_tx: message,
         testnet: testnet,
     };
 
-    let message_user_api = MessageTxUserAPI::from(message_tx_with_network);
+    let parsed_message = MessageTxAPI::from(message_tx_with_network);
 
-    Ok(message_user_api)
+    Ok(parsed_message)
 }
 
 pub fn sign_transaction(
-    unsigned_message_api: UnsignedMessageUserAPI,
-    privatekey_bytes: &[u8],
-) -> Result<([u8; 64], u8), SignerError> {
-    // tx params as JSON
-    let message = forest_message::UnsignedMessage::try_from(unsigned_message_api)?;
-    let message_cbor: Vec<u8> = to_vec(&message)?;
+    unsigned_message_api: UnsignedMessageAPI,
+    secret_key: &SecretKey,
+) -> Result<Signature, SignerError> {
+    let message = forest_message::UnsignedMessage::try_from(unsigned_message_api.clone())?;
+    let message_cbor = CborBuffer(to_vec(&message)?);
 
-    let secret_key = SecretKey::parse_slice(&privatekey_bytes)?;
+    let secret_key = secp256k1::SecretKey::parse_slice(&secret_key.0)?;
 
-    let cid_hashed = utils::get_digest(&message_cbor);
+    let cid_hashed = utils::get_digest(&message_cbor.0);
 
     let message_digest = Message::parse_slice(&cid_hashed)?;
 
-    let (signed_transaction, recovery_id) = sign(&message_digest, &secret_key);
+    let (signature_rs, recovery_id) = sign(&message_digest, &secret_key);
 
-    Ok((signed_transaction.serialize(), recovery_id.serialize()))
+    let mut signature = Signature { 0: [0; 65] };
+    signature.0[..64].copy_from_slice(&signature_rs.serialize()[..]);
+    signature.0[64] = recovery_id.serialize();
+
+    Ok(signature)
 }
 
 pub fn sign_message() {
@@ -98,32 +153,29 @@ pub fn sign_message() {
     // TODO: return signature
 }
 
-// REVIEW: We expect the CBOR transaction as an hex string... Might be confusing
 pub fn verify_signature(
-    signature_bytes: &[u8],
-    cbor_hexstring: &[u8],
+    signature: &Signature,
+    cbor_buffer: &CborBuffer,
 ) -> Result<bool, SignerError> {
-    let signature = Signature::parse_slice(&signature_bytes[..64])?;
-    let recovery_id = RecoveryId::parse(signature_bytes[64])?;
+    let signature_rs = secp256k1::Signature::parse_slice(&signature.0[..64])?;
+    let recovery_id = RecoveryId::parse(signature.0[64])?;
 
     // Should be default network here
-    //  For now only testnet
-    let tx = transaction_parse(&cbor_hexstring, true)?;
+    // FIXME: For now only testnet
+    let tx = transaction_parse(cbor_buffer, true)?;
 
     // Decode the CBOR transaction hex string into CBOR transaction buffer
-    let cbor_buffer = decode(cbor_hexstring)?;
-    let message_digest = utils::get_digest(&cbor_buffer);
-
+    let message_digest = utils::get_digest(&cbor_buffer.0);
     let message = Message::parse_slice(&message_digest)?;
 
-    let publickey = recover(&message, &signature, &recovery_id)?;
+    let publickey = recover(&message, &signature_rs, &recovery_id)?;
 
     let from = Address::new_secp256k1(&publickey.serialize_compressed().to_vec())
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let tx_from = match tx {
-        MessageTxUserAPI::UnsignedMessageUserAPI(tx) => tx.from,
-        MessageTxUserAPI::SignedMessageUserAPI(tx) => tx.message.from,
+        MessageTxAPI::UnsignedMessageAPI(tx) => tx.from,
+        MessageTxAPI::SignedMessageAPI(tx) => tx.message.from,
     };
 
     // Compare recovered public key with the public key from the transaction
@@ -131,16 +183,18 @@ pub fn verify_signature(
         return Ok(false);
     }
 
-    Ok(verify(&message, &signature, &publickey))
+    Ok(verify(&message, &signature_rs, &publickey))
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::api::{MessageTxUserAPI, UnsignedMessageUserAPI};
+    use crate::api::{MessageTxAPI, UnsignedMessageAPI};
+    use crate::utils::{from_hex_string, to_hex_string};
     use crate::{
         key_derive, key_generate_mnemonic, sign_transaction, transaction_parse, verify_signature,
+        CborBuffer, Mnemonic, SecretKey,
     };
-    use hex::decode;
+    use std::convert::TryFrom;
 
     // NOTE: not the same transaction used in other tests.
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
@@ -175,20 +229,22 @@ mod tests {
     #[test]
     fn generate_mnemonic() {
         let mnemonic = key_generate_mnemonic().expect("could not generate mnemonic");
-        println!("{}", mnemonic);
+        println!("{}", mnemonic.0);
 
-        let word_count = mnemonic.split_ascii_whitespace().count();
+        let word_count = mnemonic.0.split_ascii_whitespace().count();
         assert_eq!(word_count, 24)
     }
 
     #[test]
     fn derive_child_key() {
-        let mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
-        let path = "m/44'/461'/0/0/0";
-        let (prvkey, _, _) = key_derive(mnemonic.to_string(), path.to_string()).expect("FIX ME");
+        let mnemonic = Mnemonic(
+            "equip will roof matter pink blind book anxiety banner elbow sun young".to_string(),
+        );
+        let path = "m/44'/461'/0/0/0".to_string();
 
-        println!("{}", prvkey);
-        assert_eq!(prvkey, EXAMPLE_PRIVATE_KEY.to_string());
+        let (prvkey, _, _) = key_derive(mnemonic, path).unwrap();
+
+        assert_eq!(to_hex_string(&prvkey.0[..]), EXAMPLE_PRIVATE_KEY);
     }
 
     #[test]
@@ -198,10 +254,12 @@ mod tests {
 
     #[test]
     fn parse_unsigned_transaction() {
-        let unsigned_tx = transaction_parse(EXAMPLE_CBOR_DATA.as_bytes(), true).expect("FIX ME");
+        let cbor_data = CborBuffer(from_hex_string(EXAMPLE_CBOR_DATA).unwrap());
+
+        let unsigned_tx = transaction_parse(&cbor_data, true).expect("FIX ME");
         let to = match unsigned_tx {
-            MessageTxUserAPI::UnsignedMessageUserAPI(tx) => tx.to,
-            MessageTxUserAPI::SignedMessageUserAPI(_) => panic!("Should be a Unsigned Message!"),
+            MessageTxAPI::UnsignedMessageAPI(tx) => tx.to,
+            MessageTxAPI::SignedMessageAPI(_) => panic!("Should be a Unsigned Message!"),
         };
 
         println!("{}", to.to_string());
@@ -213,10 +271,12 @@ mod tests {
 
     #[test]
     fn parse_signed_transaction() {
-        let signed_tx = transaction_parse(SIGNED_MESSAGE_CBOR.as_bytes(), true).expect("FIX ME");
+        let cbor_data = CborBuffer(from_hex_string(SIGNED_MESSAGE_CBOR).unwrap());
+
+        let signed_tx = transaction_parse(&cbor_data, true).expect("FIX ME");
         let signature = match signed_tx {
-            MessageTxUserAPI::UnsignedMessageUserAPI(_) => panic!("Should be a Signed Message!"),
-            MessageTxUserAPI::SignedMessageUserAPI(tx) => tx.signature,
+            MessageTxAPI::UnsignedMessageAPI(_) => panic!("Should be a Signed Message!"),
+            MessageTxAPI::SignedMessageAPI(tx) => tx.signature,
         };
 
         println!("{}", signature);
@@ -228,11 +288,12 @@ mod tests {
 
     #[test]
     fn parse_transaction_with_network() {
-        let unsigned_tx_mainnet =
-            transaction_parse(EXAMPLE_CBOR_DATA.as_bytes(), false).expect("FIX ME");
+        let cbor_data = CborBuffer(from_hex_string(EXAMPLE_CBOR_DATA).unwrap());
+
+        let unsigned_tx_mainnet = transaction_parse(&cbor_data, false).expect("FIX ME");
         let (to, from) = match unsigned_tx_mainnet {
-            MessageTxUserAPI::UnsignedMessageUserAPI(tx) => (tx.to, tx.from),
-            MessageTxUserAPI::SignedMessageUserAPI(_) => panic!("Should be a Unsigned Message!"),
+            MessageTxAPI::UnsignedMessageAPI(tx) => (tx.to, tx.from),
+            MessageTxAPI::SignedMessageAPI(_) => panic!("Should be a Unsigned Message!"),
         };
 
         println!("{}", to.to_string());
@@ -248,11 +309,12 @@ mod tests {
 
     #[test]
     fn parse_transaction_with_network_testnet() {
-        let unsigned_tx_testnet =
-            transaction_parse(EXAMPLE_CBOR_DATA.as_bytes(), true).expect("FIX ME");
+        let cbor_data = CborBuffer(from_hex_string(EXAMPLE_CBOR_DATA).unwrap());
+
+        let unsigned_tx_testnet = transaction_parse(&cbor_data, true).expect("FIX ME");
         let (to, from) = match unsigned_tx_testnet {
-            MessageTxUserAPI::UnsignedMessageUserAPI(tx) => (tx.to, tx.from),
-            MessageTxUserAPI::SignedMessageUserAPI(_) => panic!("Should be a Unsigned Message!"),
+            MessageTxAPI::UnsignedMessageAPI(tx) => (tx.to, tx.from),
+            MessageTxAPI::SignedMessageAPI(_) => panic!("Should be a Unsigned Message!"),
         };
 
         println!("{}", to.to_string());
@@ -268,11 +330,12 @@ mod tests {
 
     #[test]
     fn parse_transaction_signed_with_network() {
-        let signed_tx_mainnet =
-            transaction_parse(SIGNED_MESSAGE_CBOR.as_bytes(), false).expect("FIX ME");
+        let cbor_data = CborBuffer(from_hex_string(SIGNED_MESSAGE_CBOR).unwrap());
+
+        let signed_tx_mainnet = transaction_parse(&cbor_data, false).expect("FIX ME");
         let (to, from) = match signed_tx_mainnet {
-            MessageTxUserAPI::UnsignedMessageUserAPI(_) => panic!("Should be a Signed Message!"),
-            MessageTxUserAPI::SignedMessageUserAPI(tx) => (tx.message.to, tx.message.from),
+            MessageTxAPI::UnsignedMessageAPI(_) => panic!("Should be a Signed Message!"),
+            MessageTxAPI::SignedMessageAPI(tx) => (tx.message.to, tx.message.from),
         };
 
         println!("{}", to.to_string());
@@ -288,11 +351,12 @@ mod tests {
 
     #[test]
     fn parse_transaction_signed_with_network_testnet() {
-        let signed_tx_testnet =
-            transaction_parse(SIGNED_MESSAGE_CBOR.as_bytes(), true).expect("FIX ME");
+        let cbor_data = CborBuffer(from_hex_string(SIGNED_MESSAGE_CBOR).unwrap());
+
+        let signed_tx_testnet = transaction_parse(&cbor_data, true).expect("FIX ME");
         let (to, from) = match signed_tx_testnet {
-            MessageTxUserAPI::UnsignedMessageUserAPI(_) => panic!("Should be a Signed Message!"),
-            MessageTxUserAPI::SignedMessageUserAPI(tx) => (tx.message.to, tx.message.from),
+            MessageTxAPI::UnsignedMessageAPI(_) => panic!("Should be a Signed Message!"),
+            MessageTxAPI::SignedMessageAPI(tx) => (tx.message.to, tx.message.from),
         };
 
         println!("{}", to.to_string());
@@ -308,24 +372,22 @@ mod tests {
 
     #[test]
     fn verify_invalid_signature() {
+        let cbor_data = CborBuffer(from_hex_string(EXAMPLE_CBOR_DATA).unwrap());
+
         // Path 44'/461'/0/0/0
-        let prvkey = decode(EXAMPLE_PRIVATE_KEY).unwrap();
-        let message_user_api: UnsignedMessageUserAPI =
+        let private_key = SecretKey::try_from(EXAMPLE_PRIVATE_KEY.to_string()).unwrap();
+
+        let message_user_api: UnsignedMessageAPI =
             serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE).expect("FIXME");
-        let (signature, recoveryid) = sign_transaction(message_user_api, &prvkey).unwrap();
 
-        let mut signature_with_recovery_id = [&signature[..], &[recoveryid]].concat();
+        let mut signature = sign_transaction(message_user_api, &private_key).unwrap();
 
-        assert!(
-            verify_signature(&signature_with_recovery_id, EXAMPLE_CBOR_DATA.as_bytes()).unwrap()
-        );
+        assert!(verify_signature(&signature, &cbor_data).unwrap());
 
         // Tampered signature and look if it valid
-        signature_with_recovery_id[5] = 0x01;
-        signature_with_recovery_id[34] = 0x00;
+        signature.0[5] = 0x01;
+        signature.0[34] = 0x00;
 
-        assert!(
-            !verify_signature(&signature_with_recovery_id, EXAMPLE_CBOR_DATA.as_bytes()).unwrap()
-        );
+        assert!(!verify_signature(&signature, &cbor_data).unwrap());
     }
 }

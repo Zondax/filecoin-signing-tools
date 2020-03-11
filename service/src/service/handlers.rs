@@ -3,7 +3,7 @@
 use jsonrpc_core::{Call, MethodCall, Version};
 
 use crate::service::error::ServiceError;
-use crate::service::error::ServiceError::{RemoteNode, Secp256k1, Signer, JSONRPC};
+use crate::service::error::ServiceError::JSONRPC;
 use crate::service::methods;
 use jsonrpc_core::error::ErrorCode::ServerError;
 use warp::{Rejection, Reply};

@@ -8,8 +8,8 @@ use std::convert::TryFrom;
 use std::str::FromStr;
 use vm::{MethodNum, Serialized, TokenAmount};
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct UnsignedMessageUserAPI {
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct UnsignedMessageAPI {
     pub to: String,
     pub from: String,
     pub nonce: u64,
@@ -20,17 +20,17 @@ pub struct UnsignedMessageUserAPI {
     pub params: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct SignedMessageUserAPI {
-    pub message: UnsignedMessageUserAPI,
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct SignedMessageAPI {
+    pub message: UnsignedMessageAPI,
     pub signature: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(untagged)]
-pub enum MessageTxUserAPI {
-    UnsignedMessageUserAPI(UnsignedMessageUserAPI),
-    SignedMessageUserAPI(SignedMessageUserAPI),
+pub enum MessageTxAPI {
+    UnsignedMessageAPI(UnsignedMessageAPI),
+    SignedMessageAPI(SignedMessageAPI),
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -45,8 +45,8 @@ pub struct MessageTxNetwork {
     pub testnet: bool,
 }
 
-impl From<MessageTxNetwork> for MessageTxUserAPI {
-    fn from(message_tx_network: MessageTxNetwork) -> MessageTxUserAPI {
+impl From<MessageTxNetwork> for MessageTxAPI {
+    fn from(message_tx_network: MessageTxNetwork) -> MessageTxAPI {
         let mut network = Network::Mainnet;
 
         if message_tx_network.testnet {
@@ -61,15 +61,15 @@ impl From<MessageTxNetwork> for MessageTxUserAPI {
                 let mut from_address: forest_address::Address = message_tx.from().to_owned();
                 from_address.set_network(network);
 
-                let tmp = UnsignedMessageUserAPI::from(message_tx);
+                let tmp = UnsignedMessageAPI::from(message_tx);
 
-                let unsigned_message_user_api = UnsignedMessageUserAPI {
+                let unsigned_message_user_api = UnsignedMessageAPI {
                     to: to_address.to_string(),
                     from: from_address.to_string(),
                     ..tmp
                 };
 
-                MessageTxUserAPI::UnsignedMessageUserAPI(unsigned_message_user_api)
+                MessageTxAPI::UnsignedMessageAPI(unsigned_message_user_api)
             }
             MessageTx::SignedMessage(message_tx) => {
                 let mut to_address: forest_address::Address = message_tx.to().to_owned();
@@ -78,15 +78,15 @@ impl From<MessageTxNetwork> for MessageTxUserAPI {
                 let mut from_address: forest_address::Address = message_tx.from().to_owned();
                 from_address.set_network(network);
 
-                let tmp = UnsignedMessageUserAPI::from(message_tx.message().clone());
+                let tmp = UnsignedMessageAPI::from(message_tx.message().clone());
 
-                let unsigned_message_user_api = UnsignedMessageUserAPI {
+                let unsigned_message_user_api = UnsignedMessageAPI {
                     to: to_address.to_string(),
                     from: from_address.to_string(),
                     ..tmp
                 };
 
-                MessageTxUserAPI::SignedMessageUserAPI(SignedMessageUserAPI {
+                MessageTxAPI::SignedMessageAPI(SignedMessageAPI {
                     message: unsigned_message_user_api,
                     signature: encode(message_tx.signature().bytes()),
                 })
@@ -95,23 +95,23 @@ impl From<MessageTxNetwork> for MessageTxUserAPI {
     }
 }
 
-impl From<MessageTx> for MessageTxUserAPI {
-    fn from(message_tx: MessageTx) -> MessageTxUserAPI {
+impl From<MessageTx> for MessageTxAPI {
+    fn from(message_tx: MessageTx) -> MessageTxAPI {
         match message_tx {
             MessageTx::UnsignedMessage(message_tx) => {
-                MessageTxUserAPI::UnsignedMessageUserAPI(UnsignedMessageUserAPI::from(message_tx))
+                MessageTxAPI::UnsignedMessageAPI(UnsignedMessageAPI::from(message_tx))
             }
             MessageTx::SignedMessage(message_tx) => {
-                MessageTxUserAPI::SignedMessageUserAPI(SignedMessageUserAPI::from(message_tx))
+                MessageTxAPI::SignedMessageAPI(SignedMessageAPI::from(message_tx))
             }
         }
     }
 }
 
-impl TryFrom<UnsignedMessageUserAPI> for UnsignedMessage {
+impl TryFrom<UnsignedMessageAPI> for UnsignedMessage {
     type Error = SignerError;
 
-    fn try_from(message_api: UnsignedMessageUserAPI) -> Result<UnsignedMessage, Self::Error> {
+    fn try_from(message_api: UnsignedMessageAPI) -> Result<UnsignedMessage, Self::Error> {
         let to = Address::from_str(&message_api.to)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
         let from = Address::from_str(&message_api.from)
@@ -137,9 +137,9 @@ impl TryFrom<UnsignedMessageUserAPI> for UnsignedMessage {
     }
 }
 
-impl From<UnsignedMessage> for UnsignedMessageUserAPI {
-    fn from(unsigned_message: UnsignedMessage) -> UnsignedMessageUserAPI {
-        UnsignedMessageUserAPI {
+impl From<UnsignedMessage> for UnsignedMessageAPI {
+    fn from(unsigned_message: UnsignedMessage) -> UnsignedMessageAPI {
+        UnsignedMessageAPI {
             to: unsigned_message.to().to_string(),
             from: unsigned_message.from().to_string(),
             nonce: unsigned_message.sequence(),
@@ -155,10 +155,10 @@ impl From<UnsignedMessage> for UnsignedMessageUserAPI {
     }
 }
 
-impl From<SignedMessage> for SignedMessageUserAPI {
-    fn from(signed_message: SignedMessage) -> SignedMessageUserAPI {
-        SignedMessageUserAPI {
-            message: UnsignedMessageUserAPI::from(signed_message.message().clone()),
+impl From<SignedMessage> for SignedMessageAPI {
+    fn from(signed_message: SignedMessage) -> SignedMessageAPI {
+        SignedMessageAPI {
+            message: UnsignedMessageAPI::from(signed_message.message().clone()),
             signature: encode(signed_message.signature().bytes()),
         }
     }
@@ -166,7 +166,7 @@ impl From<SignedMessage> for SignedMessageUserAPI {
 
 #[cfg(test)]
 mod tests {
-    use crate::api::UnsignedMessageUserAPI;
+    use crate::api::UnsignedMessageAPI;
     use forest_encoding::{from_slice, to_vec};
     use forest_message::UnsignedMessage;
     use hex::{decode, encode};
@@ -189,7 +189,7 @@ mod tests {
 
     #[test]
     fn json_to_cbor() {
-        let message_api: UnsignedMessageUserAPI =
+        let message_api: UnsignedMessageAPI =
             serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE).expect("FIXME");
         println!("{:?}", message_api);
 
@@ -210,7 +210,7 @@ mod tests {
         println!("{:?}", message);
 
         let message_user_api =
-            UnsignedMessageUserAPI::try_from(message).expect("could not convert message");
+            UnsignedMessageAPI::try_from(message).expect("could not convert message");
 
         let message_user_api_json =
             serde_json::to_string_pretty(&message_user_api).expect("could not serialize as JSON");

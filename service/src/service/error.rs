@@ -42,5 +42,5 @@ pub enum ServiceError {
     HexDecode(#[from] HexDecodeError),
     /// Serde Json Error
     #[error("Error serializing serde_json")]
-    Error(#[from] serde_json::error::Error),
+    Error(#[from] Error),
 }
