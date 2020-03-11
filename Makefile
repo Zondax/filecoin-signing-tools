@@ -1,5 +1,6 @@
 
 deps_wasm:
+	cd examples/wasm && yarn install
 	cargo install wasm-pack --version 0.8.1
 
 build_wasm:
