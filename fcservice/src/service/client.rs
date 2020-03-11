@@ -91,7 +91,9 @@ pub async fn get_status(url: &str, jwt: &str, cid_message: Value) -> Result<Valu
 #[cfg(test)]
 mod tests {
     use crate::service::client::{get_nonce, get_status};
+    use crate::service::error;
     use futures_await_test::async_test;
+    use jsonrpc_core::types::error::{Error, ErrorCode};
     use serde_json::json;
 
     const TEST_URL: &str = "http://86.192.13.13:1234/rpc/v0";
@@ -109,12 +111,59 @@ mod tests {
     #[tokio::test]
     async fn example_get_status_transaction() {
         let params =
+            json!({ "/": "bafy2bzacea2ob4bctlucgp2okbczqvk5ctx4jqjapslz57mbcmnnzyftgeqgu" });
+
+        let expected_response = json!({
+            "To":"t1lv32q33y64xs64pnyn6om7ftirax5ikspkumwsa",
+            "From":"t3wjxuftije2evjmzo2yoy5ghfe2o42mavrpmwuzooghzcxdhqjdu7kn6dvkzf4ko37w7sfnnzdzstcjmeooea",
+            "Nonce":66867,
+            "Value":"5000000000000000",
+            "GasPrice":"0",
+            "GasLimit":"1000",
+            "Method":0,
+            "Params":""
+        });
+
+        let status = get_status(&TEST_URL, &JWT, params).await.unwrap();
+
+        println!("{:?}", status);
+
+        assert!(status == expected_response);
+    }
+
+    #[tokio::test]
+    async fn example_get_status_transaction_fail() {
+        let params =
             json!({ "/": "bafy2bzaceaxm23epjsmh75yvzcecsrbavlmkcxnva66bkdebdcnyw3bjrc74u" });
 
         let status = get_status(&TEST_URL, &JWT, params).await;
 
         println!("{:?}", status);
+        let err_jsonrpc = Error {
+            code: ErrorCode::ServerError(1),
+            message: "cbor input had wrong number of fields".to_string(),
+            data: None,
+        };
 
-        // FIXME: add checks for two different txs
+        assert!(status.is_err());
+        //assert!(status.contains_err(&error::ServiceError::JSONRPC(err_jsonrpc)));
+    }
+
+    #[tokio::test]
+    async fn example_get_status_transaction_fail_2() {
+        let params =
+            json!({ "/": "bafy2bzacedbo3svni7n2jb57exuqh4v5zvjjethf3p74zgv7yfdtczce2yu4u" });
+
+        let status = get_status(&TEST_URL, &JWT, params).await;
+
+        println!("{:?}", status);
+        let err_jsonrpc = Error {
+            code: ErrorCode::ServerError(1),
+            message: "blockstore: block not found".to_string(),
+            data: None,
+        };
+
+        assert!(status.is_err());
+        //assert!(status.contains_err(&error::ServiceError::JSONRPC(err_jsonrpc)));
     }
 }

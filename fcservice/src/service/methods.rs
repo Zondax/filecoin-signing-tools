@@ -173,17 +173,68 @@ pub async fn get_status(c: MethodCall, config: RemoteNodeSection) -> Result<Succ
 mod tests {
     use crate::config::RemoteNodeSection;
     use crate::service::methods::get_status;
-    use jsonrpc_core::{Id, MethodCall, Params, Version};
-    use serde_json::json;
+    use jsonrpc_core::{Id, MethodCall, Params, Success, Version};
+    use serde_json::{json, Value};
 
     const TEST_URL: &str = "http://86.192.13.13:1234/rpc/v0";
     const JWT: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
 
     #[tokio::test]
     async fn example_get_status_transaction() {
-        let params_str = json!({ "cid_message": "bafy2bzaceaxm23epjsmh75yvzcecsrbavlmkcxnva66bkdebdcnyw3bjrc74u" });
+        let params_str = json!({ "cid_message": "bafy2bzacea2ob4bctlucgp2okbczqvk5ctx4jqjapslz57mbcmnnzyftgeqgu" });
         let params: Params =
             serde_json::from_str(&params_str.to_string()).expect("could not deserialize");
+
+        let expected_response = Success {
+            jsonrpc: Some(Version::V2),
+            result: Value::from(json!({
+                "To":"t1lv32q33y64xs64pnyn6om7ftirax5ikspkumwsa",
+                "From":"t3wjxuftije2evjmzo2yoy5ghfe2o42mavrpmwuzooghzcxdhqjdu7kn6dvkzf4ko37w7sfnnzdzstcjmeooea",
+                "Nonce":66867,
+                "Value":"5000000000000000",
+                "GasPrice":"0",
+                "GasLimit":"1000",
+                "Method":0,
+                "Params":""
+            })),
+            id: Id::Num(1),
+        };
+
+        let mc = MethodCall {
+            jsonrpc: Some(Version::V2),
+            method: "get_status".to_string(),
+            params,
+            id: Id::Num(0),
+        };
+
+        let config = RemoteNodeSection {
+            url: TEST_URL.to_string(),
+            jwt: JWT.to_string(),
+        };
+
+        let status = get_status(mc, config).await.unwrap();
+
+        println!("{:?}", status);
+
+        assert!(status == expected_response);
+    }
+
+    #[tokio::test]
+    async fn example_get_status_transaction_fail() {
+        let params_str = json!({ "cid_message": "bafy2bzacedbo3svni7n2jb57exuqh4v5zvjjethf3p74zgv7yfdtczce2yu4u" });
+        let params: Params =
+            serde_json::from_str(&params_str.to_string()).expect("could not deserialize");
+
+        /*let expected_response = json!({
+            "jsonrpc":"2.0",
+            "result":null,
+            "id":1,
+            "error":{
+                "code":1,
+                "message":
+                "blockstore: block not found"
+            }
+        });*/
 
         let mc = MethodCall {
             jsonrpc: Some(Version::V2),
@@ -200,5 +251,42 @@ mod tests {
         let status = get_status(mc, config).await;
 
         println!("{:?}", status);
+
+        assert!(status.is_err());
+    }
+
+    #[tokio::test]
+    async fn example_get_status_transaction_fail_2() {
+        let params_str = json!({ "cid_message": "bafy2bzaceaxm23epjsmh75yvzcecsrbavlmkcxnva66bkdebdcnyw3bjrc74u" });
+        let params: Params =
+            serde_json::from_str(&params_str.to_string()).expect("could not deserialize");
+
+        /*let expected_response = json!({
+            "jsonrpc":"2.0",
+            "result":null,
+            "id":1,
+            "error":{
+                "code":1,
+                "message":"cbor input had wrong number of fields"
+            }
+        });*/
+
+        let mc = MethodCall {
+            jsonrpc: Some(Version::V2),
+            method: "get_status".to_string(),
+            params,
+            id: Id::Num(0),
+        };
+
+        let config = RemoteNodeSection {
+            url: TEST_URL.to_string(),
+            jwt: JWT.to_string(),
+        };
+
+        let status = get_status(mc, config).await;
+
+        println!("{:?}", status);
+
+        assert!(status.is_err());
     }
 }
