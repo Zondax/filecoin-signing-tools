@@ -3,6 +3,7 @@
 use crate::service::cache::{cache_get_nonce, cache_put_nonce};
 use crate::service::error::RemoteNode::{EmptyNonce, InvalidNonce, InvalidStatusRequest, JSONRPC};
 use crate::service::error::ServiceError;
+use fcsigner::error::SignerError;
 use jsonrpc_core::response::Output::{Failure, Success};
 use jsonrpc_core::{Id, MethodCall, Params, Response, Version};
 use serde_json::value::Value;
@@ -15,7 +16,18 @@ pub async fn make_rpc_call(url: &str, jwt: &str, m: &MethodCall) -> Result<Respo
     let request = client.post(url).bearer_auth(jwt).json(&m).build()?;
     let node_answer = client.execute(request).await?;
 
-    let resp = node_answer.json::<Response>().await?;
+    ///// FIXME: This block is a workaround for a non-standard Lotus answer
+    let mut workaround = node_answer.json::<serde_json::Value>().await?;
+    let obj = workaround.as_object_mut().unwrap();
+
+    if (obj.contains_key("error")) {
+        obj.remove("result");
+    }
+
+    let fixed_value = serde_json::Value::Object(obj.clone());
+    let resp: Response = serde_json::from_value(fixed_value)?;
+    //////////////////
+
     Ok(resp)
 }
 
@@ -63,8 +75,6 @@ pub async fn get_status(url: &str, jwt: &str, cid_message: Value) -> Result<Valu
 
     let params = Params::Array(vec![Value::from(cid_message)]);
 
-    println!("{:?}", params);
-
     // Prepare request
     let m = MethodCall {
         jsonrpc: Some(Version::V2),
@@ -91,10 +101,18 @@ pub async fn get_status(url: &str, jwt: &str, cid_message: Value) -> Result<Valu
 mod tests {
     use crate::service::client::{get_nonce, get_status};
     use futures_await_test::async_test;
+    use jsonrpc_core::Response;
     use serde_json::json;
 
     const TEST_URL: &str = "http://86.192.13.13:1234/rpc/v0";
     const JWT: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
+
+    #[tokio::test]
+    async fn decode_error() {
+        let data = b"{\"jsonrpc\":\"2.0\",\"id\":1,\"error\":{\"code\":1,\"message\":\"cbor input had wrong number of fields\"}}\n";
+
+        let err: Response = serde_json::from_slice(data).unwrap();
+    }
 
     #[tokio::test]
     async fn example_something_else_and_retrieve_nonce() {
@@ -118,4 +136,6 @@ mod tests {
 
         // FIXME: add checks for two different txs
     }
+
+    //    b"{\"jsonrpc\":\"2.0\",\"result\":null,\"id\":1,\"error\":{\"code\":1,\"message\":\"cbor input had wrong number of fields\"}}\n"
 }
