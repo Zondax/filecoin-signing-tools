@@ -111,7 +111,7 @@ mod tests {
     async fn returns_jsonrpc_error_bad_params() {
         let bad_call = Call::from(MethodCall {
             jsonrpc: Some(Version::V2),
-            method: "transaction_create".to_owned(),
+            method: "transaction_serialize".to_owned(),
             params: Params::None,
             id: Id::Num(1),
         });
