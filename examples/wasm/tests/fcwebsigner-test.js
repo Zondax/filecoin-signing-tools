@@ -1,4 +1,4 @@
-const fcwebsigner = require('fcwebsigner');
+const signer_wasm = require('filecoin_signer_wasm');
 const bip32 = require('bip32');
 const getDigest = require('./utils').getDigest;
 const assert = require('assert').strict;
@@ -35,20 +35,20 @@ let node = bip32.fromBase58(prv_root_key)
 //
 ////////////////////////////////
 test('Parse Cbor Transaction', () => {
-  assert.equal(JSON.stringify(transaction), fcwebsigner.transaction_parse(cbor_transaction, true))
+  assert.equal(JSON.stringify(transaction), signer_wasm.transaction_parse(cbor_transaction, true))
 })
 
 test('Parse Cbor Transaction fail (extra bytes)', () => {
   let cbor_transaction_extra_bytes = cbor_transaction + "00";
 
   assert.throws(
-    () => fcwebsigner.transaction_parse(cbor_transaction_extra_bytes),
+    () => signer_wasm.transaction_parse(cbor_transaction_extra_bytes),
     /CBOR error/
   );
 })
 
-test('Create Transaction', () => {
-  assert.equal(cbor_transaction, fcwebsigner.transaction_create(JSON.stringify(transaction)))
+test('Serialize Transaction', () => {
+  assert.equal(cbor_transaction, signer_wasm.transaction_serialize(JSON.stringify(transaction)))
 });
 
 test('Create Transaction Fail (missing nonce)', () => {
@@ -63,7 +63,7 @@ test('Create Transaction Fail (missing nonce)', () => {
   }
 
   assert.throws(
-    () => fcwebsigner.transaction_create(JSON.stringify(invalid_transaction)),
+    () => signer_wasm.transaction_serialize(JSON.stringify(invalid_transaction)),
     /missing field `nonce`/
   );
 
@@ -73,7 +73,7 @@ test('Key Generate Mnemonic', () => {
   // Can't get a random number to generate mnemonic
   // panicked at 'could not initialize thread_rng: getrandom: this target is not supported', ~/.cargo/registry/src/github.com-1ecc6299db9ec823/rand-0.7.3/src/rngs/thread.rs:65:17
 
-  let mnemonic = fcwebsigner.key_generate_mnemonic();
+  let mnemonic = signer_wasm.key_generate_mnemonic();
 
   console.log(mnemonic);
 
@@ -83,20 +83,21 @@ test('Key Generate Mnemonic', () => {
 test('Key Derive', () => {
   let child = node.derivePath("m/44'/461'/0/0/1");
 
-  let keypair = fcwebsigner.key_derive(mnemonic_example, "m/44'/461'/0/0/1");
+  let keypair = signer_wasm.key_derive(mnemonic_example, "m/44'/461'/0/0/1");
 
-  console.log("Pubkey :", keypair.pubkey);
-  console.log("Prvkey :", keypair.prvkey);
-  console.log("Address :", keypair.address);
+  console.log("Public Key Raw :", keypair.public_raw);
+  console.log("Public Key     :", keypair.public);
+  console.log("Private        :", keypair.private);
+  console.log("Address        :", keypair.address);
 
-  assert.equal(child.privateKey.toString("hex"), keypair.prvkey);
+  assert.equal(child.privateKey.toString("hex"), keypair.private);
 
-})
+});
 
 test('Key Derive Invalid Path', () => {
 
   assert.throws(
-    () => fcwebsigner.key_derive(mnemonic_example, "m/44'/461'/a/0/1"),
+    () => signer_wasm.key_derive(mnemonic_example, "m/44'/461'/a/0/1"),
     /Cannot parse integer/
   );
 })
@@ -105,7 +106,7 @@ test('Sign Transaction', () => {
   let child = node.derivePath("m/44'/461'/0/0/0")
 
   try {
-    var signature = fcwebsigner.sign_transaction(JSON.stringify(transaction), child.privateKey.toString("hex"));
+    var signature = signer_wasm.sign_transaction(JSON.stringify(transaction), child.privateKey.toString("hex"));
   } catch(e) {
     assert.fail(e);
   }
@@ -114,9 +115,9 @@ test('Sign Transaction', () => {
   let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'))
 
   // Signature representation is R, S & V
-  console.log("Signature :",signature.toString('hex'))
-  console.log("Digest :", message_digest.toString('hex'))
-  console.log("Public key :", child.publicKey.toString('hex'))
+  console.log("Signature  :", signature.toString('hex'));
+  console.log("Digest     :", message_digest.toString('hex'));
+  console.log("Public key :", child.publicKey.toString('hex'));
 
   assert.equal(
     true,
@@ -142,7 +143,7 @@ test('Verify signature', () => {
   console.log("RSV signature :", signatureRSV);
   console.log("CBOR Transaction hex :", cbor_transaction)
 
-  assert.equal(fcwebsigner.verify_signature(signatureRSV, cbor_transaction), true);
+  assert.equal(signer_wasm.verify_signature(signatureRSV, cbor_transaction), true);
 })
 
 //////////////////////////////////
@@ -165,13 +166,13 @@ for (let i = 0; i < jsonData.length; i += 1) {
   test("Create Transaction : " + tc.description, () => {
     if (tc.valid) {
       // Valid doesn't throw
-      let result = fcwebsigner.transaction_create(JSON.stringify(tc.message));
+      let result = signer_wasm.transaction_serialize(JSON.stringify(tc.message));
       assert.equal(tc.encoded_tx_hex,result);
     } else {
       // Not valid throw error
       // TODO: Add error type to manual_testvectors.json file
       assert.throws(
-        () => fcwebsigner.transaction_create(JSON.stringify(tc.message)),
+        () => signer_wasm.transaction_serialize(JSON.stringify(tc.message)),
         /Error/
       );
     }
@@ -187,13 +188,13 @@ for (let i = 0; i < jsonData.length; i += 1) {
   // Create test case for each
   test("Parse Transaction : " + tc.description, () => {
     if (tc.valid) {
-      let result = fcwebsigner.transaction_parse(tc.encoded_tx_hex, tc.testnet);
+      let result = signer_wasm.transaction_parse(tc.encoded_tx_hex, tc.testnet);
       assert.equal(JSON.stringify(tc.message),result);
     } else {
       // Not valid throw error
       // TODO: Add error type to manual_testvectors.json file
       assert.throws(
-        () => fcwebsigner.transaction_parse(tc.encoded_tx_hex, tc.testnet),
+        () => signer_wasm.transaction_parse(tc.encoded_tx_hex, tc.testnet),
         /error/
       );
     }

@@ -1,52 +1,104 @@
-# Documentation
+# Signing Library
 
-## Title 1
+## Native
 
-content
+The Rust package can be located at: [crates.io](https://crates.io/) and documentation at [docs.rs](https://docs.rs)
 
-## Title 2
-
-### Title small 1
-### Title small 2
-
-::: tip
-This is a tip
+::: warning filecoin_signer
+The library name will probably change in the near future
 :::
 
-### Title small 3
+```
+key_generate_mnemonic()
+key_derive(mnemonic, path)
+transaction_serialize(unsigned_message: UnsignedMessageUserAPI) ->
+```
 
-::: warning
-This is a warning
+## WASM
+
+::: warning fcawasmsigner
+The library name will probably change in the near future
 :::
 
-some code
+
+## JSONRPC Service
+
+### Typical workflows
+
+<!---
+Reference for mermaid
+https://mermaid-js.github.io/mermaid/#/sequenceDiagram
+-->
+
+
+#### Address Generation
+
+<mermaid>
+sequenceDiagram
+    rect rgb(0, 255, 0, .1)
+        User->>+Exchange: Deposit Request
+        Exchange-->>+Service: key_generate()
+        Service-->>-Exchange: mnemonic
+        Exchange-->>+Service: key_derive(mnemonic, path)
+        Service-->>-Exchange: public_key, private_key address
+        Exchange->>+User: Address
+    end
+    % This is not covered
+    Note over Exchange,Node: This is not covered
+    Exchange->>+Node: Monitor Address
+    Node-->>-Exchange: change event
+    Exchange->>+Node: Get_balance(address)
+    Node-->>-Exchange: balance  
+</mermaid>
+
+#### Signing
+
+<mermaid>
+sequenceDiagram
+    Note over Exchange,Node: COMPLETE
+</mermaid>
+
+::: danger Old diagrams
+Work in progress
+:::
+
+```asciidoc
+    /-----------/           /--------------/        /---------/
+    /   USER    /           /   EXCHANGE   /        /  NODE   /
+    /-----------/           /--------------/        /---------/
+          |                        |                     |
+          |------Sell Request----->|                     |
+          |                        | key_derive()        |
+          |<-----Address-----------|                     |
+          |                        |                     |
+          |------------------Send Transaction----------->|
+          |                        |                     |
+          |                        |<-----Notify---------|
+          |                        |                     |
+          |<------Success----------|                     |
+
+    /-----------/           /--------------/        /---------/
+    /   USER    /           /   EXCHANGE   /        /  NODE   /
+    /-----------/           /--------------/        /---------/
+          |                        |                     |
+          |------Buy (address)---->|                     |
+          |                        | key_derive()        |
+          |                        | tx_create()         |
+          |                        | sign_transaction()  |
+          |                        |                     |
+          |                        |-----Sentd Tx ------>|
+          |                        |                     |
+          |                        |                     |
+          |                        |<-----Notify---------|
+          |                        |                     |
+          |<------Success----------|                     |
+
+```
+
+## Examples
 
 ```js
 func myTest() {
     return 42;
 }
 ```
-
-and some `variable` in the text 
-
-## Title 3
-
-content
-
-<mermaid>
-sequenceDiagram
-    Alice->John: Hello John, how are you?
-    loop Every minute
-        John-->Alice: Great!
-    end
-</mermaid>
-
-some more text 
-
-<mermaid>
-sequenceDiagram
-    Alice->>+John: Hello John, how are you?
-    Alice->>+John: John, can you hear me?
-    John-->>-Alice: Hi Alice, I can hear you!
-    John-->>-Alice: I feel great!
-</mermaid>

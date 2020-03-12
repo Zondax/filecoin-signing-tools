@@ -60,16 +60,16 @@ jobs:
     steps:
       - checkout
       - restore-sccache-cache
+      - run: make deps_wasm
+# Disabling due to  https://github.com/Zondax/filecoin-rs/issues/68
+#      - run:
+#          name: tests wasm_unit
+#          command: |
+#            make test_wasm_unit
       - run:
-          name: build wasm
+          name: tests wasm_integration
           command: |
-            make deps_wasm
-            make build_wasm
-            make link_wasm
-      - run:
-          name: run tests
-          command: |
-            make test_wasm
+            make test_wasm_integration
       # No need to save this in cache
 
   tests_service:

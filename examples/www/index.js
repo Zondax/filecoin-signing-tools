@@ -1,4 +1,4 @@
-import * as wasm from "fcwebsigner";
+import * as wasm from "fcwasmsigner";
 import * as bip32 from 'bip32';
 import {getDigest} from './utils.js';
 

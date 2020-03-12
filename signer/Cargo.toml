@@ -1,0 +1,31 @@
+[package]
+name = "filecoin-signer"
+version = "0.1.0"
+authors = ["Zondax <info@zondax.ch>"]
+edition = "2018"
+
+[dependencies]
+num = { version = "0.2.1", features = ["serde"] }
+thiserror = "1.0.10"
+
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.45"
+serde_cbor = "0.11.1"
+hex = "0.4.0"
+getrandom="0.1.14"
+
+vm = { git = "https://github.com/zondax/forest", branch="master" }
+forest_message = { git = "https://github.com/zondax/forest", branch="master" }
+forest_address = { git = "https://github.com/zondax/forest", branch="master" }
+forest_encoding = { git = "https://github.com/zondax/forest", branch="master" }
+num_bigint_chainsafe = { package = "forest_bigint", git = "https://github.com/zondax/forest", branch="master"}
+
+libsecp256k1 = "0.3.4"
+blake2b_simd = "0.5.10"
+tiny-bip39 = "0.7.0"
+hmac = "0.7.1"
+zeroize = { version = "1.1", default-features = false, features = ["zeroize_derive"] }
+sha2 = "0.8.1"
+
+log="0.4.8"
+env_logger = "0.7.1"

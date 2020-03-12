@@ -1,29 +1,36 @@
-
 deps_wasm:
 	cd examples/wasm && yarn install
 	cargo install wasm-pack --version 0.8.1
 
 build_wasm:
-	rm -rf fcwebsigner/pkg/
-	wasm-pack build --no-typescript --target nodejs fcwebsigner/
-	# temporary workaround to support ESM module and browser without bundler magic
-	wasm-pack build --no-typescript --target browser --out-dir pkg/browser fcwebsigner/
-	cp package-fcwebsigner.json fcwebsigner/pkg/package.json
+	rm -rf signer-wasm/pkg/
+	wasm-pack build --no-typescript --target nodejs signer-wasm/
+	wasm-pack build --no-typescript --target browser --out-dir pkg/browser signer-wasm/
+	cp package-signer-wasm.json signer-wasm/pkg/package.json
 
-link_wasm:
-	cd fcwebsigner/pkg && yarn link
-	cd examples/wasm && yarn link "fcwebsigner"
+link_wasm: build_wasm
+	cd signer-wasm/pkg && yarn link
+	cd examples/wasm && yarn link "filecoin_signer_wasm"
 
-test_wasm:
+test_wasm_unit: deps_wasm
+	wasm-pack test --chrome --headless ./signer-wasm
+
+test_wasm_integration: link_wasm
 	cd examples/wasm && yarn run test:integration
 
-deps: deps_wasm
+test_wasm: test_wasm_unit test_wasm_integration
+
+deps_rust:
 	cargo install cargo-audit
 	cargo install cargo-tree
 	cargo install cargo-license
 	cargo install cargo-outdated
+	cargo install cargo-watch https
 	cargo install sccache
+	yarn install
 	echo "Remember to add export RUSTC_WRAPPER=sccache to your environment."
+
+deps: deps_wasm deps_rust
 
 checks:
 	cargo fmt -- --check
@@ -39,3 +46,15 @@ hooks:
 ci:
 	circleci config process .circleci/config.yml > .circleci/tmp.yml
 	circleci build -c .circleci/tmp.yml --job ${JOB}
+
+docs_dev:
+	yarn install
+	yarn dev
+
+# Run this to have live refreshing of rust docs
+docs_rust_edit: deps
+	cargo watch -s 'cargo doc && browser-sync start --ss target/doc -s target/doc --directory --no-open'
+
+docs_build:
+	yarn install
+	yarn build

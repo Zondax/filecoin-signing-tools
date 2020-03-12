@@ -41,3 +41,6 @@ Provides a backend service that will be typically used by exchanges.
 - *examples/www* how to use the signing library when compiled as WASM from a browser
 - *examples/wasm* integration tests written in JS for WASM
 
+# References
+
+[Template/Tytorial: How to use a WASM npm package](https://rustwasm.github.io/docs/wasm-pack/tutorials/npm-browser-packages/using-your-library.html)

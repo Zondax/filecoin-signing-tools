@@ -1,0 +1,19 @@
+{
+  "name": "filecoin_signer_wasm",
+  "collaborators": [
+    "Zondax <info@zondax.ch>"
+  ],
+  "license": "Apache-2.0",
+  "version": "0.1.0",
+  "files": [
+    "filecoin_signer_wasm_bg.wasm",
+    "filecoin_signer_wasm.js",
+    "filecoin_signer_wasm_bg.js",
+    "browser/filecoin_signer_wasm_bg.wasm",
+    "browser/filecoin_signer_wasm.js"
+  ],
+  "main": "./browser/filecoin_signer_wasm.js",
+  "exports": {
+    "require" : "./filecoin_signer_wasm.js"
+  }
+}

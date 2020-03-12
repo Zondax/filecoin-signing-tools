@@ -8,7 +8,7 @@ import fs from 'fs';
 
 const tests_vectors_path = "../manual_testvectors.json";
 
-// FIXME: fcservice is expected to be running
+// WARNING: filecoin-service is expected to be running
 const URL = "http://127.0.0.1:3030/v0";
 
 const mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
@@ -47,8 +47,8 @@ test("key_derive", async () => {
 
   // Do we have a results
   expect(response).toHaveProperty("result");
-  expect(response.result.prvkey).toEqual(child.privateKey.toString("hex"));
-  expect(response.result.pubkey).toEqual(child.publicKey.toString("hex"));
+  expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
+  expect(response.result.public_hexstring).toEqual(child.publicKey.toString("hex"));
   expect(response.result.address).toEqual("t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka");
 });
 
@@ -68,15 +68,15 @@ test("key_derive missing 1 parameters", async () => {
   expect(response.error.message).toMatch(/Invalid params/);
 });
 
-test("transaction_create", async () => {
+test("transaction_serialize", async () => {
   const response = await callMethod(
     URL,
-    "transaction_create",
+    "transaction_serialize",
     transaction,
     1,
   );
 
-  expect(response.result).toBe(cbor_transaction);
+  expect( Buffer.from(response.result).toString('hex')).toBe(cbor_transaction);
 });
 
 test("transaction_parse", async () => {
@@ -101,7 +101,7 @@ test("transaction_testvectors", async () => {
       tc.message["params"] = ""
     }
 
-    let response = await callMethod(URL, "transaction_create", tc.message, i);
+    let response = await callMethod(URL, "transaction_serialize", tc.message, i);
 
     if (response.error) {
       console.log("Error", response);
@@ -110,7 +110,7 @@ test("transaction_testvectors", async () => {
       console.log("Testcase ------------------------------------------------------------------------------------");
       console.log(tc.description);
       console.log("Reply", response);
-      expect(response.result).toEqual(tc.encoded_tx_hex);
+      expect( Buffer.from(response.result).toString('hex') ).toEqual(tc.encoded_tx_hex);
     }
   }
 });
@@ -126,9 +126,8 @@ for (let i = 0; i < jsonData.length; i += 1) {
 
   if (tc.not_implemented) {
     // FIXME: Protocol 0 parsing not implemented in forest
-    // FIXME: should handle the case when address have 0 byte (issue #53)
     // FIXME: doesn't fail for empty value #54
-    console.log("FIX ME");
+    console.log("FIX ME: Protocol 0 parsing not implemented in forest");
     continue;
   };
 
