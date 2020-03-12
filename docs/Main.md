@@ -11,7 +11,7 @@ The library name will probably change in the near future
 ```
 key_generate_mnemonic()
 key_derive(mnemonic, path)
-transaction_serialize(unsigned_message: UnsignedMessageUserAPI) ->
+transaction_serialize(unsigned_message: UnsignedMessageAPI) ->
 ```
 
 ## WASM

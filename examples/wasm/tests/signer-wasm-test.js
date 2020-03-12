@@ -24,10 +24,10 @@ const transaction = {
   "gas_limit": "25000",
   "method": 0,
   "params": ""
-}
+};
 
-const prv_root_key = "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5"
-let node = bip32.fromBase58(prv_root_key)
+const prv_root_key = "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5";
+let node = bip32.fromBase58(prv_root_key);
 
 //////////////////////////////////
 //
@@ -36,7 +36,7 @@ let node = bip32.fromBase58(prv_root_key)
 ////////////////////////////////
 test('Parse Cbor Transaction', () => {
   assert.equal(JSON.stringify(transaction), signer_wasm.transaction_parse(cbor_transaction, true))
-})
+});
 
 test('Parse Cbor Transaction fail (extra bytes)', () => {
   let cbor_transaction_extra_bytes = cbor_transaction + "00";
@@ -45,7 +45,7 @@ test('Parse Cbor Transaction fail (extra bytes)', () => {
     () => signer_wasm.transaction_parse(cbor_transaction_extra_bytes),
     /CBOR error/
   );
-})
+});
 
 test('Serialize Transaction', () => {
   assert.equal(cbor_transaction, signer_wasm.transaction_serialize(JSON.stringify(transaction)))
@@ -60,7 +60,7 @@ test('Create Transaction Fail (missing nonce)', () => {
     "gas_limit": "25000",
     "method": 0,
     "params": ""
-  }
+  };
 
   assert.throws(
     () => signer_wasm.transaction_serialize(JSON.stringify(invalid_transaction)),
@@ -100,10 +100,10 @@ test('Key Derive Invalid Path', () => {
     () => signer_wasm.key_derive(mnemonic_example, "m/44'/461'/a/0/1"),
     /Cannot parse integer/
   );
-})
+});
 
 test('Sign Transaction', () => {
-  let child = node.derivePath("m/44'/461'/0/0/0")
+  let child = node.derivePath("m/44'/461'/0/0/0");
 
   try {
     var signature = signer_wasm.sign_transaction(JSON.stringify(transaction), child.privateKey.toString("hex"));
@@ -111,8 +111,8 @@ test('Sign Transaction', () => {
     assert.fail(e);
   }
 
-  signature = Buffer.from(signature, 'hex')
-  let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'))
+  signature = Buffer.from(signature, 'hex');
+  let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'));
 
   // Signature representation is R, S & V
   console.log("Signature  :", signature.toString('hex'));
@@ -123,7 +123,7 @@ test('Sign Transaction', () => {
     true,
     // Remove the V value from the signature (last byte)
     secp256k1.ecdsaVerify(signature.slice(0,-1), message_digest, child.publicKey)
-  )
+  );
 
   // Verify recovery id which is the last byte of the signature
   assert.equal(0x01, signature[64]);
@@ -141,10 +141,10 @@ test('Verify signature', () => {
   let signatureRSV = Buffer.from(signature.signature).toString('hex') + Buffer.from([signature.recid]).toString('hex');
 
   console.log("RSV signature :", signatureRSV);
-  console.log("CBOR Transaction hex :", cbor_transaction)
+  console.log("CBOR Transaction hex :", cbor_transaction);
 
   assert.equal(signer_wasm.verify_signature(signatureRSV, cbor_transaction), true);
-})
+});
 
 //////////////////////////////////
 //
@@ -176,14 +176,14 @@ for (let i = 0; i < jsonData.length; i += 1) {
         /Error/
       );
     }
-  })
+  });
 
   if (tc.not_implemented) {
     // FIXME: Protocol 0 parsing not implemented in forest
     // FIXME: doesn't fail for empty value #54
     console.log("FIX ME");
     continue;
-  };
+  }
 
   // Create test case for each
   test("Parse Transaction : " + tc.description, () => {
