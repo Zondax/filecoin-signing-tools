@@ -60,6 +60,7 @@ jobs:
     steps:
       - checkout
       - restore-sccache-cache
+      - run: make deps_wasm
 # Disabling due to  https://github.com/Zondax/filecoin-rs/issues/68
 #      - run:
 #          name: tests wasm_unit

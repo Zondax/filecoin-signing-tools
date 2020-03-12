@@ -1,4 +1,4 @@
-const fcwebsigner = require('fcwebsigner');
+const fcwebsigner = require('filecoin_signer_wasm');
 const bip32 = require('bip32');
 const getDigest = require('./utils').getDigest;
 const assert = require('assert').strict;
@@ -47,8 +47,8 @@ test('Parse Cbor Transaction fail (extra bytes)', () => {
   );
 })
 
-test('Create Transaction', () => {
-  assert.equal(cbor_transaction, fcwebsigner.transaction_create(JSON.stringify(transaction)))
+test('Serialize Transaction', () => {
+  assert.equal(cbor_transaction, fcwebsigner.transaction_serialize(JSON.stringify(transaction)))
 });
 
 test('Create Transaction Fail (missing nonce)', () => {
@@ -63,7 +63,7 @@ test('Create Transaction Fail (missing nonce)', () => {
   }
 
   assert.throws(
-    () => fcwebsigner.transaction_create(JSON.stringify(invalid_transaction)),
+    () => fcwebsigner.transaction_serialize(JSON.stringify(invalid_transaction)),
     /missing field `nonce`/
   );
 
@@ -85,13 +85,14 @@ test('Key Derive', () => {
 
   let keypair = fcwebsigner.key_derive(mnemonic_example, "m/44'/461'/0/0/1");
 
-  console.log("Pubkey :", keypair.pubkey);
-  console.log("Prvkey :", keypair.prvkey);
-  console.log("Address :", keypair.address);
+  console.log("Public Key Raw :", keypair.public_raw);
+  console.log("Public Key     :", keypair.public);
+  console.log("Private        :", keypair.private);
+  console.log("Address        :", keypair.address);
 
-  assert.equal(child.privateKey.toString("hex"), keypair.prvkey);
+  assert.equal(child.privateKey.toString("hex"), keypair.private);
 
-})
+});
 
 test('Key Derive Invalid Path', () => {
 
@@ -114,9 +115,9 @@ test('Sign Transaction', () => {
   let message_digest = getDigest(Buffer.from(cbor_transaction, 'hex'))
 
   // Signature representation is R, S & V
-  console.log("Signature :",signature.toString('hex'))
-  console.log("Digest :", message_digest.toString('hex'))
-  console.log("Public key :", child.publicKey.toString('hex'))
+  console.log("Signature  :", signature.toString('hex'));
+  console.log("Digest     :", message_digest.toString('hex'));
+  console.log("Public key :", child.publicKey.toString('hex'));
 
   assert.equal(
     true,
@@ -165,13 +166,13 @@ for (let i = 0; i < jsonData.length; i += 1) {
   test("Create Transaction : " + tc.description, () => {
     if (tc.valid) {
       // Valid doesn't throw
-      let result = fcwebsigner.transaction_create(JSON.stringify(tc.message));
+      let result = fcwebsigner.transaction_serialize(JSON.stringify(tc.message));
       assert.equal(tc.encoded_tx_hex,result);
     } else {
       // Not valid throw error
       // TODO: Add error type to manual_testvectors.json file
       assert.throws(
-        () => fcwebsigner.transaction_create(JSON.stringify(tc.message)),
+        () => fcwebsigner.transaction_serialize(JSON.stringify(tc.message)),
         /Error/
       );
     }

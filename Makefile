@@ -2,15 +2,13 @@ deps_wasm:
 	cd examples/wasm && yarn install
 	cargo install wasm-pack --version 0.8.1
 
-build_wasm: deps_wasm
+build_wasm:
 	rm -rf signer-wasm/pkg/
 	wasm-pack build --no-typescript --target nodejs signer-wasm/
-	# temporary workaround
 	wasm-pack build --no-typescript --target browser --out-dir pkg/browser signer-wasm/
 	cp package-signer-wasm.json signer-wasm/pkg/package.json
 
 link_wasm: build_wasm
-	cd examples/wasm && yarn install
 	cd signer-wasm/pkg && yarn link
 	cd examples/wasm && yarn link "filecoin_signer_wasm"
 

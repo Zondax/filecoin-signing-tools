@@ -5,7 +5,7 @@
   "main": "index.js",
   "license": "Apache-2.0",
   "scripts": {
-    "test:integration": "node ./tests/index.js ./test.mjs"
+    "test:integration": "node ./tests/index.js ./fcwebsigner-test.js"
   },
   "dependencies": {
     "bip32": "^2.0.5",
