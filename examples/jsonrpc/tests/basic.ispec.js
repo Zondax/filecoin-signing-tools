@@ -101,7 +101,7 @@ test("transaction_testvectors", async () => {
       tc.message["params"] = ""
     }
 
-    let response = await callMethod(URL, "transaction_create", tc.message, i);
+    let response = await callMethod(URL, "transaction_serialize", tc.message, i);
 
     if (response.error) {
       console.log("Error", response);
