@@ -1,4 +1,4 @@
-use secp256k1::util::{COMPRESSED_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE};
+use secp256k1::util::{COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE};
 use secp256k1::{PublicKey, SecretKey};
 
 use crate::error::SignerError;
@@ -73,7 +73,7 @@ impl fmt::Display for ExtendedSecretKey {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "SK/CC:  {:?}/{:?}",
+            "SecretKey/ChainCode:  {:?}/{:?}",
             hex::encode(&self.secret_key()),
             hex::encode(&self.chain_code.0)
         )
@@ -116,7 +116,18 @@ impl ExtendedSecretKey {
     }
 
     #[inline]
-    pub fn public_key(&self) -> [u8; COMPRESSED_PUBLIC_KEY_SIZE] {
+    pub fn chain_code(&self) -> [u8; SECRET_KEY_SIZE] {
+        self.chain_code.0
+    }
+
+    #[inline]
+    pub fn public_key(&self) -> [u8; FULL_PUBLIC_KEY_SIZE] {
+        let pubkey = PublicKey::from_secret_key(&self.secret_key);
+        pubkey.serialize()
+    }
+
+    #[inline]
+    pub fn public_key_compressed(&self) -> [u8; COMPRESSED_PUBLIC_KEY_SIZE] {
         let pubkey = PublicKey::from_secret_key(&self.secret_key);
         pubkey.serialize_compressed()
     }
@@ -126,7 +137,7 @@ impl ExtendedSecretKey {
 
         if child_index & HARDENED_BIT == 0 {
             // Not hardened
-            hmac.input(&self.public_key());
+            hmac.input(&self.public_key_compressed());
             hmac.input(&child_index.to_be_bytes());
         } else {
             // Hardened
@@ -180,18 +191,64 @@ mod tests {
     }
 
     #[test]
+    fn derive_child() {
+        let phrase = "pumpkin sell climb ten list proof embark finish zero voyage congress outdoor domain city cannon leave select visual know waste tonight sauce load lift";
+        let mnemonic = Mnemonic::from_phrase(phrase, Language::English).unwrap();
+        let seed = Seed::new(&mnemonic, "");
+        assert_eq!(encode(&seed), "bf9504117d7c06bcdd0a4b4c41f3537faf13a27618a6b9a314cdb6c920ba44acf87b2cf1e2ba8a241833a55fda7b545a925f728b35ea2040a1d3a367ea45933a",);
+
+        let master = ExtendedSecretKey::try_from(seed).unwrap();
+        assert_eq!(
+            encode(&master.secret_key()),
+            "570761185bfbbfaad56a33b21b42cb3ca73c7fbf1137db99e0fa0e2758cb2a9a",
+        );
+
+        // Derive child 5
+
+        let esk = master.derive_child_key(5).unwrap();
+        assert_eq!(
+            encode(esk.secret_key()),
+            "df2801c6d9b373fa5a84d615817bac957ef198addaa98d0e542063dd5ab0f1de",
+        );
+
+        assert_eq!(
+            encode(esk.chain_code()),
+            "dace38fba7999a8266534c868f4c936beb6aec4d795c216b35d7d865081c6eb1",
+        );
+
+        // Derive child 5'
+
+        let esk2 = master.derive_child_key(5 + 0x80000000).unwrap();
+        assert_eq!(
+            encode(esk2.secret_key()),
+            "437fe078795f5782521ad38dd4c763d11d71e4e83bee7cfdd4e299aca9aad094",
+        );
+
+        assert_eq!(
+            encode(esk2.chain_code()),
+            "6626140ef161658292d5d08d36d56ddd0be32fb3a4b699f8bf466cd5235f2444",
+        );
+    }
+
+    #[test]
     fn derive_example_path() {
-        let phrase = "census rose wild tray fine produce recall hint chalk second try outer antique gain wait topple west indoor pond total dentist change avoid vault";
+        let phrase = "pumpkin sell climb ten list proof embark finish zero voyage congress outdoor domain city cannon leave select visual know waste tonight sauce load lift";
         let mnemonic = Mnemonic::from_phrase(phrase, Language::English).unwrap();
         let seed = Seed::new(&mnemonic, "");
         let master = ExtendedSecretKey::try_from(seed).unwrap();
 
-        let esk = master.derive_bip44(Bip44Path([0, 0, 0, 0, 0])).unwrap();
+        let path = Bip44Path::from_string("m/44'/461'/0/0/0".to_string()).unwrap();
+        let esk = master.derive_bip44(path).unwrap();
 
         println!("{}", esk);
         assert_eq!(
             encode(esk.secret_key()),
-            "7149916f222b5f0708965836f09a963f7633dff59679c23203cd161a8b963043"
+            "7d9c686593de943b08dea26bf21dcfa871ce956a578167d5adb2107d62b32a58",
+        );
+
+        assert_eq!(
+            encode(esk.chain_code()),
+            "d25494e91a66b91a82ed18e80857d7615b08aedbc9fca4ae1b6f6be769f09bbe",
         );
     }
 

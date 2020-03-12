@@ -5,7 +5,7 @@ use wasm_bindgen::prelude::*;
 
 use filecoin_signer::api::UnsignedMessageAPI;
 use filecoin_signer::utils::{from_hex_string, to_hex_string};
-use filecoin_signer::{CborBuffer, Mnemonic, PublicKey, SecretKey, Signature};
+use filecoin_signer::{CborBuffer, Mnemonic, PrivateKey, Signature};
 use std::convert::TryFrom;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -26,40 +26,48 @@ pub fn set_panic_hook() {
 }
 
 #[wasm_bindgen]
-pub struct Keypair {
-    // compressed public key
-    public_raw: PublicKey,
-    // private key
-    private_raw: SecretKey,
-    // Address in the string format
-    address: String,
-}
+pub struct ExtendedKey(filecoin_signer::ExtendedKey);
 
 #[wasm_bindgen]
-impl Keypair {
-    #[wasm_bindgen(getter)]
-    pub fn public(&self) -> String {
-        to_hex_string(&self.public_raw.0)
-    }
-
+impl ExtendedKey {
     #[wasm_bindgen(getter)]
     pub fn public_raw(&self) -> Vec<u8> {
-        self.public_raw.0.to_vec()
+        self.0.public_key.0.to_vec()
     }
 
     #[wasm_bindgen(getter)]
-    pub fn private(&self) -> String {
-        to_hex_string(&self.private_raw.0[..])
+    pub fn public_compressed_raw(&self) -> Vec<u8> {
+        self.0.public_key_compressed.0.to_vec()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn private_raw(&self) -> Vec<u8> {
+        self.0.private_key.0.to_vec()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn public_hexstring(&self) -> String {
+        to_hex_string(&self.public_raw())
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn public_compressed_hexstring(&self) -> String {
+        to_hex_string(&self.public_compressed_raw())
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn private_hexstring(&self) -> String {
+        to_hex_string(&self.private_raw())
     }
 
     #[wasm_bindgen(getter)]
     pub fn address(&self) -> String {
-        self.address.clone()
+        self.0.address.clone()
     }
 }
 
 #[wasm_bindgen]
-pub fn key_generate_mnemonic() -> Result<String, JsValue> {
+pub fn mnemonic_generate() -> Result<String, JsValue> {
     set_panic_hook();
 
     let mnemonic = filecoin_signer::key_generate_mnemonic()
@@ -69,32 +77,33 @@ pub fn key_generate_mnemonic() -> Result<String, JsValue> {
 }
 
 #[wasm_bindgen]
-pub fn key_derive(mnemonic: String, path: String) -> Result<Keypair, JsValue> {
+pub fn key_derive(mnemonic: String, path: String) -> Result<ExtendedKey, JsValue> {
     set_panic_hook();
 
-    let (private, public, address) = filecoin_signer::key_derive(Mnemonic(mnemonic), path)
+    let key_address = filecoin_signer::key_derive(Mnemonic(mnemonic), path)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
 
-    let keypair = Keypair {
-        public_raw: public,
-        private_raw: private,
-        address,
-    };
-
-    Ok(keypair)
+    Ok(ExtendedKey { 0: key_address })
 }
 
 #[wasm_bindgen]
 pub fn transaction_serialize(unsigned_message_string: String) -> Result<String, JsValue> {
     set_panic_hook();
+    let s = transaction_serialize_raw(unsigned_message_string)?;
+    Ok(to_hex_string(&s))
+}
+
+#[wasm_bindgen]
+pub fn transaction_serialize_raw(unsigned_message_string: String) -> Result<Vec<u8>, JsValue> {
+    set_panic_hook();
 
     let unsigned_message: UnsignedMessageAPI = serde_json::from_str(&unsigned_message_string)
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
-    let cbor_buffer = filecoin_signer::transaction_serialize(unsigned_message)
+    let cbor_buffer = filecoin_signer::transaction_serialize(&unsigned_message)
         .map_err(|e| JsValue::from(format!("Error converting to CBOR: {}", e)))?;
 
-    Ok(to_hex_string(cbor_buffer.0.as_ref()))
+    Ok(cbor_buffer.0.to_vec())
 }
 
 #[wasm_bindgen]
@@ -111,36 +120,32 @@ pub fn transaction_parse(cbor_hexstring: String, network: bool) -> Result<String
 
     Ok(tx)
 }
-
 #[wasm_bindgen]
-pub fn sign_transaction(
-    unsigned_message_string: String,
-    secret_key_string: String,
+pub fn transaction_sign(
+    unsigned_tx_string: String,
+    private_key_hexstring: String,
 ) -> Result<String, JsValue> {
     set_panic_hook();
 
-    let unsigned_message: UnsignedMessageAPI = serde_json::from_str(&unsigned_message_string)
+    let private_key =
+        PrivateKey::try_from(private_key_hexstring).map_err(|e| JsValue::from(e.to_string()))?;
+
+    let unsigned_message: UnsignedMessageAPI = serde_json::from_str(&unsigned_tx_string)
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
-    let secret_key =
-        SecretKey::try_from(secret_key_string).map_err(|e| JsValue::from(e.to_string()))?;
-
-    let tmp = filecoin_signer::sign_transaction(unsigned_message, &secret_key)
+    let signed_message = filecoin_signer::transaction_sign(&unsigned_message, &private_key)
         .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
 
-    // // SignedMessage::new()
-    //
-    // let json_signed_message = serde_json::to_string(signed_message)
-    //     .map_err(|e| Err(JsValue::from_str("Error signing transaction")))?;
-    //
-    // Ok(json_signed_message)
-    Ok(to_hex_string(&tmp.0))
+    let json_signed_message = serde_json::to_string(&signed_message)
+        .map_err(|e| JsValue::from(format!("Error signing transaction: {}", e)))?;
+
+    Ok(json_signed_message)
 }
 
 #[wasm_bindgen]
-pub fn sign_message() {
+pub fn message_sign() {
     set_panic_hook();
-    // TODO: message ?
+    // TODO: Purpose is unclear. TBD
     // TODO: return signature
 }
 
@@ -157,4 +162,36 @@ pub fn verify_signature(signature_hex: String, message_hex: String) -> Result<bo
         .map_err(|e| JsValue::from_str(format!("Error verifying signature: {}", e).as_str()));
 
     resp
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::transaction_sign;
+    use filecoin_signer::utils::from_hex_string;
+
+    const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
+        {
+            "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+            "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
+            "nonce": 1,
+            "value": "100000",
+            "gas_price": "2500",
+            "gas_limit": "25000",
+            "method": 0,
+            "params": ""
+        }"#;
+
+    const EXAMPLE_PRIVATE_KEY: &str =
+        "f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a";
+
+    #[test]
+    fn signature() {
+        let signed_tx = transaction_sign(
+            EXAMPLE_UNSIGNED_MESSAGE.to_string(),
+            EXAMPLE_PRIVATE_KEY.to_string(),
+        )
+        .unwrap();
+
+        println!("{:?}", signed_tx);
+    }
 }

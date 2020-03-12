@@ -10,8 +10,11 @@ const tests_vectors_path = "../manual_testvectors.json";
 
 // WARNING: filecoin-service is expected to be running
 const URL = "http://127.0.0.1:3030/v0";
+const URL_LOTUS = "http://127.0.0.1:1234/rpc/v0";
 
 const mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
+const seed = "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5";
+const root_node = bip32.fromBase58(seed);
 
 const cbor_transaction =
   "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040";
@@ -27,10 +30,6 @@ const transaction = {
   params: "",
 };
 
-const prv_root_key =
-  "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5";
-const node = bip32.fromBase58(prv_root_key);
-
 test("key_generate_mnemonic", async () => {
   const response = await callMethod(URL, "key_generate_mnemonic", [], 1);
   console.log(response);
@@ -44,14 +43,14 @@ test("key_generate_mnemonic", async () => {
 test("key_derive", async () => {
   const path = "m/44'/461'/0/0/0";
   const response = await callMethod(URL, "key_derive", [mnemonic, path], 1);
-  const child = node.derivePath(path);
+  const child = root_node.derivePath(path);
   console.log(response);
 
   // Do we have a results
   expect(response).toHaveProperty("result");
   expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
-  expect(response.result.public_hexstring).toEqual(child.publicKey.toString("hex"));
-  expect(response.result.address).toEqual("t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka");
+  expect(response.result.public_compressed_hexstring).toEqual(child.publicKey.toString("hex"));
+  expect(response.result.address).toEqual("t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
 });
 
 test("key_derive missing all parameters", async () => {
@@ -139,7 +138,7 @@ for (let i = 0; i < jsonData.length; i += 1) {
 }
 
 test("sign_transaction", async () => {
-  const child = node.derivePath("m/44'/461'/0/0/0");
+  const child = root_node.derivePath("m/44'/461'/0/0/0");
   const message_digest = getDigest(Buffer.from(cbor_transaction, "hex"));
 
   const response = await callMethod(
@@ -148,6 +147,8 @@ test("sign_transaction", async () => {
     [transaction, child.privateKey.toString("hex")],
     1,
   );
+
+  console.log(response);
 
   const signatureBuffer = Buffer.from(response.result, "hex").slice(0, -1);
 
@@ -163,7 +164,7 @@ test("sign_transaction", async () => {
 });
 
 test("sign_invalid_transaction", async () => {
-  const child = node.derivePath("m/44'/461'/0/0/0");
+  const child = root_node.derivePath("m/44'/461'/0/0/0");
   const invalid_transaction = {
     to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
     from: "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
@@ -188,7 +189,7 @@ test("sign_invalid_transaction", async () => {
 });
 
 test("verify_signature", async () => {
-  const child = node.derivePath("m/44'/461'/0/0/0");
+  const child = root_node.derivePath("m/44'/461'/0/0/0");
 
   const message_digest = getDigest(Buffer.from(cbor_transaction, "hex"));
 
@@ -206,7 +207,7 @@ test("verify_signature", async () => {
 });
 
 test("verify_invalid_signature", async () => {
-  const child = node.derivePath("m/44'/461'/0/0/0");
+  const child = root_node.derivePath("m/44'/461'/0/0/0");
 
   const message_digest = getDigest(Buffer.from(cbor_transaction, "hex"));
 
@@ -228,24 +229,24 @@ test("verify_invalid_signature", async () => {
   expect(response.result).toEqual(false);
 });
 
-// test("get_status", async () => {
-//   let message_cid = "bafy2bzacea2ob4bctlucgp2okbczqvk5ctx4jqjapslz57mbcmnnzyftgeqgu";
-//   const response = await callMethod(URL, "get_status", [message_cid], 1);
-//   console.log(response);
-//
-//   // Do we have a results
-//   expect(response).toHaveProperty("result");
-//   expect(response.result).toEqual({
-//         "From": "t3wjxuftije2evjmzo2yoy5ghfe2o42mavrpmwuzooghzcxdhqjdu7kn6dvkzf4ko37w7sfnnzdzstcjmeooea",
-//         "GasLimit": "1000",
-//         "GasPrice": "0",
-//         "Method": 0,
-//         "Nonce": 66867,
-//         "Params": "",
-//         "To": "t1lv32q33y64xs64pnyn6om7ftirax5ikspkumwsa",
-//         "Value": "5000000000000000"
-//     });
-// });
+test("get_status", async () => {
+  let message_cid = "bafy2bzacea2ob4bctlucgp2okbczqvk5ctx4jqjapslz57mbcmnnzyftgeqgu";
+  const response = await callMethod(URL, "get_status", [message_cid], 1);
+  console.log(response);
+
+  // Do we have a results
+  expect(response).toHaveProperty("result");
+  expect(response.result).toEqual({
+        "From": "t3wjxuftije2evjmzo2yoy5ghfe2o42mavrpmwuzooghzcxdhqjdu7kn6dvkzf4ko37w7sfnnzdzstcjmeooea",
+        "GasLimit": "1000",
+        "GasPrice": "0",
+        "Method": 0,
+        "Nonce": 66867,
+        "Params": "",
+        "To": "t1lv32q33y64xs64pnyn6om7ftirax5ikspkumwsa",
+        "Value": "5000000000000000"
+    });
+});
 
 test("get_status fail", async () => {
   const message_cid = "bafy2bzaceaxm23epjsmh75yvzcecsrbavlmkcxnva66bkdebdcnyw3bjrc74u";
@@ -256,36 +257,38 @@ test("get_status fail", async () => {
   expect(response).toHaveProperty("error");
 });
 
-// test("get_nonce", async () => {
-//   const account = "t1lv32q33y64xs64pnyn6om7ftirax5ikspkumwsa";
-//
-//   const response = await callMethod(
-//     URL,
-//     "get_nonce",
-//     [account],
-//     1,
-//   );
-//
-//   console.log(response);
-//
-//   expect(response.result).toBeGreaterThanOrEqual(2);
-// });
-test("send_signed_tx", async () => {
+test("get_nonce", async () => {
   const account = "t1lv32q33y64xs64pnyn6om7ftirax5ikspkumwsa";
+
+  const response = await callMethod(
+    URL,
+    "get_nonce",
+    [account],
+    1,
+  );
+
+  console.log(response);
+
+  expect(response.result).toBeGreaterThanOrEqual(2);
+});
+
+test("send_signed_tx", async () => {
+  const account = "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba";
 
   // Get Nonce
   const nonceResponse = await callMethod(
-    "http://86.192.13.13:1234/rpc/v0",
+    URL_LOTUS,
     "Filecoin.MpoolGetNonce",
     [account],
     1,
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.Ow965XBlQKksfRmepJCkBsMqm_jdJ3_8Of1HF6PibRc",
   );
 
-  console.log(nonceResponse.result);
+  console.log("-----------------------------------------------------------------------------------");
+  console.log("Nonce: ", nonceResponse.result);
 
   // Sign message
-  const child = node.derivePath("m/44'/461'/0/0/0");
+  const child = root_node.derivePath("m/44'/461'/0/0/0");
 
   const transaction = {
     to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
@@ -297,6 +300,8 @@ test("send_signed_tx", async () => {
     method: 0,
     params: "",
   };
+
+  console.log("-----------------------------------------------------------------------------------");
 
   const signature_response = await callMethod(
     URL,
@@ -310,8 +315,6 @@ test("send_signed_tx", async () => {
   const signature_base64 = signature_buf.toString("base64");
 
   console.log("Signature Hex String :", signature_hex);
-  // convert DER + V signature into RSV
-  // 30d07c692357b1728e988331a0cacc63396af73a3f19012350d2407c399b115b2b241b2a5bbdb5571a1cf57da81f3269bac31154f64bb83bc922804dc90718aa01
   const r = signature_buf.slice(0, 32);
   const s = signature_buf.slice(32, 64);
 
@@ -333,6 +336,8 @@ test("send_signed_tx", async () => {
     },
     signature: signature_base64,
   };
+
+  console.log("-----------------------------------------------------------------------------------");
 
   const response = await callMethod(URL, "send_signed_tx", [signed_tx], 1);
 

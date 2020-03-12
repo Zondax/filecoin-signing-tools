@@ -3,6 +3,7 @@
 use crate::service::cache::{cache_get_nonce, cache_put_nonce};
 use crate::service::error::RemoteNode::{EmptyNonce, InvalidNonce, InvalidStatusRequest, JSONRPC};
 use crate::service::error::ServiceError;
+use abscissa_core::tracing::info;
 use jsonrpc_core::response::Output::{Failure, Success};
 use jsonrpc_core::{Id, MethodCall, Params, Response, Version};
 use serde_json::value::Value;
@@ -16,7 +17,7 @@ pub async fn make_rpc_call(url: &str, jwt: &str, m: &MethodCall) -> Result<Respo
     let node_answer = client.execute(request).await?;
 
     ///// FIXME: This block is a workaround for a non-standard Lotus answer
-    let mut workaround = node_answer.json::<serde_json::Value>().await?;
+    let mut workaround = node_answer.json::<Value>().await?;
     let obj = workaround.as_object_mut().unwrap();
 
     if obj.contains_key("error") {
@@ -66,8 +67,6 @@ pub async fn is_mainnet(_url: &str, _jwt: &str) -> Result<bool, ServiceError> {
 pub async fn send_signed_tx(url: &str, jwt: &str, signed_tx: Value) -> Result<Value, ServiceError> {
     let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
 
-    println!("{:?}", signed_tx);
-
     let params = Params::Array(vec![Value::from(signed_tx)]);
 
     // Prepare request
@@ -77,6 +76,8 @@ pub async fn send_signed_tx(url: &str, jwt: &str, signed_tx: Value) -> Result<Va
         params,
         id: Id::Num(call_id),
     };
+
+    info!("Sending {:?}", m);
 
     let resp = make_rpc_call(url, jwt, &m).await?;
 
@@ -177,7 +178,7 @@ mod tests {
         let status = get_status(&TEST_URL, &JWT, params).await;
 
         println!("{:?}", status);
-        let err_jsonrpc = Error {
+        let _err_jsonrpc = Error {
             code: ErrorCode::ServerError(1),
             message: "cbor input had wrong number of fields".to_string(),
             data: None,
@@ -195,13 +196,6 @@ mod tests {
         let status = get_status(&TEST_URL, &JWT, params).await;
 
         println!("{:?}", status);
-        let err_jsonrpc = Error {
-            code: ErrorCode::ServerError(1),
-            message: "blockstore: block not found".to_string(),
-            data: None,
-        };
-
         assert!(status.is_err());
-        //assert!(status.contains_err(&error::ServiceError::JSONRPC(err_jsonrpc)));
     }
 }

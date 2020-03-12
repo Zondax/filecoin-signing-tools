@@ -5,8 +5,8 @@ use crate::service::client;
 use crate::service::error::ServiceError;
 use filecoin_signer::api::{SignedMessageAPI, UnsignedMessageAPI};
 use filecoin_signer::utils::{from_hex_string, to_hex_string};
-use filecoin_signer::{CborBuffer, Mnemonic, SecretKey, Signature};
-use jsonrpc_core::{Id, MethodCall, Success, Version};
+use filecoin_signer::{CborBuffer, Mnemonic, PrivateKey, Signature};
+use jsonrpc_core::{MethodCall, Success, Version};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use serde_json::Value;
@@ -38,6 +38,7 @@ pub struct KeyDeriveParamsAPI {
 pub struct KeyDeriveResultAPI {
     pub private_hexstring: String,
     pub public_hexstring: String,
+    pub public_compressed_hexstring: String,
     pub address: String,
 }
 
@@ -59,7 +60,7 @@ pub struct GetStatusParamsAPI {
 }
 
 pub async fn key_generate_mnemonic(
-    _c: MethodCall,
+    c: MethodCall,
     _: RemoteNodeSection,
 ) -> Result<Success, ServiceError> {
     let mnemonic = filecoin_signer::key_generate_mnemonic()?;
@@ -67,7 +68,7 @@ pub async fn key_generate_mnemonic(
     let so = Success {
         jsonrpc: Some(Version::V2),
         result: Value::from(mnemonic.0),
-        id: Id::Num(1),
+        id: c.id,
     };
 
     Ok(so)
@@ -76,13 +77,13 @@ pub async fn key_generate_mnemonic(
 pub async fn key_derive(c: MethodCall, _: RemoteNodeSection) -> Result<Success, ServiceError> {
     let params = c.params.parse::<KeyDeriveParamsAPI>()?;
 
-    let (private, public, address) =
-        filecoin_signer::key_derive(Mnemonic(params.mnemonic), params.path)?;
+    let key_address = filecoin_signer::key_derive(Mnemonic(params.mnemonic), params.path)?;
 
     let result = KeyDeriveResultAPI {
-        public_hexstring: to_hex_string(&public.0[..]),
-        private_hexstring: to_hex_string(&private.0[..]),
-        address,
+        public_hexstring: to_hex_string(&key_address.public_key.0),
+        public_compressed_hexstring: to_hex_string(&key_address.public_key_compressed.0),
+        private_hexstring: to_hex_string(&key_address.private_key.0),
+        address: key_address.address,
     };
 
     let result_json = serde_json::to_value(&result)?;
@@ -90,7 +91,7 @@ pub async fn key_derive(c: MethodCall, _: RemoteNodeSection) -> Result<Success, 
     let so = Success {
         jsonrpc: Some(Version::V2),
         result: result_json,
-        id: Id::Num(1),
+        id: c.id,
     };
 
     Ok(so)
@@ -101,12 +102,12 @@ pub async fn transaction_serialize(
     _: RemoteNodeSection,
 ) -> Result<Success, ServiceError> {
     let params = c.params.parse::<UnsignedMessageAPI>()?;
-    let cbor_hexstring = filecoin_signer::transaction_serialize(params)?;
+    let cbor_hexstring = filecoin_signer::transaction_serialize(&params)?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),
         result: Value::from(cbor_hexstring.0),
-        id: Id::Num(1),
+        id: c.id,
     };
 
     Ok(so)
@@ -126,7 +127,7 @@ pub async fn transaction_parse(
     let so = Success {
         jsonrpc: Some(Version::V2),
         result: Value::from(tx),
-        id: Id::Num(1),
+        id: c.id,
     };
 
     Ok(so)
@@ -138,14 +139,14 @@ pub async fn sign_transaction(
 ) -> Result<Success, ServiceError> {
     let params = c.params.parse::<SignTransactionParamsAPI>()?;
 
-    let private_key = SecretKey::try_from(params.prvkey_hex)?;
+    let private_key = PrivateKey::try_from(params.prvkey_hex)?;
 
-    let signature = filecoin_signer::sign_transaction(params.transaction, &private_key)?;
+    let signed_message = filecoin_signer::transaction_sign(&params.transaction, &private_key)?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),
-        result: Value::from(to_hex_string(&signature.0)),
-        id: Id::Num(1),
+        result: serde_json::to_value(&signed_message)?,
+        id: c.id,
     };
 
     Ok(so)
@@ -165,7 +166,7 @@ pub async fn verify_signature(
     let so = Success {
         jsonrpc: Some(Version::V2),
         result: Value::from(result),
-        id: Id::Num(1),
+        id: c.id,
     };
 
     Ok(so)
@@ -180,7 +181,7 @@ pub async fn get_status(c: MethodCall, config: RemoteNodeSection) -> Result<Succ
     let so = Success {
         jsonrpc: Some(Version::V2),
         result,
-        id: Id::Num(1),
+        id: c.id,
     };
 
     Ok(so)
@@ -194,7 +195,7 @@ pub async fn get_nonce(c: MethodCall, config: RemoteNodeSection) -> Result<Succe
     let so = Success {
         jsonrpc: Some(Version::V2),
         result: Value::from(result),
-        id: Id::Num(1),
+        id: c.id,
     };
 
     Ok(so)
@@ -230,7 +231,7 @@ pub async fn send_signed_tx(
     let so = Success {
         jsonrpc: Some(Version::V2),
         result: Value::from(result),
-        id: Id::Num(1),
+        id: c.id,
     };
 
     Ok(so)

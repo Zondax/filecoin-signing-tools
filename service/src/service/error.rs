@@ -6,8 +6,6 @@ use thiserror::Error;
 /// RemoteNode Error
 #[derive(Error, Debug)]
 pub enum RemoteNode {
-    #[error("This is not yet implemented")]
-    NotImplemented,
     #[error("Could not retrieve nonce")]
     EmptyNonce,
     #[error("Could not retrieve nonce")]
@@ -15,7 +13,7 @@ pub enum RemoteNode {
     #[error("Could not retrieve status")]
     InvalidStatusRequest,
     /// JSONRPC error
-    #[error("{0}")]
+    #[error("RPC | {0}")]
     JSONRPC(#[from] jsonrpc_core::types::Error),
 }
 
@@ -25,24 +23,24 @@ pub enum ServiceError {
     #[error("This is not yet implemented")]
     NotImplemented,
     /// JSONRPC error
-    #[error("JSONRPC error")]
+    #[error("JSONRPC | {0}")]
     JSONRPC(#[from] jsonrpc_core::types::Error),
     /// Secp256k1 error
-    #[error("Secp256k1 error")]
+    #[error("Secp256k1 | {0}")]
     Secp256k1(#[from] secp256k1::Error),
     /// Filecoin signer error
-    #[error("Filecoin signer error")]
+    #[error("Signer | {0}")]
     Signer(#[from] SignerError),
     /// Service Request error
-    #[error("Service Request error")]
+    #[error("Service | {0}")]
     Request(#[from] reqwest::Error),
     /// Remote Node Request error
-    #[error("Remote Node error: {0}")]
+    #[error("Remote node | {0}")]
     RemoteNode(#[from] RemoteNode),
     /// HexDecode Error
-    #[error("Error decoding hex strings")]
+    #[error("Hex decoding | {0}")]
     HexDecode(#[from] HexDecodeError),
     /// Serde Json Error
-    #[error("Error serializing serde_json")]
+    #[error("Serde JSON | {0}")]
     Error(#[from] Error),
 }
