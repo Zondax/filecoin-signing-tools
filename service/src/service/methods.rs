@@ -3,7 +3,7 @@
 use crate::config::RemoteNodeSection;
 use crate::service::client;
 use crate::service::error::ServiceError;
-use filecoin_signer::api::{UnsignedMessageAPI, SignedMessageAPI};
+use filecoin_signer::api::{SignedMessageAPI, UnsignedMessageAPI};
 use filecoin_signer::utils::{from_hex_string, to_hex_string};
 use filecoin_signer::{CborBuffer, Mnemonic, SecretKey, Signature};
 use jsonrpc_core::{Id, MethodCall, Success, Version};
