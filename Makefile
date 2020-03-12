@@ -10,13 +10,17 @@ build_wasm: deps_wasm
 
 link_wasm: build_wasm
 	cd signer-wasm/pkg && yarn link
-	cd examples/wasm && yarn link "filecoin_signer_wasm"
+	cd examples/wasm && yarn link "filecoin-signer-wasm"
+	cd examples/www && yarn link "filecoin-signer-wasm"
 
 test_wasm_unit: build_wasm
 	wasm-pack test --firefox --headless ./signer-wasm
 
 test_wasm_integration: link_wasm
 	cd examples/wasm && yarn run test:integration
+
+test_wasm_browser: link_wasm
+	cd examples/www && yarn start
 
 test_wasm: test_wasm_unit test_wasm_integration
 

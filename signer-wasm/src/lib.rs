@@ -1,5 +1,3 @@
-mod error;
-
 use filecoin_signer;
 use wasm_bindgen::prelude::*;
 
@@ -87,6 +85,19 @@ pub fn key_derive(mnemonic: String, path: String) -> Result<ExtendedKey, JsValue
 }
 
 #[wasm_bindgen]
+pub fn key_recover(private_key_hexstring: String) -> Result<ExtendedKey, JsValue> {
+    set_panic_hook();
+
+    let private_key =
+        PrivateKey::try_from(private_key_hexstring).map_err(|e| JsValue::from(e.to_string()))?;
+
+    let key_address = filecoin_signer::key_recover(&private_key)
+        .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
+
+    Ok(ExtendedKey { 0: key_address })
+}
+
+#[wasm_bindgen]
 pub fn transaction_serialize(unsigned_message_string: String) -> Result<String, JsValue> {
     set_panic_hook();
     let s = transaction_serialize_raw(unsigned_message_string)?;
@@ -167,7 +178,6 @@ pub fn verify_signature(signature_hex: String, message_hex: String) -> Result<bo
 #[cfg(test)]
 mod tests {
     use crate::transaction_sign;
-    use filecoin_signer::utils::from_hex_string;
 
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
         {

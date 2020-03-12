@@ -116,6 +116,7 @@ impl ExtendedSecretKey {
     }
 
     #[inline]
+    #[allow(dead_code)]
     pub fn chain_code(&self) -> [u8; SECRET_KEY_SIZE] {
         self.chain_code.0
     }

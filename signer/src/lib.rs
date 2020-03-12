@@ -128,6 +128,20 @@ pub fn key_derive(mnemonic: Mnemonic, path: String) -> Result<ExtendedKey, Signe
     })
 }
 
+pub fn key_recover(private_key: &PrivateKey) -> Result<ExtendedKey, SignerError> {
+    let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
+    let public_key = secp256k1::PublicKey::from_secret_key(&secret_key);
+    let address = Address::new_secp256k1(&public_key.serialize())
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
+    Ok(ExtendedKey {
+        private_key: PrivateKey(secret_key.serialize()),
+        public_key: PublicKey(public_key.serialize()),
+        public_key_compressed: PublicKeyCompressed(public_key.serialize_compressed()),
+        address: address.to_string(),
+    })
+}
+
 pub fn transaction_serialize(
     unsigned_message_arg: &UnsignedMessageAPI,
 ) -> Result<CborBuffer, SignerError> {
@@ -154,12 +168,12 @@ pub fn transaction_parse(
 
 pub fn transaction_sign_raw(
     unsigned_message_api: &UnsignedMessageAPI,
-    secret_key: &PrivateKey,
+    private_key: &PrivateKey,
 ) -> Result<Signature, SignerError> {
     let message = forest_message::UnsignedMessage::try_from(unsigned_message_api)?;
     let message_cbor = CborBuffer(to_vec(&message)?);
 
-    let secret_key = secp256k1::SecretKey::parse_slice(&secret_key.0)?;
+    let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
 
     let cid_hashed = utils::get_digest(&message_cbor.0);
 
