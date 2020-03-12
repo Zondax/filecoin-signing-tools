@@ -328,7 +328,16 @@ test("send_signed_tx", async () => {
   const signature_buf = Buffer.from(signature_hex,'hex');
   const signature_base64 = signature_buf.toString('base64');
 
-  console.log("Signature Base64 :", signature_base64);
+  console.log("Signature Hex String :", signature_hex);
+  // convert DER + V signature into RSV
+  // 30d07c692357b1728e988331a0cacc63396af73a3f19012350d2407c399b115b2b241b2a5bbdb5571a1cf57da81f3269bac31154f64bb83bc922804dc90718aa01
+  const r = signature_buf.slice(0,32);
+  const s = signature_buf.slice(32,64);
+
+  console.log("r :", r.toString('hex'))
+  console.log("s :", s.toString('hex'))
+
+  console.log("Signature Base64     :", signature_base64);
 
   let signed_tx = {
     "message":{
