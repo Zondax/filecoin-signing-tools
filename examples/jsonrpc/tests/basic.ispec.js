@@ -71,7 +71,7 @@ test("key_derive missing 1 parameters", async () => {
 test("transaction_serialize", async () => {
   const response = await callMethod(
     URL,
-    "transaction_create",
+    "transaction_serialize",
     transaction,
     1,
   );
@@ -126,7 +126,6 @@ for (let i = 0; i < jsonData.length; i += 1) {
 
   if (tc.not_implemented) {
     // FIXME: Protocol 0 parsing not implemented in forest
-    // FIXME: should handle the case when address have 0 byte (issue #53)
     // FIXME: doesn't fail for empty value #54
     console.log("FIX ME: Protocol 0 parsing not implemented in forest");
     continue;

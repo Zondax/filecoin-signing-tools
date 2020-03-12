@@ -39,7 +39,7 @@ async fn v0_post_methods(
     let reply = match &method_call.method[..] {
         "key_generate_mnemonic" => methods::key_generate_mnemonic(method_call, config).await,
         "key_derive" => methods::key_derive(method_call, config).await,
-        "transaction_create" => methods::transaction_serialize(method_call, config).await,
+        "transaction_serialize" => methods::transaction_serialize(method_call, config).await,
         "transaction_parse" => methods::transaction_parse(method_call, config).await,
         "sign_transaction" => methods::sign_transaction(method_call, config).await,
         "verify_signature" => methods::verify_signature(method_call, config).await,

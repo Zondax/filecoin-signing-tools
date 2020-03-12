@@ -11,19 +11,13 @@ The library name will probably change in the near future
 ```
 key_generate_mnemonic()
 key_derive(mnemonic, path)
-transaction_create(unsigned_message: UnsignedMessageUserAPI) -> 
+transaction_serialize(unsigned_message: UnsignedMessageUserAPI) ->
 ```
 
 ## WASM
 
 ::: warning fcawasmsigner
 The library name will probably change in the near future
-:::
-
-::: warning Node version
-Node >= 13.7.0 is required. 
-
-Others version wont allow the `--experimental-wasm-modules` flag to import wasm
 :::
 
 

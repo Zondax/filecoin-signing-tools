@@ -95,8 +95,8 @@ pub async fn transaction_serialize(
     c: MethodCall,
     _: RemoteNodeSection,
 ) -> Result<Success, ServiceError> {
-    let y = c.params.parse::<UnsignedMessageAPI>()?;
-    let cbor_hexstring = filecoin_signer::transaction_serialize(y)?;
+    let params = c.params.parse::<UnsignedMessageAPI>()?;
+    let cbor_hexstring = filecoin_signer::transaction_serialize(params)?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),
