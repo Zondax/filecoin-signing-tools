@@ -32,9 +32,10 @@ pub async fn make_rpc_call(url: &str, jwt: &str, m: &MethodCall) -> Result<Respo
 }
 
 pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceError> {
-    if let Some(nonce) = cache_get_nonce(addr) {
-        return Ok(nonce);
-    }
+    // FIXME: reactivate cache and make it configurable
+    // if let Some(nonce) = cache_get_nonce(addr) {
+    //     return Ok(nonce);
+    // }
 
     let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
 
@@ -54,7 +55,7 @@ pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceE
         _ => return Err(ServiceError::RemoteNode(InvalidNonce)),
     };
 
-    cache_put_nonce(addr, nonce);
+    // cache_put_nonce(addr, nonce);
     Ok(nonce)
 }
 
@@ -69,6 +70,8 @@ pub async fn send_signed_tx(url: &str, jwt: &str, signed_tx: Value) -> Result<Va
 
     let params = Params::Array(vec![Value::from(signed_tx)]);
 
+    info!("[send_signed_tx] params: {:?}", params);
+
     // Prepare request
     let m = MethodCall {
         jsonrpc: Some(Version::V2),
@@ -76,8 +79,6 @@ pub async fn send_signed_tx(url: &str, jwt: &str, signed_tx: Value) -> Result<Va
         params,
         id: Id::Num(call_id),
     };
-
-    info!("Sending {:?}", m);
 
     let resp = make_rpc_call(url, jwt, &m).await?;
 

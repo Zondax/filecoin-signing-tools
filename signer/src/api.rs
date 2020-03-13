@@ -15,7 +15,9 @@ pub struct UnsignedMessageAPI {
     pub from: String,
     pub nonce: u64,
     pub value: String,
+    #[serde(rename = "gasprice")]
     pub gas_price: String,
+    #[serde(rename = "gaslimit")]
     pub gas_limit: String,
     pub method: u64,
     pub params: String,

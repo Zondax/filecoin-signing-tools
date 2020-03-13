@@ -2,7 +2,7 @@ use crate::api::{
     MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI, UnsignedMessageAPI,
 };
 use crate::error::SignerError;
-use crate::utils::from_hex_string;
+use crate::utils::{from_hex_string, to_hex_string};
 use forest_address::Address;
 use forest_encoding::{from_slice, to_vec};
 use forest_message;

@@ -3,6 +3,7 @@
 use crate::config::RemoteNodeSection;
 use crate::service::client;
 use crate::service::error::ServiceError;
+use abscissa_core::tracing::info;
 use filecoin_signer::api::{SignedMessageAPI, UnsignedMessageAPI};
 use filecoin_signer::utils::{from_hex_string, to_hex_string};
 use filecoin_signer::{CborBuffer, Mnemonic, PrivateKey, Signature};
@@ -205,28 +206,13 @@ pub async fn send_signed_tx(
     c: MethodCall,
     config: RemoteNodeSection,
 ) -> Result<Success, ServiceError> {
+    // Deserialize and back again to be sure is all valid
     let call_params = c.params.parse::<SendSignedTxParamsAPI>()?;
+    let signed_tx_json = serde_json::to_string(&call_params.signed_tx)?;
+    let signed_tx = serde_json::from_str(&signed_tx_json)?;
 
-    // REVIEW: Ugly ?
-    // TODO: Convert hex signature to base64 signature instead of asking base64 signature
-    let params = json!({
-        "Message": {
-            "To": call_params.signed_tx.message.to,
-            "From": call_params.signed_tx.message.from,
-            "Nonce": call_params.signed_tx.message.nonce,
-            "Value":call_params.signed_tx.message.value,
-            "GasPrice": call_params.signed_tx.message.gas_price,
-            "GasLimit":call_params.signed_tx.message.gas_limit,
-            "Method": call_params.signed_tx.message.method,
-            "Params": call_params.signed_tx.message.params
-        },
-        "Signature":{
-            "Type":"secp256k1",
-            "Data": call_params.signed_tx.signature
-        }
-    });
-
-    let result = client::send_signed_tx(&config.url, &config.jwt, params).await?;
+    // send to remote node
+    let result = client::send_signed_tx(&config.url, &config.jwt, signed_tx).await?;
 
     let so = Success {
         jsonrpc: Some(Version::V2),
@@ -244,7 +230,8 @@ mod tests {
     use jsonrpc_core::{Id, MethodCall, Params, Success, Version};
     use serde_json::{json, Value};
 
-    const TEST_URL: &str = "http://86.192.13.13:1234/rpc/v0";
+    //const TEST_URL: &str = "http://86.192.13.13:1234/rpc/v0";
+    const TEST_URL: &str = "https://proxy.openworklabs.com/rpc/v0";
     const JWT: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
 
     #[tokio::test]

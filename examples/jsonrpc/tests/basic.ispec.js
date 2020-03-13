@@ -10,22 +10,20 @@ const tests_vectors_path = "../manual_testvectors.json";
 
 // WARNING: filecoin-service is expected to be running
 const URL = "http://127.0.0.1:3030/v0";
-const URL_LOTUS = "http://127.0.0.1:1234/rpc/v0";
+const EXPECTED_MNEMONIC = "equip will roof matter pink blind book anxiety banner elbow sun young";
+const EXPECTED_SEED = "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5";
+const EXPECTED_ROOT_NODE = bip32.fromBase58(EXPECTED_SEED);
 
-const mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
-const seed = "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5";
-const root_node = bip32.fromBase58(seed);
-
-const cbor_transaction =
+const EXAMPLE_TRANSACTION_CBOR =
   "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040";
 
-const transaction = {
+const EXAMPLE_TRANSACTION = {
   to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
   from: "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
   nonce: 1,
   value: "100000",
-  gas_price: "2500",
-  gas_limit: "25000",
+  gasprice: "2500",
+  gaslimit: "25000",
   method: 0,
   params: "",
 };
@@ -42,8 +40,8 @@ test("key_generate_mnemonic", async () => {
 
 test("key_derive", async () => {
   const path = "m/44'/461'/0/0/0";
-  const response = await callMethod(URL, "key_derive", [mnemonic, path], 1);
-  const child = root_node.derivePath(path);
+  const response = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path], 1);
+  const child = EXPECTED_ROOT_NODE.derivePath(path);
   console.log(response);
 
   // Do we have a results
@@ -62,7 +60,7 @@ test("key_derive missing all parameters", async () => {
 });
 
 test("key_derive missing 1 parameters", async () => {
-  const response = await callMethod(URL, "key_derive", [mnemonic], 1);
+  const response = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC], 1);
   console.log(response);
 
   expect(response).toHaveProperty("error");
@@ -70,15 +68,15 @@ test("key_derive missing 1 parameters", async () => {
 });
 
 test("transaction_serialize", async () => {
-  const response = await callMethod(URL, "transaction_serialize", transaction, 1);
+  const response = await callMethod(URL, "transaction_serialize", EXAMPLE_TRANSACTION, 1);
 
-  expect(Buffer.from(response.result).toString("hex")).toBe(cbor_transaction);
+  expect(Buffer.from(response.result).toString("hex")).toBe(EXAMPLE_TRANSACTION_CBOR);
 });
 
 test("transaction_parse", async () => {
-  const response = await callMethod(URL, "transaction_parse", [cbor_transaction, true], 1);
+  const response = await callMethod(URL, "transaction_parse", [EXAMPLE_TRANSACTION_CBOR, true], 1);
 
-  expect(response.result).toBe(JSON.stringify(transaction));
+  expect(response.result).toBe(JSON.stringify(EXAMPLE_TRANSACTION));
 });
 
 test("transaction_testvectors", async () => {
@@ -138,19 +136,19 @@ for (let i = 0; i < jsonData.length; i += 1) {
 }
 
 test("sign_transaction", async () => {
-  const child = root_node.derivePath("m/44'/461'/0/0/0");
-  const message_digest = getDigest(Buffer.from(cbor_transaction, "hex"));
+  const child = EXPECTED_ROOT_NODE.derivePath("m/44'/461'/0/0/0");
+  const message_digest = getDigest(Buffer.from(EXAMPLE_TRANSACTION_CBOR, "hex"));
 
   const response = await callMethod(
     URL,
     "sign_transaction",
-    [transaction, child.privateKey.toString("hex")],
+    [EXAMPLE_TRANSACTION, child.privateKey.toString("hex")],
     1,
   );
 
   console.log(response);
 
-  const signatureBuffer = Buffer.from(response.result, "hex").slice(0, -1);
+  const signatureBuffer = Buffer.from(response.result.signature.data, "base64").slice(0, -1);
 
   // compare signature
   const signatureCompare = secp256k1.ecdsaSign(message_digest, child.privateKey);
@@ -164,13 +162,13 @@ test("sign_transaction", async () => {
 });
 
 test("sign_invalid_transaction", async () => {
-  const child = root_node.derivePath("m/44'/461'/0/0/0");
+  const child = EXPECTED_ROOT_NODE.derivePath("m/44'/461'/0/0/0");
   const invalid_transaction = {
     to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
     from: "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
     value: "100000",
-    gas_price: "2500",
-    gas_limit: "25000",
+    gasprice: "2500",
+    gaslimit: "25000",
     method: 0,
     params: "",
   };
@@ -189,9 +187,9 @@ test("sign_invalid_transaction", async () => {
 });
 
 test("verify_signature", async () => {
-  const child = root_node.derivePath("m/44'/461'/0/0/0");
+  const child = EXPECTED_ROOT_NODE.derivePath("m/44'/461'/0/0/0");
 
-  const message_digest = getDigest(Buffer.from(cbor_transaction, "hex"));
+  const message_digest = getDigest(Buffer.from(EXAMPLE_TRANSACTION_CBOR, "hex"));
 
   const signature = secp256k1.ecdsaSign(message_digest, child.privateKey);
 
@@ -199,7 +197,7 @@ test("verify_signature", async () => {
   const signatureRSV =
     Buffer.from(signature.signature).toString("hex") + Buffer.from([signature.recid]).toString("hex");
 
-  const response = await callMethod(URL, "verify_signature", [signatureRSV, cbor_transaction], 1);
+  const response = await callMethod(URL, "verify_signature", [signatureRSV, EXAMPLE_TRANSACTION_CBOR], 1);
 
   console.log(response);
 
@@ -207,9 +205,9 @@ test("verify_signature", async () => {
 });
 
 test("verify_invalid_signature", async () => {
-  const child = root_node.derivePath("m/44'/461'/0/0/0");
+  const child = EXPECTED_ROOT_NODE.derivePath("m/44'/461'/0/0/0");
 
-  const message_digest = getDigest(Buffer.from(cbor_transaction, "hex"));
+  const message_digest = getDigest(Buffer.from(EXAMPLE_TRANSACTION_CBOR, "hex"));
 
   const signature = secp256k1.ecdsaSign(message_digest, child.privateKey);
 
@@ -219,7 +217,7 @@ test("verify_invalid_signature", async () => {
   // Concat recovery id value at the end of the signature
   const signatureRSV = invalid_signature.toString("hex") + Buffer.from([signature.recid]).toString("hex");
 
-  const response = await callMethod(URL, "verify_signature", [signatureRSV, cbor_transaction], 1);
+  const response = await callMethod(URL, "verify_signature", [signatureRSV, EXAMPLE_TRANSACTION_CBOR], 1);
 
   console.log(response);
 
@@ -273,73 +271,49 @@ test("get_nonce", async () => {
 });
 
 test("send_signed_tx", async () => {
-  const account = "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba";
+  const path = "m/44'/461'/0/0/0";
+  const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path], 1);
+
+  console.log(keyAddressResponse);
 
   // Get Nonce
-  const nonceResponse = await callMethod(
-    URL_LOTUS,
-    "Filecoin.MpoolGetNonce",
-    [account],
-    1,
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.Ow965XBlQKksfRmepJCkBsMqm_jdJ3_8Of1HF6PibRc",
-  );
+  const nonceResponse = await callMethod(URL, "get_nonce", [keyAddressResponse.result.address], 1);
 
   console.log("-----------------------------------------------------------------------------------");
-  console.log("Nonce: ", nonceResponse.result);
-
-  // Sign message
-  const child = root_node.derivePath("m/44'/461'/0/0/0");
+  let nonce = nonceResponse.result;
+  nonce++;
+  console.log("Nonce: ", nonce);
 
   const transaction = {
     to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-    from: account,
-    nonce: nonceResponse.result,
+    from: keyAddressResponse.result.address,
+    nonce: nonce,
     value: "1",
-    gas_price: "0",
-    gas_limit: "0",
+    gasprice: "0",
+    gaslimit: "1000000",
     method: 0,
     params: "",
   };
 
   console.log("-----------------------------------------------------------------------------------");
 
-  const signature_response = await callMethod(
+  const signedTxResponse = await callMethod(
     URL,
     "sign_transaction",
-    [transaction, child.privateKey.toString("hex")],
-    1,
+    [transaction, keyAddressResponse.result.private_hexstring],
+    2,
   );
 
-  const signature_hex = signature_response.result;
-  const signature_buf = Buffer.from(signature_hex, "hex");
-  const signature_base64 = signature_buf.toString("base64");
+  console.log("SignedTx: ", signedTxResponse);
 
-  console.log("Signature Hex String :", signature_hex);
-  const r = signature_buf.slice(0, 32);
-  const s = signature_buf.slice(32, 64);
-
-  console.log("r :", r.toString("hex"));
-  console.log("s :", s.toString("hex"));
-
-  console.log("Signature Base64     :", signature_base64);
-
-  const signed_tx = {
-    message: {
-      to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-      from: account,
-      nonce: nonceResponse.result,
-      value: "1",
-      gas_price: "0",
-      gas_limit: "0",
-      method: 0,
-      params: "",
-    },
-    signature: signature_base64,
-  };
+  let signature_hex = Buffer.from(signedTxResponse.result.signature.data, 'base64').toString('hex');
+  console.log("Signature_hex: ", signature_hex);
+  console.log("Signature_hex_len: ", signature_hex.length);
+  expect(signature_hex.length).toBe(130);
 
   console.log("-----------------------------------------------------------------------------------");
 
-  const response = await callMethod(URL, "send_signed_tx", [signed_tx], 1);
+  const response = await callMethod(URL, "send_signed_tx", [signedTxResponse.result], 1);
 
   console.log(response);
 
