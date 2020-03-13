@@ -59,13 +59,14 @@ jobs:
       - image: zondax/rust-ci:latest
     steps:
       - checkout
+      - run: cargo --version
       - restore-sccache-cache
       - run: make deps_wasm
-# Disabling due to  https://github.com/Zondax/filecoin-rs/issues/68
-#      - run:
-#          name: tests wasm_unit
-#          command: |
-#            make test_wasm_unit
+      # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-rs/issues/68
+      - run:
+          name: tests wasm_unit
+          command: |
+            make test_wasm_unit
       - run:
           name: tests wasm_integration
           command: |
@@ -79,6 +80,11 @@ jobs:
       - checkout
       - restore-sccache-cache
       - run: cargo build
+      - run:
+          name: patch configuration file
+          command: |
+            sed -i "s/LOTUS_SECRET_URL/$LOTUS_SECRET_URL/g" filecoin-service.toml
+            sed -i "s/LOTUS_SECRET_JWT/$LOTUS_SECRET_JWT/g" filecoin-service.toml
       - run:
           name: start service
           background: true
