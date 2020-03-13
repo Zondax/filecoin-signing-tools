@@ -265,14 +265,14 @@ mod tests {
                 "Method":0,
                 "Params":""
             })),
-            id: Id::Num(1),
+            id: Id::Num(123),
         };
 
         let mc = MethodCall {
             jsonrpc: Some(Version::V2),
             method: "get_status".to_string(),
             params,
-            id: Id::Num(0),
+            id: Id::Num(123),
         };
 
         let config = RemoteNodeSection {
@@ -283,6 +283,7 @@ mod tests {
         let status = get_status(mc, config).await.unwrap();
 
         println!("{:?}", status);
+        println!("{:?}", expected_response);
 
         assert!(status == expected_response);
     }
