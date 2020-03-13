@@ -11,11 +11,11 @@ Cargo.lock
 
 /.idea
 /examples/filecoin-service.toml
-/examples/wasm/node_modules
+/examples/wasm_node/node_modules
 /examples/jsonrpc/.idea/
 /examples/jsonrpc/node_modules
 
-examples/wasm/yarn-error.log
+examples/wasm_node/yarn-error.log
 /.circleci/tmp.yml
 /node_modules
-/filecoin-service_back.toml
+/filecoin-service.toml

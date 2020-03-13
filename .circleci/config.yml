@@ -64,19 +64,17 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y firefox-esr
       - run: make deps_wasm
       # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-rs/issues/68
-      - run:
-          name: tests wasm_unit
-          command: |
-            make test_wasm_unit
-      - run:
-          name: tests wasm_integration
-          command: |
-            make test_wasm_integration
+      - run: make test_wasm_unit
+      - run: make test_wasm_node
+      #- run: make test_wasm_browser
       # No need to save this in cache
 
   tests_service:
     docker:
       - image: zondax/rust-ci:latest
+#    environment:
+#      LOTUS_SECRET_URL: some_url
+#      LOTUS_SECRET_JWT: some_jwt
     steps:
       - checkout
       - restore-sccache-cache
@@ -84,8 +82,12 @@ jobs:
       - run:
           name: patch configuration file
           command: |
-            sed -i "s/LOTUS_SECRET_URL/$LOTUS_SECRET_URL/g" filecoin-service.toml
-            sed -i "s/LOTUS_SECRET_JWT/$LOTUS_SECRET_JWT/g" filecoin-service.toml
+            echo [service] >> filecoin-service.toml
+            echo address = "127.0.0.1:3030" >> filecoin-service.toml
+            echo [remote_node] >> filecoin-service.toml
+            echo url = "$LOTUS_SECRET_URL" >> filecoin-service.toml
+            echo jwt = "$LOTUS_SECRET_JWT" >> filecoin-service.toml
+            cat filecoin-service.toml
       - run:
           name: start service
           background: true

@@ -1,5 +1,4 @@
 deps_wasm:
-	cd examples/wasm && yarn install
 	cargo install wasm-pack --version 0.8.1
 
 build_wasm: deps_wasm
@@ -9,20 +8,22 @@ build_wasm: deps_wasm
 	cp package-signer-wasm.json signer-wasm/pkg/package.json
 
 link_wasm: build_wasm
+	cd signer-wasm/pkg && yarn unlink
 	cd signer-wasm/pkg && yarn link
-	cd examples/wasm && yarn link "filecoin-signer-wasm"
-	cd examples/www && yarn link "filecoin-signer-wasm"
+	# Now use it in other places
+	cd examples/wasm_node && yarn link "@zondax/filecoin-signer-wasm"
+	cd examples/wasm_browser && yarn link "@zondax/filecoin-signer-wasm"
 
 test_wasm_unit: build_wasm
 	wasm-pack test --firefox --headless ./signer-wasm
 
-test_wasm_integration: link_wasm
-	cd examples/wasm && yarn run test:integration
+test_wasm_node: link_wasm
+	cd examples/wasm_node && yarn install && yarn run test:integration
 
 test_wasm_browser: link_wasm
-	cd examples/www && yarn start
+	cd examples/wasm_browser && yarn install && yarn start
 
-test_wasm: test_wasm_unit test_wasm_integration
+test_wasm: test_wasm_unit test_wasm_node
 
 deps_rust:
 	cargo install cargo-audit
