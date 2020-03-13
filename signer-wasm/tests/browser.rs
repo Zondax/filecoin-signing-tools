@@ -14,8 +14,8 @@ const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
             "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
             "nonce": 1,
             "value": "100000",
-            "gas_price": "2500",
-            "gas_limit": "25000",
+            "gasprice": "2500",
+            "gaslimit": "25000",
             "method": 0,
             "params": ""
         }"#;
@@ -65,6 +65,6 @@ fn sign() {
 
     assert_eq!(
         answer,
-        "{\"message\":{\"to\":\"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy\",\"from\":\"t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi\",\"nonce\":1,\"value\":\"100000\",\"gas_price\":\"2500\",\"gas_limit\":\"25000\",\"method\":0,\"params\":\"\"},\"signature\":{\"type\":\"secp256k1\",\"data\":\"TBB0Z+np2Cw8/YwIPGQfD1aHIM6iMoP7+pdrJujXS0EhvD3gOlHfDzBs86QBx2LhqudUm41Lb+YdEtaEe6pu9QA=\"}}"
+        "{\"message\":{\"to\":\"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy\",\"from\":\"t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi\",\"nonce\":1,\"value\":\"100000\",\"gasprice\":\"2500\",\"gaslimit\":\"25000\",\"method\":0,\"params\":\"\"},\"signature\":{\"type\":\"secp256k1\",\"data\":\"TBB0Z+np2Cw8/YwIPGQfD1aHIM6iMoP7+pdrJujXS0EhvD3gOlHfDzBs86QBx2LhqudUm41Lb+YdEtaEe6pu9QA=\"}}"
     );
 }

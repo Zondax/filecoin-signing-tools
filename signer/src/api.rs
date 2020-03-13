@@ -10,14 +10,19 @@ use std::str::FromStr;
 use vm::{MethodNum, Serialized, TokenAmount};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct UnsignedMessageAPI {
     pub to: String,
     pub from: String,
     pub nonce: u64,
     pub value: String,
     #[serde(rename = "gasprice")]
+    #[serde(alias = "gasPrice")]
+    #[serde(alias = "gas_price")]
     pub gas_price: String,
     #[serde(rename = "gaslimit")]
+    #[serde(alias = "gasLimit")]
+    #[serde(alias = "gas_limit")]
     pub gas_limit: String,
     pub method: u64,
     pub params: String,
@@ -226,8 +231,8 @@ mod tests {
             "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
             "nonce": 1,
             "value": "100000",
-            "gas_price": "2500",
-            "gas_limit": "25000",
+            "gasprice": "2500",
+            "gaslimit": "25000",
             "method": 0,
             "params": ""
         }"#;

@@ -45,8 +45,8 @@ const unsigned_tx = {
   "from": key.address,
   "nonce": 1,
   "value": "100000",
-  "gas_price": "2500",
-  "gas_limit": "25000",
+  "gasprice": "2500",
+  "gaslimit": "25000",
   "method": 0,
   "params": ""
 };

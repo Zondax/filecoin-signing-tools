@@ -68,7 +68,7 @@ pub async fn is_mainnet(_url: &str, _jwt: &str) -> Result<bool, ServiceError> {
 pub async fn send_signed_tx(url: &str, jwt: &str, signed_tx: Value) -> Result<Value, ServiceError> {
     let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
 
-    let params = Params::Array(vec![Value::from(signed_tx)]);
+    let params = Params::Array(vec![signed_tx]);
 
     info!("[send_signed_tx] params: {:?}", params);
 

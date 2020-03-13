@@ -216,7 +216,7 @@ pub async fn send_signed_tx(
 
     let so = Success {
         jsonrpc: Some(Version::V2),
-        result: Value::from(result),
+        result,
         id: c.id,
     };
 

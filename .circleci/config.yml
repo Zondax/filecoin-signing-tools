@@ -47,7 +47,7 @@ jobs:
       - checkout
       - restore-sccache-cache
       - run:
-          name: test --all-features
+          name: rust unit tests --all-features
           command: |
             rustc --version
             cargo --version
@@ -61,6 +61,7 @@ jobs:
       - checkout
       - run: cargo --version
       - restore-sccache-cache
+      - run: sudo apt-get update && sudo apt-get install -y firefox-esr
       - run: make deps_wasm
       # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-rs/issues/68
       - run:

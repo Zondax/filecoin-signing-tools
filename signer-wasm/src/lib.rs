@@ -131,6 +131,7 @@ pub fn transaction_parse(cbor_hexstring: String, network: bool) -> Result<String
 
     Ok(tx)
 }
+
 #[wasm_bindgen]
 pub fn transaction_sign(
     unsigned_tx_string: String,
@@ -169,12 +170,11 @@ pub fn verify_signature(signature_hex: String, message_hex: String) -> Result<bo
     let message =
         CborBuffer(from_hex_string(&message_hex).map_err(|e| JsValue::from(e.to_string()))?);
 
-    let resp = filecoin_signer::verify_signature(&signature, &message)
-        .map_err(|e| JsValue::from_str(format!("Error verifying signature: {}", e).as_str()));
-
-    resp
+    filecoin_signer::verify_signature(&signature, &message)
+        .map_err(|e| JsValue::from_str(format!("Error verifying signature: {}", e).as_str()))
 }
 
+#[cfg(target_arch = "wasm32")]
 #[cfg(test)]
 mod tests {
     use crate::transaction_sign;
@@ -185,8 +185,8 @@ mod tests {
             "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
             "nonce": 1,
             "value": "100000",
-            "gas_price": "2500",
-            "gas_limit": "25000",
+            "gasprice": "2500",
+            "gaslimit": "25000",
             "method": 0,
             "params": ""
         }"#;

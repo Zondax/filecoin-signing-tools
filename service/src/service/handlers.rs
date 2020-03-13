@@ -24,9 +24,7 @@ pub async fn v0_get(_config: RemoteNodeSection) -> Result<impl Reply, Rejection>
 pub async fn v0_post(request: Call, config: RemoteNodeSection) -> Result<impl Reply, Rejection> {
     match request {
         Call::MethodCall(c) => v0_post_methods(c, config).await,
-        _ => {
-            return Err(warp::reject::not_found());
-        }
+        _ => Err(warp::reject::not_found()),
     }
 }
 

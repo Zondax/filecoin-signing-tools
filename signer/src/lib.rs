@@ -2,7 +2,7 @@ use crate::api::{
     MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI, UnsignedMessageAPI,
 };
 use crate::error::SignerError;
-use crate::utils::{from_hex_string, to_hex_string};
+use crate::utils::from_hex_string;
 use forest_address::Address;
 use forest_encoding::{from_slice, to_vec};
 use forest_message;
@@ -270,8 +270,8 @@ mod tests {
             "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
             "nonce": 1,
             "value": "100000",
-            "gas_price": "2500",
-            "gas_limit": "25000",
+            "gasprice": "2500",
+            "gaslimit": "25000",
             "method": 0,
             "params": ""
         }"#;

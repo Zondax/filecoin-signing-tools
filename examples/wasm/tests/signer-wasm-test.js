@@ -20,8 +20,8 @@ const transaction = {
   "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
   "nonce": 1,
   "value": "100000",
-  "gas_price": "2500",
-  "gas_limit": "25000",
+  "gasprice": "2500",
+  "gaslimit": "25000",
   "method": 0,
   "params": ""
 };
@@ -56,8 +56,8 @@ test('Create Transaction Fail (missing nonce)', () => {
     "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
     "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
     "value": "100000",
-    "gas_price": "2500",
-    "gas_limit": "25000",
+    "gasprice": "2500",
+    "gaslimit": "25000",
     "method": 0,
     "params": ""
   };
