@@ -8,6 +8,7 @@
     "test:integration": "node ./tests/index.js ./signer-wasm-test.js"
   },
   "dependencies": {
+    "@zondax/filecoin-signer-wasm": "file:../../signer-wasm/pkg",
     "bip32": "^2.0.5",
     "blake2": "^4.0.0",
     "secp256k1": "^4.0.0"
