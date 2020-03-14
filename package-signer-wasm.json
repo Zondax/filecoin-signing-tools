@@ -4,7 +4,7 @@
     "Zondax <info@zondax.ch>"
   ],
   "description": "",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -16,9 +16,12 @@
     "browser/filecoin_signer_wasm_bg.wasm",
     "browser/filecoin_signer_wasm.js"
   ],
-  "main": "browser/filecoin_signer_wasm.js",
+  "main": "./browser/filecoin_signer_wasm.js",
   "exports": {
-    "require" : "filecoin_signer_wasm.js"
+    "node": "./filecoin_signer_wasm.js",
+    "require": "./filecoin_signer_wasm.js",
+    "import": "./filecoin_signer_wasm.js",
+    "browser": "./browser/filecoin_signer_wasm.js"
   },
   "browserslist": [
     "> 1%",

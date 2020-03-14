@@ -87,7 +87,6 @@ jobs:
             echo [remote_node] >> filecoin-service.toml
             echo url = "$LOTUS_SECRET_URL" >> filecoin-service.toml
             echo jwt = "$LOTUS_SECRET_JWT" >> filecoin-service.toml
-            cat filecoin-service.toml
       - run:
           name: start service
           background: true

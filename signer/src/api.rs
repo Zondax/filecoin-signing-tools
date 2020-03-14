@@ -73,7 +73,7 @@ impl From<&Signature> for SignatureAPI {
 mod serde_base64_vector {
     use serde::{self, Deserialize, Deserializer, Serializer};
 
-    pub fn serialize<S>(v: &Vec<u8>, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize<S>(v: &[u8], serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
@@ -93,11 +93,11 @@ impl TryFrom<MessageTxNetwork> for MessageTxAPI {
     type Error = SignerError;
 
     fn try_from(message_tx_network: MessageTxNetwork) -> Result<MessageTxAPI, Self::Error> {
-        let mut network = Network::Mainnet;
-
-        if message_tx_network.testnet {
-            network = Network::Testnet;
-        }
+        let network = if message_tx_network.testnet {
+            Network::Testnet
+        } else {
+            Network::Mainnet
+        };
 
         match message_tx_network.message_tx {
             MessageTx::UnsignedMessage(message_tx) => {

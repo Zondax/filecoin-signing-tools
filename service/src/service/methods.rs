@@ -242,7 +242,7 @@ mod tests {
 
         let expected_response = Success {
             jsonrpc: Some(Version::V2),
-            result: Value::from(json!({
+            result: json!({
                 "To":"t1lv32q33y64xs64pnyn6om7ftirax5ikspkumwsa",
                 "From":"t3wjxuftije2evjmzo2yoy5ghfe2o42mavrpmwuzooghzcxdhqjdu7kn6dvkzf4ko37w7sfnnzdzstcjmeooea",
                 "Nonce":66867,
@@ -251,7 +251,7 @@ mod tests {
                 "GasLimit":"1000",
                 "Method":0,
                 "Params":""
-            })),
+            }),
             id: Id::Num(123),
         };
 

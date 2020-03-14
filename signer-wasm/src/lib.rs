@@ -134,24 +134,25 @@ pub fn transaction_parse(cbor_hexstring: String, network: bool) -> Result<String
 
 #[wasm_bindgen]
 pub fn transaction_sign(
-    unsigned_tx_string: String,
+    unsigned_tx_js: JsValue,
     private_key_hexstring: String,
-) -> Result<String, JsValue> {
+) -> Result<JsValue, JsValue> {
     set_panic_hook();
+
+    let unsigned_message = unsigned_tx_js
+        .into_serde()
+        .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
     let private_key =
         PrivateKey::try_from(private_key_hexstring).map_err(|e| JsValue::from(e.to_string()))?;
 
-    let unsigned_message: UnsignedMessageAPI = serde_json::from_str(&unsigned_tx_string)
-        .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
-
     let signed_message = filecoin_signer::transaction_sign(&unsigned_message, &private_key)
         .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
 
-    let json_signed_message = serde_json::to_string(&signed_message)
+    let signed_message_js = JsValue::from_serde(&signed_message)
         .map_err(|e| JsValue::from(format!("Error signing transaction: {}", e)))?;
 
-    Ok(json_signed_message)
+    Ok(signed_message_js)
 }
 
 #[wasm_bindgen]
@@ -178,6 +179,7 @@ pub fn verify_signature(signature_hex: String, message_hex: String) -> Result<bo
 #[cfg(test)]
 mod tests {
     use crate::transaction_sign;
+    use wasm_bindgen::prelude::*;
 
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
         {
@@ -197,7 +199,7 @@ mod tests {
     #[test]
     fn signature() {
         let signed_tx = transaction_sign(
-            EXAMPLE_UNSIGNED_MESSAGE.to_string(),
+            JsValue::from(EXAMPLE_UNSIGNED_MESSAGE),
             EXAMPLE_PRIVATE_KEY.to_string(),
         )
         .unwrap();

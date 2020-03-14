@@ -182,6 +182,11 @@
   resolved "https://registry.yarnpkg.com/@xtuc/long/-/long-4.2.2.tgz#d291c6a4e97989b5c61d9acf396ae4fe133a718d"
   integrity sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==
 
+"@zondax/filecoin-signer-wasm@^0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@zondax/filecoin-signer-wasm/-/filecoin-signer-wasm-0.1.0.tgz#c1a777a94ecdd5c713a2947d00e09e9bb831d052"
+  integrity sha512-/DqrJnB4aWNkj0aqWcbjy3K69Wb2H2nBCCqsJl9AVJkCC2MDO2xXp4loowm3HjpvajB8yq9jixWDkA5Ttp0Ksg==
+
 accepts@~1.3.4, accepts@~1.3.5, accepts@~1.3.7:
   version "1.3.7"
   resolved "https://registry.yarnpkg.com/accepts/-/accepts-1.3.7.tgz#531bc726517a3b2b41f850021c6cc15eaab507cd"

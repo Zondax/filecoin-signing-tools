@@ -2,35 +2,32 @@ Arguments:
   /usr/local/bin/node /usr/share/yarn/bin/yarn.js install
 
 PATH: 
-  /home/lenij/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin:/home/lenij/zondax/filecoin-rs/node_modules/.bin:/home/lenij/.cargo/bin:/home/lenij/bin:/home/lenij/.local/bin:/home/lenij/Scripts:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/home/lenij/.dotnet/tools:/usr/lib/jvm/java-8-oracle/bin:/usr/lib/jvm/java-8-oracle/db/bin:/usr/lib/jvm/java-8-oracle/jre/binFREETYPE_PROPERTIES=truetype:interpreter-version=35
+  /home/lenij/anaconda3/bin:/home/lenij/anaconda3/condabin:/home/lenij/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin:/home/lenij/zondax/filecoin-rs/node_modules/.bin:/home/lenij/.cargo/bin:/home/lenij/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/var/lib/flatpak/exports/bin:/home/lenij/flutter/bin:/usr/local/bin
 
 Yarn version: 
   1.22.4
 
 Node version: 
-  13.5.0
+  13.11.0
 
 Platform: 
   linux x64
 
 Trace: 
-  Error: https://registry.yarnpkg.com/@zondax%2ffilecoin-signer-wasm: Not found
-      at Request.params.callback [as _callback] (/usr/share/yarn/lib/cli.js:66987:18)
-      at Request.self.callback (/usr/share/yarn/lib/cli.js:140748:22)
-      at Request.emit (events.js:305:20)
-      at Request.<anonymous> (/usr/share/yarn/lib/cli.js:141720:10)
-      at Request.emit (events.js:305:20)
-      at IncomingMessage.<anonymous> (/usr/share/yarn/lib/cli.js:141642:12)
-      at Object.onceWrapper (events.js:411:28)
-      at IncomingMessage.emit (events.js:317:22)
-      at endReadableNT (_stream_readable.js:1215:12)
-      at processTicksAndRejections (internal/process/task_queues.js:84:21)
+  SyntaxError: /home/lenij/zondax/filecoin-rs/examples/wasm_browser/package.json: Unexpected token } in JSON at position 661
+      at JSON.parse (<anonymous>)
+      at /usr/share/yarn/lib/cli.js:1625:59
+      at Generator.next (<anonymous>)
+      at step (/usr/share/yarn/lib/cli.js:310:30)
+      at /usr/share/yarn/lib/cli.js:321:13
 
 npm manifest: 
   {
-    "name": "filecoin-rs",
-    "version": "0.1.0",
-    "description": "Example of filecoin rust lib running in web assembly inside a browser",
+    "name": "example-filecoin-browser",
+    "author": "Zondax GmbH",
+    "license": "Apache-2.0",
+    "version": "1.0.0",
+    "description": "",
     "main": "index.js",
     "scripts": {
       "build": "webpack --config webpack.config.js",
@@ -38,7 +35,7 @@ npm manifest:
     },
     "repository": {
       "type": "git",
-      "url": "git+https://github.com/Zondax/filecoin-rs/tree/master/examples/wasm"
+      "url": "git+https://github.com/Zondax/filecoin-rs"
     },
     "keywords": [
       "webassembly",
@@ -46,17 +43,15 @@ npm manifest:
       "rust",
       "filecoin"
     ],
-    "author": "Zondax GmbH",
-    "license": "Apache-2.0",
+    "dependencies": {
+      "@zondax/filecoin-signer-wasm": "^0"
+    },
     "devDependencies": {
       "copy-webpack-plugin": "^5.0.0",
       "webpack": "^4.29.3",
       "webpack-cli": "^3.1.0",
       "webpack-dev-server": "^3.1.5"
     },
-    "dependencies": {
-      "@zondax/filecoin-signer-wasm": "^0"
-    }
   }
 
 yarn manifest: 

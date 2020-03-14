@@ -219,7 +219,7 @@ mod tests {
 
         // Derive child 5'
 
-        let esk2 = master.derive_child_key(5 + 0x80000000).unwrap();
+        let esk2 = master.derive_child_key(5 + 0x8000_0000).unwrap();
         assert_eq!(
             encode(esk2.secret_key()),
             "437fe078795f5782521ad38dd4c763d11d71e4e83bee7cfdd4e299aca9aad094",

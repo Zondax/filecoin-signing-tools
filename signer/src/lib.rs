@@ -328,10 +328,7 @@ mod tests {
         };
 
         println!("{}", to.to_string());
-        assert_eq!(
-            to.to_string(),
-            "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()
-        );
+        assert_eq!(to, "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
     }
 
     #[test]
@@ -361,12 +358,9 @@ mod tests {
         };
 
         println!("{}", to.to_string());
+        assert_eq!(to, "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
         assert_eq!(
-            to.to_string(),
-            "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()
-        );
-        assert_eq!(
-            from.to_string(),
+            from,
             "f1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka".to_string()
         );
     }
@@ -382,12 +376,9 @@ mod tests {
         };
 
         println!("{}", to.to_string());
+        assert_eq!(to, "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
         assert_eq!(
-            to.to_string(),
-            "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()
-        );
-        assert_eq!(
-            from.to_string(),
+            from,
             "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka".to_string()
         );
     }
@@ -403,12 +394,9 @@ mod tests {
         };
 
         println!("{}", to.to_string());
+        assert_eq!(to, "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
         assert_eq!(
-            to.to_string(),
-            "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()
-        );
-        assert_eq!(
-            from.to_string(),
+            from,
             "f1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka".to_string()
         );
     }
@@ -424,12 +412,9 @@ mod tests {
         };
 
         println!("{}", to.to_string());
+        assert_eq!(to, "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
         assert_eq!(
-            to.to_string(),
-            "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()
-        );
-        assert_eq!(
-            from.to_string(),
+            from,
             "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka".to_string()
         );
     }

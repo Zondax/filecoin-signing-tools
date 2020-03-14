@@ -53,8 +53,7 @@ const unsigned_tx = {
 
 log(`unsigned_tx = ${JSON.stringify(unsigned_tx, 0, 4)}`);
 
-let signed_tx_str = wasm.transaction_sign(JSON.stringify(unsigned_tx), key.private_hexstring);
+let signed_tx = wasm.transaction_sign(unsigned_tx, key.private_hexstring);
 
-let signed_tx = JSON.parse(signed_tx_str);
 log("\n...sign...\n");
 log(`signed_tx = ${JSON.stringify(signed_tx, 0, 4)}`);
