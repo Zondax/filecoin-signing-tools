@@ -9,13 +9,13 @@ use crate::service::methods;
 use jsonrpc_core::error::ErrorCode::ServerError;
 use warp::{Rejection, Reply};
 
-pub async fn v0_get_status(config: RemoteNodeSection) -> Result<impl Reply, Rejection> {
+pub async fn v0_get_status(_config: RemoteNodeSection) -> Result<impl Reply, Rejection> {
     let message = "Filecoin Signing Service".to_string();
     Ok(warp::reply::html(message))
     // TODO: return some information about the service status
 }
 
-pub async fn v0_get(config: RemoteNodeSection) -> Result<impl Reply, Rejection> {
+pub async fn v0_get(_config: RemoteNodeSection) -> Result<impl Reply, Rejection> {
     println!("Received JSONRPC GET. ");
     // TODO: return some information about the service API?
     Ok(warp::reply::html("Document API here?".to_string()))
@@ -24,9 +24,7 @@ pub async fn v0_get(config: RemoteNodeSection) -> Result<impl Reply, Rejection> 
 pub async fn v0_post(request: Call, config: RemoteNodeSection) -> Result<impl Reply, Rejection> {
     match request {
         Call::MethodCall(c) => v0_post_methods(c, config).await,
-        _ => {
-            return Err(warp::reject::not_found());
-        }
+        _ => Err(warp::reject::not_found()),
     }
 }
 
@@ -45,6 +43,7 @@ async fn v0_post_methods(
         "verify_signature" => methods::verify_signature(method_call, config).await,
         "get_status" => methods::get_status(method_call, config).await,
         "get_nonce" => methods::get_nonce(method_call, config).await,
+        "send_signed_tx" => methods::send_signed_tx(method_call, config).await,
         _ => return Err(warp::reject::not_found()),
     };
 

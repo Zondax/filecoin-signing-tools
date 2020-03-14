@@ -5,12 +5,12 @@
   "main": "./src/index.js",
   "dependencies": {
     "@babel/runtime": "^7.8.3",
-    "axios": "^0.19.0",
-    "bip32": "^2.0.5",
-    "blake2": "^4.0.0",
-    "secp256k1": "^4.0.0"
+    "axios": "^0.19.0"
   },
   "devDependencies": {
+    "blake2": "^4.0.0",
+    "secp256k1": "^4.0.0",
+    "bip32": "^2.0.5",
     "@babel/core": "^7.8.3",
     "@babel/plugin-transform-runtime": "^7.8.3",
     "@babel/preset-env": "^7.8.3",

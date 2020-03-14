@@ -1,8 +1,11 @@
 [package]
 name = "filecoin-service"
-authors = []
+authors = ["Zondax <info@zondax.ch>"]
 version = "0.1.0"
 edition = "2018"
+license = "Apache-2.0"
+repository = "https://github.com/Zondax/filecoin-rs"
+description =""
 
 [dependencies]
 gumdrop = "0.7"
@@ -10,6 +13,7 @@ thiserror = "1.0"
 serde = { version = "1", features = ["serde_derive"] }
 serde_json = "1.0.45"
 filecoin-signer = {path = "../signer"}
+forest_message = { git = "https://github.com/zondax/forest", branch="master" }
 tokio = { version = "0.2", features = ["full", "time"] }
 reqwest = { version = "0.10.1", features = ["json", "gzip"] }
 warp = "0.2.1"
@@ -20,7 +24,7 @@ libsecp256k1 = "0.3.4"
 blake2b_simd = "0.5.10"
 
 [dependencies.abscissa_core]
-version = "0.5.1"
+version = "0.5.2"
 # optional: use `gimli` to capture backtraces
 # see https://github.com/rust-lang/backtrace-rs/issues/189
 # features = ["gimli-backtrace"]

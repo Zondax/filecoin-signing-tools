@@ -3,6 +3,9 @@ name = "filecoin-signer-wasm"
 version = "0.1.0"
 authors = ["Zondax <info@zondax.ch>"]
 edition = "2018"
+license = "Apache-2.0"
+repository = "https://github.com/Zondax/filecoin-rs"
+description =""
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -11,7 +14,6 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
-wasm-bindgen = "0.2"
 tiny-bip39 = "0.7.0"
 thiserror = "1.0.10"
 serde_json = "1.0.45"
@@ -36,9 +38,10 @@ wee_alloc = { version = "0.4.2", optional = true }
 # import filecoin_signer
 filecoin-signer = { path = "../signer" }
 
+[dependencies.wasm-bindgen]
+version = "^0.2"
+features = ["serde-serialize"]
+
 [dev-dependencies]
 wasm-bindgen-test = "0.2"
 
-[profile.release]
-# Tell `rustc` to optimize for small code size.
-opt-level = "s"

@@ -47,7 +47,7 @@ jobs:
       - checkout
       - restore-sccache-cache
       - run:
-          name: test --all-features
+          name: rust unit tests --all-features
           command: |
             rustc --version
             cargo --version
@@ -59,26 +59,34 @@ jobs:
       - image: zondax/rust-ci:latest
     steps:
       - checkout
+      - run: cargo --version
       - restore-sccache-cache
+      - run: sudo apt-get update && sudo apt-get install -y firefox-esr
       - run: make deps_wasm
-# Disabling due to  https://github.com/Zondax/filecoin-rs/issues/68
-#      - run:
-#          name: tests wasm_unit
-#          command: |
-#            make test_wasm_unit
-      - run:
-          name: tests wasm_integration
-          command: |
-            make test_wasm_integration
+      # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-rs/issues/68
+      - run: make test_wasm_unit
+      - run: make test_wasm_node
+      #- run: make test_wasm_browser
       # No need to save this in cache
 
   tests_service:
     docker:
       - image: zondax/rust-ci:latest
+#    environment:
+#      LOTUS_SECRET_URL: some_url
+#      LOTUS_SECRET_JWT: some_jwt
     steps:
       - checkout
       - restore-sccache-cache
       - run: cargo build
+      - run:
+          name: patch configuration file
+          command: |
+            echo [service] >> filecoin-service.toml
+            echo address = \"127.0.0.1:3030\" >> filecoin-service.toml
+            echo [remote_node] >> filecoin-service.toml
+            echo url = \"$LOTUS_SECRET_URL\" >> filecoin-service.toml
+            echo jwt = \"$LOTUS_SECRET_JWT\" >> filecoin-service.toml
       - run:
           name: start service
           background: true

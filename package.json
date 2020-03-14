@@ -1,7 +1,7 @@
 {
-  "name": "zondbox-docs",
+  "name": "filecoin-signer",
   "version": "1.0.0",
-  "description": "Zondbox Documentation",
+  "description": "Filecoin Signer Documentation",
   "repository": "https://github.com/Zondax/zondbox-docs.git",
   "author": "Zondax <info@zondax.ch>",
   "license": "Apache-2.0",

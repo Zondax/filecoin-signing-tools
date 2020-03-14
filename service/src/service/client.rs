@@ -3,6 +3,7 @@
 use crate::service::cache::{cache_get_nonce, cache_put_nonce};
 use crate::service::error::RemoteNode::{EmptyNonce, InvalidNonce, InvalidStatusRequest, JSONRPC};
 use crate::service::error::ServiceError;
+use abscissa_core::tracing::info;
 use jsonrpc_core::response::Output::{Failure, Success};
 use jsonrpc_core::{Id, MethodCall, Params, Response, Version};
 use serde_json::value::Value;
@@ -16,7 +17,7 @@ pub async fn make_rpc_call(url: &str, jwt: &str, m: &MethodCall) -> Result<Respo
     let node_answer = client.execute(request).await?;
 
     ///// FIXME: This block is a workaround for a non-standard Lotus answer
-    let mut workaround = node_answer.json::<serde_json::Value>().await?;
+    let mut workaround = node_answer.json::<Value>().await?;
     let obj = workaround.as_object_mut().unwrap();
 
     if obj.contains_key("error") {
@@ -31,9 +32,10 @@ pub async fn make_rpc_call(url: &str, jwt: &str, m: &MethodCall) -> Result<Respo
 }
 
 pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceError> {
-    if let Some(nonce) = cache_get_nonce(addr) {
-        return Ok(nonce);
-    }
+    // FIXME: reactivate cache and make it configurable
+    // if let Some(nonce) = cache_get_nonce(addr) {
+    //     return Ok(nonce);
+    // }
 
     let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
 
@@ -53,7 +55,7 @@ pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceE
         _ => return Err(ServiceError::RemoteNode(InvalidNonce)),
     };
 
-    cache_put_nonce(addr, nonce);
+    // cache_put_nonce(addr, nonce);
     Ok(nonce)
 }
 
@@ -63,10 +65,31 @@ pub async fn is_mainnet(_url: &str, _jwt: &str) -> Result<bool, ServiceError> {
     Err(ServiceError::NotImplemented)
 }
 
-pub async fn send_signed_tx(_url: &str, _jwt: &str) -> Result<bool, ServiceError> {
-    // FIXME: Check if the node (url) is running mainnet or not
-    // FIXME: https://github.com/Zondax/filecoin-rs/issues/33
-    Err(ServiceError::NotImplemented)
+pub async fn send_signed_tx(url: &str, jwt: &str, signed_tx: Value) -> Result<Value, ServiceError> {
+    let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
+
+    let params = Params::Array(vec![signed_tx]);
+
+    info!("[send_signed_tx] params: {:?}", params);
+
+    // Prepare request
+    let m = MethodCall {
+        jsonrpc: Some(Version::V2),
+        method: "Filecoin.MpoolPush".to_owned(),
+        params,
+        id: Id::Num(call_id),
+    };
+
+    let resp = make_rpc_call(url, jwt, &m).await?;
+
+    // Handle response
+    let result = match resp {
+        Response::Single(Success(s)) => s.result,
+        Response::Single(Failure(f)) => return Err(ServiceError::RemoteNode(JSONRPC(f.error))),
+        _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
+    };
+
+    Ok(result)
 }
 
 pub async fn get_status(url: &str, jwt: &str, cid_message: Value) -> Result<Value, ServiceError> {
@@ -156,7 +179,7 @@ mod tests {
         let status = get_status(&TEST_URL, &JWT, params).await;
 
         println!("{:?}", status);
-        let err_jsonrpc = Error {
+        let _err_jsonrpc = Error {
             code: ErrorCode::ServerError(1),
             message: "cbor input had wrong number of fields".to_string(),
             data: None,
@@ -174,13 +197,6 @@ mod tests {
         let status = get_status(&TEST_URL, &JWT, params).await;
 
         println!("{:?}", status);
-        let err_jsonrpc = Error {
-            code: ErrorCode::ServerError(1),
-            message: "blockstore: block not found".to_string(),
-            data: None,
-        };
-
         assert!(status.is_err());
-        //assert!(status.contains_err(&error::ServiceError::JSONRPC(err_jsonrpc)));
     }
 }

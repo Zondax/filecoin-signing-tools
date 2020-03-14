@@ -1,4 +1,6 @@
-use crate::api::{MessageTx, MessageTxAPI, MessageTxNetwork, UnsignedMessageAPI};
+use crate::api::{
+    MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI, UnsignedMessageAPI,
+};
 use crate::error::SignerError;
 use crate::utils::from_hex_string;
 use forest_address::Address;
@@ -8,7 +10,9 @@ use std::convert::TryFrom;
 
 use crate::bip44::{Bip44Path, ExtendedSecretKey};
 use bip39::{Language, MnemonicType, Seed};
-use secp256k1::util::{COMPRESSED_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE};
+use secp256k1::util::{
+    COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
+};
 use secp256k1::{recover, sign, verify, Message, RecoveryId};
 
 pub mod api;
@@ -24,16 +28,33 @@ pub const SIGNATURE_RECOVERY_SIZE: usize = SIGNATURE_SIZE + 1;
 
 pub struct Signature(pub [u8; SIGNATURE_RECOVERY_SIZE]);
 
-pub struct SecretKey(pub [u8; SECRET_KEY_SIZE]);
+pub struct PrivateKey(pub [u8; SECRET_KEY_SIZE]);
 
-pub struct PublicKey(pub [u8; COMPRESSED_PUBLIC_KEY_SIZE]);
+pub struct PublicKey(pub [u8; FULL_PUBLIC_KEY_SIZE]);
+
+pub struct PublicKeyCompressed(pub [u8; COMPRESSED_PUBLIC_KEY_SIZE]);
+
+pub struct ExtendedKey {
+    pub private_key: PrivateKey,
+    pub public_key: PublicKey,
+    pub public_key_compressed: PublicKeyCompressed,
+    pub address: String,
+}
 
 impl TryFrom<String> for Signature {
     type Error = SignerError;
 
     fn try_from(s: String) -> Result<Signature, Self::Error> {
         let tmp = from_hex_string(&s)?;
-        if tmp.len() != SIGNATURE_RECOVERY_SIZE {
+        Signature::try_from(tmp)
+    }
+}
+
+impl TryFrom<Vec<u8>> for Signature {
+    type Error = SignerError;
+
+    fn try_from(v: Vec<u8>) -> Result<Signature, Self::Error> {
+        if v.len() != SIGNATURE_RECOVERY_SIZE {
             return Err(SignerError::GenericString(
                 "Invalid Signature Length".to_string(),
             ));
@@ -42,24 +63,31 @@ impl TryFrom<String> for Signature {
         let mut sk = Signature {
             0: [0; SIGNATURE_RECOVERY_SIZE],
         };
-        sk.0.copy_from_slice(&tmp[..SIGNATURE_RECOVERY_SIZE]);
+        sk.0.copy_from_slice(&v[..SIGNATURE_RECOVERY_SIZE]);
         Ok(sk)
     }
 }
 
-impl TryFrom<String> for SecretKey {
+impl TryFrom<String> for PrivateKey {
     type Error = SignerError;
 
-    fn try_from(s: String) -> Result<SecretKey, Self::Error> {
-        let tmp = from_hex_string(&s)?;
-        if tmp.len() != SECRET_KEY_SIZE {
+    fn try_from(s: String) -> Result<PrivateKey, Self::Error> {
+        let v = from_hex_string(&s)?;
+        PrivateKey::try_from(v)
+    }
+}
+
+impl TryFrom<Vec<u8>> for PrivateKey {
+    type Error = SignerError;
+
+    fn try_from(v: Vec<u8>) -> Result<PrivateKey, Self::Error> {
+        if v.len() != SECRET_KEY_SIZE {
             return Err(SignerError::GenericString("Invalid Key Length".to_string()));
         }
-
-        let mut sk = SecretKey {
+        let mut sk = PrivateKey {
             0: [0; SECRET_KEY_SIZE],
         };
-        sk.0.copy_from_slice(&tmp[..SECRET_KEY_SIZE]);
+        sk.0.copy_from_slice(&v[..SECRET_KEY_SIZE]);
         Ok(sk)
     }
 }
@@ -77,10 +105,7 @@ pub fn key_generate_mnemonic() -> Result<Mnemonic, SignerError> {
 /// * `mnemonic` - A string containing a 24-words English mnemonic
 /// * `path` - A string containing a derivation path
 ///
-pub fn key_derive(
-    mnemonic: Mnemonic,
-    path: String,
-) -> Result<(SecretKey, PublicKey, String), SignerError> {
+pub fn key_derive(mnemonic: Mnemonic, path: String) -> Result<ExtendedKey, SignerError> {
     let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic.0, Language::English)
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
@@ -95,15 +120,30 @@ pub fn key_derive(
     let address = Address::new_secp256k1(&esk.public_key().to_vec())
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-    Ok((
-        SecretKey(esk.secret_key()),
-        PublicKey(esk.public_key()),
-        address.to_string(),
-    ))
+    Ok(ExtendedKey {
+        private_key: PrivateKey(esk.secret_key()),
+        public_key: PublicKey(esk.public_key()),
+        public_key_compressed: PublicKeyCompressed(esk.public_key_compressed()),
+        address: address.to_string(),
+    })
+}
+
+pub fn key_recover(private_key: &PrivateKey) -> Result<ExtendedKey, SignerError> {
+    let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
+    let public_key = secp256k1::PublicKey::from_secret_key(&secret_key);
+    let address = Address::new_secp256k1(&public_key.serialize())
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
+    Ok(ExtendedKey {
+        private_key: PrivateKey(secret_key.serialize()),
+        public_key: PublicKey(public_key.serialize()),
+        public_key_compressed: PublicKeyCompressed(public_key.serialize_compressed()),
+        address: address.to_string(),
+    })
 }
 
 pub fn transaction_serialize(
-    unsigned_message_arg: UnsignedMessageAPI,
+    unsigned_message_arg: &UnsignedMessageAPI,
 ) -> Result<CborBuffer, SignerError> {
     let unsigned_message = forest_message::UnsignedMessage::try_from(unsigned_message_arg)?;
     let message_cbor = CborBuffer(to_vec(&unsigned_message)?);
@@ -121,19 +161,19 @@ pub fn transaction_parse(
         testnet,
     };
 
-    let parsed_message = MessageTxAPI::from(message_tx_with_network);
+    let parsed_message = MessageTxAPI::try_from(message_tx_with_network)?;
 
     Ok(parsed_message)
 }
 
-pub fn sign_transaction(
-    unsigned_message_api: UnsignedMessageAPI,
-    secret_key: &SecretKey,
+pub fn transaction_sign_raw(
+    unsigned_message_api: &UnsignedMessageAPI,
+    private_key: &PrivateKey,
 ) -> Result<Signature, SignerError> {
     let message = forest_message::UnsignedMessage::try_from(unsigned_message_api)?;
     let message_cbor = CborBuffer(to_vec(&message)?);
 
-    let secret_key = secp256k1::SecretKey::parse_slice(&secret_key.0)?;
+    let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
 
     let cid_hashed = utils::get_digest(&message_cbor.0);
 
@@ -146,6 +186,33 @@ pub fn sign_transaction(
     signature.0[64] = recovery_id.serialize();
 
     Ok(signature)
+}
+
+pub fn transaction_sign(
+    unsigned_message: &UnsignedMessageAPI,
+    private_key: &PrivateKey,
+) -> Result<SignedMessageAPI, SignerError> {
+    let message = forest_message::UnsignedMessage::try_from(unsigned_message)?;
+    let message_cbor = CborBuffer(to_vec(&message)?);
+
+    let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
+
+    let cid_hashed = utils::get_digest(&message_cbor.0);
+
+    let message_digest = Message::parse_slice(&cid_hashed)?;
+
+    let (signature_rs, recovery_id) = sign(&message_digest, &secret_key);
+
+    let mut signature = Signature { 0: [0; 65] };
+    signature.0[..64].copy_from_slice(&signature_rs.serialize()[..]);
+    signature.0[64] = recovery_id.serialize();
+
+    let signed_message = SignedMessageAPI {
+        message: unsigned_message.to_owned(),
+        signature: SignatureAPI::from(&signature),
+    };
+
+    Ok(signed_message)
 }
 
 pub fn sign_message() {
@@ -191,8 +258,8 @@ mod tests {
     use crate::api::{MessageTxAPI, UnsignedMessageAPI};
     use crate::utils::{from_hex_string, to_hex_string};
     use crate::{
-        key_derive, key_generate_mnemonic, sign_transaction, transaction_parse, verify_signature,
-        CborBuffer, Mnemonic, SecretKey,
+        key_derive, key_generate_mnemonic, transaction_parse, transaction_sign_raw,
+        verify_signature, CborBuffer, Mnemonic, PrivateKey,
     };
     use std::convert::TryFrom;
 
@@ -203,8 +270,8 @@ mod tests {
             "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
             "nonce": 1,
             "value": "100000",
-            "gas_price": "2500",
-            "gas_limit": "25000",
+            "gasprice": "2500",
+            "gaslimit": "25000",
             "method": 0,
             "params": ""
         }"#;
@@ -236,20 +303,18 @@ mod tests {
     }
 
     #[test]
-    fn derive_child_key() {
+    fn derive_key() {
         let mnemonic = Mnemonic(
             "equip will roof matter pink blind book anxiety banner elbow sun young".to_string(),
         );
         let path = "m/44'/461'/0/0/0".to_string();
 
-        let (prvkey, _, _) = key_derive(mnemonic, path).unwrap();
+        let extended_key = key_derive(mnemonic, path).unwrap();
 
-        assert_eq!(to_hex_string(&prvkey.0[..]), EXAMPLE_PRIVATE_KEY);
-    }
-
-    #[test]
-    fn transaction_create() {
-        // FIXME:
+        assert_eq!(
+            to_hex_string(&extended_key.private_key.0),
+            EXAMPLE_PRIVATE_KEY
+        );
     }
 
     #[test]
@@ -263,10 +328,7 @@ mod tests {
         };
 
         println!("{}", to.to_string());
-        assert_eq!(
-            to.to_string(),
-            "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()
-        );
+        assert_eq!(to, "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
     }
 
     #[test]
@@ -279,9 +341,8 @@ mod tests {
             MessageTxAPI::SignedMessageAPI(tx) => tx.signature,
         };
 
-        println!("{}", signature);
         assert_eq!(
-            signature,
+            to_hex_string(&signature.data),
             "541025ca93d7d15508854520549f6a3c1582fbde1a511f21b12dcb3e49e8bdff3eb824cd8236c66b120b45941fd07252908131ffb1dffa003813b9f2bdd0c2f601".to_string()
         );
     }
@@ -297,12 +358,9 @@ mod tests {
         };
 
         println!("{}", to.to_string());
+        assert_eq!(to, "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
         assert_eq!(
-            to.to_string(),
-            "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()
-        );
-        assert_eq!(
-            from.to_string(),
+            from,
             "f1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka".to_string()
         );
     }
@@ -318,12 +376,9 @@ mod tests {
         };
 
         println!("{}", to.to_string());
+        assert_eq!(to, "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
         assert_eq!(
-            to.to_string(),
-            "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()
-        );
-        assert_eq!(
-            from.to_string(),
+            from,
             "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka".to_string()
         );
     }
@@ -339,12 +394,9 @@ mod tests {
         };
 
         println!("{}", to.to_string());
+        assert_eq!(to, "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
         assert_eq!(
-            to.to_string(),
-            "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()
-        );
-        assert_eq!(
-            from.to_string(),
+            from,
             "f1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka".to_string()
         );
     }
@@ -360,12 +412,9 @@ mod tests {
         };
 
         println!("{}", to.to_string());
+        assert_eq!(to, "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
         assert_eq!(
-            to.to_string(),
-            "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()
-        );
-        assert_eq!(
-            from.to_string(),
+            from,
             "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka".to_string()
         );
     }
@@ -375,12 +424,12 @@ mod tests {
         let cbor_data = CborBuffer(from_hex_string(EXAMPLE_CBOR_DATA).unwrap());
 
         // Path 44'/461'/0/0/0
-        let private_key = SecretKey::try_from(EXAMPLE_PRIVATE_KEY.to_string()).unwrap();
+        let private_key = PrivateKey::try_from(EXAMPLE_PRIVATE_KEY.to_string()).unwrap();
 
         let message_user_api: UnsignedMessageAPI =
             serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE).expect("FIXME");
 
-        let mut signature = sign_transaction(message_user_api, &private_key).unwrap();
+        let mut signature = transaction_sign_raw(&message_user_api, &private_key).unwrap();
 
         assert!(verify_signature(&signature, &cbor_data).unwrap());
 
