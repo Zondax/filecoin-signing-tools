@@ -28,12 +28,11 @@ jobs:
           command: |
             cargo fmt --version
             cargo fmt -- --check
-      # Disable clippy due to issue in dependencies
-#      - run:
-#          name: clippy
-#          command: |
-#            cargo clippy --version
-#            cargo clippy
+      - run:
+          name: clippy
+          command: |
+            cargo clippy --version
+            cargo clippy --all-features
       - run:
           name: audit
           command: |

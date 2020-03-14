@@ -13,7 +13,7 @@ thiserror = "1.0"
 serde = { version = "1", features = ["serde_derive"] }
 serde_json = "1.0.45"
 filecoin-signer = {path = "../signer"}
-forest_message = { git = "https://github.com/ChainSafe/forest", branch="master" }
+forest_message = { git = "https://github.com/zondax/forest", branch="master" }
 tokio = { version = "0.2", features = ["full", "time"] }
 reqwest = { version = "0.10.1", features = ["json", "gzip"] }
 warp = "0.2.1"
