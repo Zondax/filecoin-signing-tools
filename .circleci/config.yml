@@ -83,10 +83,10 @@ jobs:
           name: patch configuration file
           command: |
             echo [service] >> filecoin-service.toml
-            echo address = "127.0.0.1:3030" >> filecoin-service.toml
+            echo address = \"127.0.0.1:3030\" >> filecoin-service.toml
             echo [remote_node] >> filecoin-service.toml
-            echo url = "$LOTUS_SECRET_URL" >> filecoin-service.toml
-            echo jwt = "$LOTUS_SECRET_JWT" >> filecoin-service.toml
+            echo url = \"$LOTUS_SECRET_URL\" >> filecoin-service.toml
+            echo jwt = \"$LOTUS_SECRET_JWT\" >> filecoin-service.toml
       - run:
           name: start service
           background: true

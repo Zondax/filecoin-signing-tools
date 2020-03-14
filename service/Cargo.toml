@@ -24,7 +24,7 @@ libsecp256k1 = "0.3.4"
 blake2b_simd = "0.5.10"
 
 [dependencies.abscissa_core]
-version = "0.5.1"
+version = "0.5.2"
 # optional: use `gimli` to capture backtraces
 # see https://github.com/rust-lang/backtrace-rs/issues/189
 # features = ["gimli-backtrace"]
