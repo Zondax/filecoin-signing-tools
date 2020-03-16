@@ -109,6 +109,22 @@ jobs:
             yarn run test:integration
       # No need to save this in cache
 
+  npm_publish:
+    docker:
+      - image: zondax/rust-ci:latest
+    steps:
+      - checkout
+      - restore-sccache-cache
+      - run: make build_wasm
+      - run:
+          name: Update tag
+          command: |
+            cd /home/circleci/project/signer-wasm/pkg
+            echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > .npmrc
+            npm --no-git-tag-version version $CIRCLE_TAG
+            npm publish
+
+
   docs_publish:
     docker:
       - image: circleci/node:lts
@@ -129,7 +145,6 @@ jobs:
           name: Deploy docs to gh-pages branch
           command: |
             $(yarn global bin)/gh-pages --message "[skip ci] Updates" --dist docs/.vuepress/dist
-
 
 workflows:
   build_all:
@@ -153,3 +168,14 @@ workflows:
 #          filters:
 #            branches:
 #              only: master
+      - npm_publish:
+          requires:
+            - build
+            - tests_rust
+            - tests_wasm
+            - tests_service
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
