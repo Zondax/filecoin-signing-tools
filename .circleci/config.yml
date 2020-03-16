@@ -149,14 +149,26 @@ jobs:
 workflows:
   build_all:
     jobs:
-      - build
+      - build:
+          filters:
+            tags:
+              only: /.*/
       - tests_rust:
+          filters:
+            tags:
+              only: /.*/
           requires:
             - build
       - tests_wasm:
+          filters:
+            tags:
+              only: /.*/
           requires:
             - build
       - tests_service:
+          filters:
+            tags:
+              only: /.*/
           requires:
             - build
       # Disabling until repository is public
@@ -169,13 +181,8 @@ workflows:
 #            branches:
 #              only: master
       - npm_publish:
-          requires:
-            - build
-            - tests_rust
-            - tests_wasm
-            - tests_service
           filters:
             tags:
               only: /^v[0-9]+(\.[0-9]+)*/
-            branches:
-              ignore: /.*/
+          requires:
+            - build
