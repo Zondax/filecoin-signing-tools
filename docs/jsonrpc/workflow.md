@@ -26,46 +26,20 @@ sequenceDiagram
     Node-->>-Exchange: balance  
 </mermaid>
 
-## Signing
+## Sending transaction
 
 <mermaid>
 sequenceDiagram
-    Note over Exchange,Node: COMPLETE
+    User->>+Exchange: filecoin_address
+    Exchange-->>+Service: sign_transaction(tx, prvkey)
+    Service-->>-Exchange: signed_message
+    Exchange-->>+Service: send_signed_tx(signed_message)
+    Service-->>-Node: broadcast signed transaction
+    Node-->>+Service: cid_message
+    Service-->>+Exchange: cid_message
+    Exchange->>User: cid_message
 </mermaid>
 
-::: danger Old diagrams
-Work in progress
+::: tip
+A message in filecoin is also a transaction.
 :::
-
-```asciidoc
-    /-----------/           /--------------/        /---------/
-    /   USER    /           /   EXCHANGE   /        /  NODE   /
-    /-----------/           /--------------/        /---------/
-          |                        |                     |
-          |------Sell Request----->|                     |
-          |                        | key_derive()        |
-          |<-----Address-----------|                     |
-          |                        |                     |
-          |------------------Send Transaction----------->|
-          |                        |                     |
-          |                        |<-----Notify---------|
-          |                        |                     |
-          |<------Success----------|                     |
-
-    /-----------/           /--------------/        /---------/
-    /   USER    /           /   EXCHANGE   /        /  NODE   /
-    /-----------/           /--------------/        /---------/
-          |                        |                     |
-          |------Buy (address)---->|                     |
-          |                        | key_derive()        |
-          |                        | tx_create()         |
-          |                        | sign_transaction()  |
-          |                        |                     |
-          |                        |-----Sentd Tx ------>|
-          |                        |                     |
-          |                        |                     |
-          |                        |<-----Notify---------|
-          |                        |                     |
-          |<------Success----------|                     |
-
-```
