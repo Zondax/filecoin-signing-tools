@@ -37,7 +37,8 @@ module.exports = {
           collapsable: false, // optional, defaults to true
           sidebarDepth: 2,    // optional, defaults to 1
           children: [
-            '/native/'
+            '/native/',
+            '/native/api'
           ]
         }
     ]

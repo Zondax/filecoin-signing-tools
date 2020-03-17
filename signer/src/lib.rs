@@ -128,6 +128,12 @@ pub fn key_derive(mnemonic: Mnemonic, path: String) -> Result<ExtendedKey, Signe
     })
 }
 
+/// Get extended key from private key
+///
+/// # Arguments
+///
+/// * `private_key` - A `PrivateKey`
+///
 pub fn key_recover(private_key: &PrivateKey) -> Result<ExtendedKey, SignerError> {
     let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
     let public_key = secp256k1::PublicKey::from_secret_key(&secret_key);
