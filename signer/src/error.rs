@@ -18,12 +18,13 @@ pub enum SignerError {
     /// Cannot parse hexstring
     #[error("Cannot parse hexstring")]
     HexDecodeError(#[from] HexDecodeError),
-    // InvalidBigInt error
+    /// InvalidBigInt error
     #[error("InvalidBigInt error")]
     InvalidBigInt(#[from] num_bigint_chainsafe::ParseBigIntError),
-    // Generic error message
+    /// Generic error message
     #[error("Error: `{0}`")]
     GenericString(String),
+    /// Not able to parse integer
     #[error("Cannot parse integer")]
     ParseIntError(#[from] ParseIntError),
 }

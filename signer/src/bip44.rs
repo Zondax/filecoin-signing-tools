@@ -13,6 +13,10 @@ const HARDENED_BIT: u32 = 1 << 31;
 
 pub struct Bip44Path(pub [u32; 5]);
 
+/// Bip44Path
+///
+/// Implementation of the BIP44 standard for derivation path.
+///
 impl Bip44Path {
     pub fn from_slice(path: &[u32]) -> Result<Bip44Path, SignerError> {
         let mut path_array: [u32; 5] = Default::default();

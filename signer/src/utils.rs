@@ -40,6 +40,7 @@ pub fn from_hex_string(s: &str) -> Result<Vec<u8>, HexDecodeError> {
     Ok(vec)
 }
 
+/// transform a message into a hashed message ready to be signed and following Filecoin standard
 pub fn get_digest(message: &[u8]) -> [u8; 32] {
     let message_hashed = Params::new()
         .hash_length(32)
