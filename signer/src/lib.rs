@@ -255,7 +255,6 @@ pub fn transaction_sign(
     Ok(signed_message)
 }
 
-
 /// Verify a signature. Return a boolean.
 ///
 /// # Arguments
