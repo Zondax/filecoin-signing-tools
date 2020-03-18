@@ -6,9 +6,41 @@ module.exports = {
     themeConfig: {
       nav: [
         { text: 'Home', link: '/' },
-        { text: 'Documentation', link: '/' },
+        { text: 'Documentation', link: '/Main.md' },
         { text: 'About Zondax', link: 'https://zondax.ch' },
       ],
-      sidebar: 'auto'
+      sidebar: [
+        {
+          title: 'JSON RPC',   // required
+          path: '/jsonrpc/',      // optional, which should be a absolute path.
+          collapsable: false, // optional, defaults to true
+          sidebarDepth: 2,    // optional, defaults to 1
+          children: [
+            '/jsonrpc/',
+            '/jsonrpc/api',
+            '/jsonrpc/workflow'
+          ]
+        },
+        {
+          title: 'WASM',
+          path: '/wasm/',
+          collapsable: false, // optional, defaults to true
+          sidebarDepth: 2,    // optional, defaults to 1
+          children: [
+            '/wasm/',
+            '/wasm/api'
+          ]
+        },
+        {
+          title: 'Native',
+          path: '/native/',
+          collapsable: false, // optional, defaults to true
+          sidebarDepth: 2,    // optional, defaults to 1
+          children: [
+            '/native/',
+            '/native/api'
+          ]
+        }
+    ]
     }
 }
