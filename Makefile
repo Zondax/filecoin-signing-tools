@@ -1,5 +1,6 @@
 deps_wasm:
 	cargo install wasm-pack --version 0.8.1
+	cargo install cargo-watch
 
 build_wasm: deps_wasm
 	rm -rf signer-wasm/pkg/
@@ -66,7 +67,7 @@ docs_dev:
 	yarn dev
 
 # Run this to have live refreshing of rust docs
-docs_rust_edit: deps
+docs_rust_edit:
 	cargo watch -s 'cargo doc && browser-sync start --ss target/doc -s target/doc --directory --no-open'
 
 docs_build:

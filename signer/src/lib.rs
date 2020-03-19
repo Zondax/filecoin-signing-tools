@@ -20,20 +20,27 @@ mod bip44;
 pub mod error;
 pub mod utils;
 
+/// Mnemonic string
 pub struct Mnemonic(pub String);
 
+/// CBOR message in a buffer
 pub struct CborBuffer(pub Vec<u8>);
 
 pub const SIGNATURE_RECOVERY_SIZE: usize = SIGNATURE_SIZE + 1;
 
+/// Signature buffer
 pub struct Signature(pub [u8; SIGNATURE_RECOVERY_SIZE]);
 
+/// Private key buffer
 pub struct PrivateKey(pub [u8; SECRET_KEY_SIZE]);
 
+/// Public key buffer
 pub struct PublicKey(pub [u8; FULL_PUBLIC_KEY_SIZE]);
 
+/// Compressed public key buffer
 pub struct PublicKeyCompressed(pub [u8; COMPRESSED_PUBLIC_KEY_SIZE]);
 
+/// Extended key structure
 pub struct ExtendedKey {
     pub private_key: PrivateKey,
     pub public_key: PublicKey,
@@ -148,6 +155,12 @@ pub fn key_recover(private_key: &PrivateKey) -> Result<ExtendedKey, SignerError>
     })
 }
 
+/// Serialize a transaction and return a CBOR hexstring.
+///
+/// # Arguments
+///
+/// * `transaction` - a filecoin transaction
+///
 pub fn transaction_serialize(
     unsigned_message_arg: &UnsignedMessageAPI,
 ) -> Result<CborBuffer, SignerError> {
@@ -156,6 +169,13 @@ pub fn transaction_serialize(
     Ok(message_cbor)
 }
 
+/// Parse a CBOR hextring into a filecoin transaction (signed or unsigned).
+///
+/// # Arguments
+///
+/// * `hexstring` - the cbor hexstring to parse
+/// * `testnet` - boolean value `true` if testnet or `false` for mainnet
+///
 pub fn transaction_parse(
     cbor_buffer: &CborBuffer,
     testnet: bool,
@@ -172,6 +192,13 @@ pub fn transaction_parse(
     Ok(parsed_message)
 }
 
+/// Sign a transaction and return a raw signature (RSV format).
+///
+/// # Arguments
+///
+/// * `unsigned_message_api` - an unsigned filecoin message
+/// * `private_key` - a `PrivateKey`
+///
 pub fn transaction_sign_raw(
     unsigned_message_api: &UnsignedMessageAPI,
     private_key: &PrivateKey,
@@ -194,6 +221,13 @@ pub fn transaction_sign_raw(
     Ok(signature)
 }
 
+/// Sign a transaction and return a signed message (message + signature).
+///
+/// # Arguments
+///
+/// * `unsigned_message_api` - an unsigned filecoin message
+/// * `private_key` - a `PrivateKey`
+///
 pub fn transaction_sign(
     unsigned_message: &UnsignedMessageAPI,
     private_key: &PrivateKey,
@@ -221,11 +255,13 @@ pub fn transaction_sign(
     Ok(signed_message)
 }
 
-pub fn sign_message() {
-    // TODO: message ?
-    // TODO: return signature
-}
-
+/// Verify a signature. Return a boolean.
+///
+/// # Arguments
+///
+/// * `signature` - RSV format signature
+/// * `cbor_buffer` - the CBOR transaction to verify the signature against
+///
 pub fn verify_signature(
     signature: &Signature,
     cbor_buffer: &CborBuffer,

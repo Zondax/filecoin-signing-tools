@@ -9,6 +9,7 @@ use std::convert::TryFrom;
 use std::str::FromStr;
 use vm::{MethodNum, Serialized, TokenAmount};
 
+/// Unsigned message api structure
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct UnsignedMessageAPI {
@@ -28,6 +29,7 @@ pub struct UnsignedMessageAPI {
     pub params: String,
 }
 
+/// Signature api structure
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SignatureAPI {
     #[serde(rename = "type")]
@@ -36,12 +38,14 @@ pub struct SignatureAPI {
     pub data: Vec<u8>,
 }
 
+/// Signed message api structure
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SignedMessageAPI {
     pub message: UnsignedMessageAPI,
     pub signature: SignatureAPI,
 }
 
+/// Structure containing an `UnsignedMessageAPI` or a `SignedMessageAPI`
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum MessageTxAPI {
@@ -49,6 +53,7 @@ pub enum MessageTxAPI {
     SignedMessageAPI(SignedMessageAPI),
 }
 
+/// Structure containing an `UnsignedMessage` or a `SignedMessage` from forest_address
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum MessageTx {
@@ -56,6 +61,7 @@ pub enum MessageTx {
     SignedMessage(SignedMessage),
 }
 
+/// Message structure with newtork parameter
 pub struct MessageTxNetwork {
     pub message_tx: MessageTx,
     pub testnet: bool,
