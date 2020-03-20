@@ -118,6 +118,31 @@ pub fn key_derive(mnemonic: Mnemonic, path: String) -> Result<ExtendedKey, Signe
 
     let seed = Seed::new(&mnemonic, "");
 
+    let master = ExtendedSecretKey::try_from(seed.as_bytes())?;
+
+    let bip44_path = Bip44Path::from_string(path)?;
+
+    let esk = master.derive_bip44(bip44_path)?;
+
+    let address = Address::new_secp256k1(&esk.public_key().to_vec())
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
+    Ok(ExtendedKey {
+        private_key: PrivateKey(esk.secret_key()),
+        public_key: PublicKey(esk.public_key()),
+        public_key_compressed: PublicKeyCompressed(esk.public_key_compressed()),
+        address: address.to_string(),
+    })
+}
+
+/// Returns a public key, private key and address given a seed and derivation path
+///
+/// # Arguments
+///
+/// * `seed` - A seed
+/// * `path` - A string containing a derivation path
+///
+pub fn key_derive_from_seed(seed: &[u8], path: String) -> Result<ExtendedKey, SignerError> {
     let master = ExtendedSecretKey::try_from(seed)?;
 
     let bip44_path = Bip44Path::from_string(path)?;
@@ -300,10 +325,12 @@ mod tests {
     use crate::api::{MessageTxAPI, UnsignedMessageAPI};
     use crate::utils::{from_hex_string, to_hex_string};
     use crate::{
-        key_derive, key_generate_mnemonic, transaction_parse, transaction_sign_raw,
+        key_derive, key_derive_from_seed, key_generate_mnemonic, transaction_parse, transaction_sign_raw,
         verify_signature, CborBuffer, Mnemonic, PrivateKey,
     };
     use std::convert::TryFrom;
+    use bip39::{Language, MnemonicType, Seed};
+
 
     // NOTE: not the same transaction used in other tests.
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
@@ -352,6 +379,25 @@ mod tests {
         let path = "m/44'/461'/0/0/0".to_string();
 
         let extended_key = key_derive(mnemonic, path).unwrap();
+
+        assert_eq!(
+            to_hex_string(&extended_key.private_key.0),
+            EXAMPLE_PRIVATE_KEY
+        );
+    }
+
+    #[test]
+    fn derive_key_from_seed() {
+        let mnemonic = Mnemonic(
+            "equip will roof matter pink blind book anxiety banner elbow sun young".to_string(),
+        );
+        let path = "m/44'/461'/0/0/0".to_string();
+
+        let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic.0, Language::English).unwrap();
+
+        let seed = Seed::new(&mnemonic, "");
+
+        let extended_key = key_derive_from_seed(seed.as_bytes(), path).unwrap();
 
         assert_eq!(
             to_hex_string(&extended_key.private_key.0),
