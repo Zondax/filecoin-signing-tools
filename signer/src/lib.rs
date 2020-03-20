@@ -3,7 +3,7 @@ use crate::api::{
 };
 use crate::error::SignerError;
 use crate::utils::from_hex_string;
-use forest_address::Address;
+use forest_address::{Address, Network};
 use forest_encoding::{from_slice, to_vec};
 use forest_message;
 use std::convert::TryFrom;
@@ -165,12 +165,19 @@ pub fn key_derive_from_seed(seed: &[u8], path: String) -> Result<ExtendedKey, Si
 /// # Arguments
 ///
 /// * `private_key` - A `PrivateKey`
+/// * `testnet` - specify the network, `true` if testnet else `false` for mainnet
 ///
-pub fn key_recover(private_key: &PrivateKey) -> Result<ExtendedKey, SignerError> {
+pub fn key_recover(private_key: &PrivateKey, testnet: bool) -> Result<ExtendedKey, SignerError> {
     let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
     let public_key = secp256k1::PublicKey::from_secret_key(&secret_key);
-    let address = Address::new_secp256k1(&public_key.serialize())
+    let mut address = Address::new_secp256k1(&public_key.serialize())
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
+    if testnet {
+        address.set_network(Network::Testnet);
+    } else {
+        address.set_network(Network::Mainnet);
+    }
 
     Ok(ExtendedKey {
         private_key: PrivateKey(secret_key.serialize()),
@@ -326,7 +333,7 @@ mod tests {
     use crate::utils::{from_hex_string, to_hex_string};
     use crate::{
         key_derive, key_derive_from_seed, key_generate_mnemonic, transaction_parse,
-        transaction_sign_raw, verify_signature, CborBuffer, Mnemonic, PrivateKey,
+        transaction_sign_raw, verify_signature, key_recover, CborBuffer, Mnemonic, PrivateKey,
     };
     use bip39::{Language, MnemonicType, Seed};
     use std::convert::TryFrom;
@@ -401,6 +408,39 @@ mod tests {
         assert_eq!(
             to_hex_string(&extended_key.private_key.0),
             EXAMPLE_PRIVATE_KEY
+        );
+    fn test_key_recover_testnet() {
+        let private_key = PrivateKey::try_from(EXAMPLE_PRIVATE_KEY.to_string()).unwrap();
+        let testnet = true;
+
+        let recovered_key = key_recover(&private_key, testnet).unwrap();
+
+        assert_eq!(
+            to_hex_string(&recovered_key.private_key.0),
+            EXAMPLE_PRIVATE_KEY
+        );
+
+        assert_eq!(
+            &recovered_key.address,
+            "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"
+        );
+    }
+
+    #[test]
+    fn test_key_recover_mainnet() {
+        let private_key = PrivateKey::try_from(EXAMPLE_PRIVATE_KEY.to_string()).unwrap();
+        let testnet = false;
+
+        let recovered_key = key_recover(&private_key, testnet).unwrap();
+
+        assert_eq!(
+            to_hex_string(&recovered_key.private_key.0),
+            EXAMPLE_PRIVATE_KEY
+        );
+
+        assert_eq!(
+            &recovered_key.address,
+            "f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"
         );
     }
 
