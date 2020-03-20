@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { test, expect } from "jest";
 import * as bip32 from "bip32";
+import * as bip39 from "bip39";
 import secp256k1 from "secp256k1";
 import fs from "fs";
 import { getDigest } from "./utils.js";
@@ -65,6 +66,21 @@ test("key_derive missing 1 parameters", async () => {
 
   expect(response).toHaveProperty("error");
   expect(response.error.message).toMatch(/Invalid params/);
+});
+
+test("key_derive_from_seed", async () => {
+  const path = "m/44'/461'/0/0/0";
+  const seed = bip39.mnemonicToSeedSync(EXPECTED_MNEMONIC).toString('hex');
+
+  const response = await callMethod(URL, "key_derive_from_seed", [seed, path], 1);
+  const child = EXPECTED_ROOT_NODE.derivePath(path);
+  console.log(response);
+
+  // Do we have a results
+  expect(response).toHaveProperty("result");
+  expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
+  expect(response.result.public_compressed_hexstring).toEqual(child.publicKey.toString("hex"));
+  expect(response.result.address).toEqual("t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
 });
 
 test("transaction_serialize", async () => {
