@@ -40,6 +40,31 @@ const keypair = signer_wasm.key_derive(mnemonic, path);
 console.log(keypair);
 ```
 
+## key_derive_from_seed
+
+Derive a child key from a seed following a [BIP44 path](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
+
+Arguments :
+* **seed**: a seed as a hex string;
+* **path**: a BIP44 path;
+
+```javascript
+const signer_wasm = require('@zondax/filecoin-signer-wasm');
+// or for browser
+// import * as signer_wasm from "@zondax/filecoin-signer-wasm";
+const bip39 = require('bip39');
+
+const mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
+
+const seed = bip39.mnemonicToSeedSync(mnemonic).toString('hex');
+
+const path = "m/44'/461'/0/0/1";
+
+const keypair = signer_wasm.key_derive_from_seed(seed, "m/44'/461'/0/0/1");
+
+console.log(keypair);
+```
+
 ## transaction_serialize
 
 Serialize a transaction and return a CBOR hexstring.
