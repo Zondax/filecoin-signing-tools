@@ -97,13 +97,13 @@ pub fn key_derive_from_seed(seed_hexstring: String, path: String) -> Result<Exte
 }
 
 #[wasm_bindgen]
-pub fn key_recover(private_key_hexstring: String) -> Result<ExtendedKey, JsValue> {
+pub fn key_recover(private_key_hexstring: String, testnet: bool) -> Result<ExtendedKey, JsValue> {
     set_panic_hook();
 
     let private_key =
         PrivateKey::try_from(private_key_hexstring).map_err(|e| JsValue::from(e.to_string()))?;
 
-    let key_address = filecoin_signer::key_recover(&private_key)
+    let key_address = filecoin_signer::key_recover(&private_key, testnet)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
 
     Ok(ExtendedKey { 0: key_address })

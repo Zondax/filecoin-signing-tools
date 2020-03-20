@@ -145,6 +145,40 @@ describe('Key generation / derivation', function() {
     });
 });
 
+describe('Key Recover testnet/mainnet', function() {
+    it("key recover testnet", () => {
+        let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+        let privateKey = child.privateKey.toString('hex');
+
+        let recoveredKey = signer_wasm.key_recover(privateKey, true);
+
+        console.log("Public Key Raw         :", recoveredKey.public_raw);
+        console.log("Public Key             :", recoveredKey.public_hexstring);
+        console.log("Public Key Compressed  :", recoveredKey.public_compressed_hexstring);
+        console.log("Private                :", recoveredKey.private_hexstring);
+        console.log("Address                :", recoveredKey.address);
+
+        assert.equal(recoveredKey.private_hexstring, child.privateKey.toString("hex"));
+        assert.equal(recoveredKey.address, "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
+    });
+
+    it("key recover mainnet", () => {
+        let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+        let privateKey = child.privateKey.toString('hex');
+
+        let recoveredKey = signer_wasm.key_recover(privateKey, false);
+
+        console.log("Public Key Raw         :", recoveredKey.public_raw);
+        console.log("Public Key             :", recoveredKey.public_hexstring);
+        console.log("Public Key Compressed  :", recoveredKey.public_compressed_hexstring);
+        console.log("Private                :", recoveredKey.private_hexstring);
+        console.log("Address                :", recoveredKey.address);
+
+        assert.equal(recoveredKey.private_hexstring, child.privateKey.toString("hex"));
+        assert.equal(recoveredKey.address, "f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
+    })
+});
+
 //////////////////////////////////////
 // Parameterized tests
 const tests_vectors_path = "../manual_testvectors.json";
