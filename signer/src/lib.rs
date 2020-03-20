@@ -139,7 +139,7 @@ pub fn key_derive(mnemonic: Mnemonic, path: String) -> Result<ExtendedKey, Signe
 ///
 /// # Arguments
 ///
-/// * `seed` - A seed
+/// * `seed` - A seed as bytes array
 /// * `path` - A string containing a derivation path
 ///
 pub fn key_derive_from_seed(seed: &[u8], path: String) -> Result<ExtendedKey, SignerError> {

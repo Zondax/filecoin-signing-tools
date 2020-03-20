@@ -85,6 +85,18 @@ pub fn key_derive(mnemonic: String, path: String) -> Result<ExtendedKey, JsValue
 }
 
 #[wasm_bindgen]
+pub fn key_derive_from_seed(seed_hexstring: String, path: String) -> Result<ExtendedKey, JsValue> {
+    set_panic_hook();
+
+    let seed_bytes = from_hex_string(&seed_hexstring).map_err(|e| JsValue::from(e.to_string()))?;
+
+    let key_address = filecoin_signer::key_derive_from_seed(&seed_bytes, path)
+        .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
+
+    Ok(ExtendedKey { 0: key_address })
+}
+
+#[wasm_bindgen]
 pub fn key_recover(private_key_hexstring: String) -> Result<ExtendedKey, JsValue> {
     set_panic_hook();
 

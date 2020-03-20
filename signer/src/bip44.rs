@@ -2,7 +2,6 @@ use secp256k1::util::{COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_K
 use secp256k1::{PublicKey, SecretKey};
 
 use crate::error::SignerError;
-use bip39::Seed;
 use hmac::{Hmac, Mac};
 use sha2::Sha512;
 use std::convert::TryFrom;
