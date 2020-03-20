@@ -104,10 +104,13 @@ pub async fn key_derive(c: MethodCall, _: RemoteNodeSection) -> Result<Success, 
     Ok(so)
 }
 
-pub async fn key_derive_from_seed(c: MethodCall, _: RemoteNodeSection) -> Result<Success, ServiceError> {
+pub async fn key_derive_from_seed(
+    c: MethodCall,
+    _: RemoteNodeSection,
+) -> Result<Success, ServiceError> {
     let params = c.params.parse::<KeyDeriveFromSeedParamsAPI>()?;
 
-    let seed : std::vec::Vec<u8> = from_hex_string(params.seed.as_ref())?;
+    let seed: std::vec::Vec<u8> = from_hex_string(params.seed.as_ref())?;
 
     let key_address = filecoin_signer::key_derive_from_seed(&seed, params.path)?;
 

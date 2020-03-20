@@ -325,12 +325,11 @@ mod tests {
     use crate::api::{MessageTxAPI, UnsignedMessageAPI};
     use crate::utils::{from_hex_string, to_hex_string};
     use crate::{
-        key_derive, key_derive_from_seed, key_generate_mnemonic, transaction_parse, transaction_sign_raw,
-        verify_signature, CborBuffer, Mnemonic, PrivateKey,
+        key_derive, key_derive_from_seed, key_generate_mnemonic, transaction_parse,
+        transaction_sign_raw, verify_signature, CborBuffer, Mnemonic, PrivateKey,
     };
-    use std::convert::TryFrom;
     use bip39::{Language, MnemonicType, Seed};
-
+    use std::convert::TryFrom;
 
     // NOTE: not the same transaction used in other tests.
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
