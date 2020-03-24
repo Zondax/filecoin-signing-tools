@@ -33,6 +33,30 @@ let extended_key = key_derive(mnemonic.phrase(), path).unwrap();
 println!("{:?}", extended_key);
 ```
 
+## key_derive_from_seed
+
+Derive a child key from a seed following a [BIP44 path](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
+
+Arguments :
+* **seed**: a seed as a hex string;
+* **path**: a BIP44 path;
+
+```rust
+use signer::key_derive_from_seed;
+use bip39::{Mnemonic, MnemonicType, Language, Seed};
+
+let mnemonic = Mnemonic::new(MnemonicType::Words12, Language::English);
+let path = "m/44'/461'/0/0/1".to_string();
+
+let mnemonic = Mnemonic::from_phrase(&mnemonic.0, Language::English).unwrap();
+
+let seed = Seed::new(&mnemonic, "");
+
+let extended_key = key_derive_from_seed(seed.as_bytes(), path).unwrap();
+
+println!("{:?}", extended_key);
+```
+
 ## key_recover
 
 Get extended private key from private key.

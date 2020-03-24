@@ -75,6 +75,53 @@ const response = await await axios.post(
 console.log(response.result);
 ```
 
+## key\_derive\_from\_seed
+
+Derive a child key from a seed following a [BIP44 path](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
+
+Arguments :
+* **seed**: a seed as a hex string;
+* **path**: a BIP44 path;
+
+```javascript
+const axios = require("axios");
+const bip39 = require('bip39');
+
+const mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
+
+const seed = bip39.mnemonicToSeedSync(mnemonic).toString('hex');
+
+const URL = "http://127.0.0.1:3030/v0";
+const JWT = "blablablablablabla";
+
+const params = [
+  // seed
+  seed,
+  // path
+  "m/44'/461'/0/0/0"
+];
+
+const response = await await axios.post(
+  URL,
+  {
+    jsonrpc: "2.0",
+    method: "key_derive_from_seed",
+    params,
+    id: 1,
+  },
+  {
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "*/*",
+      Authorization: `Bearer ${JWT}`,
+    },
+  },
+);
+
+//
+console.log(response.result);
+```
+
 ## transaction_serialize
 
 Serialize a transaction and return a CBOR hexstring.

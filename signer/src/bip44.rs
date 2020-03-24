@@ -2,7 +2,6 @@ use secp256k1::util::{COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_K
 use secp256k1::{PublicKey, SecretKey};
 
 use crate::error::SignerError;
-use bip39::Seed;
 use hmac::{Hmac, Mac};
 use sha2::Sha512;
 use std::convert::TryFrom;
@@ -84,12 +83,12 @@ impl fmt::Display for ExtendedSecretKey {
     }
 }
 
-impl TryFrom<Seed> for ExtendedSecretKey {
+impl TryFrom<&[u8]> for ExtendedSecretKey {
     type Error = SignerError;
 
-    fn try_from(seed: Seed) -> Result<ExtendedSecretKey, Self::Error> {
+    fn try_from(seed: &[u8]) -> Result<ExtendedSecretKey, Self::Error> {
         let mut hmac: Hmac<Sha512> = Hmac::new_varkey(HMAC_SEED)?;
-        hmac.input(seed.as_bytes());
+        hmac.input(seed);
 
         let hmac_code = hmac.result().code();
         let (master_private_key, master_chain_code) = hmac_code.split_at(32);
@@ -186,7 +185,7 @@ mod tests {
         let mnemonic = Mnemonic::from_phrase(phrase, Language::English).unwrap();
         let seed = Seed::new(&mnemonic, "");
 
-        let master = ExtendedSecretKey::try_from(seed).unwrap();
+        let master = ExtendedSecretKey::try_from(seed.as_bytes()).unwrap();
 
         println!("{}", master);
         assert_eq!(
@@ -202,7 +201,7 @@ mod tests {
         let seed = Seed::new(&mnemonic, "");
         assert_eq!(encode(&seed), "bf9504117d7c06bcdd0a4b4c41f3537faf13a27618a6b9a314cdb6c920ba44acf87b2cf1e2ba8a241833a55fda7b545a925f728b35ea2040a1d3a367ea45933a",);
 
-        let master = ExtendedSecretKey::try_from(seed).unwrap();
+        let master = ExtendedSecretKey::try_from(seed.as_bytes()).unwrap();
         assert_eq!(
             encode(&master.secret_key()),
             "570761185bfbbfaad56a33b21b42cb3ca73c7fbf1137db99e0fa0e2758cb2a9a",
@@ -240,7 +239,7 @@ mod tests {
         let phrase = "pumpkin sell climb ten list proof embark finish zero voyage congress outdoor domain city cannon leave select visual know waste tonight sauce load lift";
         let mnemonic = Mnemonic::from_phrase(phrase, Language::English).unwrap();
         let seed = Seed::new(&mnemonic, "");
-        let master = ExtendedSecretKey::try_from(seed).unwrap();
+        let master = ExtendedSecretKey::try_from(seed.as_bytes()).unwrap();
 
         let path = Bip44Path::from_string("m/44'/461'/0/0/0".to_string()).unwrap();
         let esk = master.derive_bip44(path).unwrap();

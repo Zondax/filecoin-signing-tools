@@ -36,6 +36,12 @@ pub struct KeyDeriveParamsAPI {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+pub struct KeyDeriveFromSeedParamsAPI {
+    pub seed: String,
+    pub path: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct KeyDeriveResultAPI {
     pub private_hexstring: String,
     pub public_hexstring: String,
@@ -79,6 +85,34 @@ pub async fn key_derive(c: MethodCall, _: RemoteNodeSection) -> Result<Success, 
     let params = c.params.parse::<KeyDeriveParamsAPI>()?;
 
     let key_address = filecoin_signer::key_derive(Mnemonic(params.mnemonic), params.path)?;
+
+    let result = KeyDeriveResultAPI {
+        public_hexstring: to_hex_string(&key_address.public_key.0),
+        public_compressed_hexstring: to_hex_string(&key_address.public_key_compressed.0),
+        private_hexstring: to_hex_string(&key_address.private_key.0),
+        address: key_address.address,
+    };
+
+    let result_json = serde_json::to_value(&result)?;
+
+    let so = Success {
+        jsonrpc: Some(Version::V2),
+        result: result_json,
+        id: c.id,
+    };
+
+    Ok(so)
+}
+
+pub async fn key_derive_from_seed(
+    c: MethodCall,
+    _: RemoteNodeSection,
+) -> Result<Success, ServiceError> {
+    let params = c.params.parse::<KeyDeriveFromSeedParamsAPI>()?;
+
+    let seed: std::vec::Vec<u8> = from_hex_string(params.seed.as_ref())?;
+
+    let key_address = filecoin_signer::key_derive_from_seed(&seed, params.path)?;
 
     let result = KeyDeriveResultAPI {
         public_hexstring: to_hex_string(&key_address.public_key.0),
