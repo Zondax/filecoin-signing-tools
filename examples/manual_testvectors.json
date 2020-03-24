@@ -405,7 +405,6 @@
         "encoded_tx": "iFUB0VAFBOTRrD6JrIkaRQJYb6vZtBdVAbiCYZ1GVY89njFtEbSNzyETJwJqAUEAQwAJxEMAYagAQA==",
         "valid": false,
         "testnet": false,
-        "not_implemented": true,
         "message": {
             "to": "f12fiakbhe2gwd5cnmrenekasyn6v5tnaxaqizq6a",
             "from": "f1xcbgdhkgkwht3hrrnui3jdopeejsoatkzmoltqy",
