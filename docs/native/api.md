@@ -63,13 +63,14 @@ Get extended private key from private key.
 
 Arguments:
 * **PrivateKey**: A `PrivateKey`.
+* **testnet**: A boolean value that indicate if testnet (`true`) or mainnet (`false`);
 
 ```rust
 use signer::{key_recover, PrivateKey};
 
 let private_key = PrivateKey::try_from("f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a").unwrap();
 
-let extended_key = key_recover(private_key).unwrap();
+let extended_key = key_recover(private_key, true).unwrap();
 
 println!("{:?}", extended_key);
 ```

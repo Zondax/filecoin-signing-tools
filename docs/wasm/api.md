@@ -65,6 +65,28 @@ const keypair = signer_wasm.key_derive_from_seed(seed, "m/44'/461'/0/0/1");
 console.log(keypair);
 ```
 
+## key_recover
+
+Recover a extended key from a private key.
+
+Arguments :
+* **privateKey**: a private key as a hex string;
+* **testnet**: a boolean value. Indicate if you wnat testnet or mainnet address;
+
+```javascript
+const signer_wasm = require('@zondax/filecoin-signer-wasm');
+// or for browser
+// import * as signer_wasm from "@zondax/filecoin-signer-wasm";
+
+let privateKey = "private_key_hexstring";
+
+const testnet = true;
+
+const keypair = signer_wasm.key_recover(privateKey, testnet);
+
+console.log(keypair);
+```
+
 ## transaction_serialize
 
 Serialize a transaction and return a CBOR hexstring.
