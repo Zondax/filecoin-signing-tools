@@ -409,6 +409,9 @@ mod tests {
             to_hex_string(&extended_key.private_key.0),
             EXAMPLE_PRIVATE_KEY
         );
+    }
+
+    #[test]
     fn test_key_recover_testnet() {
         let private_key = PrivateKey::try_from(EXAMPLE_PRIVATE_KEY.to_string()).unwrap();
         let testnet = true;
