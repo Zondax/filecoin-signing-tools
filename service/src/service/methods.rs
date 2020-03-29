@@ -3,7 +3,6 @@
 use crate::config::RemoteNodeSection;
 use crate::service::client;
 use crate::service::error::ServiceError;
-use abscissa_core::tracing::info;
 use filecoin_signer::api::{SignedMessageAPI, UnsignedMessageAPI};
 use filecoin_signer::utils::{from_hex_string, to_hex_string};
 use filecoin_signer::{CborBuffer, Mnemonic, PrivateKey, Signature};
@@ -110,7 +109,7 @@ pub async fn key_derive_from_seed(
 ) -> Result<Success, ServiceError> {
     let params = c.params.parse::<KeyDeriveFromSeedParamsAPI>()?;
 
-    let seed: std::vec::Vec<u8> = from_hex_string(params.seed.as_ref())?;
+    let seed = from_hex_string(params.seed.as_ref())?;
 
     let key_address = filecoin_signer::key_derive_from_seed(&seed, params.path)?;
 
@@ -262,7 +261,7 @@ mod tests {
     use crate::config::RemoteNodeSection;
     use crate::service::methods::get_status;
     use jsonrpc_core::{Id, MethodCall, Params, Success, Version};
-    use serde_json::{json, Value};
+    use serde_json::json;
 
     //const TEST_URL: &str = "http://86.192.13.13:1234/rpc/v0";
     const TEST_URL: &str = "https://proxy.openworklabs.com/rpc/v0";
