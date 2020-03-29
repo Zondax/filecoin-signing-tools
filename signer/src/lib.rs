@@ -335,7 +335,7 @@ mod tests {
         key_derive, key_derive_from_seed, key_generate_mnemonic, key_recover, transaction_parse,
         transaction_sign_raw, verify_signature, CborBuffer, Mnemonic, PrivateKey,
     };
-    use bip39::{Language, MnemonicType, Seed};
+    use bip39::{Language, Seed};
     use std::convert::TryFrom;
 
     // NOTE: not the same transaction used in other tests.
