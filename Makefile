@@ -6,7 +6,8 @@ build_wasm:
 	rm -rf signer-wasm/pkg/
 	wasm-pack build --no-typescript --target nodejs signer-wasm/
 	wasm-pack build --no-typescript --target browser --out-dir pkg/browser signer-wasm/
-	cp package-signer-wasm.json signer-wasm/pkg/package.json
+	cp -r signer-wasm/ledger-filecoin-js/src/ signer-wasm/pkg/ledger
+	cp signer-wasm/package-signer-wasm.json signer-wasm/pkg/package.json
 
 PACKAGE_NAME:="@zondax/filecoin-signer-wasm"
 

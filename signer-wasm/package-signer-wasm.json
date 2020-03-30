@@ -14,14 +14,18 @@
     "filecoin_signer_wasm_bg.wasm",
     "filecoin_signer_wasm.js",
     "browser/filecoin_signer_wasm_bg.wasm",
-    "browser/filecoin_signer_wasm.js"
+    "browser/filecoin_signer_wasm.js",
+    "ledger/*"
   ],
   "main": "./browser/filecoin_signer_wasm.js",
   "exports": {
-    "node": "./filecoin_signer_wasm.js",
-    "require": "./filecoin_signer_wasm.js",
-    "import": "./filecoin_signer_wasm.js",
-    "browser": "./browser/filecoin_signer_wasm.js"
+    ".": {
+      "node": "./filecoin_signer_wasm.js",
+      "require": "./filecoin_signer_wasm.js",
+      "import": "./filecoin_signer_wasm.js",
+      "browser": "./browser/filecoin_signer_wasm.js"
+    },
+    "ledger": "./ledger/index.js"
   },
   "browserslist": [
     "> 1%",
