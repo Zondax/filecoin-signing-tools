@@ -5,7 +5,7 @@ use crate::service::client;
 use crate::service::error::ServiceError;
 use filecoin_signer::api::{SignedMessageAPI, UnsignedMessageAPI};
 use filecoin_signer::utils::{from_hex_string, to_hex_string};
-use filecoin_signer::{CborBuffer, Mnemonic, PrivateKey, Signature};
+use filecoin_signer::{CborBuffer, PrivateKey, Signature};
 use jsonrpc_core::{MethodCall, Success, Version};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -83,7 +83,7 @@ pub async fn key_generate_mnemonic(
 pub async fn key_derive(c: MethodCall, _: RemoteNodeSection) -> Result<Success, ServiceError> {
     let params = c.params.parse::<KeyDeriveParamsAPI>()?;
 
-    let key_address = filecoin_signer::key_derive(Mnemonic(params.mnemonic), params.path)?;
+    let key_address = filecoin_signer::key_derive(&params.mnemonic, &params.path)?;
 
     let result = KeyDeriveResultAPI {
         public_hexstring: to_hex_string(&key_address.public_key.0),
@@ -111,7 +111,7 @@ pub async fn key_derive_from_seed(
 
     let seed = from_hex_string(params.seed.as_ref())?;
 
-    let key_address = filecoin_signer::key_derive_from_seed(&seed, params.path)?;
+    let key_address = filecoin_signer::key_derive_from_seed(&seed, &params.path)?;
 
     let result = KeyDeriveResultAPI {
         public_hexstring: to_hex_string(&key_address.public_key.0),

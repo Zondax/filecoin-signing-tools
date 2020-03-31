@@ -111,9 +111,8 @@ pub fn key_generate_mnemonic() -> Result<Mnemonic, SignerError> {
 ///
 /// * `mnemonic` - A string containing a 24-words English mnemonic
 /// * `path` - A string containing a derivation path
-///
-pub fn key_derive(mnemonic: Mnemonic, path: String) -> Result<ExtendedKey, SignerError> {
-    let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic.0, Language::English)
+pub fn key_derive(mnemonic: &str, path: &str) -> Result<ExtendedKey, SignerError> {
+    let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic, Language::English)
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let seed = Seed::new(&mnemonic, "");
@@ -142,7 +141,7 @@ pub fn key_derive(mnemonic: Mnemonic, path: String) -> Result<ExtendedKey, Signe
 /// * `seed` - A seed as bytes array
 /// * `path` - A string containing a derivation path
 ///
-pub fn key_derive_from_seed(seed: &[u8], path: String) -> Result<ExtendedKey, SignerError> {
+pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, SignerError> {
     let master = ExtendedSecretKey::try_from(seed)?;
 
     let bip44_path = Bip44Path::from_string(path)?;
@@ -379,12 +378,9 @@ mod tests {
 
     #[test]
     fn derive_key() {
-        let mnemonic = Mnemonic(
-            "equip will roof matter pink blind book anxiety banner elbow sun young".to_string(),
-        );
-        let path = "m/44'/461'/0/0/0".to_string();
+        let mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
 
-        let extended_key = key_derive(mnemonic, path).unwrap();
+        let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0").unwrap();
 
         assert_eq!(
             to_hex_string(&extended_key.private_key.0),
@@ -397,13 +393,12 @@ mod tests {
         let mnemonic = Mnemonic(
             "equip will roof matter pink blind book anxiety banner elbow sun young".to_string(),
         );
-        let path = "m/44'/461'/0/0/0".to_string();
 
         let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic.0, Language::English).unwrap();
 
         let seed = Seed::new(&mnemonic, "");
 
-        let extended_key = key_derive_from_seed(seed.as_bytes(), path).unwrap();
+        let extended_key = key_derive_from_seed(seed.as_bytes(), "m/44'/461'/0/0/0").unwrap();
 
         assert_eq!(
             to_hex_string(&extended_key.private_key.0),
