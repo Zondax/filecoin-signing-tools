@@ -33,3 +33,7 @@ sha2 = "0.8.1"
 
 log="0.4.8"
 env_logger = "0.7.1"
+ffi-support = { optional = true, version = "0.4" }
+
+[features]
+with-ffi-support = ["ffi-support"]

@@ -3,6 +3,7 @@
 members = [
     "service",
     "signer",
+    "signer-ffi",
     "signer-wasm"
 ]
 

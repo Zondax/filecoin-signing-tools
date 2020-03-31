@@ -1,0 +1,6 @@
+[parse]
+include = ["ffi-support", "filecoin-signer"]
+parse_deps = true
+
+[parse.expand]
+crates = ["filecoin-signer", "filecoin-signer-ffi", "ffi-support"]
