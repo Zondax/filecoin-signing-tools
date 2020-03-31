@@ -1,4 +1,4 @@
-import * as signer from '.signer';
+import * as signer from './signer';
 import DeviceSession, { DeviceEnum } from './session';
 
 

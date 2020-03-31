@@ -3,11 +3,12 @@ deps_wasm:
 	cargo install cargo-watch
 
 build_wasm:
-	rm -rf signer-wasm/pkg/
-	wasm-pack build --no-typescript --target nodejs signer-wasm/
-	wasm-pack build --no-typescript --target browser --out-dir pkg/browser signer-wasm/
-	cp -r signer-wasm/ledger-filecoin-js/src/ signer-wasm/pkg/ledger
-	cp signer-wasm/package-signer-wasm.json signer-wasm/pkg/package.json
+	#rm -rf signer-wasm/pkg/
+	#wasm-pack build --no-typescript --target nodejs signer-wasm/
+	#wasm-pack build --no-typescript --target browser --out-dir pkg/browser signer-wasm/
+	wasm-pack build --no-typescript signer-wasm/
+	cd signer-wasm && make build
+
 
 PACKAGE_NAME:="@zondax/filecoin-signer-wasm"
 

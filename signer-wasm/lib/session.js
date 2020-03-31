@@ -9,17 +9,8 @@ const DeviceEnum = {
 
 // Utility class to hold hardware device session
 class DeviceSession {
-
-  device = null
-  session = null
-
   constructor (device) {
     this.device = device;
-
-    if (device === DeviceEnum.LEDGER) {
-    }
-
-    if (device === )
 
     switch (device) {
       case DeviceEnum.LEDGER:
@@ -28,7 +19,7 @@ class DeviceSession {
       case DeviceEnum.TREZOR:
         throw new DeviceNotSupported();
       default:
-        throw
+        throw new UnknownDevice();
     }
 
   }
