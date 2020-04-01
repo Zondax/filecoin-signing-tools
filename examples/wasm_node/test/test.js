@@ -6,8 +6,6 @@ const secp256k1 = require('secp256k1');
 const fs = require('fs');
 var assert = require('assert');
 
-console.log(signer_wasm)
-
 const EXAMPLE_MNEMONIC = "equip will roof matter pink blind book anxiety banner elbow sun young";
 
 const EXAMPLE_CBOR_TX = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040";
@@ -41,7 +39,7 @@ describe('Serialization / Deserialization', function() {
     });
 
     it('Serialize Transaction', () => {
-        assert.strictEqual(EXAMPLE_CBOR_TX, signer_wasm.transactionParse(JSON.stringify(EXAMPLE_TRANSACTION)))
+        assert.strictEqual(EXAMPLE_CBOR_TX, signer_wasm.transactionSerialize(JSON.stringify(EXAMPLE_TRANSACTION)))
     });
 
     it('Serialize Transaction Fail (missing nonce)', () => {
@@ -56,7 +54,7 @@ describe('Serialization / Deserialization', function() {
         };
 
         assert.throws(
-            () => signer_wasm.transactionParse(JSON.stringify(invalid_transaction)),
+            () => signer_wasm.transactionSerialize(JSON.stringify(invalid_transaction)),
             /missing field `nonce`/
         );
     });
