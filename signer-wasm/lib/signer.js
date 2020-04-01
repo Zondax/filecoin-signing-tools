@@ -13,32 +13,39 @@ import {
 } from '@zondax/filecoin-signer-wasm'
 
 
-function keyRetrieveFromDevice (path, session) {
-  let pubkeys;
-
+async function keyRetrieveFromDevice (path, session) {
   if (!session instanceof DeviceSession) throw new NotASession();
 
-  // TODO
+  const pubkeys = resp = await session.device.getAddressAndPubKey(path);
 
   return pubkeys;
 }
 
-function transactionSignWithDevice (transaction, session) {
-  let signedTransaction;
-
+async function transactionSignWithDevice (transaction, path, session) {
   if (!session instanceof DeviceSession) throw new NotASession();
 
-  // TODO
+  // REVIEW: I am guessing transaction is an object and not the cbor_message
+  const message = transaction_serialize_raw(transaction);
+
+  const signature = await session.device.sign(path, message);
+
+  const signedTransaction = {
+    message: transaction,
+    signature: {
+      sig_type: "secp256k1",
+      data: signature
+    }
+  }
 
   return signedTransaction;
 }
 
-function transactionSignRawWithDevice (transaction, session) {
-  let signature;
-
+async function transactionSignRawWithDevice (transaction, session) {
   if (!session instanceof DeviceSession) throw new NotASession();
 
-  // TODO
+  const message = transaction_serialize_raw(transaction);
+
+  const signature = await session.device.sign(path, message);
 
   return signature;
 }
