@@ -1,4 +1,4 @@
-import * as wasm from "@zondax/filecoin-signer-wasm";
+import * as wasm from "@zondax/filecoin-signer";
 
 function log(text) {
   document.getElementById("output").innerHTML += text + "\n";
