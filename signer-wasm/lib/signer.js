@@ -1,87 +1,19 @@
 import DeviceSession from './session';
 import { NotASession } from './errors';
+import {
+  mnemonic_generate,
+  key_derive,
+  key_derive_from_seed,
+  key_recover,
+  transaction_serialize,
+  transaction_serialize_raw,
+  transaction_parse,
+  transaction_sign,
+  verify_signature
+} from '@zondax/filecoin-signer-wasm'
 
-function transactionSerialize (transaction) {
-  let cborTransaction;
 
-    // TODO
-
-  return cborTransaction;
-}
-
-function transactionSerializeRaw (transaction) {
-  let cborTransactionBuffer;
-
-  // TODO
-
-  return cborTransactionBuffer;
-}
-
-function transactionParse (cborTransaction, testnet = false) {
-  let transaction;
-
-  // TODO
-
-  return transaction;
-}
-
-function verifySignature (signature, cborTransaction) {
-  let result = false;
-
-  // TODO
-
-  return result;
-}
-
-function generateMnemonic () {
-  let mnemonic;
-
-  // TODO
-
-  return mnemonic;
-}
-
-function keyDerive (path, mnemonic) {
-  let extendedKey;
-
-  // TODO
-
-  return extendedKey;
-}
-
-function keyDeriveFromSeed (path, seed) {
-  let extendedKey;
-
-  // TODO
-
-  return extendedKey;
-}
-
-function keyRecover (privateKey, testnet = false) {
-  let extendedKey;
-
-  // TODO
-
-  return extendedKey;
-}
-
-function transactionSign (transaction, privateKey, scheme = 'secp256k1') {
-  let signedTransaction;
-
-  // TODO
-
-  return signedTransaction;
-}
-
-function transactionSignRaw (transaction, privateKey, scheme = 'secp256k1') {
-  let signature;
-
-  // TODO
-
-  return signature;
-}
-
-function keyRetrieve (path, session) {
+function keyRetrieveFromDevice (path, session) {
   let pubkeys;
 
   if (!session instanceof DeviceSession) throw new NotASession();
@@ -111,19 +43,19 @@ function transactionSignRawWithDevice (transaction, session) {
   return signature;
 }
 
-
-export default {
-  transactionSerialize,
-  transactionSerializeRaw,
-  transactionParse,
-  verifySignature,
-  generateMnemonic,
-  keyDerive,
-  keyDeriveFromSeed,
-  keyRecover,
-  transactionSign,
-  transactionSignRaw,
-  keyRetrieve,
+// Renaming functions to fit with camelCase standard
+export {
+  transaction_serialize as transactionSerialize,
+  transaction_serialize_raw as transactionSerializeRaw,
+  transaction_parse as transactionParse,
+  verify_signature as verifySignature,
+  mnemonic_generate as generateMnemonic,
+  key_derive as keyDerive,
+  key_derive_from_seed as keyDeriveFromSeed,
+  key_recover as keyRecover,
+  transaction_sign as transactionSign,
+  //transactionSignRaw,
+  keyRetrieveFromDevice,
   transactionSignWithDevice,
   transactionSignRawWithDevice
 };

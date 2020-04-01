@@ -11,15 +11,15 @@
     "url": "https://github.com/Zondax/filecoin-rs"
   },
   "files": [
-    "filecoin_signer_wasm_bg.wasm",
-    "filecoin_signer_wasm.js",
-    "browser/filecoin_signer_wasm_bg.wasm",
-    "browser/filecoin_signer_wasm.js",
-    "ledger/*"
+    "nodejs/*",
+    "browser/*"
   ],
-  "main": "./dist/index.js",
-  "scripts": {
-    "build": "babel src --out-dir dist && cp src/filecoin_signer_wasm_bg.wasm dist/filecoin_signer_wasm_bg.wasm "
+  "main": "./browser/filecoin_signer_wasm.js",
+  "exports": {
+    "node": "./nodejs/filecoin_signer_wasm.js",
+    "require": "./nodejs/filecoin_signer_wasm.js",
+    "import": "./nodejs/filecoin_signer_wasm.js",
+    "browser": "./browser/filecoin_signer_wasm.js"
   },
   "browserslist": [
     "> 1%",
@@ -27,19 +27,5 @@
   ],
   "publishConfig": {
     "access": "public"
-  },
-  "dependencies": {
-    "@babel/cli": "^7.8.4",
-    "@babel/core": "^7.9.0",
-    "@babel/node": "^7.8.7",
-    "@babel/plugin-transform-runtime": "^7.9.0",
-    "@babel/preset-env": "^7.9.0",
-    "@babel/runtime": "^7.9.2",
-    "@ledgerhq/hw-transport": "^5.12.0",
-    "@ledgerhq/hw-transport-node-hid": "^5.12.0",
-    "@ledgerhq/hw-transport-u2f": "^5.12.0",
-    "@ledgerhq/hw-transport-webusb": "^5.12.0",
-    "@ledgerhq/logs": "^5.11.0",
-    "@openworklabs/filecoin-message": "0.0.10"
   }
 }

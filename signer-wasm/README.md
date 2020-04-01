@@ -6,6 +6,7 @@
 
 * `ledger-filecoin-js` submodule which refers to https://github.com/Zondax/ledger-filecoin-js
 * `src` rust bindings for javascript
-* `pkg` ready to distribute javascript module
+* `pkg` ready to distribute wasm module
 * `tests` rust test
 * `lib` javascript lib wrapper class around rust bindings and ledger-filecoin-js
+* `dist` usable files

@@ -1,5 +1,5 @@
 import { DeviceNotSupported, UnknownDevice } from './errors';
-import FilecoinApp from "./ledger/index.js"
+import FilecoinApp from "@zondax/ledger-filecoin"
 
 const DeviceEnum = {
   LEDGER: 'ledger',
