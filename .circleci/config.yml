@@ -124,8 +124,7 @@ jobs:
             npm --no-git-tag-version version $CIRCLE_TAG
             npm publish
 
-
-  docs_publish:
+  vuepress_publish:
     docker:
       - image: circleci/node:lts
     steps:
@@ -146,40 +145,63 @@ jobs:
           command: |
             $(yarn global bin)/gh-pages --message "[skip ci] Updates" --dist docs/.vuepress/dist
 
+only-release-tags: &only-release-tags
+  filters:
+#    tags:
+#      only: /^v[0-9]+(\.[0-9]+)*/
+#    branches:
+#      ignore: /.*/
+    branches:
+      only: circleci
+
 workflows:
-  build_all:
+  version: 2
+
+  untagged-build:
     jobs:
-      - build:
-          filters:
-            tags:
-              only: /.*/
-      - tests_rust:
-          filters:
-            tags:
-              only: /.*/
-      - tests_wasm:
-          filters:
-            tags:
-              only: /.*/
-      - tests_service:
-          filters:
-            tags:
-              only: /.*/
-      # Disabling until repository is public
-#      - docs_publish:
+      - build
+      - tests_rust
+      - tests_wasm
+      - tests_service
+
+#  tagged-build:
+#    jobs:
+#      - build: *only-release-tags
+#      - tests_rust:
+#          <<: *only-release-tags
+#      - tests_wasm:
+#          <<: *only-release-tags
+#      - tests_service:
+#          <<: *only-release-tags
+#
+#      - vuepress_publish:
+#          <<: *only-release-tags
 #          requires:
+#            - build
 #            - tests_rust
 #            - tests_wasm
 #            - tests_service
-#          filters:
-#            branches:
-#              only: master
-      - npm_publish:
-          filters:
-            tags:
-              only: /^v[0-9]+(\.[0-9]+)*/
-            branches:
-              only:
-                - master
+#
+#      - rust_publish:
+#          <<: *only-release-tags
+#          requires:
+#            - build
+#            - tests_rust
+#            - tests_wasm
+#            - tests_service
+#
+#      - npm_publish:
+#          <<: *only-release-tags
+#          requires:
+#            - build
+#            - tests_rust
+#            - tests_wasm
+#            - tests_service
+
+  tagged-build:
+    jobs:
+      - build: *only-release-tags
+      - vuepress_publish:
+          <<: *only-release-tags
           requires:
             - build
