@@ -157,20 +157,14 @@ workflows:
           filters:
             tags:
               only: /.*/
-          requires:
-            - build
       - tests_wasm:
           filters:
             tags:
               only: /.*/
-          requires:
-            - build
       - tests_service:
           filters:
             tags:
               only: /.*/
-          requires:
-            - build
       # Disabling until repository is public
 #      - docs_publish:
 #          requires:
