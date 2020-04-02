@@ -64,9 +64,9 @@ jobs:
           name: Run FFI tests and check memory leaks
           command: |
             sudo apt-get install -y jq valgrind
-            cp `cargo test --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]"` libfilecoin_signer_ffi
-            ./libfilecoin_signer_ffi
-            valgrind --leak-check=yes ./libfilecoin_signer_ffi
+            cp `cargo test --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]"` tests
+            ./tests
+            valgrind --leak-check=yes ./tests
 
   tests_wasm:
     docker:
