@@ -51,6 +51,9 @@ pub struct ExtendedKey {
     pub address: String,
 }
 
+#[cfg(feature = "ffi-support")]
+ffi_support::implement_into_ffi_by_pointer!(ExtendedKey);
+
 impl TryFrom<String> for Signature {
     type Error = SignerError;
 

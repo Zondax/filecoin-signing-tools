@@ -1,73 +1,48 @@
-use ffi_support::{
-    call_with_result, IntoFfi, define_box_destructor,ExternError, FfiStr, 
-};
-use filecoin_signer::{key_derive, PrivateKey, PublicKey, PublicKeyCompressed};
-use std::{
-    ffi::CString,
-    os::raw::c_char,
-};
+#[macro_use]
+mod macros;
 
-#[repr(C)]
-pub struct ExtendedKey {
-    pub address: *mut c_char,
-    pub private_key: PrivateKey,
-    pub public_key_compressed: PublicKeyCompressed,
-    pub public_key: PublicKey,
-}
+use ffi_support::{call_with_result, ExternError, FfiStr};
+use filecoin_signer::{key_derive, ExtendedKey};
 
-unsafe impl IntoFfi for ExtendedKey {
-    type Value = *mut ExtendedKey;
+create_fn!(filecoin_error_new|Java_Filecoin_errorNew: () -> ExternError {
+    ExternError::default()
+});
 
-    #[inline]
-    fn ffi_default() -> Self::Value {
-        std::ptr::null_mut()
-    }
+create_fn!(filecoin_error_free|Java_Filecoin_errorFree: (error: ExternError) -> () {
+    unsafe { error.manually_release() }
+});
 
-    #[inline]
-    fn into_ffi_value(self) -> Self::Value {
-        Box::into_raw(Box::new(self))
-    }
-}
-
-impl From<filecoin_signer::ExtendedKey> for ExtendedKey {
-    fn from(from: filecoin_signer::ExtendedKey) -> Self {
-        Self {
-            private_key: from.private_key,
-            public_key: from.public_key,
-            public_key_compressed: from.public_key_compressed,
-            address: CString::new(from.address).unwrap().into_raw(),
-        }
-    }
-}
-
-#[no_mangle]
-pub extern "C" fn filecoin_key_derive(
+create_fn!(filecoin_key_derive|Java_Filecoin_keyDeriveNew: (
     mnemonic: FfiStr<'_>,
     path: FfiStr<'_>,
-    error: &mut ExternError,
-) -> *mut ExtendedKey {
+    error: &mut ExternError
+) -> ptr!(ExtendedKey) {
     call_with_result(error, || -> Result<ExtendedKey, ExternError> {
-        let a = key_derive(mnemonic.as_str(), path.as_str())?;
-        Ok(a.into())
+        Ok(key_derive(mnemonic.as_str(), path.as_str())?.into())
     })
-}
+});
 
-define_box_destructor!(ExtendedKey, filecoin_key_derive_free);
+create_fn_destructor!(ExtendedKey, filecoin_key_derive_free|Java_Filecoin_keyDeriveFree);
 
 #[cfg(test)]
 mod tests {
-    use ffi_support::{FfiStr, ExternError};
-    use crate::{filecoin_key_derive, filecoin_key_derive_free};
-    use std::ffi::CStr;
+    #[cfg(not(feature = "with-jni"))]
+    use {
+        ffi_support::{FfiStr},
+        crate::{filecoin_key_derive, filecoin_error_new, filecoin_error_free, filecoin_key_derive_free},
+        std::ffi::CStr,
+    };
 
+    #[cfg(not(feature = "with-jni"))]
     #[test]
     fn key_derive() {
-        let mut error = ExternError::default();
+        let mut error = filecoin_error_new();
         let ptr = filecoin_key_derive(
             FfiStr::from_cstr(CStr::from_bytes_with_nul(b"a\0").unwrap()),
             FfiStr::from_cstr(CStr::from_bytes_with_nul(b"a\0").unwrap()),
             &mut error
         );
-        unsafe { filecoin_key_derive_free(ptr) };
+        filecoin_key_derive_free(ptr);
+        filecoin_error_free(error);
     }
 }

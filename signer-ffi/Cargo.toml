@@ -1,6 +1,10 @@
 [dependencies]
 filecoin-signer = { features = ["with-ffi-support"], path = "../signer" }
 ffi-support = "0.4"
+jni = { optional = true, version = "0.16" }
+
+[features]
+with-jni = ["jni"]
 
 [lib]
 crate-type = ["cdylib"]
