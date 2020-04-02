@@ -4,10 +4,10 @@ deps_wasm:
 
 build_wasm:
 	rm -rf signer-wasm/pkg/
+	git submodule update --init --recursive
 	wasm-pack build --no-typescript --target nodejs --out-dir pkg/nodejs  signer-wasm/
 	wasm-pack build --no-typescript --target browser --out-dir pkg/browser signer-wasm/
 	cd signer-wasm && make build
-
 
 PACKAGE_NAME:="@zondax/filecoin-signer"
 
