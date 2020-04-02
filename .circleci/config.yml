@@ -124,6 +124,14 @@ jobs:
             npm --no-git-tag-version version $CIRCLE_TAG
             npm publish
 
+  rust_publish:
+    docker:
+      - image: zondax/rust-ci:latest
+    steps:
+      - checkout
+      - restore-sccache-cache
+      # TODO: Enable cargo publish
+
   vuepress_publish:
     docker:
       - image: circleci/node:lts
@@ -133,7 +141,7 @@ jobs:
       - run: yarn build
       - add_ssh_keys:
           fingerprints:
-            - "01:f2:c9:e2:64:68:8e:20:52:41:de:1a:bd:19:83:5b"
+            - "19:d8:07:01:0c:64:b4:8b:d1:44:45:39:87:1f:4d:a0"
       - run:
           name: Install and configure dependencies
           command: |
@@ -145,43 +153,43 @@ jobs:
           command: |
             $(yarn global bin)/gh-pages --message "[skip ci] Updates" --dist docs/.vuepress/dist
 
+no-tags: &no-tags
+  filters:
+    tags:
+      ignore: /.*/
+
 only-release-tags: &only-release-tags
   filters:
-#    tags:
-#      only: /^v[0-9]+(\.[0-9]+)*/
-#    branches:
-#      ignore: /.*/
+    tags:
+      only: /^v[0-9]+(\.[0-9]+)*/
     branches:
-      only: circleci
+      ignore: /.*/
 
 workflows:
   version: 2
 
-  untagged-build:
+  default:
     jobs:
-      - build
-      - tests_rust
-      - tests_wasm
-      - tests_service
+      - build:
+          <<: *no-tags
+      - tests_rust:
+          <<: *no-tags
+      - tests_wasm:
+          <<: *no-tags
+      - tests_service:
+          <<: *no-tags
 
-#  tagged-build:
-#    jobs:
-#      - build: *only-release-tags
-#      - tests_rust:
-#          <<: *only-release-tags
-#      - tests_wasm:
-#          <<: *only-release-tags
-#      - tests_service:
-#          <<: *only-release-tags
-#
-#      - vuepress_publish:
-#          <<: *only-release-tags
-#          requires:
-#            - build
-#            - tests_rust
-#            - tests_wasm
-#            - tests_service
-#
+  release:
+    jobs:
+      - build:
+          <<: *only-release-tags
+      - tests_rust:
+          <<: *only-release-tags
+      - tests_wasm:
+          <<: *only-release-tags
+      - tests_service:
+          <<: *only-release-tags
+
 #      - rust_publish:
 #          <<: *only-release-tags
 #          requires:
@@ -189,19 +197,19 @@ workflows:
 #            - tests_rust
 #            - tests_wasm
 #            - tests_service
-#
-#      - npm_publish:
-#          <<: *only-release-tags
-#          requires:
-#            - build
-#            - tests_rust
-#            - tests_wasm
-#            - tests_service
 
-  tagged-build:
-    jobs:
-      - build: *only-release-tags
+      - npm_publish:
+          <<: *only-release-tags
+          requires:
+            - build
+            - tests_rust
+            - tests_wasm
+            - tests_service
+
       - vuepress_publish:
           <<: *only-release-tags
           requires:
             - build
+            - tests_rust
+            - tests_wasm
+            - tests_service
