@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>API | Filecoin Signing Tools</title>
+    <meta name="description" content="Services and Libraries ">
+    <meta name="generator" content="VuePress 1.4.0">
+    
+    
+    <link rel="preload" href="/filecoin-rs/assets/css/0.styles.49161141.css" as="style"><link rel="preload" href="/filecoin-rs/assets/js/app.c28f2645.js" as="script"><link rel="preload" href="/filecoin-rs/assets/js/2.44f0630e.js" as="script"><link rel="preload" href="/filecoin-rs/assets/js/14.60977442.js" as="script"><link rel="prefetch" href="/filecoin-rs/assets/js/10.c9aff0d9.js"><link rel="prefetch" href="/filecoin-rs/assets/js/11.e9b2b34d.js"><link rel="prefetch" href="/filecoin-rs/assets/js/12.ffa6d869.js"><link rel="prefetch" href="/filecoin-rs/assets/js/13.a54acc53.js"><link rel="prefetch" href="/filecoin-rs/assets/js/15.13e4e523.js"><link rel="prefetch" href="/filecoin-rs/assets/js/16.0f08ae19.js"><link rel="prefetch" href="/filecoin-rs/assets/js/3.70f55840.js"><link rel="prefetch" href="/filecoin-rs/assets/js/4.2e5b8aa6.js"><link rel="prefetch" href="/filecoin-rs/assets/js/5.5a078012.js"><link rel="prefetch" href="/filecoin-rs/assets/js/6.4f865234.js"><link rel="prefetch" href="/filecoin-rs/assets/js/7.da32fcfa.js"><link rel="prefetch" href="/filecoin-rs/assets/js/8.764c477a.js"><link rel="prefetch" href="/filecoin-rs/assets/js/9.b75146d3.js">
+    <link rel="stylesheet" href="/filecoin-rs/assets/css/0.styles.49161141.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container"><header class="navbar"><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/filecoin-rs/" class="home-link router-link-active"><!----> <span class="site-name">Filecoin Signing Tools</span></a> <div class="links"><div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/filecoin-rs/" class="nav-link">
+  Home
+</a></div><div class="nav-item"><a href="/filecoin-rs/Main.html" class="nav-link">
+  Documentation
+</a></div><div class="nav-item"><a href="https://zondax.ch" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  About Zondax
+  <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></div> <!----></nav></div></header> <div class="sidebar-mask"></div> <aside class="sidebar"><nav class="nav-links"><div class="nav-item"><a href="/filecoin-rs/" class="nav-link">
+  Home
+</a></div><div class="nav-item"><a href="/filecoin-rs/Main.html" class="nav-link">
+  Documentation
+</a></div><div class="nav-item"><a href="https://zondax.ch" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  About Zondax
+  <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></div> <!----></nav>  <ul class="sidebar-links"><li><section class="sidebar-group depth-0"><a href="/filecoin-rs/jsonrpc/" class="sidebar-heading clickable"><span>JSON RPC</span> <!----></a> <ul class="sidebar-links sidebar-group-items"><li><a href="/filecoin-rs/jsonrpc/" class="sidebar-link">JSONRPC Service</a></li><li><a href="/filecoin-rs/jsonrpc/api.html" class="sidebar-link">API</a></li><li><a href="/filecoin-rs/jsonrpc/workflow.html" class="sidebar-link">Typical workflows</a></li></ul></section></li><li><section class="sidebar-group depth-0"><a href="/filecoin-rs/wasm/" class="sidebar-heading clickable router-link-active open"><span>WASM</span> <!----></a> <ul class="sidebar-links sidebar-group-items"><li><a href="/filecoin-rs/wasm/" class="sidebar-link">Getting Started</a></li><li><a href="/filecoin-rs/wasm/api.html" class="active sidebar-link">API</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header"><a href="/filecoin-rs/wasm/api.html#mnemonic-generate" class="sidebar-link">mnemonic_generate</a></li><li class="sidebar-sub-header"><a href="/filecoin-rs/wasm/api.html#key-derive" class="sidebar-link">key_derive</a></li><li class="sidebar-sub-header"><a href="/filecoin-rs/wasm/api.html#key-derive-from-seed" class="sidebar-link">keyderivefrom_seed</a></li><li class="sidebar-sub-header"><a href="/filecoin-rs/wasm/api.html#key-recover" class="sidebar-link">key_recover</a></li><li class="sidebar-sub-header"><a href="/filecoin-rs/wasm/api.html#transaction-serialize" class="sidebar-link">transaction_serialize</a></li><li class="sidebar-sub-header"><a href="/filecoin-rs/wasm/api.html#transaction-parse" class="sidebar-link">transaction_parse</a></li><li class="sidebar-sub-header"><a href="/filecoin-rs/wasm/api.html#transaction-sign" class="sidebar-link">transaction_sign</a></li><li class="sidebar-sub-header"><a href="/filecoin-rs/wasm/api.html#verify-signature" class="sidebar-link">verify_signature</a></li></ul></li></ul></section></li><li><section class="sidebar-group depth-0"><a href="/filecoin-rs/native/" class="sidebar-heading clickable"><span>Native</span> <!----></a> <ul class="sidebar-links sidebar-group-items"><li><a href="/filecoin-rs/native/" class="sidebar-link">Rust package</a></li><li><a href="/filecoin-rs/native/api.html" class="sidebar-link">API</a></li></ul></section></li></ul> </aside> <main class="page"> <div class="theme-default-content content__default"><h1 id="api"><a href="#api" class="header-anchor">#</a> API</h1> <p>Wasm api for filecoin signer service.</p> <h2 id="mnemonic-generate"><a href="#mnemonic-generate" class="header-anchor">#</a> mnemonic_generate</h2> <p>Generate a 24 english words mnemonic.</p> <div class="language-javascript extra-class"><pre class="language-javascript"><code><span class="token keyword">const</span> signer_wasm <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'@zondax/filecoin-signer-wasm'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// or for browser</span>
+<span class="token comment">// import * as signer_wasm from &quot;@zondax/filecoin-signer-wasm&quot;;</span>
+
+<span class="token keyword">const</span> mnemonic <span class="token operator">=</span> signer_wasm<span class="token punctuation">.</span><span class="token function">mnemonic_generate</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>mnemonic<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div><h2 id="key-derive"><a href="#key-derive" class="header-anchor">#</a> key_derive</h2> <p>Derive a child key from a mnemonic following a <a href="https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki" target="_blank" rel="noopener noreferrer">BIP44 path<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a>.</p> <p>Arguments :</p> <ul><li><strong>mnemonic</strong>: a string containing the words;</li> <li><strong>path</strong>: a BIP44 path;</li></ul> <div class="language-javascript extra-class"><pre class="language-javascript"><code><span class="token keyword">const</span> signer_wasm <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'@zondax/filecoin-signer-wasm'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// or for browser</span>
+<span class="token comment">// import * as signer_wasm from &quot;@zondax/filecoin-signer-wasm&quot;;</span>
+
+<span class="token keyword">const</span> mnemonic <span class="token operator">=</span> <span class="token string">&quot;equip will roof matter pink blind book anxiety banner elbow sun young&quot;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> path <span class="token operator">=</span> <span class="token string">&quot;m/44'/461'/0/0/1&quot;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> keypair <span class="token operator">=</span> signer_wasm<span class="token punctuation">.</span><span class="token function">key_derive</span><span class="token punctuation">(</span>mnemonic<span class="token punctuation">,</span> path<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>keypair<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div><h2 id="key-derive-from-seed"><a href="#key-derive-from-seed" class="header-anchor">#</a> key_derive_from_seed</h2> <p>Derive a child key from a seed following a <a href="https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki" target="_blank" rel="noopener noreferrer">BIP44 path<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a>.</p> <p>Arguments :</p> <ul><li><strong>seed</strong>: a seed as a hex string;</li> <li><strong>path</strong>: a BIP44 path;</li></ul> <div class="language-javascript extra-class"><pre class="language-javascript"><code><span class="token keyword">const</span> signer_wasm <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'@zondax/filecoin-signer-wasm'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// or for browser</span>
+<span class="token comment">// import * as signer_wasm from &quot;@zondax/filecoin-signer-wasm&quot;;</span>
+<span class="token keyword">const</span> bip39 <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'bip39'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> mnemonic <span class="token operator">=</span> <span class="token string">&quot;equip will roof matter pink blind book anxiety banner elbow sun young&quot;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> seed <span class="token operator">=</span> bip39<span class="token punctuation">.</span><span class="token function">mnemonicToSeedSync</span><span class="token punctuation">(</span>mnemonic<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token string">'hex'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> path <span class="token operator">=</span> <span class="token string">&quot;m/44'/461'/0/0/1&quot;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> keypair <span class="token operator">=</span> signer_wasm<span class="token punctuation">.</span><span class="token function">key_derive_from_seed</span><span class="token punctuation">(</span>seed<span class="token punctuation">,</span> <span class="token string">&quot;m/44'/461'/0/0/1&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>keypair<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div><h2 id="key-recover"><a href="#key-recover" class="header-anchor">#</a> key_recover</h2> <p>Recover a extended key from a private key.</p> <p>Arguments :</p> <ul><li><strong>privateKey</strong>: a private key as a hex string;</li> <li><strong>testnet</strong>: a boolean value. Indicate if you wnat testnet or mainnet address;</li></ul> <div class="language-javascript extra-class"><pre class="language-javascript"><code><span class="token keyword">const</span> signer_wasm <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'@zondax/filecoin-signer-wasm'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// or for browser</span>
+<span class="token comment">// import * as signer_wasm from &quot;@zondax/filecoin-signer-wasm&quot;;</span>
+
+<span class="token keyword">let</span> privateKey <span class="token operator">=</span> <span class="token string">&quot;private_key_hexstring&quot;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> testnet <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> keypair <span class="token operator">=</span> signer_wasm<span class="token punctuation">.</span><span class="token function">key_recover</span><span class="token punctuation">(</span>privateKey<span class="token punctuation">,</span> testnet<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>keypair<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div><h2 id="transaction-serialize"><a href="#transaction-serialize" class="header-anchor">#</a> transaction_serialize</h2> <p>Serialize a transaction and return a CBOR hexstring.</p> <p>Arguments :</p> <ul><li><strong>transaction</strong>: a filecoin transaction;</li></ul> <div class="language-javascript extra-class"><pre class="language-javascript"><code><span class="token keyword">const</span> signer_wasm <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'@zondax/filecoin-signer-wasm'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// or for browser</span>
+<span class="token comment">// import * as signer_wasm from &quot;@zondax/filecoin-signer-wasm&quot;;</span>
+
+<span class="token keyword">const</span> transaction <span class="token operator">=</span> <span class="token punctuation">{</span>
+    <span class="token string">&quot;to&quot;</span><span class="token operator">:</span> <span class="token string">&quot;t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy&quot;</span><span class="token punctuation">,</span>
+    <span class="token string">&quot;from&quot;</span><span class="token operator">:</span> <span class="token string">&quot;t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka&quot;</span><span class="token punctuation">,</span>
+    <span class="token string">&quot;nonce&quot;</span><span class="token operator">:</span> <span class="token number">1</span><span class="token punctuation">,</span>
+    <span class="token string">&quot;value&quot;</span><span class="token operator">:</span> <span class="token string">&quot;100000&quot;</span><span class="token punctuation">,</span>
+    <span class="token string">&quot;gasprice&quot;</span><span class="token operator">:</span> <span class="token string">&quot;2500&quot;</span><span class="token punctuation">,</span>
+    <span class="token string">&quot;gaslimit&quot;</span><span class="token operator">:</span> <span class="token string">&quot;25000&quot;</span><span class="token punctuation">,</span>
+    <span class="token string">&quot;method&quot;</span><span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">,</span>
+    <span class="token string">&quot;params&quot;</span><span class="token operator">:</span> <span class="token string">&quot;&quot;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> cbor_transaction <span class="token operator">=</span>  signer_wasm<span class="token punctuation">.</span><span class="token function">transaction_serialize</span><span class="token punctuation">(</span><span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">stringify</span><span class="token punctuation">(</span>transaction<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>cbor_transaction<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div><h2 id="transaction-parse"><a href="#transaction-parse" class="header-anchor">#</a> transaction_parse</h2> <p>Parse a CBOR hextring into a filecoin transaction.</p> <p>Arguments:</p> <ul><li><strong>hexstring</strong>: the cbor hexstring to parse;</li> <li><strong>testnet</strong>: boolean value <code>true</code> if testnet or <code>false</code> for mainnet;</li></ul> <div class="language-javascript extra-class"><pre class="language-javascript"><code><span class="token keyword">const</span> signer_wasm <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'@zondax/filecoin-signer-wasm'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// or for browser</span>
+<span class="token comment">// import * as signer_wasm from &quot;@zondax/filecoin-signer-wasm&quot;;</span>
+
+<span class="token keyword">const</span> cbor_transaction <span class="token operator">=</span> <span class="token string">&quot;885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040&quot;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> testnet <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> transaction <span class="token operator">=</span> signer_wasm<span class="token punctuation">.</span><span class="token function">transaction_parse</span><span class="token punctuation">(</span>cbor_transaction<span class="token punctuation">,</span> testnet<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>transaction<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div><h2 id="transaction-sign"><a href="#transaction-sign" class="header-anchor">#</a> transaction_sign</h2> <p>Sign a transaction and return the signature (RSV format).</p> <p>Arguments:</p> <ul><li><strong>transaction</strong>: a filecoin transaction;</li> <li><strong>privatekey</strong>: a private key as hexstring;</li></ul> <div class="language-javascript extra-class"><pre class="language-javascript"><code><span class="token keyword">const</span> signer_wasm <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'@zondax/filecoin-signer-wasm'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// or for browser</span>
+<span class="token comment">// import * as signer_wasm from &quot;@zondax/filecoin-signer-wasm&quot;;</span>
+<span class="token keyword">const</span> bip32 <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'bip32'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// Use your private key</span>
+<span class="token keyword">const</span> <span class="token constant">MASTER_KEY</span> <span class="token operator">=</span> <span class="token string">&quot;xprv424242424242424242&quot;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">let</span> <span class="token constant">MASTER_NODE</span> <span class="token operator">=</span> bip32<span class="token punctuation">.</span><span class="token function">fromBase58</span><span class="token punctuation">(</span><span class="token constant">MASTER_KEY</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> example_key <span class="token operator">=</span> <span class="token constant">MASTER_NODE</span><span class="token punctuation">.</span><span class="token function">derivePath</span><span class="token punctuation">(</span><span class="token string">&quot;m/44'/461'/0/0/0&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> signed_tx <span class="token operator">=</span> signer_wasm<span class="token punctuation">.</span><span class="token function">transaction_sign</span><span class="token punctuation">(</span><span class="token constant">EXAMPLE_TRANSACTION</span><span class="token punctuation">,</span> example_key<span class="token punctuation">.</span>privateKey<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token string">&quot;hex&quot;</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>signed_tx<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div><h2 id="verify-signature"><a href="#verify-signature" class="header-anchor">#</a> verify_signature</h2> <p>Verify a signature.</p> <p>Arguments :</p> <ul><li><strong>signature</strong>: RSV format signature;</li> <li><strong>CBOR transaction</strong>: the CBOR transaction;</li></ul> <div class="language-javascript extra-class"><pre class="language-javascript"><code><span class="token keyword">const</span> signer_wasm <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'@zondax/filecoin-signer-wasm'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// or for browser</span>
+<span class="token comment">// import * as signer_wasm from &quot;@zondax/filecoin-signer-wasm&quot;;</span>
+
+
+<span class="token comment">// RSV format signature</span>
+<span class="token comment">// r value [32 bits]</span>
+<span class="token comment">// s value [32 bits]</span>
+<span class="token comment">// v recovering id [1 bit]</span>
+<span class="token keyword">const</span> signatureRSV <span class="token operator">=</span> <span class="token string">&quot;541025ca93d7d15508854520549f6a3c1582fbde1a511f21b12dcb3e49e8bdff3eb824cd8236c66b120b45941fd07252908131ffb1dffa003813b9f2bdd0c2f601&quot;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> cbor_transaction <span class="token operator">=</span> <span class="token string">&quot;885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040&quot;</span><span class="token punctuation">;</span>
+
+
+<span class="token keyword">const</span> result <span class="token operator">=</span> signer_wasm<span class="token punctuation">.</span><span class="token function">verify_signature</span><span class="token punctuation">(</span>signatureRSV<span class="token punctuation">,</span> cbor_transaction<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// true</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div></div> <footer class="page-edit"><!----> <!----></footer> <div class="page-nav"><p class="inner"><span class="prev">
+      ←
+      <a href="/filecoin-rs/wasm/" class="prev router-link-active">
+        Getting Started
+      </a></span> <span class="next"><a href="/filecoin-rs/native/">
+        Rust package
+      </a>
+      →
+    </span></p></div> </main></div><div class="global-ui"></div></div>
+    <script src="/filecoin-rs/assets/js/app.c28f2645.js" defer></script><script src="/filecoin-rs/assets/js/2.44f0630e.js" defer></script><script src="/filecoin-rs/assets/js/14.60977442.js" defer></script>
+  </body>
+</html>
