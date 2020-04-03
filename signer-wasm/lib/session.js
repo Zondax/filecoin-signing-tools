@@ -1,5 +1,5 @@
 import { DeviceNotSupported, UnknownDevice } from './errors';
-import FilecoinApp from "@zondax/ledger-filecoin"
+import FilecoinApp from './ledger/'
 
 const DeviceEnum = {
   LEDGER: 'ledger',
@@ -14,7 +14,7 @@ class DeviceSession {
 
     switch (this.device) {
       case DeviceEnum.LEDGER:
-        this.session = new FilecoinApp(transport);
+        this.app = new FilecoinApp(transport);
         break;
       case DeviceEnum.TREZOR:
         throw new DeviceNotSupported();
