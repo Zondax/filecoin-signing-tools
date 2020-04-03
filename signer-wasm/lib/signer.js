@@ -16,7 +16,7 @@ import {
 async function keyRetrieveFromDevice (path, session) {
   if (!session instanceof DeviceSession) throw new NotASession();
 
-  const pubkeys = resp = await session.device.getAddressAndPubKey(path);
+  const pubkeys = await session.app.getAddressAndPubKey(path);
 
   return pubkeys;
 }
@@ -24,10 +24,13 @@ async function keyRetrieveFromDevice (path, session) {
 async function transactionSignWithDevice (transaction, path, session) {
   if (!session instanceof DeviceSession) throw new NotASession();
 
-  // REVIEW: I am guessing transaction is an object and not the cbor_message
-  const message = transaction_serialize_raw(transaction);
+  let message = transaction;
+  if (!transaction instanceof String) {
+    // we serialize
+    message = transaction_serialize_raw(transaction);
+  }
 
-  const signature = await session.device.sign(path, message);
+  const signature = await session.app.sign(path, message);
 
   const signedTransaction = {
     message: transaction,
@@ -40,15 +43,52 @@ async function transactionSignWithDevice (transaction, path, session) {
   return signedTransaction;
 }
 
-async function transactionSignRawWithDevice (transaction, session) {
+async function transactionSignRawWithDevice (transaction, path, session) {
   if (!session instanceof DeviceSession) throw new NotASession();
 
-  const message = transaction_serialize_raw(transaction);
+  let message = transaction;
+  if (!transaction instanceof String) {
+    // we serialize
+    message = transaction_serialize_raw(transaction);
+  }
 
-  const signature = await session.device.sign(path, message);
+  const signature = await session.app.sign(path, message);
 
   return signature;
 }
+
+async function getVersionFromDevice (session) {
+  if (!session instanceof DeviceSession) throw new NotASession();
+
+  const version = await session.app.getVersion();
+
+  return version;
+}
+
+async function showKeyOnDevice (path, session) {
+  if (!session instanceof DeviceSession) throw new NotASession();
+
+  const keys = await session.app.showAddressAndPubKey(path);
+
+  return keys;
+}
+
+async function appInfo (session) {
+  if (!session instanceof DeviceSession) throw new NotASession();
+
+  const info = await session.app.appInfo();
+
+  return info;
+}
+
+async function deviceInfo (session) {
+  if (!session instanceof DeviceSession) throw new NotASession();
+
+  const info = await session.app.deviceInfo();
+
+  return info;
+}
+
 
 // Renaming functions to fit with camelCase standard
 export {
@@ -64,5 +104,9 @@ export {
   //transactionSignRaw,
   keyRetrieveFromDevice,
   transactionSignWithDevice,
-  transactionSignRawWithDevice
+  transactionSignRawWithDevice,
+  getVersionFromDevice,
+  showKeyOnDevice,
+  appInfo,
+  deviceInfo
 };
