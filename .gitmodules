@@ -1,0 +1,3 @@
+[submodule "signer-wasm/ledger-filecoin-js"]
+	path = signer-wasm/ledger-filecoin-js
+	url = https://github.com/Zondax/ledger-filecoin-js.git
