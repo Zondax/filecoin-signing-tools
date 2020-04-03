@@ -1,5 +1,13 @@
 # Getting Started
 
+::: warning
+
+The documentation is still being updated.
+
+We expect substantial improvements by the end of milestone 4.
+
+:::
+
 You will need to install [`@zondax/filecoin-signer-wasm`](https://www.npmjs.com/package/@zondax/filecoin-signer-wasm) npm package.
 
 This library is wasm library that can work both in node and browser.

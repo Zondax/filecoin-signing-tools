@@ -115,6 +115,7 @@ jobs:
     steps:
       - checkout
       - restore-sccache-cache
+      - run: make deps_wasm
       - run: make build_wasm
       - run:
           name: Update tag
