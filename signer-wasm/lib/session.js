@@ -1,5 +1,6 @@
 import { DeviceNotSupported, UnknownDevice } from './errors';
 import FilecoinApp from "@zondax/ledger-filecoin"
+import TransportNodeHid from "@ledgerhq/hw-transport-node-hid";
 
 const DeviceEnum = {
   LEDGER: 'ledger',
@@ -11,18 +12,22 @@ const DeviceEnum = {
 class DeviceSession {
   constructor (device) {
     this.device = device;
+    this.session = null
+  }
 
-    switch (device) {
+  async connect () {
+    switch (this.device) {
       case DeviceEnum.LEDGER:
-        this.session = new FilecoinApp();
+        const transport = await TransportNodeHid.create();
+        this.session = new FilecoinApp(transport);
         break;
       case DeviceEnum.TREZOR:
         throw new DeviceNotSupported();
       default:
         throw new UnknownDevice();
     }
-
   }
+
 }
 
 export default DeviceSession;

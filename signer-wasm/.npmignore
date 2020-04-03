@@ -2,5 +2,5 @@ ledger-filecoin-js/.circleci
 ledger-filecoin-js/certs
 ledger-filecoin-js/docs
 ledger-filecoin-js/public
-ledger-filecoin-js/vu_example
+ledger-filecoin-js/vue_example
 ledger-filecoin-js/vue.config.js
