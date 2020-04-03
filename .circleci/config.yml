@@ -58,6 +58,7 @@ jobs:
     docker:
       - image: zondax/rust-ci:latest
     steps:
+      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
       - checkout
       - run: cargo --version
       - restore-sccache-cache
@@ -113,6 +114,7 @@ jobs:
     docker:
       - image: zondax/rust-ci:latest
     steps:
+      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
       - checkout
       - restore-sccache-cache
       - run: make build_wasm
