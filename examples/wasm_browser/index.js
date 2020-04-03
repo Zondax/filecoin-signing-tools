@@ -1,4 +1,4 @@
-import * as wasm from "@zondax/filecoin-signer-wasm";
+import * as wasm from "@zondax/filecoin-signer";
 
 function log(text) {
   document.getElementById("output").innerHTML += text + "\n";
@@ -7,7 +7,7 @@ function log(text) {
 /////////////////////////////////
 // Generate Mnemonic
 
-let mnemonic = wasm.mnemonic_generate();
+let mnemonic = wasm.generateMnemonic();
 log("<h2>[wasm.mnemonic_generate]</h2>" + mnemonic);
 log("mnemonic");
 
@@ -26,7 +26,7 @@ log(`<b>private array</b> ${key.private_raw}`);
 /////////////////////////////////
 // Recover key
 
-let recovered_key = wasm.key_recover("6a1a68774457742a8bc69db5491df5ae7677687d49e1003a78e2d60959d5f7a7");
+let recovered_key = wasm.keyRecover("6a1a68774457742a8bc69db5491df5ae7677687d49e1003a78e2d60959d5f7a7");
 
 log("<h2>[wasm.key_recover]</h2>");
 log(`<b>address      </b> ${recovered_key.address}`);
@@ -53,7 +53,7 @@ const unsigned_tx = {
 
 log(`unsigned_tx = ${JSON.stringify(unsigned_tx, 0, 4)}`);
 
-let signed_tx = wasm.transaction_sign(unsigned_tx, key.private_hexstring);
+let signed_tx = wasm.transactionSign(unsigned_tx, key.private_hexstring);
 
 log("\n...sign...\n");
 log(`signed_tx = ${JSON.stringify(signed_tx, 0, 4)}`);

@@ -3,22 +3,22 @@
 Wasm api for filecoin signer service.
 
 
-## mnemonic_generate
+## generateMnemonic
 
 Generate a 24 english words mnemonic.
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer-wasm');
+const signer_wasm = require('@zondax/filecoin-signer');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer-wasm";
+// import * as signer_wasm from "@zondax/filecoin-signer";
 
-const mnemonic = signer_wasm.mnemonic_generate();
+const mnemonic = signer_wasm.generateMnemonic();
 
 //
 console.log(mnemonic);
 ```
 
-## key_derive
+## keyDerive
 
 Derive a child key from a mnemonic following a [BIP44 path](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
 
@@ -28,9 +28,9 @@ Arguments :
 * **password**: for encrypted seed if none use an empty string (e.g "")
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer-wasm');
+const signer_wasm = require('@zondax/filecoin-signer');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer-wasm";
+// import * as signer_wasm from "@zondax/filecoin-signer";
 
 const mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
 
@@ -41,7 +41,7 @@ const keypair = signer_wasm.key_derive(mnemonic, path, "");
 console.log(keypair);
 ```
 
-## key_derive_from_seed
+## keyDeriveFromSeed
 
 Derive a child key from a seed following a [BIP44 path](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
 
@@ -50,9 +50,9 @@ Arguments :
 * **path**: a BIP44 path;
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer-wasm');
+const signer_wasm = require('@zondax/filecoin-signer');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer-wasm";
+// import * as signer_wasm from "@zondax/filecoin-signer";
 const bip39 = require('bip39');
 
 const mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
@@ -61,12 +61,12 @@ const seed = bip39.mnemonicToSeedSync(mnemonic).toString('hex');
 
 const path = "m/44'/461'/0/0/1";
 
-const keypair = signer_wasm.key_derive_from_seed(seed, "m/44'/461'/0/0/1");
+const keypair = signer_wasm.keyDeriveFromSeed(seed, "m/44'/461'/0/0/1");
 
 console.log(keypair);
 ```
 
-## key_recover
+## keyRecover
 
 Recover a extended key from a private key.
 
@@ -75,20 +75,20 @@ Arguments :
 * **testnet**: a boolean value. Indicate if you wnat testnet or mainnet address;
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer-wasm');
+const signer_wasm = require('@zondax/filecoin-signer');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer-wasm";
+// import * as signer_wasm from "@zondax/filecoin-signer";
 
 let privateKey = "private_key_hexstring";
 
 const testnet = true;
 
-const keypair = signer_wasm.key_recover(privateKey, testnet);
+const keypair = signer_wasm.keyRecover(privateKey, testnet);
 
 console.log(keypair);
 ```
 
-## transaction_serialize
+## transactionSerialize
 
 Serialize a transaction and return a CBOR hexstring.
 
@@ -96,9 +96,9 @@ Arguments :
 * **transaction**: a filecoin transaction;
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer-wasm');
+const signer_wasm = require('@zondax/filecoin-signer');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer-wasm";
+// import * as signer_wasm from "@zondax/filecoin-signer";
 
 const transaction = {
     "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
@@ -111,13 +111,43 @@ const transaction = {
     "params": ""
 };
 
-const cbor_transaction =  signer_wasm.transaction_serialize(JSON.stringify(transaction));
+const cbor_transaction =  signer_wasm.transactionSerialize(JSON.stringify(transaction));
 
 //
 console.log(cbor_transaction);
 ```
 
-## transaction_parse
+## transactionSerializeRaw
+
+Serialize a transaction and return a CBOR buffer.
+
+Arguments :
+* **transaction**: a filecoin transaction;
+
+```javascript
+const signer_wasm = require('@zondax/filecoin-signer');
+// or for browser
+// import * as signer_wasm from "@zondax/filecoin-signer";
+
+const transaction = {
+    "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+    "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
+    "nonce": 1,
+    "value": "100000",
+    "gasprice": "2500",
+    "gaslimit": "25000",
+    "method": 0,
+    "params": ""
+};
+
+const cbor_transaction =  signer_wasm.transactionSerializeRaw(JSON.stringify(transaction));
+
+//
+console.log(cbor_buffer);
+```
+
+
+## transactionParse
 
 Parse a CBOR hextring into a filecoin transaction.
 
@@ -126,21 +156,21 @@ Arguments:
 * **testnet**: boolean value `true` if testnet or `false` for mainnet;
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer-wasm');
+const signer_wasm = require('@zondax/filecoin-signer');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer-wasm";
+// import * as signer_wasm from "@zondax/filecoin-signer";
 
 const cbor_transaction = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040";
 
 const testnet = true;
 
-const transaction = signer_wasm.transaction_parse(cbor_transaction, testnet);
+const transaction = signer_wasm.transactionParse(cbor_transaction, testnet);
 
 //
 console.log(transaction);
 ```
 
-## transaction_sign
+## transactionSign
 
 Sign a transaction and return the signature (RSV format).
 
@@ -149,9 +179,9 @@ Arguments:
 * **privatekey**: a private key as hexstring;
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer-wasm');
+const signer_wasm = require('@zondax/filecoin-signer');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer-wasm";
+// import * as signer_wasm from "@zondax/filecoin-signer";
 const bip32 = require('bip32');
 
 // Use your private key
@@ -160,12 +190,12 @@ const MASTER_KEY = "xprv424242424242424242";
 let MASTER_NODE = bip32.fromBase58(MASTER_KEY);
 const example_key = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
 
-const signed_tx = signer_wasm.transaction_sign(EXAMPLE_TRANSACTION, example_key.privateKey.toString("hex"));
+const signed_tx = signer_wasm.transactionSign(EXAMPLE_TRANSACTION, example_key.privateKey.toString("hex"));
 
 console.log(signed_tx);
 ```
 
-## verify_signature
+## verifySignature
 
 Verify a signature.
 
@@ -174,9 +204,9 @@ Arguments :
 * **CBOR transaction**: the CBOR transaction;
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer-wasm');
+const signer_wasm = require('@zondax/filecoin-signer');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer-wasm";
+// import * as signer_wasm from "@zondax/filecoin-signer";
 
 
 // RSV format signature
@@ -188,7 +218,7 @@ const signatureRSV = "541025ca93d7d15508854520549f6a3c1582fbde1a511f21b12dcb3e49
 const cbor_transaction = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040";
 
 
-const result = signer_wasm.verify_signature(signatureRSV, cbor_transaction);
+const result = signer_wasm.verifySignature(signatureRSV, cbor_transaction);
 
 // true
 console.log(result);
