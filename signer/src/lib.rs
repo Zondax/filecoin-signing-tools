@@ -32,15 +32,12 @@ pub const SIGNATURE_RECOVERY_SIZE: usize = SIGNATURE_SIZE + 1;
 pub struct Signature(pub [u8; SIGNATURE_RECOVERY_SIZE]);
 
 /// Private key buffer
-#[repr(transparent)]
 pub struct PrivateKey(pub [u8; SECRET_KEY_SIZE]);
 
 /// Public key buffer
-#[repr(transparent)]
 pub struct PublicKey(pub [u8; FULL_PUBLIC_KEY_SIZE]);
 
 /// Compressed public key buffer
-#[repr(transparent)]
 pub struct PublicKeyCompressed(pub [u8; COMPRESSED_PUBLIC_KEY_SIZE]);
 
 /// Extended key structure
