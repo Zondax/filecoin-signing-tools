@@ -1,10 +1,10 @@
 # C bindingds
 
-To use this example, download the latest header and the library or compile the `signer-ffi` directory.
+To use this example, download the latest header and library or compile the `signer-ffi` directory.
 
-# Example
+# Running
 
-Assuming that the library and the header are in the same directory.
+Assuming that the header and library are in the same directory.
 
 ```bash
 gcc main.c -L. -lfilecoin_signer_ffi -o main

@@ -61,12 +61,52 @@ jobs:
       - checkout
       - restore-sccache-cache
       - run:
-          name: Run FFI tests and check memory leaks
+          name: Build, test and run everything related to FFI
           command: |
-            sudo apt-get install -y jq valgrind
-            cp `cargo test --no-run --message-format=json | jq -r "select(.profile.test == true) | .filenames[]"` tests
-            ./tests
-            valgrind --leak-check=yes ./tests
+            sudo apt-get install -y valgrind
+            cd signer-ffi;
+
+            # C
+            OUT_DIR=/tmp/c
+            cp -r ../examples/ffi/c $OUT_DIR
+            cbindgen --config cbindgen.toml --crate filecoin-signer-ffi --lang c --output $OUT_DIR/filecoin_signer_ffi.h
+            cargo build
+            cp ../target/debug/libfilecoin_signer_ffi.so $OUT_DIR
+            ( cd $OUT_DIR; gcc main.c -L. -lfilecoin_signer_ffi -o main )
+            LD_LIBRARY_PATH=$OUT_DIR $OUT_DIR/main
+            LD_LIBRARY_PATH=$OUT_DIR valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose $OUT_DIR/main
+
+            # C++
+            OUT_DIR=/tmp/c++
+            cp -r ../examples/ffi/c++/ $OUT_DIR
+            cbindgen --config cbindgen.toml --crate filecoin-signer-ffi --lang c++ --output $OUT_DIR/filecoin_signer_ffi.h
+            cargo build
+            cp ../target/debug/libfilecoin_signer_ffi.so $OUT_DIR
+            ( cd $OUT_DIR; g++ main.cpp -L. -lfilecoin_signer_ffi -o main )
+            LD_LIBRARY_PATH=$OUT_DIR $OUT_DIR/main
+            LD_LIBRARY_PATH=$OUT_DIR valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose $OUT_DIR/main
+            
+            # Java
+            OUT_DIR=/tmp/java
+            cp -r ../examples/ffi/java/ /tmp
+            cp -r java/* $OUT_DIR
+            javac -h $OUT_DIR java/src/main/java/ch/zondax/FilecoinSigner.java 
+            cargo build --features with-jni
+            cp ../target/debug/libfilecoin_signer_ffi.so $OUT_DIR
+            javac -d $OUT_DIR $OUT_DIR/src/main/java/ch/zondax/FilecoinSigner.java
+            javac -cp $OUT_DIR $OUT_DIR/Main.java
+            ( cd $OUT_DIR; java -Djava.library.path="." -ea Main )
+
+            # Kotlin
+            OUT_DIR=/tmp/kotlin
+            cp -r ../examples/ffi/kotlin/ /tmp
+            cp -r java/* $OUT_DIR
+            javac -h $OUT_DIR java/src/main/java/ch/zondax/FilecoinSigner.java 
+            cargo build --features with-jni
+            cp ../target/debug/libfilecoin_signer_ffi.so $OUT_DIR
+            javac -d $OUT_DIR $OUT_DIR/src/main/java/ch/zondax/FilecoinSigner.java
+            kotlinc -cp $OUT_DIR $OUT_DIR/Main.kt -include-runtime -d $OUT_DIR
+            ( cd $OUT_DIR; kotlin -Djava.library.path="." -J-ea MainKt )
 
   tests_wasm:
     docker:

@@ -3,10 +3,7 @@ mod macros;
 
 mod error;
 mod extended_key;
-#[cfg(all(not(feature = "with-jni"), test))]
-mod tests;
 
-pub use { error::*, extended_key::*};
 use ffi_support::{call_with_result, ExternError};
 use filecoin_signer::{key_derive, ExtendedKey};
 
