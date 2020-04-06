@@ -12,4 +12,7 @@ create_fn!(filecoin_signer_extended_key_public_key_compressed|Java_ch_zondax_Fil
     create_str!(etc, to_hex_string(&ek.public_key_compressed.0))
 });
 
-create_fn_destructor!(ExtendedKey, filecoin_signer_extended_key_free|Java_ch_zondax_FilecoinSigner_extendedKeyFree);
+create_fn_destructor!(
+    ExtendedKey,
+    filecoin_signer_extended_key_free|Java_ch_zondax_FilecoinSigner_extendedKeyFree
+);

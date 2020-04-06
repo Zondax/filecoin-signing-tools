@@ -1,37 +1,57 @@
 #[cfg(feature = "with-jni")]
 macro_rules! create_str {
     ($etc:expr, $e:expr) => {
-        $etc.0.new_string($e).expect("Couldn't create java string!").into_inner()
-    }
+        $etc.0
+            .new_string($e)
+            .expect("Couldn't create java string!")
+            .into_inner()
+    };
 }
 #[cfg(not(feature = "with-jni"))]
 macro_rules! create_str {
     ($etc:expr, $e:expr) => {
         std::ffi::CString::new($e).unwrap().into_raw()
-    }
+    };
 }
 
 #[cfg(feature = "with-jni")]
 macro_rules! get_str {
     ($etc:expr, $e:expr) => {
-        ffi_support::FfiStr::from_cstr(&$etc.0.get_string($e).expect("Couldn't get java string")).as_str()
-    }
+        ffi_support::FfiStr::from_cstr(&$etc.0.get_string($e).expect("Couldn't get java string"))
+            .as_str()
+    };
 }
 #[cfg(not(feature = "with-jni"))]
-macro_rules! get_str { ($etc:expr, $e:expr) => { $e.as_str() } }
+macro_rules! get_str {
+    ($etc:expr, $e:expr) => {
+        $e.as_str()
+    };
+}
 
 #[cfg(feature = "with-jni")]
-macro_rules! ptr { ($ty:ty) => { jni::sys::jlong } }
+macro_rules! ptr {
+    ($ty:ty) => {
+        jni::sys::jlong
+    };
+}
 #[cfg(not(feature = "with-jni"))]
 macro_rules! ptr { ($ty:ty) => { *mut $ty } }
 
 #[cfg(feature = "with-jni")]
-macro_rules! str_arg_ty { () => { jni::objects::JString } }
+macro_rules! str_arg_ty {
+    () => {
+        jni::objects::JString
+    };
+}
 #[cfg(not(feature = "with-jni"))]
 macro_rules! str_arg_ty { () => { ffi_support::FfiStr<'_> } }
 
 #[cfg(feature = "with-jni")]
-macro_rules! str_ret_ty { () => { jni::sys::jstring } }
+macro_rules! str_ret_ty {
+    () => {
+        jni::sys::jstring
+    };
+}
 #[cfg(not(feature = "with-jni"))]
 macro_rules! str_ret_ty { () => { *mut std::os::raw::c_char } }
 
