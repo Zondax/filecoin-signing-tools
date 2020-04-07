@@ -1,5 +1,6 @@
-OUT_DIR=/tmp/kotlin
-cp -r ../examples/ffi/kotlin/ /tmp
+cd signer-ffi
+mkdir $OUT_DIR
+cp -r ../examples/ffi/kotlin/* $OUT_DIR
 cp -r java/* $OUT_DIR
 javac -h $OUT_DIR java/src/main/java/ch/zondax/FilecoinSigner.java 
 cargo build --features with-jni

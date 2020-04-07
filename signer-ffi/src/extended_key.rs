@@ -14,5 +14,5 @@ create_fn!(filecoin_signer_extended_key_public_key_compressed|Java_ch_zondax_Fil
 
 create_fn_destructor!(
     ExtendedKey,
-    filecoin_signer_extended_key_free|Java_ch_zondax_FilecoinSigner_extendedKeyFree
+    filecoin_signer_extended_key_free | Java_ch_zondax_FilecoinSigner_extendedKeyFree
 );

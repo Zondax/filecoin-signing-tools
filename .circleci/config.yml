@@ -60,12 +60,20 @@ jobs:
     steps:
       - checkout
       - restore-sccache-cache
-      - run: sudo apt-get install -y valgrind
-      - cd signer-ffi;
-      - run: OUT_DIR=/tmp/c ./test_c.sh
-      - run: OUT_DIR=/tmp/cpp ./test_cpp.sh
-      - run: OUT_DIR=/tmp/java ./test_java.sh
-      - run: OUT_DIR=/tmp/kotlin ./test_kotlin.sh
+      - run:
+          name: Initial configuration
+          command: |
+            sudo apt-get install -y default-jdk g++ gcc valgrind snapd
+            wget -O sdk.install.sh "https://get.sdkman.io"
+            sudo bash sdk.install.sh
+            sudo source "/root/.sdkman/bin/sdkman-init.sh"
+            sudo sdk install kotlin
+            rustup install nightly
+            cargo +nightly install cbindgen
+      - run: OUT_DIR=/tmp/c ./.circleci/test_c.sh
+      - run: OUT_DIR=/tmp/cpp ./.circleci/test_cpp.sh
+      - run: OUT_DIR=/tmp/java ./.circleci/test_java.sh
+      - run: OUT_DIR=/tmp/kotlin ./.circleci/test_kotlin.sh
 
   tests_wasm:
     docker:
@@ -166,6 +174,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - tests_ffi:
+          filters:
+            tags:
+              only: /.*/
+          requires:
+            - build
       - tests_rust:
           filters:
             tags:
