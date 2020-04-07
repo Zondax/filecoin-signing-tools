@@ -14,6 +14,7 @@ use secp256k1::util::{
     COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
 };
 use secp256k1::{recover, sign, verify, Message, RecoveryId};
+use bls_signatures;
 
 pub mod api;
 mod bip44;
@@ -333,17 +334,36 @@ pub fn verify_signature(
     Ok(verify(&blob_to_sign, &signature_rs, &public_key))
 }
 
+pub fn verify_aggregated_signature(
+    signature: &bls_signatures::Signature,
+    cbor_messages: &[CborBuffer]
+) -> Result<bool, SignerError> {
+
+    return Ok(false);
+}
+
 #[cfg(test)]
 mod tests {
     use crate::api::{MessageTxAPI, UnsignedMessageAPI};
     use crate::utils::{from_hex_string, to_hex_string};
     use crate::{
-        key_derive, key_derive_from_seed, key_generate_mnemonic, key_recover, transaction_parse,
-        transaction_sign_raw, verify_signature, CborBuffer, Mnemonic, PrivateKey,
+        key_derive, key_derive_from_seed, key_generate_mnemonic, key_recover, transaction_parse, transaction_serialize,
+        transaction_sign_raw, verify_signature, verify_aggregated_signature, CborBuffer, Mnemonic, PrivateKey,
     };
     use bip39::{Language, Seed};
     use forest_encoding::to_vec;
     use std::convert::TryFrom;
+
+    use forest_address::Address;
+    use bls_signatures;
+    use bls_signatures::Serialize;
+    use rand_xorshift::XorShiftRng;
+    use rand::{Rng, SeedableRng};
+    use rayon::prelude::*;
+    use crate::utils;
+
+    const BLS_PUBKEY: &str = "ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc07904";
+    const BLS_PRIVATEKEY: &str = "d31ed8d06197f7631e58117d99c5ae4791183f17b6772eb4afc5c840e0f7d412";
 
     // NOTE: not the same transaction used in other tests.
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
@@ -578,5 +598,107 @@ mod tests {
         // Verify again
         let valid_signature = verify_signature(&signature, &message_cbor);
         assert!(valid_signature.is_err() || !valid_signature.unwrap());
+    }
+
+    #[test]
+    fn sign_bls_transaction() {
+
+        // Get address
+        let bls_address = Address::new_bls(from_hex_string(BLS_PUBKEY).unwrap()).unwrap();
+
+        // Get BLS private key
+        let bls_key = PrivateKey::try_from(BLS_PRIVATEKEY.to_string()).unwrap();
+
+
+        println!("{}", bls_address.to_string());
+
+        // Prepare message with BLS address
+        let message = UnsignedMessageAPI{
+            to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
+            from: bls_address.to_string(),
+            nonce: 1,
+            value: "100000".to_string(),
+            gas_price: "2500".to_string(),
+            gas_limit: "25000".to_string(),
+            method: 0,
+            params: "".to_string()
+        };
+
+        let raw_sig = transaction_sign_raw(&message, &bls_key).unwrap();
+        let sig = bls_signatures::Signature::from_bytes(&raw_sig.0).expect("FIX ME");
+
+        let bls_pk  = bls_signatures::PublicKey::from_bytes(&from_hex_string(BLS_PUBKEY).unwrap()).unwrap();
+
+        let message_cbor = transaction_serialize(&message).expect("FIX ME");
+
+        let cid_hashed = utils::get_digest(&message_cbor.0);
+
+        assert!(bls_pk.verify(sig, cid_hashed));
+    }
+
+    #[test]
+    fn test_verify_aggregated_signature() {
+
+        // sign 3 messages
+        let num_messages = 3;
+
+        let mut rng = XorShiftRng::from_seed([
+            0x59, 0x62, 0xbe, 0x5d, 0x76, 0x3d, 0x31, 0x8d, 0x17, 0xdb, 0x37, 0x32, 0x54, 0x06, 0xbc,
+            0xe5,
+        ]);
+
+        // generate private keys
+        let private_keys: Vec<_> = (0..num_messages)
+            .map(|_| bls_signatures::PrivateKey::generate(&mut rng))
+            .collect();
+
+        // generate messages
+        let messages: Vec<UnsignedMessageAPI> = (0..num_messages)
+            .map(|i| {
+                //Prepare transaction
+                let bls_public_key = private_keys[i].public_key();
+                let bls_address = Address::new_bls(bls_public_key.as_bytes()).unwrap();
+
+                let message = UnsignedMessageAPI{
+                    to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
+                    from: bls_address.to_string(),
+                    nonce: 1,
+                    value: "100000".to_string(),
+                    gas_price: "2500".to_string(),
+                    gas_limit: "25000".to_string(),
+                    method: 0,
+                    params: "".to_string()
+                };
+
+                return message;
+            })
+            .collect();
+
+        // sign messages
+        let sigs: Vec<bls_signatures::Signature>;
+        sigs = messages
+                .par_iter()
+                .zip(private_keys.par_iter())
+                .map(|(message, pk)| {
+                    let private_key = PrivateKey::try_from(pk.as_bytes()).expect("FIX ME");
+                    let raw_sig = transaction_sign_raw(message, &private_key).unwrap();
+
+                    bls_signatures::Serialize::from_bytes(&raw_sig.0).expect("FIX ME")
+                })
+                .collect::<Vec<bls_signatures::Signature>>();
+
+        // serialize messages
+        let cbor_messages: Vec<CborBuffer>;
+        cbor_messages = messages
+                            .par_iter()
+                            .map(|message| transaction_serialize(message).unwrap())
+                            .collect::<Vec<CborBuffer>>();
+
+
+
+        let aggregated_signature = bls_signatures::aggregate(&sigs);
+
+        verify_aggregated_signature(&aggregated_signature, &cbor_messages[..]).unwrap();
+
     }
 }
