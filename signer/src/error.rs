@@ -1,4 +1,5 @@
 use crate::utils::HexDecodeError;
+use forest_address::Error;
 use hmac::crypto_mac::InvalidKeyLength;
 use std::num::ParseIntError;
 use thiserror::Error;
@@ -12,6 +13,9 @@ pub enum SignerError {
     /// Secp256k1 error
     #[error("secp256k1 error")]
     Secp256k1(#[from] secp256k1::Error),
+    /// BLS error
+    #[error("bls error")]
+    BLS(#[from] bls_signatures::Error),
     /// Hex error
     #[error("Hex error")]
     Hex(#[from] hex::FromHexError),
@@ -48,6 +52,12 @@ impl From<SignerError> for ffi_support::ExternError {
 // We need to use from because InvalidKeyLength does not implement as_dyn_err
 impl From<InvalidKeyLength> for SignerError {
     fn from(err: InvalidKeyLength) -> SignerError {
+        SignerError::GenericString(err.to_string())
+    }
+}
+
+impl From<forest_address::Error> for SignerError {
+    fn from(err: forest_address::Error) -> SignerError {
         SignerError::GenericString(err.to_string())
     }
 }
