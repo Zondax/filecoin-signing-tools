@@ -54,6 +54,27 @@ jobs:
             cargo test --lib --all-features
       # No need to save this in cache
 
+  tests_ffi:
+    docker:
+      - image: zondax/rust-ci:latest
+    steps:
+      - checkout
+      - restore-sccache-cache
+      - run:
+          name: Initial configuration
+          command: |
+            sudo apt-get install -y default-jdk g++ gcc valgrind snapd
+            wget -O sdk.install.sh "https://get.sdkman.io"
+            sudo bash sdk.install.sh
+            sudo source "/root/.sdkman/bin/sdkman-init.sh"
+            sudo sdk install kotlin
+            rustup install nightly
+            cargo +nightly install cbindgen
+      - run: OUT_DIR=/tmp/c ./.circleci/test_c.sh
+      - run: OUT_DIR=/tmp/cpp ./.circleci/test_cpp.sh
+      - run: OUT_DIR=/tmp/java ./.circleci/test_java.sh
+      - run: OUT_DIR=/tmp/kotlin ./.circleci/test_kotlin.sh
+
   tests_wasm:
     docker:
       - image: zondax/rust-ci:latest

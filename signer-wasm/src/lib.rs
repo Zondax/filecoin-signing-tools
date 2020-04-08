@@ -3,7 +3,7 @@ use wasm_bindgen::prelude::*;
 
 use filecoin_signer::api::UnsignedMessageAPI;
 use filecoin_signer::utils::{from_hex_string, to_hex_string};
-use filecoin_signer::{CborBuffer, Mnemonic, PrivateKey, Signature};
+use filecoin_signer::{CborBuffer, PrivateKey, Signature};
 use std::convert::TryFrom;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -78,7 +78,7 @@ pub fn mnemonic_generate() -> Result<String, JsValue> {
 pub fn key_derive(mnemonic: String, path: String) -> Result<ExtendedKey, JsValue> {
     set_panic_hook();
 
-    let key_address = filecoin_signer::key_derive(Mnemonic(mnemonic), path)
+    let key_address = filecoin_signer::key_derive(&mnemonic, &path)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
 
     Ok(ExtendedKey { 0: key_address })
@@ -90,7 +90,7 @@ pub fn key_derive_from_seed(seed_hexstring: String, path: String) -> Result<Exte
 
     let seed_bytes = from_hex_string(&seed_hexstring).map_err(|e| JsValue::from(e.to_string()))?;
 
-    let key_address = filecoin_signer::key_derive_from_seed(&seed_bytes, path)
+    let key_address = filecoin_signer::key_derive_from_seed(&seed_bytes, &path)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
 
     Ok(ExtendedKey { 0: key_address })

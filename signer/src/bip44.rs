@@ -30,7 +30,7 @@ impl Bip44Path {
         Ok(Bip44Path(path_array))
     }
 
-    pub fn from_string(path: String) -> Result<Bip44Path, SignerError> {
+    pub fn from_string(path: &str) -> Result<Bip44Path, SignerError> {
         let mut path = path.split('/');
 
         if path.next() != Some("m") {
@@ -241,7 +241,7 @@ mod tests {
         let seed = Seed::new(&mnemonic, "");
         let master = ExtendedSecretKey::try_from(seed.as_bytes()).unwrap();
 
-        let path = Bip44Path::from_string("m/44'/461'/0/0/0".to_string()).unwrap();
+        let path = Bip44Path::from_string("m/44'/461'/0/0/0").unwrap();
         let esk = master.derive_bip44(path).unwrap();
 
         println!("{}", esk);
@@ -260,7 +260,7 @@ mod tests {
     fn create_derive_path() {
         let path_string = "m/44'/461'/0/0/0";
 
-        let result = Bip44Path::from_string(path_string.to_string()).unwrap();
+        let result = Bip44Path::from_string(path_string).unwrap();
 
         assert_eq!(result.0[0], (44 | HARDENED_BIT));
         assert_eq!(result.0[1], (461 | HARDENED_BIT));

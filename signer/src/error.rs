@@ -29,6 +29,22 @@ pub enum SignerError {
     ParseIntError(#[from] ParseIntError),
 }
 
+#[cfg(feature = "with-ffi-support")]
+impl From<SignerError> for ffi_support::ExternError {
+    fn from(e: SignerError) -> Self {
+        let code = match e {
+            SignerError::CBOR(_) => 1,
+            SignerError::Secp256k1(_) => 2,
+            SignerError::Hex(_) => 3,
+            SignerError::HexDecodeError(_) => 4,
+            SignerError::InvalidBigInt(_) => 5,
+            SignerError::GenericString(_) => 6,
+            SignerError::ParseIntError(_) => 7,
+        };
+        Self::new_error(ffi_support::ErrorCode::new(code), e.to_string())
+    }
+}
+
 // We need to use from because InvalidKeyLength does not implement as_dyn_err
 impl From<InvalidKeyLength> for SignerError {
     fn from(err: InvalidKeyLength) -> SignerError {
