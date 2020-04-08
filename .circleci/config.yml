@@ -145,8 +145,15 @@ jobs:
             npm --no-git-tag-version version $CIRCLE_TAG
             npm publish
 
+  rust_publish:
+    docker:
+      - image: zondax/rust-ci:latest
+    steps:
+      - checkout
+      - restore-sccache-cache
+      # TODO: Enable cargo publish
 
-  docs_publish:
+  vuepress_publish:
     docker:
       - image: circleci/node:lts
     steps:
@@ -155,7 +162,7 @@ jobs:
       - run: yarn build
       - add_ssh_keys:
           fingerprints:
-            - "01:f2:c9:e2:64:68:8e:20:52:41:de:1a:bd:19:83:5b"
+            - "19:d8:07:01:0c:64:b4:8b:d1:44:45:39:87:1f:4d:a0"
       - run:
           name: Install and configure dependencies
           command: |
@@ -167,52 +174,63 @@ jobs:
           command: |
             $(yarn global bin)/gh-pages --message "[skip ci] Updates" --dist docs/.vuepress/dist
 
+no-tags: &no-tags
+  filters:
+    tags:
+      ignore: /.*/
+
+only-release-tags: &only-release-tags
+  filters:
+    tags:
+      only: /^v[0-9]+(\.[0-9]+)*/
+    branches:
+      ignore: /.*/
+
 workflows:
-  build_all:
+  version: 2
+
+  default:
     jobs:
       - build:
-          filters:
-            tags:
-              only: /.*/
-      - tests_ffi:
-          filters:
-            tags:
-              only: /.*/
-          requires:
-            - build
+          <<: *no-tags
       - tests_rust:
-          filters:
-            tags:
-              only: /.*/
-          requires:
-            - build
+          <<: *no-tags
       - tests_wasm:
-          filters:
-            tags:
-              only: /.*/
-          requires:
-            - build
+          <<: *no-tags
       - tests_service:
-          filters:
-            tags:
-              only: /.*/
-          requires:
-            - build
-      # Disabling until repository is public
-#      - docs_publish:
+          <<: *no-tags
+
+  release:
+    jobs:
+      - build:
+          <<: *only-release-tags
+      - tests_rust:
+          <<: *only-release-tags
+      - tests_wasm:
+          <<: *only-release-tags
+      - tests_service:
+          <<: *only-release-tags
+
+#      - rust_publish:
+#          <<: *only-release-tags
 #          requires:
+#            - build
 #            - tests_rust
 #            - tests_wasm
 #            - tests_service
-#          filters:
-#            branches:
-#              only: master
+
       - npm_publish:
-          filters:
-            tags:
-              only: /^v[0-9]+(\.[0-9]+)*/
-            branches:
-              only:
-                - master
+          <<: *only-release-tags
           requires:
             - build
+            - tests_rust
+            - tests_wasm
+            - tests_service
+
+      - vuepress_publish:
+          <<: *only-release-tags
+          requires:
+            - build
+            - tests_rust
+            - tests_wasm
+            - tests_service
