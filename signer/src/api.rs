@@ -1,5 +1,5 @@
 use crate::error::SignerError;
-use crate::Signature;
+use crate::signature::{Signature, SignatureSECP256K1};
 use forest_address::{Address, Network};
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use hex::decode;
@@ -53,6 +53,19 @@ pub enum MessageTxAPI {
     SignedMessageAPI(SignedMessageAPI),
 }
 
+impl MessageTxAPI {
+    pub fn get_message(&self) -> UnsignedMessageAPI {
+        match self {
+            MessageTxAPI::UnsignedMessageAPI(unsigned_message_api) => {
+                unsigned_message_api.to_owned()
+            }
+            MessageTxAPI::SignedMessageAPI(signed_message_api) => {
+                signed_message_api.message.to_owned()
+            }
+        }
+    }
+}
+
 /// Structure containing an `UnsignedMessage` or a `SignedMessage` from forest_address
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(untagged)]
@@ -69,9 +82,15 @@ pub struct MessageTxNetwork {
 
 impl From<&Signature> for SignatureAPI {
     fn from(sig: &Signature) -> SignatureAPI {
-        SignatureAPI {
-            sig_type: "secp256k1".to_string(),
-            data: sig.0.to_vec(),
+        match sig {
+            Signature::SignatureSECP256K1(sig_secp256k1) => SignatureAPI {
+                sig_type: "secp256k1".to_string(),
+                data: sig_secp256k1.0.to_vec(),
+            },
+            Signature::SignatureBLS(sig_bls) => SignatureAPI {
+                sig_type: "bls".to_string(),
+                data: sig_bls.0.to_vec(),
+            },
         }
     }
 }

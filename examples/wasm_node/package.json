@@ -19,6 +19,7 @@
     "filecoin"
   ],
   "dependencies": {
+    "@chainsafe/bls": "^1.0.0",
     "bip39": "^3.0.2"
   },
   "devDependencies": {

@@ -3,6 +3,7 @@ const bip32 = require('bip32');
 const bip39 = require('bip39');
 const getDigest = require('./utils').getDigest;
 const secp256k1 = require('secp256k1');
+const bls = require('@chainsafe/bls');
 const fs = require('fs');
 const assert = require('assert');
 
@@ -31,6 +32,20 @@ const EXAMPLE_TRANSACTION_MAINNET = {
     "method": 0,
     "params": ""
 };
+
+const BLS_PUBKEY = "ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc07904";
+const BLS_PRIVATEKEY = "d31ed8d06197f7631e58117d99c5ae4791183f17b6772eb4afc5c840e0f7d412";
+
+const BLS_TRANSACTION = {
+    "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+    "from": "t3vxrizeiel2e2bxg3jhk62dlcutyc26fjnw6ua2sptu32dtjpwxbjawg666nqdngrkvvn45h7yb4qiya6ls7q",
+    "nonce": 1,
+    "value": "100000",
+    "gasprice": "2500",
+    "gaslimit": "25000",
+    "method": 0,
+    "params": ""
+}
 
 const MASTER_KEY = "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5";
 let MASTER_NODE = bip32.fromBase58(MASTER_KEY);
@@ -198,6 +213,42 @@ describe('Key Recover testnet/mainnet', function () {
         assert.equal(recoveredKey.address, "f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
     })
 });
+
+describe('BLS support', function() {
+
+  before(async function() {
+    await bls.initBLS();
+  })
+
+  it('BLS signing', function() {
+    let prvkey = Buffer.from(BLS_PRIVATEKEY, 'hex');
+    let message_cbor = signer_wasm.transactionSerialize(JSON.stringify(BLS_TRANSACTION));
+    let message_buffer = Buffer.from(message_cbor, 'hex');
+
+
+    var signed_tx = signer_wasm.transactionSign(BLS_TRANSACTION, BLS_PRIVATEKEY);
+    console.log(signed_tx.signature);
+    const signature = Buffer.from(signed_tx.signature.data, 'base64');
+
+    // Signature representation is R, S & V
+    console.log("Signature  :", signature.toString('hex'));
+    console.log("Private key:", prvkey.toString('hex'));
+    console.log("Public key :", bls.generatePublicKey(prvkey));
+
+
+
+    /*assert.strictEqual(
+        true,
+        bls.verify(bls.generatePublicKey(prvkey), message_buffer, signature)
+    );*/
+  })
+
+  it('BLS verify', function() {
+
+
+    assert();
+  })
+})
 
 //////////////////////////////////////
 // Parameterized tests
