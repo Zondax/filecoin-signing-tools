@@ -63,7 +63,7 @@ jobs:
       - run:
           name: External dependencies
           command: |
-            sudo apt-get install -y default-jdk g++ gcc valgrind
+            sudo apt-get install -y clang default-jdk g++ gcc libicu-dev libtinfo5 valgrind
       - run:
           name: Cbindgen
           command: |
@@ -85,6 +85,7 @@ jobs:
       - run: OUT_DIR=/tmp/cpp ./.circleci/test_cpp.sh
       - run: OUT_DIR=/tmp/java ./.circleci/test_java.sh
       - run: OUT_DIR=/tmp/kotlin ./.circleci/test_kotlin.sh
+      - run: OUT_DIR=/tmp/swift ./.circleci/test_swift.sh
 
   tests_wasm:
     docker:
