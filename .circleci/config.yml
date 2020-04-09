@@ -64,10 +64,6 @@ jobs:
           name: Initial configuration
           command: |
             sudo apt-get install -y default-jdk g++ gcc valgrind snapd
-            wget -O sdk.install.sh "https://get.sdkman.io"
-            sudo bash sdk.install.sh
-            sudo source "/root/.sdkman/bin/sdkman-init.sh"
-            sudo sdk install kotlin
             rustup install nightly
             cargo +nightly install cbindgen
       - run: OUT_DIR=/tmp/c ./.circleci/test_c.sh
@@ -195,6 +191,8 @@ workflows:
           <<: *no-tags
       - tests_rust:
           <<: *no-tags
+      - tests_ffi:
+          <<: *no-tags
       - tests_wasm:
           <<: *no-tags
       - tests_service:
@@ -205,6 +203,8 @@ workflows:
       - build:
           <<: *only-release-tags
       - tests_rust:
+          <<: *only-release-tags
+      - tests_ffi:
           <<: *only-release-tags
       - tests_wasm:
           <<: *only-release-tags
