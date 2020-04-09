@@ -122,13 +122,11 @@ pub async fn get_status(url: &str, jwt: &str, cid_message: Value) -> Result<Valu
 #[cfg(test)]
 mod tests {
     use crate::service::client::{get_nonce, get_status};
+    use crate::service::test_helper::tests;
 
     use jsonrpc_core::types::error::{Error, ErrorCode};
     use jsonrpc_core::Response;
     use serde_json::json;
-
-    const TEST_URL: &str = "http://86.192.13.13:1234/rpc/v0";
-    const JWT: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
 
     #[tokio::test]
     async fn decode_error() {
@@ -141,7 +139,8 @@ mod tests {
     async fn example_something_else_and_retrieve_nonce() {
         let addr = "t02";
 
-        let nonce = get_nonce(&TEST_URL, &JWT, &addr).await;
+        let credentials = tests::get_remote_credentials();
+        let nonce = get_nonce(&credentials.url, &credentials.jwt, &addr).await;
 
         println!("{:?}", nonce);
 
@@ -164,7 +163,10 @@ mod tests {
             "Params":""
         });
 
-        let status = get_status(&TEST_URL, &JWT, params).await.unwrap();
+        let credentials = tests::get_remote_credentials();
+        let status = get_status(&credentials.url, &credentials.jwt, params)
+            .await
+            .unwrap();
 
         println!("{:?}", status);
 
@@ -176,7 +178,8 @@ mod tests {
         let params =
             json!({ "/": "bafy2bzaceaxm23epjsmh75yvzcecsrbavlmkcxnva66bkdebdcnyw3bjrc74u" });
 
-        let status = get_status(&TEST_URL, &JWT, params).await;
+        let credentials = tests::get_remote_credentials();
+        let status = get_status(&credentials.url, &credentials.jwt, params).await;
 
         println!("{:?}", status);
         let _err_jsonrpc = Error {
@@ -194,7 +197,8 @@ mod tests {
         let params =
             json!({ "/": "bafy2bzacedbo3svni7n2jb57exuqh4v5zvjjethf3p74zgv7yfdtczce2yu4u" });
 
-        let status = get_status(&TEST_URL, &JWT, params).await;
+        let credentials = tests::get_remote_credentials();
+        let status = get_status(&credentials.url, &credentials.jwt, params).await;
 
         println!("{:?}", status);
         assert!(status.is_err());

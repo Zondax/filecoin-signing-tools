@@ -1,3 +1,8 @@
+wget -O sdk.install.sh "https://get.sdkman.io"
+bash sdk.install.sh
+. ~/.sdkman/bin/sdkman-init.sh
+sdk install kotlin
+
 cd signer-ffi
 mkdir $OUT_DIR
 cp -r ../examples/ffi/kotlin/* $OUT_DIR

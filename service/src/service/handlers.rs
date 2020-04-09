@@ -79,12 +79,12 @@ impl warp::reject::Reject for ServiceError {}
 mod tests {
     use crate::config::RemoteNodeSection;
     use crate::service::handlers::v0_post;
+    use crate::service::test_helper::tests;
+
+    use crate::service::test_helper::tests::get_remote_credentials;
     use futures_await_test::async_test;
     use jsonrpc_core::{Call, Id, MethodCall, Params, Version};
     use warp::Reply;
-
-    const TEST_URL: &str = "http://86.192.13.13:1234/rpc/v0";
-    const JWT: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
 
     #[async_test]
     async fn returns_jsonrpc_error_not_found() {
@@ -95,11 +95,7 @@ mod tests {
             id: Id::Num(1),
         });
 
-        let config = RemoteNodeSection {
-            url: TEST_URL.to_string(),
-            jwt: JWT.to_string(),
-        };
-
+        let config = get_remote_credentials();
         let response = v0_post(bad_call, config).await;
 
         assert!(response.is_err());
@@ -116,11 +112,7 @@ mod tests {
             id: Id::Num(1),
         });
 
-        let config = RemoteNodeSection {
-            url: TEST_URL.to_string(),
-            jwt: JWT.to_string(),
-        };
-
+        let config = get_remote_credentials();
         let reply = v0_post(bad_call, config).await.unwrap();
 
         let response = reply.into_response();
