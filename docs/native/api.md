@@ -131,11 +131,17 @@ match transaction {
 
 ## transaction\_sign\_raw
 
-Sign a transaction and return a raw signature (RSV format).
+Sign a transaction and return a raw signature. Now support `Secp256k1` signing (RSV format) and `BLS` signing. The type of signature chosen will be dictated by the protocol of the `from` field of the transaction.
+
+e.g :
+
+* "t**1**b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka" is a [protocol 1 address](https://filecoin-project.github.io/specs/#protocol-1-libsecpk1-elliptic-curve-public-keys) therefore `transaction_sign_raw` will attempt to the sign the transaction using `Secp256k1`.
+
+* "t**3**vxrizeiel2e2bxg3jhk62dlcutyc26fjnw6ua2sptu32dtjpwxbjawg666nqdngrkvvn45h7yb4qiya6ls7q" is a [protocol 3 address](https://filecoin-project.github.io/specs/#protocol-3-bls). Here we will use `BLS` signing scheme.
 
 Arguments:
 * **transaction**: a filecoin transaction;
-* **privatekey**: a private key as hexstring;
+* **privatekey**: a private key as hexstring (should be the associated private key of `from` address of the transaction);
 
 ```rust
 use signer::{transaction_sign_raw, PrivateKey};
@@ -164,7 +170,13 @@ println!("{:?}", raw_signature);
 
 ## transaction_sign
 
-Sign a transaction and return a signed message (message + signature).
+Sign a transaction and return a signed message (message + signature). Now support `Secp256k1` signing (RSV format) and `BLS` signing. The type of signature chosen will be dictated by the protocol of the `from` field of the transaction.
+
+e.g :
+
+* "t**1**b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka" is a [protocol 1 address](https://filecoin-project.github.io/specs/#protocol-1-libsecpk1-elliptic-curve-public-keys) therefore `transaction_sign_raw` will attempt to the sign the transaction using `Secp256k1`.
+
+* "t**3**vxrizeiel2e2bxg3jhk62dlcutyc26fjnw6ua2sptu32dtjpwxbjawg666nqdngrkvvn45h7yb4qiya6ls7q" is a [protocol 3 address](https://filecoin-project.github.io/specs/#protocol-3-bls). Here we will use `BLS` signing scheme.
 
 ```rust
 pub struct SignedMessageAPI {
@@ -175,7 +187,7 @@ pub struct SignedMessageAPI {
 
 Arguments:
 * **transaction**: a filecoin transaction;
-* **privatekey**: a private key as hexstring;
+* **privatekey**: a private key as hexstring (should match the address of the `from` field);
 
 ```rust
 use signer::{transaction_sign, PrivateKey};
@@ -204,7 +216,7 @@ println!("{:?}", raw_signature);
 
 ## verify_signature
 
-Verify a signature. Return a boolean.
+Verify a signature. Return a boolean. Now support `Secp256k1` and `BLS` scheme.
 
 Arguments :
 * **signature**: RSV format signature;
@@ -237,4 +249,16 @@ let mut signature = transaction_sign_raw(&message_user_api, &private_key).unwrap
 let result = verify_signature(&signature, &cbor_data).unwrap()
 
 println!("{}", result);
+```
+
+## verify\_aggregated\_signature
+
+Verify BLS aggragated signature.
+
+Arguments :
+* **signature**: BLS aggregated signature;
+* **CBOR transactions**: An array of CBOR transactions to verify;
+
+```rust
+  todo!();
 ```
