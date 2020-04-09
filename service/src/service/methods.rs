@@ -260,12 +260,10 @@ pub async fn send_signed_tx(
 mod tests {
     use crate::config::RemoteNodeSection;
     use crate::service::methods::get_status;
+    use crate::service::test_helper::tests;
+    use crate::service::test_helper::tests::get_remote_credentials;
     use jsonrpc_core::{Id, MethodCall, Params, Success, Version};
     use serde_json::json;
-
-    //const TEST_URL: &str = "http://86.192.13.13:1234/rpc/v0";
-    const TEST_URL: &str = "https://proxy.openworklabs.com/rpc/v0";
-    const JWT: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
 
     #[tokio::test]
     async fn example_get_status_transaction() {
@@ -295,11 +293,7 @@ mod tests {
             id: Id::Num(123),
         };
 
-        let config = RemoteNodeSection {
-            url: TEST_URL.to_string(),
-            jwt: JWT.to_string(),
-        };
-
+        let config = get_remote_credentials();
         let status = get_status(mc, config).await.unwrap();
 
         println!("{:?}", status);
@@ -332,11 +326,7 @@ mod tests {
             id: Id::Num(0),
         };
 
-        let config = RemoteNodeSection {
-            url: TEST_URL.to_string(),
-            jwt: JWT.to_string(),
-        };
-
+        let config = get_remote_credentials();
         let status = get_status(mc, config).await;
 
         println!("{:?}", status);
@@ -367,11 +357,7 @@ mod tests {
             id: Id::Num(0),
         };
 
-        let config = RemoteNodeSection {
-            url: TEST_URL.to_string(),
-            jwt: JWT.to_string(),
-        };
-
+        let config = get_remote_credentials();
         let status = get_status(mc, config).await;
 
         println!("{:?}", status);
