@@ -1,10 +1,8 @@
-cd signer-ffi
 mkdir $OUT_DIR
-cp -r ../examples/ffi/c/* $OUT_DIR
-rustup default nightly
-cbindgen --config cbindgen.toml --crate filecoin-signer-ffi --lang c --output $OUT_DIR/filecoin_signer_ffi.h
-cargo build
-cp ../target/debug/libfilecoin_signer_ffi.so $OUT_DIR
-( cd $OUT_DIR; gcc main.c -L. -lfilecoin_signer_ffi -o main )
-LD_LIBRARY_PATH=$OUT_DIR $OUT_DIR/main
-LD_LIBRARY_PATH=$OUT_DIR valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose $OUT_DIR/main
+cp -r ./examples/ffi/c/* $OUT_DIR
+cd $OUT_DIR;
+cp /tmp/filecoin_signer_ffi.h .
+cp /tmp/libfilecoin_signer_ffi.so .
+gcc main.c -L. -lfilecoin_signer_ffi -o ./main
+LD_LIBRARY_PATH=. ./main
+LD_LIBRARY_PATH=. valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./main
