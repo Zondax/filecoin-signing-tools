@@ -1,26 +1,26 @@
+extern crate filecoin_signer;
 extern crate rand;
 extern crate rayon;
-extern crate filecoin_signer;
 
 use std::time::{Duration, Instant};
 
 use bls_signatures::paired::bls12_381::G2;
-use bls_signatures::*;
 use bls_signatures::Serialize;
+use bls_signatures::*;
 use rand::{Rng, SeedableRng};
 use rand_xorshift::XorShiftRng;
 use rayon::prelude::*;
 
 use filecoin_signer::api::UnsignedMessageAPI;
 use forest_address::Address;
+use forest_encoding::to_vec;
 use forest_message::UnsignedMessage;
 use std::convert::TryFrom;
-use forest_encoding::to_vec;
 
 use hex::encode;
-use std::fs;
 use serde;
 use serde_json;
+use std::fs;
 
 #[derive(serde::Serialize)]
 struct TestCase {
@@ -54,47 +54,48 @@ fn run(num_messages: usize) {
     // generate messages
     let messages: Vec<_> = private_keys
         .par_iter()
-        .map(|sk| {
-            UnsignedMessageAPI {
-                to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
-                from: Address::new_bls(sk.public_key().as_bytes()).unwrap().to_string(),
-                nonce: 1,
-                value: "100000".to_string(),
-                gas_price: "2500".to_string(),
-                gas_limit: "25000".to_string(),
-                method: 0,
-                params: "".to_owned(),
-            }
+        .map(|sk| UnsignedMessageAPI {
+            to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
+            from: Address::new_bls(sk.public_key().as_bytes())
+                .unwrap()
+                .to_string(),
+            nonce: 1,
+            value: "100000".to_string(),
+            gas_price: "2500".to_string(),
+            gas_limit: "25000".to_string(),
+            method: 0,
+            params: "".to_owned(),
         })
         .collect();
 
     // sign messages
     let sigs: Vec<Signature>;
     sigs = messages
-            .par_iter()
-            .zip(private_keys.par_iter())
-            .map(|(message_api, sk)| {
-                let message = UnsignedMessage::try_from(message_api).expect("FIXME");
+        .par_iter()
+        .zip(private_keys.par_iter())
+        .map(|(message_api, sk)| {
+            let message = UnsignedMessage::try_from(message_api).expect("FIXME");
 
-                let message_cbor = to_vec(&message).expect("Cbor serialization failed");
+            let message_cbor = to_vec(&message).expect("Cbor serialization failed");
 
-                sk.sign(message_cbor)
-            })
-            .collect::<Vec<Signature>>();
+            sk.sign(message_cbor)
+        })
+        .collect::<Vec<Signature>>();
 
     let public_keys: Vec<PublicKey>;
     public_keys = private_keys
-            .par_iter()
-            .map(|sk| sk.public_key())
-            .collect::<Vec<_>>();
+        .par_iter()
+        .map(|sk| sk.public_key())
+        .collect::<Vec<_>>();
 
-    let test_cases = sigs.par_iter()
+    let test_cases = sigs
+        .par_iter()
         .zip(private_keys.par_iter())
         .zip(messages.par_iter())
         .map(|((sig, sk), message_api)| {
             let pk = sk.public_key();
 
-            TestCase{
+            TestCase {
                 pk: encode(pk.as_bytes()),
                 sk: encode(sk.as_bytes()),
                 sig: encode(sig.as_bytes()),
@@ -103,7 +104,11 @@ fn run(num_messages: usize) {
         })
         .collect::<Vec<_>>();
 
-    fs::write("generated_test_cases.json", serde_json::to_string_pretty(&test_cases).unwrap()).expect("Unable to write file");
+    fs::write(
+        "generated_test_cases.json",
+        serde_json::to_string_pretty(&test_cases).unwrap(),
+    )
+    .expect("Unable to write file");
 }
 
 fn main() {
