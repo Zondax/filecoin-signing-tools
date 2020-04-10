@@ -32,7 +32,7 @@ pub struct GetNonceParamsAPI {
 pub struct KeyDeriveParamsAPI {
     pub mnemonic: String,
     pub path: String,
-    #[serde(default = "")]
+    #[serde(default)]
     pub password: String,
 }
 
