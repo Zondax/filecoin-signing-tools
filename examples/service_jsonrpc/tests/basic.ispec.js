@@ -73,12 +73,13 @@ test("key_derive invalid path parameter", async () => {
   console.log(response);
 
   expect(response).toHaveProperty("error");
-  expect(response.error.message).toMatch(/Invalid params/);
+  expect(response.error.message).toMatch(/Path should start with `m`/);
 });
 
 test("key_derive missing password parameter (verify default)", async () => {
   const path = "m/44'/461'/0/0/0";
   const response = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path], 1);
+  const child = EXPECTED_ROOT_NODE.derivePath(path);
   console.log(response);
 
   expect(response).toHaveProperty("result");
