@@ -83,7 +83,7 @@ describe('Key generation / derivation', function () {
     });
 
     it('Key Derive', () => {
-        const keypair = signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1");
+        const keypair = signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "");
 
         console.log("Public Key Raw         :", keypair.public_raw);
         console.log("Public Key             :", keypair.public_hexstring);
@@ -114,7 +114,7 @@ describe('Key generation / derivation', function () {
 
     it('Key Derive Invalid Path', () => {
         assert.throws(
-            () => signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/a/0/1"),
+            () => signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/a/0/1", ""),
             /Cannot parse integer/
         );
     });

@@ -32,6 +32,8 @@ pub struct GetNonceParamsAPI {
 pub struct KeyDeriveParamsAPI {
     pub mnemonic: String,
     pub path: String,
+    #[serde(default = "")]
+    pub password: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -83,7 +85,7 @@ pub async fn key_generate_mnemonic(
 pub async fn key_derive(c: MethodCall, _: RemoteNodeSection) -> Result<Success, ServiceError> {
     let params = c.params.parse::<KeyDeriveParamsAPI>()?;
 
-    let key_address = filecoin_signer::key_derive(&params.mnemonic, &params.path)?;
+    let key_address = filecoin_signer::key_derive(&params.mnemonic, &params.path, &params.password)?;
 
     let result = KeyDeriveResultAPI {
         public_hexstring: to_hex_string(&key_address.public_key.0),

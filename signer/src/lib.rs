@@ -108,17 +108,18 @@ pub fn key_generate_mnemonic() -> Result<Mnemonic, SignerError> {
     Ok(Mnemonic(mnemonic.to_string()))
 }
 
-/// Returns a public key, private key and address given a mnemonic and derivation path
+/// Returns a public key, private key and address given a mnemonic, derivation path and a password
 ///
 /// # Arguments
 ///
 /// * `mnemonic` - A string containing a 24-words English mnemonic
 /// * `path` - A string containing a derivation path
-pub fn key_derive(mnemonic: &str, path: &str) -> Result<ExtendedKey, SignerError> {
+/// * `password` - Password to decrypt seed, if none use and empty string (e.g "")
+pub fn key_derive(mnemonic: &str, path: &str, password: &str) -> Result<ExtendedKey, SignerError> {
     let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic, Language::English)
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-    let seed = Seed::new(&mnemonic, "");
+    let seed = Seed::new(&mnemonic, password);
 
     let master = ExtendedSecretKey::try_from(seed.as_bytes())?;
 
@@ -388,7 +389,7 @@ mod tests {
     fn derive_key() {
         let mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
 
-        let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0").unwrap();
+        let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "").unwrap();
 
         assert_eq!(
             to_hex_string(&extended_key.private_key.0),
