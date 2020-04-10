@@ -376,3 +376,42 @@ test("send_sign", async () => {
 
   expect(response).toHaveProperty("result");
 });
+
+test("send_sign wrong network", async () => {
+  const path = "m/44'/461'/0/0/0";
+  const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path], 1);
+
+  console.log(keyAddressResponse);
+
+  // Get Nonce
+  const nonceResponse = await callMethod(URL, "get_nonce", [keyAddressResponse.result.address], 1);
+
+  console.log("-----------------------------------------------------------------------------------");
+  let nonce = nonceResponse.result;
+  nonce++;
+  console.log("Nonce: ", nonce);
+
+  const transaction = {
+    to: "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+    from: "f" + keyAddressResponse.result.address.slice(1),
+    nonce: nonce,
+    value: "1",
+    gasprice: "0",
+    gaslimit: "1000000",
+    method: 0,
+    params: "",
+  };
+
+  console.log("-----------------------------------------------------------------------------------");
+
+  const response = await callMethod(
+    URL,
+    "send_sign",
+    [transaction, keyAddressResponse.result.private_hexstring],
+    2,
+  );
+
+  console.log("error: ", response);
+
+  expect(response).toHaveProperty("error");
+});
