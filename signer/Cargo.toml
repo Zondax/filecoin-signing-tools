@@ -18,11 +18,11 @@ serde_cbor = "0.11.1"
 hex = "0.4.0"
 getrandom="0.1.14"
 
-vm = { git = "https://github.com/zondax/forest", branch="master" }
-forest_message = { git = "https://github.com/zondax/forest", branch="master" }
-forest_address = { git = "https://github.com/zondax/forest", branch="master" }
-forest_encoding = { git = "https://github.com/zondax/forest", branch="master" }
-num_bigint_chainsafe = { package = "forest_bigint", git = "https://github.com/zondax/forest", branch="master"}
+vm = { git = "https://github.com/zondax/forest", tag="working" }
+forest_message = { git = "https://github.com/zondax/forest", tag="working" }
+forest_address = { git = "https://github.com/zondax/forest", tag="working" }
+forest_encoding = { git = "https://github.com/zondax/forest", tag="working" }
+num_bigint_chainsafe = { package = "forest_bigint", git = "https://github.com/zondax/forest", tag="working"}
 
 libsecp256k1 = "0.3.4"
 blake2b_simd = "0.5.10"
