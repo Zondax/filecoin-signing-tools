@@ -25,6 +25,7 @@ Derive a child key from a mnemonic following a [BIP44 path](https://github.com/b
 Arguments :
 * **mnemonic**: a string containing the words;
 * **path**: a BIP44 path;
+* **password**: for encrypted seed if none use an empty string (e.g "")
 
 ```javascript
 const signer_wasm = require('@zondax/filecoin-signer-wasm');
@@ -35,7 +36,7 @@ const mnemonic = "equip will roof matter pink blind book anxiety banner elbow su
 
 const path = "m/44'/461'/0/0/1";
 
-const keypair = signer_wasm.key_derive(mnemonic, path);
+const keypair = signer_wasm.key_derive(mnemonic, path, "");
 
 console.log(keypair);
 ```

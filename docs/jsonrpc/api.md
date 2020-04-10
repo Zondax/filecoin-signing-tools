@@ -40,6 +40,7 @@ Derive a child key from a mnemonic following a [BIP44 path](https://github.com/b
 Arguments :
 * **mnemonic**: a string containing the words;
 * **path**: a BIP44 path;
+* **password (optional)**: for encrypted seed;
 
 ```javascript
 const axios = require("axios");

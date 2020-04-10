@@ -20,6 +20,7 @@ Derive a child key from a mnemonic following a [BIP44 path](https://github.com/b
 Arguments :
 * **mnemonic**: a string containing the words;
 * **path**: a BIP44 path;
+* **password**: for encrypted seed if none use an empty string (e.g "")
 
 ```rust
 use signer::key_derive;
@@ -28,7 +29,7 @@ use bip39::{Mnemonic, MnemonicType, Language};
 let mnemonic = Mnemonic::new(MnemonicType::Words12, Language::English);
 let path = "m/44'/461'/0/0/1";
 
-let extended_key = key_derive(mnemonic.phrase(), path).unwrap();
+let extended_key = key_derive(mnemonic.phrase(), path, "").unwrap();
 
 println!("{:?}", extended_key);
 ```
