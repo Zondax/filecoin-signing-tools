@@ -119,6 +119,29 @@ pub async fn get_status(url: &str, jwt: &str, cid_message: Value) -> Result<Valu
     Ok(result)
 }
 
+pub async fn get_balance(url: &str, jwt: &str, addr: &str) -> Result<Value, ServiceError> {
+    let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
+
+    // Prepare request
+    let m = MethodCall {
+        jsonrpc: Some(Version::V2),
+        method: "Filecoin.WalletBalance".to_owned(),
+        params: Params::Array(vec![Value::from(addr)]),
+        id: Id::Num(call_id),
+    };
+
+    let resp = make_rpc_call(url, jwt, &m).await?;
+
+    // Handle response
+    let balance = match resp {
+        Response::Single(Success(s)) => s.result,
+        Response::Single(Failure(f)) => return Err(ServiceError::RemoteNode(JSONRPC(f.error))),
+        _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
+    };
+
+    Ok(balance)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::service::client::{get_nonce, get_status};
