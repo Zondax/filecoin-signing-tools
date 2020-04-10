@@ -256,6 +256,28 @@ pub async fn send_signed_tx(
     Ok(so)
 }
 
+pub async fn send_sign(c: MethodCall, config: RemoteNodeSection) -> Result<Success, ServiceError> {
+    let params = c.params.parse::<SignTransactionParamsAPI>()?;
+
+    let private_key = PrivateKey::try_from(params.prvkey_hex)?;
+
+    // signed message
+    let signed_message = filecoin_signer::transaction_sign(&params.transaction, &private_key)?;
+
+    let signed_message_value = serde_json::to_value(&signed_message)?;
+
+    // send to remote node
+    let result = client::send_signed_tx(&config.url, &config.jwt, signed_message_value).await?;
+
+    let so = Success {
+        jsonrpc: Some(Version::V2),
+        result,
+        id: c.id,
+    };
+
+    Ok(so)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::config::RemoteNodeSection;
