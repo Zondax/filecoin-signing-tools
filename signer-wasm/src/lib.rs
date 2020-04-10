@@ -75,7 +75,11 @@ pub fn mnemonic_generate() -> Result<String, JsValue> {
 }
 
 #[wasm_bindgen]
-pub fn key_derive(mnemonic: String, path: String, password: String) -> Result<ExtendedKey, JsValue> {
+pub fn key_derive(
+    mnemonic: String,
+    path: String,
+    password: String,
+) -> Result<ExtendedKey, JsValue> {
     set_panic_hook();
 
     let key_address = filecoin_signer::key_derive(&mnemonic, &path, &password)
