@@ -3,13 +3,12 @@ bash sdk.install.sh
 . ~/.sdkman/bin/sdkman-init.sh
 sdk install kotlin
 
-cd signer-ffi
 mkdir $OUT_DIR
-cp -r ../examples/ffi/kotlin/* $OUT_DIR
-cp -r java/* $OUT_DIR
-javac -h $OUT_DIR java/src/main/java/ch/zondax/FilecoinSigner.java 
-cargo build --features with-jni
-cp ../target/debug/libfilecoin_signer_ffi.so $OUT_DIR
-javac -d $OUT_DIR $OUT_DIR/src/main/java/ch/zondax/FilecoinSigner.java
-kotlinc -cp $OUT_DIR $OUT_DIR/Main.kt -include-runtime -d $OUT_DIR
-( cd $OUT_DIR; kotlin -Djava.library.path="." -J-ea MainKt )
+cp -r ./examples/ffi/kotlin/* $OUT_DIR
+cp -r ./signer-ffi/java/* $OUT_DIR
+cd $OUT_DIR
+cp /tmp/filecoin_signer_ffi.h .
+cp /tmp/libfilecoin_signer_ffi_java.so ./libfilecoin_signer_ffi.so
+javac -d . -h . ./src/main/java/ch/zondax/FilecoinSigner.java 
+kotlinc -cp . ./Main.kt -include-runtime -d .
+kotlin -Djava.library.path="." -J-ea MainKt

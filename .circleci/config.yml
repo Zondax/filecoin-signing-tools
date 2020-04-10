@@ -61,15 +61,31 @@ jobs:
       - checkout
       - restore-sccache-cache
       - run:
-          name: Initial configuration
+          name: External dependencies
           command: |
-            sudo apt-get install -y default-jdk g++ gcc valgrind snapd
+            sudo apt-get install -y clang default-jdk g++ gcc libicu-dev libtinfo5 valgrind
+      - run:
+          name: Cbindgen
+          command: |
+            cd signer-ffi
             rustup install nightly
-            cargo +nightly install cbindgen
+            rustup default nightly
+            cargo install cbindgen
+            cbindgen --config cbindgen.toml --crate filecoin-signer-ffi --lang c --output /tmp/filecoin_signer_ffi.h
+            cbindgen --config cbindgen.toml --crate filecoin-signer-ffi --lang c++ --output /tmp/filecoin_signer_ffi_cpp.h
+      - run:
+          name: Libraries
+          command: |
+            cd signer-ffi
+            cargo build
+            cp ../target/debug/libfilecoin_signer_ffi.so /tmp/libfilecoin_signer_ffi.so
+            cargo build --features with-jni
+            cp ../target/debug/libfilecoin_signer_ffi.so /tmp/libfilecoin_signer_ffi_java.so
       - run: OUT_DIR=/tmp/c ./.circleci/test_c.sh
       - run: OUT_DIR=/tmp/cpp ./.circleci/test_cpp.sh
       - run: OUT_DIR=/tmp/java ./.circleci/test_java.sh
       - run: OUT_DIR=/tmp/kotlin ./.circleci/test_kotlin.sh
+      - run: OUT_DIR=/tmp/swift ./.circleci/test_swift.sh
 
   tests_wasm:
     docker:
