@@ -63,7 +63,7 @@ jobs:
       - run:
           name: External dependencies
           command: |
-            sudo apt-get install -y clang default-jdk g++ gcc libicu-dev libtinfo5 valgrind
+            sudo apt-get install -y clang default-jdk g++ gcc golang libicu-dev libtinfo5 valgrind
       - run:
           name: Cbindgen
           command: |
@@ -83,6 +83,7 @@ jobs:
             cp ../target/debug/libfilecoin_signer_ffi.so /tmp/libfilecoin_signer_ffi_java.so
       - run: OUT_DIR=/tmp/c ./.circleci/test_c.sh
       - run: OUT_DIR=/tmp/cpp ./.circleci/test_cpp.sh
+      - run: OUT_DIR=/tmp/go ./.circleci/test_go.sh
       - run: OUT_DIR=/tmp/java ./.circleci/test_java.sh
       - run: OUT_DIR=/tmp/kotlin ./.circleci/test_kotlin.sh
       - run: OUT_DIR=/tmp/swift ./.circleci/test_swift.sh
