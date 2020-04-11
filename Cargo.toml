@@ -10,7 +10,3 @@ members = [
 [profile.release]
 # Tell `rustc` to optimize for small code size.
 opt-level = "s"
-
-[patch.crates-io]
-sha2ni = { git = "https://github.com/dignifiedquire/hashes", branch="sha2ni" }
-fff = { git = "https://github.com/filecoin-project/ff", branch="wasm-compat" }
