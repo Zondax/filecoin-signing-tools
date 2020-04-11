@@ -24,7 +24,7 @@ const EXAMPLE_TRANSACTION = {
   nonce: 1,
   value: "100000",
   gasprice: "2500",
-  gaslimit: "25000",
+  gaslimit: 25000,
   method: 0,
   params: "",
 };
@@ -184,7 +184,7 @@ test("sign_invalid_transaction", async () => {
     from: "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
     value: "100000",
     gasprice: "2500",
-    gaslimit: "25000",
+    gaslimit: 25000,
     method: 0,
     params: "",
   };
@@ -300,13 +300,15 @@ test("send_signed_tx", async () => {
   nonce++;
   console.log("Nonce: ", nonce);
 
+  expect(!isNaN(output));
+
   const transaction = {
     to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
     from: keyAddressResponse.result.address,
     nonce: nonce,
     value: "1",
     gasprice: "0",
-    gaslimit: "1000000",
+    gaslimit: 1000000,
     method: 0,
     params: "",
   };
