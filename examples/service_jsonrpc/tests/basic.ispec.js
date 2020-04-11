@@ -286,7 +286,7 @@ test("get_nonce", async () => {
   expect(response.result).toBeGreaterThanOrEqual(2);
 });
 
-test("send_signed_tx", async () => {
+test.skip("send_signed_tx", async () => {
   const path = "m/44'/461'/0/0/0";
   const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path], 1);
 
