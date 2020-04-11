@@ -309,11 +309,12 @@ pub fn verify_signature(
 
     // Decode the CBOR transaction hex string into CBOR transaction buffer
     let message_digest = utils::get_digest(&cbor_buffer.0);
-    let message = Message::parse_slice(&message_digest)?;
 
-    let publickey = recover(&message, &signature_rs, &recovery_id)?;
+    let blob_to_sign = Message::parse_slice(&message_digest)?;
 
-    let from = Address::new_secp256k1(&publickey.serialize_compressed().to_vec())
+    let public_key = recover(&blob_to_sign, &signature_rs, &recovery_id)?;
+
+    let from = Address::new_secp256k1(&public_key.serialize_compressed().to_vec())
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let tx_from = match tx {
@@ -322,11 +323,12 @@ pub fn verify_signature(
     };
 
     // Compare recovered public key with the public key from the transaction
-    if tx_from != from.to_string() {
+    let expected_from = from.to_string();
+    if tx_from != expected_from {
         return Ok(false);
     }
 
-    Ok(verify(&message, &signature_rs, &publickey))
+    Ok(verify(&blob_to_sign, &signature_rs, &public_key))
 }
 
 #[cfg(test)]
@@ -338,6 +340,7 @@ mod tests {
         transaction_sign_raw, verify_signature, CborBuffer, Mnemonic, PrivateKey,
     };
     use bip39::{Language, Seed};
+    use forest_encoding::to_vec;
     use std::convert::TryFrom;
 
     // NOTE: not the same transaction used in other tests.
@@ -354,7 +357,7 @@ mod tests {
         }"#;
 
     const EXAMPLE_CBOR_DATA: &str =
-        "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040";
+        "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4000040";
 
     /* signed message :
      [
@@ -365,7 +368,7 @@ mod tests {
      ]
     */
     const SIGNED_MESSAGE_CBOR: &str =
-        "82885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040584201541025CA93D7D15508854520549F6A3C1582FBDE1A511F21B12DCB3E49E8BDFF3EB824CD8236C66B120B45941FD07252908131FFB1DFFA003813B9F2BDD0C2F601";
+        "82885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4000040584201541025CA93D7D15508854520549F6A3C1582FBDE1A511F21B12DCB3E49E8BDFF3EB824CD8236C66B120B45941FD07252908131FFB1DFFA003813B9F2BDD0C2F601";
 
     const EXAMPLE_PRIVATE_KEY: &str =
         "f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a";
@@ -539,7 +542,6 @@ mod tests {
             MessageTxAPI::SignedMessageAPI(tx) => (tx.message.to, tx.message.from),
         };
 
-        println!("{}", to.to_string());
         assert_eq!(to, "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
         assert_eq!(
             from,
@@ -549,22 +551,30 @@ mod tests {
 
     #[test]
     fn verify_invalid_signature() {
-        let cbor_data = CborBuffer(from_hex_string(EXAMPLE_CBOR_DATA).unwrap());
-
         // Path 44'/461'/0/0/0
         let private_key = PrivateKey::try_from(EXAMPLE_PRIVATE_KEY.to_string()).unwrap();
+        let message_user_api: UnsignedMessageAPI = serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE)
+            .expect("Could not serialize unsigned message");
 
-        let message_user_api: UnsignedMessageAPI =
-            serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE).expect("FIXME");
+        let public_key = key_recover(&private_key, false).unwrap();
 
+        // Sign
         let mut signature = transaction_sign_raw(&message_user_api, &private_key).unwrap();
 
-        assert!(verify_signature(&signature, &cbor_data).unwrap());
+        // Verify
+        let message = forest_message::UnsignedMessage::try_from(&message_user_api)
+            .expect("Could not serialize unsigned message");
+        let message_cbor = CborBuffer(to_vec(&message).unwrap());
+
+        let valid_signature = verify_signature(&signature, &message_cbor);
+        assert!(valid_signature.unwrap());
 
         // Tampered signature and look if it valid
         signature.0[5] = 0x01;
         signature.0[34] = 0x00;
 
-        assert!(!verify_signature(&signature, &cbor_data).unwrap());
+        // Verify again
+        let valid_signature = verify_signature(&signature, &message_cbor);
+        assert!(valid_signature.is_err() || !valid_signature.unwrap());
     }
 }

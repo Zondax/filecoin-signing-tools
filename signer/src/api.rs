@@ -61,7 +61,7 @@ pub enum MessageTx {
     SignedMessage(SignedMessage),
 }
 
-/// Message structure with newtork parameter
+/// Message structure with network parameter
 pub struct MessageTxNetwork {
     pub message_tx: MessageTx,
     pub testnet: bool,
