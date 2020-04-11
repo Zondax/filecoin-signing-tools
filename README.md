@@ -1,47 +1,49 @@
-# Filecoin Signing Tools
+# Filecoin Signing Tools (FFI)
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![CircleCI](https://circleci.com/gh/Zondax/filecoin-rs.svg?style=shield&circle-token=51b2d5fe68c0eb73436dace6f47fa0a387169ef5)](https://circleci.com/gh/Zondax/filecoin-rs)
 [![npm version](https://badge.fury.io/js/%40zondax%2Ffilecoin-signer-wasm.svg)](https://badge.fury.io/js/%40zondax%2Ffilecoin-signer-wasm)
 
-For complete documentation, please refer [here](http://zondax.ch).
+You can find more information in the [Documentation Site](https://zondax.github.io/filecoin-rs/)
 
-This repository provides the following:
-
-- Filecoin service
-- Filecoin signing library
-- JS Integration examples
-
-# Filecoin service
-
-Provides a backend service that will be typically used by exchanges. 
-
-### Main features:
-
+- Rust Native Library
+  - Secp256k1
+  - Multisig (Work in progress)
+  - BLS (Work in progress)
+  - Hardware Wallet support (Ledger Nano S/X)
+  - Filecoin transactions (CBOR <> JSON serialization)
+- WASM Library
+  - Secp256k1
+  - Multisig (Work in progress)
+  - BLS (Work in progress)
+  - Hardware Wallet support (Ledger Nano S/X)
+  - Filecoin transactions (CBOR <> JSON serialization)
 - JSON RPC Server
-    - Exposes most of the functions available in the signing library
-- JSON RPC Client. Lotus integration. 
-    - Support is limited to only required methods:
-        - determine testnet vs mainnet 
-        - retrieve nonce
-        - submit signed transaction
-        - retrieve tx status
+  - Focus: Exchange integration
+  - Exposes most of the functions available in the signing library
+  - Lotus integration:
+    - nonce caching
+    - determine testnet vs mainnet
+    - retrieve nonce
+    - submit signed transaction
+    - retrieve tx status
+- Examples
 
-# Filecoin signing library
-
-### Main features:
-
-- CBOR <-> JSON serialization and deserialization
-- Secp256k1 signing, etc.
-- Can be compiled as WASM
-- API specs (work in progress)
-
-# Examples (Work in progress)
-
-- *examples/jsonrpc* minimal JS examples/integration tests for signing service
-- *examples/www* how to use the signing library when compiled as WASM from a browser
-- *examples/wasm* integration tests written in JS for WASM
-
-# References
-
-[Template/Tytorial: How to use a WASM npm package](https://rustwasm.github.io/docs/wasm-pack/tutorials/npm-browser-packages/using-your-library.html)
+  | From            | To              | Status                           |                                  |
+  | --------------- | --------------- | -------------------------------- | -------------------------------- |
+  | Node.js         | JSONRPC Service | Ready :heavy_check_mark:         | [Link](examples/service_jsonrpc) |
+  |                 |                 |                                  |                                  |
+  | Browser         | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm_browser)    |
+  | Browser         | WASM + Ledger   | Planned :hourglass_flowing_sand: | [Soon]()                         |
+  | Node.js / Mocha | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm_node)       |
+  |                 |                 |                                  |                                  |
+  | Rust            | Rust + Ledger   | Planned :hourglass_flowing_sand: | [Soon]()                         |
+  | C               | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/c)           |
+  | C++             | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/c++)         |
+  | Java            | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/java)        |
+  | Kotlin          | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/kotlin)      |
+  | Go              | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
+  | Objective-C     | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
+  | Swift           | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
+  | React Native    | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
+  | Flutter         | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |

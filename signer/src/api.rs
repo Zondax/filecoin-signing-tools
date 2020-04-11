@@ -24,7 +24,7 @@ pub struct UnsignedMessageAPI {
     #[serde(rename = "gaslimit")]
     #[serde(alias = "gasLimit")]
     #[serde(alias = "gas_limit")]
-    pub gas_limit: String,
+    pub gas_limit: u64,
     pub method: u64,
     pub params: String,
 }
@@ -173,7 +173,7 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
         let from = Address::from_str(&message_api.from)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
         let value = BigUint::from_str(&message_api.value)?;
-        let gas_limit = u64::from_str(&message_api.gas_limit)?;
+        let gas_limit = message_api.gas_limit;
         let gas_price = BigUint::from_str(&message_api.gas_price)?;
         let params = Serialized::new(decode(&message_api.params)?);
 
@@ -201,7 +201,7 @@ impl From<UnsignedMessage> for UnsignedMessageAPI {
             nonce: unsigned_message.sequence(),
             value: unsigned_message.value().to_string(),
             gas_price: unsigned_message.gas_price().to_string(),
-            gas_limit: unsigned_message.gas_limit().to_string(),
+            gas_limit: unsigned_message.gas_limit(),
             // FIXME: cannot extract method byte. Set always as 0
             method: 0,
             // FIXME: need a proper way to serialize parameters, for now
