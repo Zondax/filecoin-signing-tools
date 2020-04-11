@@ -300,7 +300,7 @@ test("send_signed_tx", async () => {
   nonce++;
   console.log("Nonce: ", nonce);
 
-  expect(!isNaN(output));
+  expect(!isNaN(nonce));
 
   const transaction = {
     to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
