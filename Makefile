@@ -1,5 +1,5 @@
 deps_wasm:
-	cargo install wasm-pack --version 0.8.1
+	cargo install wasm-pack
 	cargo install cargo-watch
 
 build_wasm:
