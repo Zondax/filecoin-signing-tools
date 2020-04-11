@@ -2,7 +2,7 @@ use crate::api::{
     MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI, UnsignedMessageAPI,
 };
 use crate::error::SignerError;
-use crate::utils::from_hex_string;
+use crate::utils::{from_hex_string, to_hex_string};
 use forest_address::{Address, Network};
 use forest_encoding::{from_slice, to_vec};
 use forest_message;
@@ -309,6 +309,7 @@ pub fn verify_signature(
 
     // Decode the CBOR transaction hex string into CBOR transaction buffer
     let message_digest = utils::get_digest(&cbor_buffer.0);
+    println!("{:?}", to_hex_string(&message_digest));
 
     let blob_to_sign = Message::parse_slice(&message_digest)?;
 

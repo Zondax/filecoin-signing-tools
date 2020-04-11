@@ -4,15 +4,15 @@ const bip39 = require('bip39');
 const getDigest = require('./utils').getDigest;
 const secp256k1 = require('secp256k1');
 const fs = require('fs');
-var assert = require('assert');
+const assert = require('assert');
 
 const EXAMPLE_MNEMONIC = "equip will roof matter pink blind book anxiety banner elbow sun young";
 
-const EXAMPLE_CBOR_TX = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040";
+const EXAMPLE_CBOR_TX = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c41961a80040";
 
 const EXAMPLE_TRANSACTION = {
     "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-    "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
+    "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
     "nonce": 1,
     "value": "100000",
     "gasprice": "2500",
@@ -24,16 +24,16 @@ const EXAMPLE_TRANSACTION = {
 const MASTER_KEY = "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5";
 let MASTER_NODE = bip32.fromBase58(MASTER_KEY);
 
-describe('Serialization / Deserialization', function() {
-    it('Valid cbor should be fine', function() {
+describe('Serialization / Deserialization', function () {
+    it('Valid cbor should be fine', function () {
         assert.strictEqual(JSON.stringify(EXAMPLE_TRANSACTION), signer_wasm.transaction_parse(EXAMPLE_CBOR_TX, true))
     });
 
-    it('Extra bytes should fail', function() {
+    it('Extra bytes should fail', function () {
         let cbor_transaction_extra_bytes = EXAMPLE_CBOR_TX + "00";
 
         assert.throws(
-            () => signer_wasm.transaction_parse(cbor_transaction_extra_bytes),
+            () => signer_wasm.transaction_parse(cbor_transaction_extra_bytes,),
             /CBOR error/
         );
     });
@@ -60,7 +60,7 @@ describe('Serialization / Deserialization', function() {
     });
 });
 
-describe('Key generation / derivation', function() {
+describe('Key generation / derivation', function () {
     it('Key Generate Mnemonic', () => {
         const mnemonic = signer_wasm.mnemonic_generate();
         console.log(mnemonic);
@@ -121,7 +121,7 @@ describe('Key generation / derivation', function() {
         assert.strictEqual(
             true,
             // Remove the V value from the signature (last byte)
-            secp256k1.ecdsaVerify(signature.slice(0,-1), message_digest, example_key.publicKey)
+            secp256k1.ecdsaVerify(signature.slice(0, -1), message_digest, example_key.publicKey)
         );
 
         // Verify recovery id which is the last byte of the signature
@@ -136,7 +136,9 @@ describe('Key generation / derivation', function() {
         let signature = secp256k1.ecdsaSign(message_digest, child.privateKey);
 
         // Concat v value at the end of the signature
-        let signatureRSV = Buffer.from(signature.signature).toString('hex') + Buffer.from([signature.recid]).toString('hex');
+        let signatureRSV =
+            Buffer.from(signature.signature).toString('hex') +
+            Buffer.from([signature.recid]).toString('hex');
 
         console.log("RSV signature :", signatureRSV);
         console.log("CBOR Transaction hex :", EXAMPLE_CBOR_TX);
@@ -145,7 +147,7 @@ describe('Key generation / derivation', function() {
     });
 });
 
-describe('Key Recover testnet/mainnet', function() {
+describe('Key Recover testnet/mainnet', function () {
     it("key recover testnet", () => {
         let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
         let privateKey = child.privateKey.toString('hex');
@@ -185,7 +187,7 @@ const tests_vectors_path = "../manual_testvectors.json";
 let rawData = fs.readFileSync(tests_vectors_path);
 let jsonData = JSON.parse(rawData);
 
-describe('Parameterized Tests - Serialize', function() {
+describe('Parameterized Tests - Serialize', function () {
     for (let i = 0; i < jsonData.length; i += 1) {
         let tc = jsonData[i];
         if (!tc.message.params) {
@@ -209,7 +211,7 @@ describe('Parameterized Tests - Serialize', function() {
     }
 });
 
-describe('Parameterized Tests - Deserialize', function() {
+describe('Parameterized Tests - Deserialize', function () {
     for (let i = 0; i < jsonData.length; i += 1) {
         let tc = jsonData[i];
         if (!tc.message.params) {

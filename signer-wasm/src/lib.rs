@@ -130,13 +130,13 @@ pub fn transaction_serialize_raw(unsigned_message_string: String) -> Result<Vec<
 }
 
 #[wasm_bindgen]
-pub fn transaction_parse(cbor_hexstring: String, network: bool) -> Result<String, JsValue> {
+pub fn transaction_parse(cbor_hexstring: String, testnet: bool) -> Result<String, JsValue> {
     set_panic_hook();
 
     let cbor_data =
         CborBuffer(from_hex_string(&cbor_hexstring).map_err(|e| JsValue::from(e.to_string()))?);
 
-    let message_parsed = filecoin_signer::transaction_parse(&cbor_data, network)
+    let message_parsed = filecoin_signer::transaction_parse(&cbor_data, testnet)
         .map_err(|e| JsValue::from(e.to_string()))?;
 
     let tx = serde_json::to_string(&message_parsed).map_err(|e| JsValue::from(e.to_string()))?;
