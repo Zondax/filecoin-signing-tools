@@ -73,3 +73,8 @@ docs_rust_edit:
 docs_build:
 	yarn install
 	yarn build
+
+tree:
+	cargo tree --manifest-path signer-wasm/Cargo.toml > .tree_signer_wasm
+	cargo tree --manifest-path signer/Cargo.toml > .tree_signer
+

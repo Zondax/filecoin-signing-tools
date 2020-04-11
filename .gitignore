@@ -19,3 +19,4 @@ examples/wasm_node/yarn-error.log
 /.circleci/tmp.yml
 /node_modules
 /filecoin-service.toml
+/.tree_*
