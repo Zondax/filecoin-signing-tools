@@ -141,7 +141,7 @@ const transaction = {
   nonce: 1,
   value: "100000",
   gas_price: "2500",
-  gas_limit: "25000",
+  gas_limit: 25000,
   method: 0,
   params: "",
 };
@@ -230,7 +230,7 @@ const params = [
     nonce: 1,
     value: "100000",
     gas_price: "2500",
-    gas_limit: "25000",
+    gas_limit: 25000,
     method: 0,
     params: "",
   }
@@ -401,7 +401,7 @@ const params = [
       nonce: 2,
       value: "10000",
       gas_price: "2500",
-      gas_limit: "25000",
+      gas_limit: 25000,
       method: 0,
       params: "",
     },
