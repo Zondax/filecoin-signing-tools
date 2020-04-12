@@ -8,11 +8,11 @@ const assert = require('assert');
 
 const EXAMPLE_MNEMONIC = "equip will roof matter pink blind book anxiety banner elbow sun young";
 
-const EXAMPLE_CBOR_TX = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c41961a80040";
+const EXAMPLE_CBOR_TX = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040";
 
 const EXAMPLE_TRANSACTION = {
     "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-    "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
+    "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
     "nonce": 1,
     "value": "100000",
     "gasprice": "2500",
