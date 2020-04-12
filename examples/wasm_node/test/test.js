@@ -143,6 +143,9 @@ describe('Key generation / derivation', function () {
         console.log("RSV signature :", signatureRSV);
         console.log("CBOR Transaction hex :", EXAMPLE_CBOR_TX);
 
+        console.log(signatureRSV)
+        console.log(EXAMPLE_CBOR_TX)
+
         assert.equal(signer_wasm.verify_signature(signatureRSV, EXAMPLE_CBOR_TX), true);
     });
 });

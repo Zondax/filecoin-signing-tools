@@ -1,7 +1,6 @@
 [
     {
         "description": "TODO invalid test case ",
-        "encoded_tx": "iEBAAEIAAEIAAEIAAABA",
         "valid": false,
         "testnet": false,
         "message": {
@@ -17,7 +16,6 @@
     },
     {
         "description": "Basic test case",
-        "encoded_tx": "iFUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAbiCYZ1GVY89njFtEbSNzyETJwJaAUQAAYagQwAJxEMAYagAQA==",
         "valid": true,
         "testnet": false,
         "message": {
@@ -33,7 +31,6 @@
     },
     {
         "description": "Basic test case Testnet",
-        "encoded_tx": "iFUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAbiCYZ1GVY89njFtEbSNzyETJwJaAUQAAYagQwAJxEMAYagAQA==",
         "valid": true,
         "testnet": true,
         "message": {
@@ -49,7 +46,6 @@
     },
     {
         "description": "Using Protocol 0 addresses",
-        "encoded_tx": "iEIAAEMAlgEBRAABhqBDAAnEQwBhqABA",
         "valid": true,
         "testnet": false,
         "message": {
@@ -65,7 +61,6 @@
     },
     {
         "description": "Using Protocol 0 addresses 2",
-        "encoded_tx": "iEMAgAhDAMENAUQAAYagQwAJxEMAYagAQA==",
         "valid": true,
         "testnet": false,
         "message": {
@@ -81,7 +76,6 @@
     },
     {
         "description": "Using Protocol 0 addresses 3",
-        "encoded_tx": "iEsA////////////AUIAAAFEAAGGoEMACcRDAGGoAEA=",
         "valid": true,
         "testnet": false,
         "message": {
@@ -97,7 +91,6 @@
     },
     {
         "description": "Using Protocol 1 addresses",
-        "encoded_tx": "iFUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAbiCYZ1GVY89njFtEbSNzyETJwJqAUQAAYagQwAJxEMAYagAQA==",
         "valid": true,
         "testnet": false,
         "message": {
@@ -113,7 +106,6 @@
     },
     {
         "description": "Using Protocol 1 addresses 2",
-        "encoded_tx": "iFUBvOwHwF5p+SRo4rPjv3fIdPLF2oxVAbBuem8PVR3iYf46b+GCtCLuC8a2AUQAAYagQwAJxEMAYagAQA==",
         "valid": true,
         "testnet": false,
         "message": {
@@ -129,7 +121,6 @@
     },
     {
         "description": "Using Protocol 1 addresses 3",
-        "encoded_tx": "iFUB0VAFBOTRrD6JrIkaRQJYb6vZtBdVAf0dD0381+ma/Lmagya33EWdMsYoAUQAAYagQwAJxEMAYagAQA==",
         "valid": true,
         "testnet": false,
         "message": {
@@ -145,7 +136,6 @@
     },
     {
         "description": "Using Protocol 2 addresses",
-        "encoded_tx": "iFUC5U3qT5vFtH0mGBmCbV4fv4vFUDtVAutYvQihWmreGdCYlnQUj6lagVfGAUQAAYagQwAJxEMAYagAQA==",
         "valid": true,
         "testnet": false,
         "message": {
@@ -161,7 +151,6 @@
     },
     {
         "description": "Using Protocol 2 addresses 2",
-        "encoded_tx": "iFUCbSETfrTEgUJp6JTSls9lAOQ81xRVAuDHx1+C1V5e1V2ygDNjDfQnSphPAUQAAYagQwAJxEMAYagAQA==",
         "valid": true,
         "testnet": false,
         "message": {
@@ -177,7 +166,6 @@
     },
     {
         "description": "Using Protocol 2 addresses 3",
-        "encoded_tx": "iFUCMWtMH/XUr7eCbOq1uw8sPg82QFNVAuVN6k+bxbR9JhgZgm1eH7+LxVA7AUQAAYagQwAJxEMAYagAQA==",
         "valid": true,
         "testnet": false,
         "message": {
@@ -193,7 +181,6 @@
     },
     {
         "description": "Using Protocol 3 addresses",
-        "encoded_tx": "iFgxA61Y32luLU6R6obIgek4uk6oGzleEnl7hLnPMUuVRnBeg5x6mdYGskfdtPmsejQU3VgxA7MpTwouKeDGbrwjXS/tylaXv3hK9gXHWvYI5qY9XNOOqFyomJ4O/ekYizgvk3JGDQFEAAGGoEMACcRDAGGoAEA=",
         "valid": true,
         "testnet": false,
         "message": {
@@ -209,7 +196,6 @@
     },
     {
         "description": "Using Protocol 3 addresses 2",
-        "encoded_tx": "iFgxA5aho+TqehTUmYXmYbIkAdRP7UAtHQklskPJI1icD7x+Ms0E4p7XjRXTfTqqP+baM1gxA4a0VCWMWJR199FvWqwBinn2wRadIPwzkh3Ytc4crGw0j5CjYDYk9q65G2RRjC6AlQFEAAGGoEMACcRDAGGoAEA=",
         "valid": true,
         "testnet": false,
         "message": {
@@ -225,7 +211,6 @@
     },
     {
         "description": "Using Protocol 3 addresses 3",
-        "encoded_tx": "iFgxA6dyawOAIvdaOEYXWFNgzuYpBwotnShxKWXl8m7MQIWDgoA3JO008nIDNvCdtjHwdFgxA61Y32luLU6R6obIgek4uk6oGzleEnl7hLnPMUuVRnBeg5x6mdYGskfdtPmsejQU3QFEAAGGoEMACcRDAGGoAEA=",
         "valid": true,
         "testnet": false,
         "message": {
@@ -241,7 +226,6 @@
     },
     {
         "description": "Using Protocol 3 addresses 3",
-        "encoded_tx": "iFgxA6dyawOAIvdaOEYXWFNgzuYpBwotnShxKWXl8m7MQIWDgoA3JO008nIDNvCdtjHwdFgxA61Y32luLU6R6obIgek4uk6oGzleEnl7hLnPMUuVRnBeg5x6mdYGskfdtPmsejQU3QFEAAGGoEMACcRDAGGoAEA=",
         "valid": true,
         "testnet": false,
         "message": {
@@ -257,7 +241,6 @@
     },
     {
         "description": "Address protocol 1 Invalid payload length of 21 bytes",
-        "encoded_tx": "iFYBAAAAAAAAAAAAAAAAAAAAAAAAAAABVgEAAAAAAAAAAAAAAAAAAAAAAAAAAAEBRAABhqBDAAnEQwBhqABA",
         "valid": false,
         "testnet": false,
         "message": {
@@ -273,7 +256,6 @@
     },
     {
         "description": "Address protocol 1 Invalid payload length of 19 bytes",
-        "encoded_tx": "iFQBAAAAAAAAAAAAAAAAAAAAAAAAAFQBAAAAAAAAAAAAAAAAAAAAAAAAAAFEAAGGoEMACcRDAGGoAEA=",
         "valid": false,
         "testnet": false,
         "message": {
@@ -289,7 +271,6 @@
     },
     {
       "description": "Address protocol 0 Invalid payload length of 21 bytes",
-      "encoded_tx": "iFYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVgAAAAAAAAAAAAAAAAAAAAAAAAAAAAABRAABhqBDAAnEQwBhqABA",
       "valid": false,
       "testnet": false,
       "not_implemented": true,
@@ -306,7 +287,6 @@
     },
     {
         "description": "Address protocol 2 Invalid payload length of 21 bytes",
-        "encoded_tx": "iFYCAAAAAAAAAAAAAAAAAAAAAAAAAAAAVgIAAAAAAAAAAAAAAAAAAAAAAAAAAAABRAABhqBDAAnEQwBhqABA",
         "valid": false,
         "testnet": false,
         "message": {
@@ -322,7 +302,6 @@
     },
     {
         "description": "Address protocol 2 Invalid payload length of 19 bytes",
-        "encoded_tx": "iFQCAAAAAAAAAAAAAAAAAAAAAAAAAFQCAAAAAAAAAAAAAAAAAAAAAAAAAAFEAAGGoEMACcRDAGGoAEA=",
         "valid": false,
         "testnet": false,
         "message": {
@@ -338,7 +317,6 @@
     },
     {
         "description": "Address protocol 3 Invalid payload length of 47 bytes",
-        "encoded_tx": "iFgwAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWDADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABRAABhqBDAAnEQwBhqABA",
         "valid": false,
         "testnet": false,
         "message": {
@@ -354,7 +332,6 @@
     },
     {
         "description": "Address protocol 3 Invalid payload length of 49 bytes",
-        "encoded_tx": "iFgyAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABYMgMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUQAAYagQwAJxEMAYagAQA==",
         "valid": false,
         "testnet": false,
         "message": {
@@ -370,7 +347,6 @@
     },
     {
         "description": "Address with unknown protocol",
-        "encoded_tx": "iFUEAAAAAAAAAAAAAAAAAAAAAAAAAABVBAAAAAAAAAAAAAAAAAAAAAAAAAAAAUQAAYagQwAJxEMAYagAQA==",
         "valid": false,
         "testnet": false,
         "message": {
@@ -386,7 +362,6 @@
     },
     {
         "description": "Negative sign byte",
-        "encoded_tx": "iFUB0VAFBOTRrD6JrIkaRQJYb6vZtBdVAbiCYZ1GVY89njFtEbSNzyETJwJqAUEBQwAJxEMAYagAQA==",
         "valid": false,
         "testnet": false,
         "message": {
@@ -402,7 +377,6 @@
     },
     {
         "description": "Empty value",
-        "encoded_tx": "iFUB0VAFBOTRrD6JrIkaRQJYb6vZtBdVAbiCYZ1GVY89njFtEbSNzyETJwJqAUEAQwAJxEMAYagAQA==",
         "valid": false,
         "testnet": false,
         "message": {

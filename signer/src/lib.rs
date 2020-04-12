@@ -300,12 +300,14 @@ pub fn verify_signature(
     signature: &Signature,
     cbor_buffer: &CborBuffer,
 ) -> Result<bool, SignerError> {
+    let network = Network::Testnet;
+
     let signature_rs = secp256k1::Signature::parse_slice(&signature.0[..64])?;
     let recovery_id = RecoveryId::parse(signature.0[64])?;
 
     // Should be default network here
     // FIXME: For now only testnet
-    let tx = transaction_parse(cbor_buffer, true)?;
+    let tx = transaction_parse(cbor_buffer, network == Network::Testnet)?;
 
     // Decode the CBOR transaction hex string into CBOR transaction buffer
     let message_digest = utils::get_digest(&cbor_buffer.0);
@@ -314,17 +316,20 @@ pub fn verify_signature(
     let blob_to_sign = Message::parse_slice(&message_digest)?;
 
     let public_key = recover(&blob_to_sign, &signature_rs, &recovery_id)?;
-
-    let from = Address::new_secp256k1(&public_key.serialize_compressed().to_vec())
+    let mut from = Address::new_secp256k1(&public_key.serialize_compressed().to_vec())
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
+    from.set_network(network);
 
     let tx_from = match tx {
         MessageTxAPI::UnsignedMessageAPI(tx) => tx.from,
         MessageTxAPI::SignedMessageAPI(tx) => tx.message.from,
     };
+    let expected_from = from.to_string();
+
+    println!("    from: {:?}", tx_from);
+    println!("exp from: {:?}", expected_from);
 
     // Compare recovered public key with the public key from the transaction
-    let expected_from = from.to_string();
     if tx_from != expected_from {
         return Ok(false);
     }
