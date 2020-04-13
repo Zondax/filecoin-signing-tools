@@ -311,7 +311,6 @@ pub fn verify_signature(
 
     // Decode the CBOR transaction hex string into CBOR transaction buffer
     let message_digest = utils::get_digest(&cbor_buffer.0);
-    println!("{:?}", to_hex_string(&message_digest));
 
     let blob_to_sign = Message::parse_slice(&message_digest)?;
 
@@ -325,9 +324,6 @@ pub fn verify_signature(
         MessageTxAPI::SignedMessageAPI(tx) => tx.message.from,
     };
     let expected_from = from.to_string();
-
-    println!("    from: {:?}", tx_from);
-    println!("exp from: {:?}", expected_from);
 
     // Compare recovered public key with the public key from the transaction
     if tx_from != expected_from {
