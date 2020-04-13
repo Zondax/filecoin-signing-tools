@@ -405,7 +405,8 @@ mod tests {
 
         let seed = Seed::new(&m, "password");
 
-        let extended_key_expected = key_derive_from_seed(seed.as_bytes(), "m/44'/461'/0/0/0").unwrap();
+        let extended_key_expected =
+            key_derive_from_seed(seed.as_bytes(), "m/44'/461'/0/0/0").unwrap();
 
         let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "password").unwrap();
 
