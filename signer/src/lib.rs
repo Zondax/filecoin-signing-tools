@@ -398,6 +398,24 @@ mod tests {
     }
 
     #[test]
+    fn derive_key_password() {
+        let mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
+
+        let m = bip39::Mnemonic::from_phrase(&mnemonic.to_string(), Language::English).unwrap();
+
+        let seed = Seed::new(&m, "password");
+
+        let extended_key_expected = key_derive_from_seed(seed.as_bytes(), "m/44'/461'/0/0/0").unwrap();
+
+        let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "password").unwrap();
+
+        assert_eq!(
+            to_hex_string(&extended_key.private_key.0),
+            to_hex_string(&extended_key_expected.private_key.0)
+        );
+    }
+
+    #[test]
     fn derive_key_from_seed() {
         let mnemonic = Mnemonic(
             "equip will roof matter pink blind book anxiety banner elbow sun young".to_string(),
