@@ -130,13 +130,13 @@ pub fn transaction_serialize_raw(unsigned_message_string: String) -> Result<Vec<
 }
 
 #[wasm_bindgen]
-pub fn transaction_parse(cbor_hexstring: String, network: bool) -> Result<String, JsValue> {
+pub fn transaction_parse(cbor_hexstring: String, testnet: bool) -> Result<String, JsValue> {
     set_panic_hook();
 
     let cbor_data =
         CborBuffer(from_hex_string(&cbor_hexstring).map_err(|e| JsValue::from(e.to_string()))?);
 
-    let message_parsed = filecoin_signer::transaction_parse(&cbor_data, network)
+    let message_parsed = filecoin_signer::transaction_parse(&cbor_data, testnet)
         .map_err(|e| JsValue::from(e.to_string()))?;
 
     let tx = serde_json::to_string(&message_parsed).map_err(|e| JsValue::from(e.to_string()))?;
@@ -187,9 +187,24 @@ pub fn verify_signature(signature_hex: String, message_hex: String) -> Result<bo
         .map_err(|e| JsValue::from_str(format!("Error verifying signature: {}", e).as_str()))
 }
 
+#[cfg(test)]
+mod tests_local {
+    use crate::verify_signature;
+
+    #[test]
+    fn test_verify_signature() {
+        let tx = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040";
+        let signature = "646fa7e159c263289b7852c88ecfbd553c2bc0ef612630f20a851226b1ef5c7f65a6699066960eaa4796594acb26c5e13bb1335ce9bacb44ad9574723ff5623f01";
+
+        let ret = verify_signature(String::from(signature), tx.to_string());
+        assert_eq!(ret.is_ok(), true);
+        assert_eq!(ret.unwrap(), true);
+    }
+}
+
 #[cfg(target_arch = "wasm32")]
 #[cfg(test)]
-mod tests {
+mod tests_wasm {
     use crate::transaction_sign;
     use wasm_bindgen::prelude::*;
 
@@ -200,7 +215,7 @@ mod tests {
             "nonce": 1,
             "value": "100000",
             "gasprice": "2500",
-            "gaslimit": "25000",
+            "gaslimit": 25000,
             "method": 0,
             "params": ""
         }"#;

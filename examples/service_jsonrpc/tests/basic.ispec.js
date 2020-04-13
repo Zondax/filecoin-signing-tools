@@ -16,7 +16,7 @@ const EXPECTED_SEED = "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8E
 const EXPECTED_ROOT_NODE = bip32.fromBase58(EXPECTED_SEED);
 
 const EXAMPLE_TRANSACTION_CBOR =
-  "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040";
+  "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040";
 
 const EXAMPLE_TRANSACTION = {
   to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
@@ -24,7 +24,7 @@ const EXAMPLE_TRANSACTION = {
   nonce: 1,
   value: "100000",
   gasprice: "2500",
-  gaslimit: "25000",
+  gaslimit: 25000,
   method: 0,
   params: "",
 };
@@ -184,7 +184,7 @@ test("sign_invalid_transaction", async () => {
     from: "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
     value: "100000",
     gasprice: "2500",
-    gaslimit: "25000",
+    gaslimit: 25000,
     method: 0,
     params: "",
   };
@@ -286,7 +286,7 @@ test("get_nonce", async () => {
   expect(response.result).toBeGreaterThanOrEqual(2);
 });
 
-test("send_signed_tx", async () => {
+test.skip("send_signed_tx", async () => {
   const path = "m/44'/461'/0/0/0";
   const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path], 1);
 
@@ -300,13 +300,15 @@ test("send_signed_tx", async () => {
   nonce++;
   console.log("Nonce: ", nonce);
 
+  expect(!isNaN(nonce));
+
   const transaction = {
     to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
     from: keyAddressResponse.result.address,
     nonce: nonce,
     value: "1",
     gasprice: "0",
-    gaslimit: "1000000",
+    gaslimit: 1000000,
     method: 0,
     params: "",
   };

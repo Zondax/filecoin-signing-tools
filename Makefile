@@ -1,5 +1,5 @@
 deps_wasm:
-	cargo install wasm-pack --version 0.8.1
+	cargo install wasm-pack
 	cargo install cargo-watch
 
 build_wasm:
@@ -25,6 +25,7 @@ link_wasm: build_wasm
 	cd examples/wasm_browser && yarn link $(PACKAGE_NAME)
 
 test_wasm_unit: build_wasm
+	#wasm-pack test --chrome --firefox --headless ./signer-wasm
 	wasm-pack test --firefox --headless ./signer-wasm
 
 test_wasm_node: link_wasm
@@ -73,3 +74,8 @@ docs_rust_edit:
 docs_build:
 	yarn install
 	yarn build
+
+tree:
+	cargo tree --manifest-path signer-wasm/Cargo.toml > .tree_signer_wasm
+	cargo tree --manifest-path signer/Cargo.toml > .tree_signer
+

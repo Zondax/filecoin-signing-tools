@@ -7,7 +7,7 @@ use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use std::str::FromStr;
-use vm::{MethodNum, Serialized, TokenAmount};
+use vm::Serialized;
 
 /// Unsigned message api structure
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -24,7 +24,7 @@ pub struct UnsignedMessageAPI {
     #[serde(rename = "gaslimit")]
     #[serde(alias = "gasLimit")]
     #[serde(alias = "gas_limit")]
-    pub gas_limit: String,
+    pub gas_limit: u64,
     pub method: u64,
     pub params: String,
 }
@@ -61,7 +61,7 @@ pub enum MessageTx {
     SignedMessage(SignedMessage),
 }
 
-/// Message structure with newtork parameter
+/// Message structure with network parameter
 pub struct MessageTxNetwork {
     pub message_tx: MessageTx,
     pub testnet: bool,
@@ -173,7 +173,7 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
         let from = Address::from_str(&message_api.from)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
         let value = BigUint::from_str(&message_api.value)?;
-        let gas_limit = BigUint::from_str(&message_api.gas_limit)?;
+        let gas_limit = message_api.gas_limit;
         let gas_price = BigUint::from_str(&message_api.gas_price)?;
         let params = Serialized::new(decode(&message_api.params)?);
 
@@ -181,8 +181,8 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
             .to(to)
             .from(from)
             .sequence(message_api.nonce)
-            .value(TokenAmount(value))
-            .method_num(MethodNum::new(message_api.method))
+            .value(value)
+            .method_num(message_api.method)
             .params(params)
             .gas_limit(gas_limit)
             .gas_price(gas_price)
@@ -199,9 +199,9 @@ impl From<UnsignedMessage> for UnsignedMessageAPI {
             to: unsigned_message.to().to_string(),
             from: unsigned_message.from().to_string(),
             nonce: unsigned_message.sequence(),
-            value: unsigned_message.value().0.to_string(),
+            value: unsigned_message.value().to_string(),
             gas_price: unsigned_message.gas_price().to_string(),
-            gas_limit: unsigned_message.gas_limit().to_string(),
+            gas_limit: unsigned_message.gas_limit(),
             // FIXME: cannot extract method byte. Set always as 0
             method: 0,
             // FIXME: need a proper way to serialize parameters, for now
@@ -238,13 +238,13 @@ mod tests {
             "nonce": 1,
             "value": "100000",
             "gasprice": "2500",
-            "gaslimit": "25000",
+            "gaslimit": 25000,
             "method": 0,
             "params": ""
         }"#;
 
     const EXAMPLE_CBOR_DATA: &str =
-"885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040";
+        "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c41961a80040";
 
     #[test]
     fn json_to_cbor() {

@@ -13,7 +13,7 @@ create_fn!(filecoin_signer_key_derive|Java_ch_zondax_FilecoinSigner_keyDerive: (
     error: &mut ExternError
 ) -> ptr!(ExtendedKey), |etc| {
     call_with_result(error, || -> Result<ExtendedKey, ExternError> {
-        Ok(key_derive(get_str!(etc, mnemonic), get_str!(etc, path))?.into())
+        Ok(key_derive(get_str!(etc, mnemonic), get_str!(etc, path))?)
     })
 });
 

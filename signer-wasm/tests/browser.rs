@@ -53,7 +53,7 @@ fn sign() {
         "nonce": 1,
         "value": "100000",
         "gasprice": "2500",
-        "gaslimit": "25000",
+        "gaslimit": 25000,
         "method": 0,
         "params": ""
     }))
@@ -73,13 +73,13 @@ fn sign() {
         "nonce": 1,
         "value": "100000",
         "gasprice": "2500",
-        "gaslimit": "25000",
+        "gaslimit": 25000,
         "method": 0,
         "params": ""
         },
         "signature" : {
         "type":"secp256k1",
-        "data":"TBB0Z+np2Cw8/YwIPGQfD1aHIM6iMoP7+pdrJujXS0EhvD3gOlHfDzBs86QBx2LhqudUm41Lb+YdEtaEe6pu9QA="
+        "data":"m3DSIxELGKdhb1tM8Jjbf9qjjiOhzZY9FrG79uJIpFw1Iyu1sM/a5OWfYL2PRpR6C3n8O79RULlqnshAPivTdwA="
         }
     }))
     .unwrap();

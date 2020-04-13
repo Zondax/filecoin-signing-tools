@@ -94,7 +94,7 @@ jobs:
       - checkout
       - run: cargo --version
       - restore-sccache-cache
-      - run: sudo apt-get update && sudo apt-get install -y firefox-esr
+      - run: sudo apt-get update && sudo apt-get install -y firefox-esr libnss3
       - run: make deps_wasm
       # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-rs/issues/68
       - run: make test_wasm_unit
@@ -128,7 +128,7 @@ jobs:
       - run:
           name: install node dependencies
           command: |
-            cd examples/jsonrpc
+            cd examples/service_jsonrpc
             yarn install
       - run: ls .circleci
       - run:
@@ -137,7 +137,7 @@ jobs:
       - run:
           name: run jsonrpc tests
           command: |
-            cd examples/jsonrpc
+            cd examples/service_jsonrpc
             yarn run test:unit
             yarn run test:integration
       # No need to save this in cache

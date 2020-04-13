@@ -46,7 +46,7 @@ const unsigned_tx = {
   "nonce": 1,
   "value": "100000",
   "gasprice": "2500",
-  "gaslimit": "25000",
+  "gaslimit": 25000,
   "method": 0,
   "params": ""
 };
