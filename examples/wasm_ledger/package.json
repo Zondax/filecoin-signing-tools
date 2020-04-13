@@ -1,0 +1,59 @@
+{
+  "name": "example-filecoin-wasm",
+  "author": "Zondax GmbH",
+  "license": "Apache-2.0",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test:unit": "jest -c jest.config.unit.js --detectOpenHandles",
+    "test:ledger": "mocha test/test.ledger.js",
+    "test:spec": "mocha test/test.spec.js",
+    "test:legacy": "mocha test/test.legacy.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zondax/filecoin-rs"
+  },
+  "keywords": [
+    "webassembly",
+    "wasm",
+    "rust",
+    "filecoin"
+  ],
+  "dependencies": {
+    "@babel/runtime": "^7.9.2",
+    "@zondax/ledger-filecoin": "^0.11.0",
+    "babel-esm-plugin": "^0.8.0",
+    "babel-plugin-transform-default-import": "^1.0.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
+    "bip39": "^3.0.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.0",
+    "@babel/node": "^7.8.7",
+    "@babel/plugin-transform-runtime": "^7.9.0",
+    "@babel/preset-env": "^7.9.0",
+    "@zondax/filecoin-signer-wasm": "^0",
+    "babel-eslint": "^10.1.0",
+    "babel-jest": "^25.2.6",
+    "bip32": "^2.0.5",
+    "blake2": "^4.0.0",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-config-prettier": "^6.10.1",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-jest": "^23.8.2",
+    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-plugin-vue": "^6.2.2",
+    "jest": "^25.2.7 ",
+    "jest-serial-runner": "^1.1.0 ",
+    "mocha": "^7.1.1",
+    "secp256k1": "^4.0.0",
+    "ts-jest": "^25.3.1"
+  },
+  "moduleDirectories": [
+    "node_modules"
+  ]
+}
