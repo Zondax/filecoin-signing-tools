@@ -63,7 +63,7 @@ jobs:
       - run:
           name: External dependencies
           command: |
-            sudo apt-get install -y clang default-jdk g++ gcc golang libicu-dev libtinfo5 valgrind
+            sudo apt-get install -y clang default-jdk g++ gcc gnustep gnustep-devel gobjc golang libicu-dev libtinfo5 valgrind
       - run:
           name: Cbindgen
           command: |
@@ -86,6 +86,7 @@ jobs:
       - run: OUT_DIR=/tmp/go ./.circleci/test_go.sh
       - run: OUT_DIR=/tmp/java ./.circleci/test_java.sh
       - run: OUT_DIR=/tmp/kotlin ./.circleci/test_kotlin.sh
+      - run: OUT_DIR=/tmp/objective-c ./.circleci/test_objective-c
       - run: OUT_DIR=/tmp/swift ./.circleci/test_swift.sh
 
   tests_wasm:
