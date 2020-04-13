@@ -21,6 +21,17 @@ const EXAMPLE_TRANSACTION = {
     "params": ""
 };
 
+const EXAMPLE_TRANSACTION_MAINNET = {
+    "to": "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+    "from": "f1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
+    "nonce": 1,
+    "value": "100000",
+    "gasprice": "2500",
+    "gaslimit": 25000,
+    "method": 0,
+    "params": ""
+};
+
 const MASTER_KEY = "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5";
 let MASTER_NODE = bip32.fromBase58(MASTER_KEY);
 
@@ -29,12 +40,16 @@ describe('Serialization / Deserialization', function () {
         assert.strictEqual(JSON.stringify(EXAMPLE_TRANSACTION), signer_wasm.transaction_parse(EXAMPLE_CBOR_TX, true))
     });
 
+    it('Valid cbor should be fine - missing is undefined converted to false', function () {
+        assert.strictEqual(JSON.stringify(EXAMPLE_TRANSACTION_MAINNET), signer_wasm.transaction_parse(EXAMPLE_CBOR_TX))
+    });
+
     it('Extra bytes should fail', function () {
         let cbor_transaction_extra_bytes = EXAMPLE_CBOR_TX + "00";
 
         assert.throws(
-            () => signer_wasm.transaction_parse(cbor_transaction_extra_bytes,),
-            /CBOR error/
+            () => signer_wasm.transaction_parse(cbor_transaction_extra_bytes, false),
+            /CBOR error: 'trailing data at offset 61'/
         );
     });
 
@@ -224,7 +239,7 @@ describe('Parameterized Tests - Deserialize', function () {
         if (tc.not_implemented) {
             // FIXME: Protocol 0 parsing not implemented in forest
             // FIXME: doesn't fail for empty value #54
-            console.log("FIX ME");
+            console.log("FIXME: Protocol 0 parsing not implemented in forest");
             continue;
         }
 

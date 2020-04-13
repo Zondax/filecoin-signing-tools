@@ -7,7 +7,7 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum SignerError {
     ///  CBOR error
-    #[error("CBOR error")]
+    #[error("CBOR error: '{0}'")]
     CBOR(#[from] serde_cbor::Error),
     /// Secp256k1 error
     #[error("secp256k1 error")]
