@@ -60,6 +60,28 @@ impl TryFrom<Vec<u8>> for Signature {
     }
 }
 
+impl TryFrom<String> for Signature {
+    type Error = SignerError;
+
+    fn try_from(v: String) -> Result<Signature, Self::Error> {
+        if v.len() == SIGNATURE_RECOVERY_SIZE*2 {
+            let sig_secp256k1 = SignatureSECP256K1::try_from(v)?;
+
+            return Ok(Signature::SignatureSECP256K1(sig_secp256k1));
+        }
+
+        if v.len() == BLS_SIGNATURE_SIZE*2 {
+            let sig_bls = SignatureBLS::try_from(v)?;
+
+            return Ok(Signature::SignatureBLS(sig_bls));
+        }
+
+        return Err(SignerError::GenericString(
+            "Unknown signature type".to_string(),
+        ));
+    }
+}
+
 impl TryFrom<String> for SignatureSECP256K1 {
     type Error = SignerError;
 
@@ -102,6 +124,15 @@ impl TryFrom<Vec<u8>> for SignatureBLS {
         };
         sig.0.copy_from_slice(&v[..BLS_SIGNATURE_SIZE]);
         Ok(sig)
+    }
+}
+
+impl TryFrom<String> for SignatureBLS {
+    type Error = SignerError;
+
+    fn try_from(s: String) -> Result<SignatureBLS, Self::Error> {
+        let tmp = from_hex_string(&s)?;
+        SignatureBLS::try_from(tmp)
     }
 }
 

@@ -62,7 +62,7 @@ fn run(num_messages: usize) {
             nonce: 1,
             value: "100000".to_string(),
             gas_price: "2500".to_string(),
-            gas_limit: "25000".to_string(),
+            gas_limit: 25000,
             method: 0,
             params: "".to_owned(),
         })

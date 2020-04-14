@@ -753,7 +753,7 @@
     pirates "^4.0.0"
     source-map-support "^0.5.16"
 
-"@babel/runtime@^7.8.4", "@babel/runtime@^7.9.2":
+"@babel/runtime@^7.8.3", "@babel/runtime@^7.8.4", "@babel/runtime@^7.9.2":
   version "7.9.2"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.9.2.tgz#d90df0583a3a252f09aaa619665367bae518db06"
   integrity sha512-NE2DtOdufG7R5vnfQUTehdTfNycfUANEtCa9PssN9O/xmTzP4E08UI797ixaei6hBEVL9BI/PsdJS5x7mWoB9Q==
@@ -792,6 +792,43 @@
     "@babel/helper-validator-identifier" "^7.9.0"
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
+
+"@ledgerhq/devices@^5.13.0":
+  version "5.13.0"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/devices/-/devices-5.13.0.tgz#94666aff933d5bc5a98a6c190ff1749b37a65dba"
+  integrity sha512-jx3qX4dOkJpOL/TlnuzAwVcOm/IDCFvhXvfIAxu7F9dhafHDqYP0+8uHKBeJtkLyA4wd63SbHXVo16xmsAHp4Q==
+  dependencies:
+    "@ledgerhq/errors" "^5.13.0"
+    "@ledgerhq/logs" "^5.13.0"
+    rxjs "^6.5.5"
+
+"@ledgerhq/errors@^5.13.0":
+  version "5.13.0"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/errors/-/errors-5.13.0.tgz#8e9aa9d2326dfaceee7d00d3411e49505837f8aa"
+  integrity sha512-I+13snTaDZQbhnbxe3Hwud3bkmDqDSe/s8z0dzkhbchFdXvmtp77IbQrbJZ2m4L5W2bOBHAhv6Dz2SZv5Ll/VA==
+
+"@ledgerhq/hw-transport@^5.7.0":
+  version "5.13.0"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-5.13.0.tgz#dac69b9cd17d9260fe9bad5594cd88370cdb5933"
+  integrity sha512-IUwmW3YTULWZyuw5JNgGCTmPZs80XJRq5vLi6nH53Ouvgz1yVy+ktNALOcaOxyR2WRA1flwRTRiss/OtJrCDjQ==
+  dependencies:
+    "@ledgerhq/devices" "^5.13.0"
+    "@ledgerhq/errors" "^5.13.0"
+    events "^3.1.0"
+
+"@ledgerhq/logs@^5.13.0":
+  version "5.13.0"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-5.13.0.tgz#42e848f7c6f662387dfc5f3e86e3e5b4e07a5fae"
+  integrity sha512-yMvzQiMjWDMRma3HPxQQibhvEqMaEdXXkNBk1+eaW+N47Y3neYSSyCJlyihzzMBeeoin4ChlP/5uKQaABwBeTg==
+
+"@zondax/filecoin-signer-wasm@file:./pkg":
+  version "0.2.0"
+
+"@zondax/ledger-filecoin@file:./ledger-filecoin-js":
+  version "0.0.0"
+  dependencies:
+    "@babel/runtime" "^7.8.3"
+    "@ledgerhq/hw-transport" "^5.7.0"
 
 ansi-styles@^3.2.1:
   version "3.2.1"
@@ -1135,6 +1172,11 @@ esutils@^2.0.2:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.3.tgz#74d2eb4de0b8da1293711910d50775b9b710ef64"
   integrity sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==
+
+events@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/events/-/events-3.1.0.tgz#84279af1b34cb75aa88bf5ff291f6d0bd9b31a59"
+  integrity sha512-Rv+u8MLHNOdMjTAFeT3nCjHn2aGlx435FP/sDHNaRhDEMwyI/aB22Kj2qIN8R0cw3z28psEQLYwxVKLsKrMgWg==
 
 expand-brackets@^2.1.4:
   version "2.1.4"
@@ -2000,6 +2042,13 @@ ret@~0.1.10:
   resolved "https://registry.yarnpkg.com/ret/-/ret-0.1.15.tgz#b8a4825d5bdb1fc3f6f53c2bc33f81388681c7bc"
   integrity sha512-TTlYpa+OL+vMMNG24xSlQGEJ3B/RzEfUlLct7b5G/ytav+wPrplCpVMFuwzXbkecJrb6IYo1iFb0S9v37754mg==
 
+rxjs@^6.5.5:
+  version "6.5.5"
+  resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-6.5.5.tgz#c5c884e3094c8cfee31bf27eb87e54ccfc87f9ec"
+  integrity sha512-WfQI+1gohdf0Dai/Bbmk5L5ItH5tYqm3ki2c5GdWhKjalzjg93N3avFjVStyZZz+A2Em+ZxKH5bNghw9UeylGQ==
+  dependencies:
+    tslib "^1.9.0"
+
 safe-buffer@~5.1.0, safe-buffer@~5.1.1:
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.1.2.tgz#991ec69d296e0313747d59bdfd2b745c35f8828d"
@@ -2193,6 +2242,11 @@ to-regex@^3.0.1, to-regex@^3.0.2:
     extend-shallow "^3.0.2"
     regex-not "^1.0.2"
     safe-regex "^1.1.0"
+
+tslib@^1.9.0:
+  version "1.11.1"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.11.1.tgz#eb15d128827fbee2841549e171f45ed338ac7e35"
+  integrity sha512-aZW88SY8kQbU7gpV19lN24LtXh/yD4ZZg6qieAJDDg+YBsJcSmLGK9QpnUjAKVG/xefmvJGd1WUmfpT/g6AJGA==
 
 unicode-canonical-property-names-ecmascript@^1.0.4:
   version "1.0.4"

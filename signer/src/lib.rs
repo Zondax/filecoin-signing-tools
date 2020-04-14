@@ -306,20 +306,12 @@ fn verify_secp256k1_signature(
     let signature_rs = secp256k1::Signature::parse_slice(&signature.0[..64])?;
     let recovery_id = RecoveryId::parse(signature.0[64])?;
 
-<<<<<<< HEAD
     // Should be default network here
     // FIXME: For now only testnet
     let tx = transaction_parse(cbor_buffer, network == Network::Testnet)?;
 
     // Decode the CBOR transaction hex string into CBOR transaction buffer
-    let message_digest = utils::get_digest(&cbor_buffer.0);
-=======
-    let tx = transaction_parse(cbor_buffer, true)?;
-
-    // Decode the CBOR transaction hex string into CBOR transaction buffer
     let message_digest = utils::get_digest(cbor_buffer.as_ref());
-    let message = Message::parse_slice(&message_digest)?;
->>>>>>> BLS support for native lib;
 
     let blob_to_sign = Message::parse_slice(&message_digest)?;
 
@@ -679,15 +671,11 @@ mod tests {
         sig[5] = 0x01;
         sig[34] = 0x00;
 
-<<<<<<< HEAD
         // Verify again
-        let valid_signature = verify_signature(&signature, &message_cbor);
-        assert!(valid_signature.is_err() || !valid_signature.unwrap());
-=======
         let tampered_signature = Signature::try_from(sig).expect("FIX ME");
 
-        assert!(!verify_signature(&tampered_signature, &cbor_data).unwrap());
->>>>>>> BLS support for native lib;
+        let valid_signature = verify_signature(&tampered_signature, &message_cbor);
+        assert!(valid_signature.is_err() || !valid_signature.unwrap());
     }
 
     #[test]
@@ -707,7 +695,7 @@ mod tests {
             nonce: 1,
             value: "100000".to_string(),
             gas_price: "2500".to_string(),
-            gas_limit: "25000".to_string(),
+            gas_limit: 25000,
             method: 0,
             params: "".to_string(),
         };
@@ -751,7 +739,7 @@ mod tests {
                     nonce: 1,
                     value: "100000".to_string(),
                     gas_price: "2500".to_string(),
-                    gas_limit: "25000".to_string(),
+                    gas_limit: 25000,
                     method: 0,
                     params: "".to_string(),
                 };

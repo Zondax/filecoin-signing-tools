@@ -37,18 +37,18 @@ let MASTER_NODE = bip32.fromBase58(MASTER_KEY);
 
 describe('Serialization / Deserialization', function () {
     it('Valid cbor should be fine', function () {
-        assert.strictEqual(JSON.stringify(EXAMPLE_TRANSACTION), signer_wasm.transaction_parse(EXAMPLE_CBOR_TX, true))
+        assert.strictEqual(JSON.stringify(EXAMPLE_TRANSACTION), signer_wasm.transactionParse(EXAMPLE_CBOR_TX, true))
     });
 
     it('Valid cbor should be fine - missing is undefined converted to false', function () {
-        assert.strictEqual(JSON.stringify(EXAMPLE_TRANSACTION_MAINNET), signer_wasm.transaction_parse(EXAMPLE_CBOR_TX))
+        assert.strictEqual(JSON.stringify(EXAMPLE_TRANSACTION_MAINNET), signer_wasm.transactionParse(EXAMPLE_CBOR_TX))
     });
 
     it('Extra bytes should fail', function () {
         let cbor_transaction_extra_bytes = EXAMPLE_CBOR_TX + "00";
 
         assert.throws(
-            () => signer_wasm.transaction_parse(cbor_transaction_extra_bytes, false),
+            () => signer_wasm.transactionParse(cbor_transaction_extra_bytes, false),
             /CBOR error: 'trailing data at offset 61'/
         );
     });
@@ -157,9 +157,6 @@ describe('Key generation / derivation', function () {
 
         console.log("RSV signature :", signatureRSV);
         console.log("CBOR Transaction hex :", EXAMPLE_CBOR_TX);
-
-        console.log(signatureRSV)
-        console.log(EXAMPLE_CBOR_TX)
 
         assert.equal(signer_wasm.verifySignature(signatureRSV, EXAMPLE_CBOR_TX), true);
     });
