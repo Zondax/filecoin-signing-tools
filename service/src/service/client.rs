@@ -4,8 +4,10 @@ use crate::service::cache::{cache_get_nonce, cache_put_nonce};
 use crate::service::error::RemoteNode::{EmptyNonce, InvalidNonce, InvalidStatusRequest, JSONRPC};
 use crate::service::error::ServiceError;
 use abscissa_core::tracing::info;
+use filecoin_signer::api::UnsignedMessageAPI;
 use jsonrpc_core::response::Output::{Failure, Success};
 use jsonrpc_core::{Id, MethodCall, Params, Response, Version};
+use serde_json::json;
 use serde_json::value::Value;
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -57,12 +59,6 @@ pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceE
 
     // cache_put_nonce(addr, nonce);
     Ok(nonce)
-}
-
-pub async fn is_mainnet(_url: &str, _jwt: &str) -> Result<bool, ServiceError> {
-    // FIXME: Check if the node behind the url is running mainnet or not
-    // FIXME: https://github.com/Zondax/filecoin-rs/issues/32
-    Err(ServiceError::NotImplemented)
 }
 
 pub async fn send_signed_tx(url: &str, jwt: &str, signed_tx: Value) -> Result<Value, ServiceError> {
@@ -119,9 +115,61 @@ pub async fn get_status(url: &str, jwt: &str, cid_message: Value) -> Result<Valu
     Ok(result)
 }
 
+pub async fn get_balance(url: &str, jwt: &str, addr: &str) -> Result<Value, ServiceError> {
+    let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
+
+    // Prepare request
+    let m = MethodCall {
+        jsonrpc: Some(Version::V2),
+        method: "Filecoin.WalletBalance".to_owned(),
+        params: Params::Array(vec![Value::from(addr)]),
+        id: Id::Num(call_id),
+    };
+
+    let resp = make_rpc_call(url, jwt, &m).await?;
+
+    // Handle response
+    let balance = match resp {
+        Response::Single(Success(s)) => s.result,
+        Response::Single(Failure(f)) => return Err(ServiceError::RemoteNode(JSONRPC(f.error))),
+        _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
+    };
+
+    Ok(balance)
+}
+
+pub async fn is_mainnet(url: &str, jwt: &str) -> Result<bool, ServiceError> {
+    let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
+
+    let params = Params::Array(vec![
+        json!({"/": "bafy2bzacea2ob4bctlucgp2okbczqvk5ctx4jqjapslz57mbcmnnzyftgeqgu" }),
+    ]);
+
+    // Prepare request
+    let m = MethodCall {
+        jsonrpc: Some(Version::V2),
+        method: "Filecoin.ChainGetMessage".to_owned(),
+        params,
+        id: Id::Num(call_id),
+    };
+
+    let resp = make_rpc_call(url, jwt, &m).await?;
+
+    // Handle response
+    let message = match resp {
+        Response::Single(Success(s)) => s.result,
+        Response::Single(Failure(f)) => return Err(ServiceError::RemoteNode(JSONRPC(f.error))),
+        _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
+    };
+
+    let from_field = message.get("From").unwrap().as_str().unwrap();
+
+    Ok(from_field.starts_with("f"))
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::service::client::{get_nonce, get_status};
+    use crate::service::client::{get_nonce, get_status, is_mainnet};
     use crate::service::test_helper::tests;
 
     use jsonrpc_core::types::error::{Error, ErrorCode};
@@ -133,6 +181,16 @@ mod tests {
         let data = b"{\"jsonrpc\":\"2.0\",\"id\":1,\"error\":{\"code\":1,\"message\":\"cbor input had wrong number of fields\"}}\n";
 
         let _err: Response = serde_json::from_slice(data).unwrap();
+    }
+
+    #[tokio::test]
+    async fn is_mainnet_test() {
+        let credentials = tests::get_remote_credentials();
+        let result = is_mainnet(&credentials.url, &credentials.jwt).await;
+
+        println!("{:?}", result);
+
+        assert!(result.is_ok());
     }
 
     #[tokio::test]
