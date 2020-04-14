@@ -338,7 +338,7 @@ test.skip("send_signed_tx", async () => {
   expect(response).toHaveProperty("result");
 });
 
-test("send_sign", async () => {
+test.skip("send_sign", async () => {
   const path = "m/44'/461'/0/0/0";
   const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path], 1);
 
@@ -358,7 +358,7 @@ test("send_sign", async () => {
     nonce: nonce,
     value: "1",
     gasprice: "0",
-    gaslimit: "1000000",
+    gaslimit: 1000000,
     method: 0,
     params: "",
   };
