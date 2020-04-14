@@ -13,9 +13,6 @@ pub enum SignerError {
     /// Secp256k1 error
     #[error("secp256k1 error")]
     Secp256k1(#[from] secp256k1::Error),
-    /// BLS error
-    #[error("bls error")]
-    BLS(#[from] bls_signatures::Error),
     /// Hex error
     #[error("Hex error")]
     Hex(#[from] hex::FromHexError),
@@ -31,6 +28,9 @@ pub enum SignerError {
     /// Not able to parse integer
     #[error("Cannot parse integer")]
     ParseIntError(#[from] ParseIntError),
+    /// BLS error
+    #[error("bls error")]
+    BLS(#[from] bls_signatures::Error),
 }
 
 #[cfg(feature = "with-ffi-support")]
@@ -44,6 +44,7 @@ impl From<SignerError> for ffi_support::ExternError {
             SignerError::InvalidBigInt(_) => 5,
             SignerError::GenericString(_) => 6,
             SignerError::ParseIntError(_) => 7,
+            SignerError::BLS(_) => 8,
         };
         Self::new_error(ffi_support::ErrorCode::new(code), e.to_string())
     }
