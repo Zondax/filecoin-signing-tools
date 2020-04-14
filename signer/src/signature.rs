@@ -64,13 +64,13 @@ impl TryFrom<String> for Signature {
     type Error = SignerError;
 
     fn try_from(v: String) -> Result<Signature, Self::Error> {
-        if v.len() == SIGNATURE_RECOVERY_SIZE*2 {
+        if v.len() == SIGNATURE_RECOVERY_SIZE * 2 {
             let sig_secp256k1 = SignatureSECP256K1::try_from(v)?;
 
             return Ok(Signature::SignatureSECP256K1(sig_secp256k1));
         }
 
-        if v.len() == BLS_SIGNATURE_SIZE*2 {
+        if v.len() == BLS_SIGNATURE_SIZE * 2 {
             let sig_bls = SignatureBLS::try_from(v)?;
 
             return Ok(Signature::SignatureBLS(sig_bls));
