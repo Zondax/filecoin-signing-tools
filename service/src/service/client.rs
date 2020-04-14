@@ -61,12 +61,6 @@ pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceE
     Ok(nonce)
 }
 
-/*pub async fn is_mainnet(_url: &str, _jwt: &str) -> Result<bool, ServiceError> {
-    // FIXME: Check if the node behind the url is running mainnet or not
-    // FIXME: https://github.com/Zondax/filecoin-rs/issues/32
-    Err(ServiceError::NotImplemented)
-}*/
-
 pub async fn send_signed_tx(url: &str, jwt: &str, signed_tx: Value) -> Result<Value, ServiceError> {
     let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
 
