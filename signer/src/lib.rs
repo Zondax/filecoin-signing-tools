@@ -692,9 +692,15 @@ mod tests {
         sig[5] = 0x01;
         sig[34] = 0x00;
 
+<<<<<<< HEAD
         let tampered_signature = Signature::try_from(sig).expect("FIX ME");
 
         // Verify again
+=======
+        // Verify again
+        let tampered_signature = Signature::try_from(sig).expect("FIX ME");
+
+>>>>>>> 90d5d85... SUpport BLS in wasm
         let valid_signature = verify_signature(&tampered_signature, &message_cbor);
         assert!(valid_signature.is_err() || !valid_signature.unwrap());
     }
@@ -718,7 +724,7 @@ mod tests {
             nonce: 1,
             value: "100000".to_string(),
             gas_price: "2500".to_string(),
-            gas_limit: "25000".to_string(),
+            gas_limit: 25000,
             method: 0,
             params: "".to_string()
         };
@@ -762,7 +768,7 @@ mod tests {
                     nonce: 1,
                     value: "100000".to_string(),
                     gas_price: "2500".to_string(),
-                    gas_limit: "25000".to_string(),
+                    gas_limit: 25000,
                     method: 0,
                     params: "".to_string()
                 };

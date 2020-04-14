@@ -3,7 +3,8 @@ use wasm_bindgen::prelude::*;
 
 use filecoin_signer::api::UnsignedMessageAPI;
 use filecoin_signer::utils::{from_hex_string, to_hex_string};
-use filecoin_signer::{CborBuffer, PrivateKey, Signature};
+use filecoin_signer::{CborBuffer, PrivateKey};
+use filecoin_signer::signature::Signature;
 use std::convert::TryFrom;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -188,7 +189,7 @@ pub fn transaction_sign_raw(
     let signed_message = filecoin_signer::transaction_sign_raw(&unsigned_message, &private_key)
         .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
 
-    let signed_message_js = JsValue::from_serde(&signed_message)
+    let signed_message_js = JsValue::from_serde(&signed_message.as_bytes())
         .map_err(|e| JsValue::from(format!("Error signing transaction: {}", e)))?;
 
     Ok(signed_message_js)

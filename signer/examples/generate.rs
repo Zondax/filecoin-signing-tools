@@ -54,6 +54,7 @@ fn run(num_messages: usize) {
     // generate messages
     let messages: Vec<_> = private_keys
         .par_iter()
+<<<<<<< HEAD
         .map(|sk| {
             UnsignedMessageAPI {
                 to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
@@ -65,6 +66,19 @@ fn run(num_messages: usize) {
                 method: 0,
                 params: "".to_owned(),
             }
+=======
+        .map(|sk| UnsignedMessageAPI {
+            to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
+            from: Address::new_bls(sk.public_key().as_bytes())
+                .unwrap()
+                .to_string(),
+            nonce: 1,
+            value: "100000".to_string(),
+            gas_price: "2500".to_string(),
+            gas_limit: 25000,
+            method: 0,
+            params: "".to_owned(),
+>>>>>>> 90d5d85... SUpport BLS in wasm
         })
         .collect();
 
