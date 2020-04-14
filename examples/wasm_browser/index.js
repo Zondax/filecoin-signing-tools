@@ -14,7 +14,7 @@ log("mnemonic");
 /////////////////////////////////
 // Derive key
 
-let key = wasm.key_derive(mnemonic, "m/44'/461'/0/0/0");
+let key = wasm.key_derive(mnemonic, "m/44'/461'/0/0/0", "");
 
 log("<h2>[wasm.key_derive]</h2>");
 log(`<b>address      </b> ${key.address}`);

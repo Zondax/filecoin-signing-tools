@@ -9,6 +9,7 @@ int main(int argc, char *argv[]) {
     ExtendedKey *extended_key = filecoin_signer_key_derive(
         "equip will roof matter pink blind book anxiety banner elbow sun young",
         "m/44'/461'/0/0/0",
+        "",
         error
     );
 

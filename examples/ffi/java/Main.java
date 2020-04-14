@@ -6,6 +6,7 @@ class Main {
         long extendedKey = FilecoinSigner.keyDerive(
             "equip will roof matter pink blind book anxiety banner elbow sun young",
             "m/44'/461'/0/0/0",
+            "",
             error
         );
 

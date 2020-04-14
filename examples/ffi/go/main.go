@@ -13,6 +13,7 @@ func main() {
 	extended_key := C.filecoin_signer_key_derive(
 		C.CString("equip will roof matter pink blind book anxiety banner elbow sun young"),
 		C.CString("m/44'/461'/0/0/0"),
+		C.CString(""),
 		error,
 	);
 
