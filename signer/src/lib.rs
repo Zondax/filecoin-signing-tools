@@ -429,13 +429,13 @@ mod tests {
     use forest_encoding::to_vec;
     use std::convert::TryFrom;
 
-    use forest_address::Address;
+    use crate::utils;
     use bls_signatures;
     use bls_signatures::Serialize;
-    use rand_xorshift::XorShiftRng;
+    use forest_address::Address;
     use rand::{Rng, SeedableRng};
+    use rand_xorshift::XorShiftRng;
     use rayon::prelude::*;
-    use crate::utils;
 
     const BLS_PUBKEY: &str = "ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc07904";
     // FIXME! Might be invalid
@@ -699,18 +699,16 @@ mod tests {
 
     #[test]
     fn sign_bls_transaction() {
-
         // Get address
         let bls_address = Address::new_bls(from_hex_string(BLS_PUBKEY).unwrap()).unwrap();
 
         // Get BLS private key
         let bls_key = PrivateKey::try_from(BLS_PRIVATEKEY.to_string()).unwrap();
 
-
         println!("{}", bls_address.to_string());
 
         // Prepare message with BLS address
-        let message = UnsignedMessageAPI{
+        let message = UnsignedMessageAPI {
             to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
             from: bls_address.to_string(),
             nonce: 1,
@@ -718,13 +716,14 @@ mod tests {
             gas_price: "2500".to_string(),
             gas_limit: 25000,
             method: 0,
-            params: "".to_string()
+            params: "".to_string(),
         };
 
         let raw_sig = transaction_sign_bls_raw(&message, &bls_key).unwrap();
         let sig = bls_signatures::Signature::from_bytes(&raw_sig.0).expect("FIX ME");
 
-        let bls_pk  = bls_signatures::PublicKey::from_bytes(&from_hex_string(BLS_PUBKEY).unwrap()).unwrap();
+        let bls_pk =
+            bls_signatures::PublicKey::from_bytes(&from_hex_string(BLS_PUBKEY).unwrap()).unwrap();
 
         let message_cbor = transaction_serialize(&message).expect("FIX ME");
 
@@ -733,13 +732,12 @@ mod tests {
 
     #[test]
     fn test_verify_aggregated_signature() {
-
         // sign 3 messages
         let num_messages = 3;
 
         let mut rng = XorShiftRng::from_seed([
-            0x59, 0x62, 0xbe, 0x5d, 0x76, 0x3d, 0x31, 0x8d, 0x17, 0xdb, 0x37, 0x32, 0x54, 0x06, 0xbc,
-            0xe5,
+            0x59, 0x62, 0xbe, 0x5d, 0x76, 0x3d, 0x31, 0x8d, 0x17, 0xdb, 0x37, 0x32, 0x54, 0x06,
+            0xbc, 0xe5,
         ]);
 
         // generate private keys
@@ -754,7 +752,7 @@ mod tests {
                 let bls_public_key = private_keys[i].public_key();
                 let bls_address = Address::new_bls(bls_public_key.as_bytes()).unwrap();
 
-                let message = UnsignedMessageAPI{
+                let message = UnsignedMessageAPI {
                     to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
                     from: bls_address.to_string(),
                     nonce: 1,
@@ -762,7 +760,7 @@ mod tests {
                     gas_price: "2500".to_string(),
                     gas_limit: 25000,
                     method: 0,
-                    params: "".to_string()
+                    params: "".to_string(),
                 };
 
                 return message;
@@ -778,18 +776,16 @@ mod tests {
                 let private_key = PrivateKey::try_from(pk.as_bytes()).expect("FIX ME");
                 let raw_sig = transaction_sign_bls_raw(message, &private_key).unwrap();
 
-                    bls_signatures::Serialize::from_bytes(&raw_sig.0).expect("FIX ME")
-                })
-                .collect::<Vec<bls_signatures::Signature>>();
+                bls_signatures::Serialize::from_bytes(&raw_sig.0).expect("FIX ME")
+            })
+            .collect::<Vec<bls_signatures::Signature>>();
 
         // serialize messages
         let cbor_messages: Vec<CborBuffer>;
         cbor_messages = messages
-                            .par_iter()
-                            .map(|message| transaction_serialize(message).unwrap())
-                            .collect::<Vec<CborBuffer>>();
-
-
+            .par_iter()
+            .map(|message| transaction_serialize(message).unwrap())
+            .collect::<Vec<CborBuffer>>();
 
         let aggregated_signature = bls_signatures::aggregate(&sigs);
 
