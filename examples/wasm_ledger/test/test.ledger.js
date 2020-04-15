@@ -13,16 +13,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import { expect, test } from "jest";
-import Zemu from "@zondax/zemu";
-import FilecoinApp from "@zondax/ledger-filecoin";
+const Zemu = require("@zondax/zemu").default;
+const FilecoinApp = require("@zondax/ledger-filecoin").default;
 const Resolve = require("path").resolve;
 
-const signer_wasm = require('@zondax/filecoin-signer-wasm');
+console.log(Zemu);
 
-jest.setTimeout(10000);
+const signer_wasm = require('@zondax/filecoin-signer');
 
-test("empty", async () => {
+const EXAMPLE_CBOR_TX = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040";
+
+it("empty", async function () {
+    this.timeout(10000);
+
     const DEMO_APP_PATH = Resolve("bin/app.elf");
     const sim = new Zemu(DEMO_APP_PATH);
     await sim.start({ logging: true });
@@ -30,7 +33,7 @@ test("empty", async () => {
     const app = new FilecoinApp(sim.getTransport());
     const resp = await app.getVersion();
 
-    signer_wasm.transaction_parse(EXAMPLE_CBOR_TX, true);
+    signer_wasm.transactionParse(EXAMPLE_CBOR_TX, true);
 
     console.log(resp);
 
