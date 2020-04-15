@@ -37,18 +37,18 @@ let MASTER_NODE = bip32.fromBase58(MASTER_KEY);
 
 describe('Serialization / Deserialization', function () {
     it('Valid cbor should be fine', function () {
-        assert.strictEqual(JSON.stringify(EXAMPLE_TRANSACTION), signer_wasm.transactionParse(EXAMPLE_CBOR_TX, true))
+        assert.strictEqual(JSON.stringify(EXAMPLE_TRANSACTION), signer_wasm.transaction_parse(EXAMPLE_CBOR_TX, true))
     });
 
     it('Valid cbor should be fine - missing is undefined converted to false', function () {
-        assert.strictEqual(JSON.stringify(EXAMPLE_TRANSACTION_MAINNET), signer_wasm.transactionParse(EXAMPLE_CBOR_TX))
+        assert.strictEqual(JSON.stringify(EXAMPLE_TRANSACTION_MAINNET), signer_wasm.transaction_parse(EXAMPLE_CBOR_TX, false))
     });
 
     it('Extra bytes should fail', function () {
         let cbor_transaction_extra_bytes = EXAMPLE_CBOR_TX + "00";
 
         assert.throws(
-            () => signer_wasm.transactionParse(cbor_transaction_extra_bytes, false),
+            () => signer_wasm.transaction_parse(cbor_transaction_extra_bytes, false),
             /CBOR error: 'trailing data at offset 61'/
         );
     });
@@ -197,7 +197,7 @@ describe('Key generation / derivation', function () {
         console.log("RSV signature :", signatureRSV);
         console.log("CBOR Transaction hex :", EXAMPLE_CBOR_TX);
 
-        assert.equal(signer_wasm.verifySignature(signatureRSV, EXAMPLE_CBOR_TX), true);
+        assert.equal(signer_wasm.verify_signature(signatureRSV, EXAMPLE_CBOR_TX), true);
     });
 });
 
@@ -245,7 +245,7 @@ describe('BLS support', function() {
       let tc = jsonBLSData[i];
 
     it(`BLS signing test case n°${i}`, function() {
-      var signed_tx = signer_wasm.transactionSign(tc.message, tc.sk);
+      var signed_tx = signer_wasm.transaction_sign(tc.message, tc.sk);
 
       const signature = Buffer.from(signed_tx.signature.data, 'base64');
 
@@ -259,13 +259,6 @@ describe('BLS support', function() {
       assert.equal(signature.toString('hex'), tc.sig);
 
     })
-
-    /*it(`BLS verify test case n°${i}``, function() {
-
-
-      assert(false);
-    })*/
-
   }
 });
 

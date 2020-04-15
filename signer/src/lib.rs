@@ -18,7 +18,6 @@ use secp256k1::util::{
     COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
 };
 use secp256k1::{recover, sign, verify, Message, RecoveryId};
-use bls_signatures;
 
 use crate::signature::{Signature, SignatureBLS, SignatureSECP256K1};
 
@@ -692,15 +691,8 @@ mod tests {
         sig[5] = 0x01;
         sig[34] = 0x00;
 
-<<<<<<< HEAD
         let tampered_signature = Signature::try_from(sig).expect("FIX ME");
 
-        // Verify again
-=======
-        // Verify again
-        let tampered_signature = Signature::try_from(sig).expect("FIX ME");
-
->>>>>>> 90d5d85... SUpport BLS in wasm
         let valid_signature = verify_signature(&tampered_signature, &message_cbor);
         assert!(valid_signature.is_err() || !valid_signature.unwrap());
     }
