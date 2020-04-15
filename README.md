@@ -29,21 +29,71 @@ You can find more information in the [Documentation Site](https://zondax.github.
     - retrieve tx status
 - Examples
 
-  | Caller          | Callee          | Status                           |                                  |
-  | --------------- | --------------- | -------------------------------- | -------------------------------- |
-  | Node.js         | JSONRPC Service | Ready :heavy_check_mark:         | [Link](examples/service_jsonrpc) |
-  |                 |                 |                                  |                                  |
-  | Browser         | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm_browser)    |
-  | Browser         | WASM + Ledger   | Planned :hourglass_flowing_sand: | [Soon]()                         |
-  | Node.js / Mocha | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm_node)       |
-  |                 |                 |                                  |                                  |
-  | Rust            | Rust + Ledger   | Planned :hourglass_flowing_sand: | [Soon]()                         |
-  | C               | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/c)           |
-  | C++             | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/c++)         |
-  | Java            | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/java)        |
-  | Kotlin          | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/kotlin)      |
-  | Go              | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
-  | Objective-C     | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
-  | Swift           | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
-  | React Native    | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
-  | Flutter         | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
+| Caller          | Callee          | Status                           |                                  |
+| --------------- | --------------- | -------------------------------- | -------------------------------- |
+| Node.js         | JSONRPC Service | Ready :heavy_check_mark:         | [Link](examples/service_jsonrpc) |
+|                 |                 |                                  |                                  |
+| Browser         | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm_browser)    |
+| Browser         | WASM + Ledger   | Planned :hourglass_flowing_sand: | [Soon]()                         |
+| Node.js / Mocha | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm_node)       |
+|                 |                 |                                  |                                  |
+| Rust            | Rust + Ledger   | Planned :hourglass_flowing_sand: | [Soon]()                         |
+| C               | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/c)           |
+| C++             | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/c++)         |
+| Java            | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/java)        |
+| Kotlin          | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/kotlin)      |
+| Go              | Rust            | Ready :heavy_check_mark:         | [Soon](examples/ffi/go)          |
+| Objective-C     | Rust            | Ready :heavy_check_mark:         | [Soon](examples/ffi/objective-c) |
+| Swift           | Rust            | Ready :heavy_check_mark:         | [Soon](examples/ffi/swift)       |
+| React Native    | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
+| Flutter         | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
+
+## Building and testing
+
+### Preconditions
+
+In order to install all dependencies run:
+
+```bash
+make deps
+```
+
+### Rust
+
+```bash
+cargo test -p filecoin-signer
+```
+
+### Service
+
+To run these tests, you need to set two environment variables first so tests can reach a Lotus node:
+
+|                  |          |
+| ---------------- | -------- |
+| LOTUS_SECRET_URL | some_url |
+| LOTUS_SECRET_JWT | some_jwt |
+
+Then you can run:
+
+```bash
+cargo test -p filecoin-signer
+```
+
+### WASM
+
+Build WASM and link it locally so examples are linked to the local version:
+
+```bash
+make link_wasm
+```
+
+After this, you can run the following tests / examples:
+
+| Command                  | Description               |
+| ------------------------ | ------------------------- |
+| `make test_wasm_unit`    | Unit tests                |
+| `make test_wasm_node`    | Node integration tests    |
+| `make test_wasm_browser` | Browser integration tests |
+| `make test_wasm_ledger`  | Ledger integration tests  |
+
+We suggest exploring these tests as they are great examples of how to use this functionality in different environments.
