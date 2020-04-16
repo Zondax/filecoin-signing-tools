@@ -2,8 +2,9 @@ use filecoin_signer;
 use wasm_bindgen::prelude::*;
 
 use filecoin_signer::api::UnsignedMessageAPI;
+use filecoin_signer::signature::Signature;
 use filecoin_signer::utils::{from_hex_string, to_hex_string};
-use filecoin_signer::{CborBuffer, PrivateKey, Signature};
+use filecoin_signer::{CborBuffer, PrivateKey};
 use std::convert::TryFrom;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -172,10 +173,26 @@ pub fn transaction_sign(
 }
 
 #[wasm_bindgen]
-pub fn message_sign() {
+pub fn transaction_sign_raw(
+    unsigned_tx_js: JsValue,
+    private_key_hexstring: String,
+) -> Result<JsValue, JsValue> {
     set_panic_hook();
-    // TODO: Purpose is unclear. TBD
-    // TODO: return signature
+
+    let unsigned_message = unsigned_tx_js
+        .into_serde()
+        .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
+
+    let private_key =
+        PrivateKey::try_from(private_key_hexstring).map_err(|e| JsValue::from(e.to_string()))?;
+
+    let signed_message = filecoin_signer::transaction_sign_raw(&unsigned_message, &private_key)
+        .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
+
+    let signed_message_js = JsValue::from_serde(&signed_message.as_bytes())
+        .map_err(|e| JsValue::from(format!("Error signing transaction: {}", e)))?;
+
+    Ok(signed_message_js)
 }
 
 #[wasm_bindgen]

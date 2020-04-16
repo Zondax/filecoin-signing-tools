@@ -1,4 +1,5 @@
 use crate::utils::HexDecodeError;
+use forest_address::Error;
 use hmac::crypto_mac::InvalidKeyLength;
 use std::num::ParseIntError;
 use thiserror::Error;
@@ -27,6 +28,9 @@ pub enum SignerError {
     /// Not able to parse integer
     #[error("Cannot parse integer")]
     ParseIntError(#[from] ParseIntError),
+    /// BLS error
+    #[error("bls error")]
+    BLS(#[from] bls_signatures::Error),
 }
 
 #[cfg(feature = "with-ffi-support")]
@@ -40,6 +44,7 @@ impl From<SignerError> for ffi_support::ExternError {
             SignerError::InvalidBigInt(_) => 5,
             SignerError::GenericString(_) => 6,
             SignerError::ParseIntError(_) => 7,
+            SignerError::BLS(_) => 8,
         };
         Self::new_error(ffi_support::ErrorCode::new(code), e.to_string())
     }
@@ -48,6 +53,12 @@ impl From<SignerError> for ffi_support::ExternError {
 // We need to use from because InvalidKeyLength does not implement as_dyn_err
 impl From<InvalidKeyLength> for SignerError {
     fn from(err: InvalidKeyLength) -> SignerError {
+        SignerError::GenericString(err.to_string())
+    }
+}
+
+impl From<forest_address::Error> for SignerError {
+    fn from(err: forest_address::Error) -> SignerError {
         SignerError::GenericString(err.to_string())
     }
 }
