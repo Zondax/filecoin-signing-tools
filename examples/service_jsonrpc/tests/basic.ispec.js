@@ -115,6 +115,13 @@ test("transaction_parse", async () => {
   expect(response.result).toBe(JSON.stringify(EXAMPLE_TRANSACTION));
 });
 
+test("transaction_parse_invalid_length", async () => {
+  const response = await callMethod(URL, "transaction_parse", [EXAMPLE_TRANSACTION_CBOR+"'", true], 1);
+
+  expect(response).toHaveProperty("error");
+  expect(response.error.message).toMatch(/Hex decoding | Invalid length/);
+});
+
 test("transaction_testvectors", async () => {
   const rawData = fs.readFileSync(tests_vectors_path);
   const jsonData = JSON.parse(rawData);
