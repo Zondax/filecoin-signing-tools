@@ -156,7 +156,7 @@ pub async fn transaction_parse(
     _: RemoteNodeSection,
 ) -> Result<Success, ServiceError> {
     let params = c.params.parse::<TransctionParseParamsAPI>()?;
-    let cbor_data = CborBuffer(from_hex_string(params.cbor_hex.as_ref()).unwrap());
+    let cbor_data = CborBuffer(from_hex_string(params.cbor_hex.as_ref())?);
 
     let message_parsed = filecoin_signer::transaction_parse(&cbor_data, params.testnet)?;
 
@@ -197,7 +197,7 @@ pub async fn verify_signature(
     let params = c.params.parse::<VerifySignatureParamsAPI>()?;
 
     let signature = Signature::try_from(params.signature_hex)?;
-    let message = CborBuffer(from_hex_string(params.message_hex.as_ref()).unwrap());
+    let message = CborBuffer(from_hex_string(params.message_hex.as_ref())?);
 
     let result = filecoin_signer::verify_signature(&signature, &message)?;
 
