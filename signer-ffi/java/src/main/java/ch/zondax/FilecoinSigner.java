@@ -2,7 +2,7 @@ package ch.zondax;
 
 public class FilecoinSigner {
     public static native long errorNew();
-    public static native long errorCode(long ptr);
+    public static native int errorCode(long ptr);
     public static native String errorMessage(long ptr);
     public static native void errorFree(long ptr);
 

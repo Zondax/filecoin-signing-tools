@@ -1,6 +1,6 @@
 # Kotlin bindings
 
-Uses the same bindings provided by the Java JNI.
+Currently, we don't provide compiled artifacts, threfore, manual steps to build and orchestrate the libraries and headers are necessary.
 
 # Running 
 
