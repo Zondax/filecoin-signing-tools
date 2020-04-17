@@ -94,15 +94,14 @@ pub fn key_derive(
 pub fn key_derive_from_seed(seed: JsValue, path: String) -> Result<ExtendedKey, JsValue> {
     set_panic_hook();
 
-    let mut seed_bytes = Vec::new();
-    if seed.is_string() {
-        let seed_string = seed.as_string().unwrap();
-        seed_bytes = from_hex_string(&seed_string).map_err(|e| JsValue::from(e.to_string()))?;
+    let seed_bytes = if seed.is_string() {
+        let seed_string = seed.as_string()?;
+        from_hex_string(&seed_string).map_err(|e| JsValue::from(e.to_string()))?
     } else if seed.is_object() {
-        seed_bytes = js_sys::Uint8Array::new(&seed).to_vec();
+        js_sys::Uint8Array::new(&seed).to_vec()
     } else {
         return Err(JsValue::from("Seed must be an hexstring or a buffer"));
-    }
+    };
 
     let key_address = filecoin_signer::key_derive_from_seed(&seed_bytes, &path)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
@@ -114,18 +113,16 @@ pub fn key_derive_from_seed(seed: JsValue, path: String) -> Result<ExtendedKey, 
 pub fn key_recover(private_key: JsValue, testnet: bool) -> Result<ExtendedKey, JsValue> {
     set_panic_hook();
 
-    let mut private_key_bytes;
-    if private_key.is_string() {
-        private_key_bytes = PrivateKey::try_from(private_key.as_string().unwrap())
-            .map_err(|e| JsValue::from(e.to_string()))?;
+    let private_key_bytes = if private_key.is_string() {
+        PrivateKey::try_from(private_key.as_string()?).map_err(|e| JsValue::from(e.to_string()))?
     } else if private_key.is_object() {
-        private_key_bytes = PrivateKey::try_from(js_sys::Uint8Array::new(&private_key).to_vec())
+        PrivateKey::try_from(js_sys::Uint8Array::new(&private_key).to_vec())
             .map_err(|e| JsValue::from(e.to_string()))?;
     } else {
         return Err(JsValue::from(
             "Private key must be an hexstring or a buffer",
         ));
-    }
+    };
 
     let key_address = filecoin_signer::key_recover(&private_key_bytes, testnet)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
@@ -158,17 +155,15 @@ pub fn transaction_serialize_raw(unsigned_message: JsValue) -> Result<Vec<u8>, J
 pub fn transaction_parse(cbor: JsValue, testnet: bool) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let mut cbor_bytes = Vec::new();
-    if cbor.is_string() {
-        cbor_bytes = from_hex_string(&cbor.as_string().unwrap())
-            .map_err(|e| JsValue::from(e.to_string()))?;
+    let cbor_bytes = if cbor.is_string() {
+        from_hex_string(&cbor.as_string()?).map_err(|e| JsValue::from(e.to_string()))?
     } else if cbor.is_object() {
-        cbor_bytes = js_sys::Uint8Array::new(&cbor).to_vec();
+        js_sys::Uint8Array::new(&cbor).to_vec();
     } else {
         return Err(JsValue::from(
             "CBOR message must be an hexstring or a buffer",
         ));
-    }
+    };
 
     let message_parsed = filecoin_signer::transaction_parse(&CborBuffer(cbor_bytes), testnet)
         .map_err(|e| JsValue::from(e.to_string()))?;
@@ -186,18 +181,16 @@ pub fn transaction_sign(unsigned_tx_js: JsValue, private_key: JsValue) -> Result
         .into_serde()
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
-    let mut private_key_bytes;
-    if private_key.is_string() {
-        private_key_bytes = PrivateKey::try_from(private_key.as_string().unwrap())
-            .map_err(|e| JsValue::from(e.to_string()))?;
+    let private_key_bytes = if private_key.is_string() {
+        PrivateKey::try_from(private_key.as_string()?).map_err(|e| JsValue::from(e.to_string()))?
     } else if private_key.is_object() {
-        private_key_bytes = PrivateKey::try_from(js_sys::Uint8Array::new(&private_key).to_vec())
-            .map_err(|e| JsValue::from(e.to_string()))?;
+        PrivateKey::try_from(js_sys::Uint8Array::new(&private_key).to_vec())
+            .map_err(|e| JsValue::from(e.to_string()))?
     } else {
         return Err(JsValue::from(
             "Private key must be an hexstring or a buffer",
         ));
-    }
+    };
 
     let signed_message =
         filecoin_signer::transaction_sign(&unsigned_message, &private_key_bytes)
@@ -236,27 +229,23 @@ pub fn transaction_sign_raw(
 pub fn verify_signature(signature: JsValue, message: JsValue) -> Result<bool, JsValue> {
     set_panic_hook();
 
-    let mut signature_bytes = Vec::new();
-    if signature.is_string() {
-        signature_bytes = from_hex_string(&signature.as_string().unwrap())
-            .map_err(|e| JsValue::from(e.to_string()))?;
+    let signature_bytes = if signature.is_string() {
+        from_hex_string(&signature.as_string()?).map_err(|e| JsValue::from(e.to_string()))?;
     } else if signature.is_object() {
-        signature_bytes = js_sys::Uint8Array::new(&signature).to_vec();
+        js_sys::Uint8Array::new(&signature).to_vec();
     } else {
         return Err(JsValue::from("Signature must be an hexstring or a buffer"));
-    }
+    };
 
     let sig = Signature::try_from(signature_bytes).map_err(|e| JsValue::from(e.to_string()))?;
 
-    let mut message_bytes = Vec::new();
-    if message.is_string() {
-        message_bytes = from_hex_string(&message.as_string().unwrap())
-            .map_err(|e| JsValue::from(e.to_string()))?;
+    let message_bytes = if message.is_string() {
+        from_hex_string(&message.as_string()?).map_err(|e| JsValue::from(e.to_string()))?
     } else if message.is_object() {
-        message_bytes = js_sys::Uint8Array::new(&message).to_vec();
+        js_sys::Uint8Array::new(&message).to_vec()
     } else {
         return Err(JsValue::from("Signature must be an hexstring or a buffer"));
-    }
+    };
 
     filecoin_signer::verify_signature(&sig, &CborBuffer(message_bytes))
         .map_err(|e| JsValue::from_str(format!("Error verifying signature: {}", e).as_str()))

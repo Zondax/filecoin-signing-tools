@@ -19,7 +19,7 @@ pub async fn make_rpc_call(url: &str, jwt: &str, m: &MethodCall) -> Result<Respo
 
     ///// FIXME: This block is a workaround for a non-standard Lotus answer
     let mut workaround = node_answer.json::<Value>().await?;
-    let obj = workaround.as_object_mut().unwrap();
+    let obj = workaround.as_object_mut()?;
 
     if obj.contains_key("error") {
         obj.remove("result");
@@ -161,7 +161,7 @@ pub async fn is_mainnet(url: &str, jwt: &str) -> Result<bool, ServiceError> {
         _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
     };
 
-    let from_field = message.get("From").unwrap().as_str().unwrap();
+    let from_field = message.get("From").unwrap().as_str()?;
 
     Ok(from_field.starts_with("f"))
 }

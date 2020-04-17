@@ -211,6 +211,7 @@ pub async fn verify_signature(
 }
 
 pub async fn get_status(c: MethodCall, config: RemoteNodeSection) -> Result<Success, ServiceError> {
+    let call_params = c.params.parse::<GetStatusParamsAPI>()?;
     let params = json!({"/": call_params.cid_message.to_string()});
     let result = client::get_status(&config.url, &config.jwt, params).await?;
 
