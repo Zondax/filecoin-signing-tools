@@ -59,6 +59,10 @@ impl Bip44Path {
 
         Ok(bip44_path)
     }
+
+    pub fn is_testnet(&self) -> bool {
+        return self.0[1] == (1 | HARDENED_BIT);
+    }
 }
 
 const HMAC_SEED: &[u8; 12] = b"Bitcoin seed";
@@ -159,7 +163,7 @@ impl ExtendedSecretKey {
         ExtendedSecretKey::new(child_secret_key, &child_chain_code)
     }
 
-    pub fn derive_bip44(&self, path: Bip44Path) -> Result<ExtendedSecretKey, SignerError> {
+    pub fn derive_bip44(&self, path: &Bip44Path) -> Result<ExtendedSecretKey, SignerError> {
         let child0 = self.derive_child_key(path.0[0])?;
         let child1 = child0.derive_child_key(path.0[1])?;
         let child2 = child1.derive_child_key(path.0[2])?;

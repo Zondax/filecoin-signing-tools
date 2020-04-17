@@ -108,10 +108,16 @@ pub fn key_derive(mnemonic: &str, path: &str, password: &str) -> Result<Extended
 
     let bip44_path = Bip44Path::from_string(path)?;
 
-    let esk = master.derive_bip44(bip44_path)?;
+    let esk = master.derive_bip44(&bip44_path)?;
 
-    let address = Address::new_secp256k1(&esk.public_key().to_vec())
+    let mut address = Address::new_secp256k1(&esk.public_key().to_vec())
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
+    if bip44_path.is_testnet() {
+        address.set_network(Network::Testnet);
+    } else {
+        address.set_network(Network::Mainnet);
+    }
 
     Ok(ExtendedKey {
         private_key: PrivateKey(esk.secret_key()),
@@ -133,10 +139,16 @@ pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, Sign
 
     let bip44_path = Bip44Path::from_string(path)?;
 
-    let esk = master.derive_bip44(bip44_path)?;
+    let esk = master.derive_bip44(&bip44_path)?;
 
-    let address = Address::new_secp256k1(&esk.public_key().to_vec())
+    let mut address = Address::new_secp256k1(&esk.public_key().to_vec())
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
+    if bip44_path.is_testnet() {
+        address.set_network(Network::Testnet);
+    } else {
+        address.set_network(Network::Mainnet);
+    }
 
     Ok(ExtendedKey {
         private_key: PrivateKey(esk.secret_key()),

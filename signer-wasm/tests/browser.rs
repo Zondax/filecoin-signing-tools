@@ -41,7 +41,7 @@ fn key_derive() {
 
     assert_eq!(
         answer.address(),
-        "t1rovwtiuo5ncslpmpjftzu5akswbgsgighjazxoi"
+        "f1rovwtiuo5ncslpmpjftzu5akswbgsgighjazxoi"
     )
 }
 

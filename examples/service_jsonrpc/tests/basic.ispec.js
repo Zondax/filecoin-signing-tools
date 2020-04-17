@@ -49,7 +49,20 @@ test("key_derive", async () => {
   expect(response).toHaveProperty("result");
   expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
   expect(response.result.public_compressed_hexstring).toEqual(child.publicKey.toString("hex"));
-  expect(response.result.address).toEqual("t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
+  expect(response.result.address).toEqual("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
+});
+
+test("key_derive testnet path", async () => {
+  const path = "m/44'/1'/0/0/0";
+  const response = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path, ""], 1);
+  const child = EXPECTED_ROOT_NODE.derivePath(path);
+  console.log(response);
+
+  // Do we have a results
+  expect(response).toHaveProperty("result");
+  expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
+  expect(response.result.public_compressed_hexstring).toEqual(child.publicKey.toString("hex"));
+  expect(response.result.address.startsWith('t')).toBeTruthy();
 });
 
 test("key_derive missing all parameters", async () => {
@@ -85,7 +98,7 @@ test("key_derive missing password parameter (verify default)", async () => {
   expect(response).toHaveProperty("result");
   expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
   expect(response.result.public_compressed_hexstring).toEqual(child.publicKey.toString("hex"));
-  expect(response.result.address).toEqual("t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
+  expect(response.result.address).toEqual("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
 });
 
 test("key_derive_from_seed", async () => {
@@ -100,7 +113,7 @@ test("key_derive_from_seed", async () => {
   expect(response).toHaveProperty("result");
   expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
   expect(response.result.public_compressed_hexstring).toEqual(child.publicKey.toString("hex"));
-  expect(response.result.address).toEqual("t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
+  expect(response.result.address).toEqual("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
 });
 
 test("transaction_serialize", async () => {
@@ -314,7 +327,7 @@ test("get_nonce", async () => {
 });
 
 test.skip("send_signed_tx", async () => {
-  const path = "m/44'/461'/0/0/0";
+  const path = "m/44'/1'/0/0/0";
   const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path], 1);
 
   console.log(keyAddressResponse);
@@ -366,7 +379,7 @@ test.skip("send_signed_tx", async () => {
 });
 
 test.skip("send_sign", async () => {
-  const path = "m/44'/461'/0/0/0";
+  const path = "m/44'/1'/0/0/0";
   const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path], 1);
 
   console.log(keyAddressResponse);
@@ -420,7 +433,7 @@ test("send_sign wrong network", async () => {
 
   const transaction = {
     to: "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-    from: "f" + keyAddressResponse.result.address.slice(1),
+    from: keyAddressResponse.result.address,
     nonce: nonce,
     value: "1",
     gasprice: "0",
