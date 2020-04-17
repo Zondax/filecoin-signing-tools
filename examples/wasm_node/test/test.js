@@ -37,11 +37,11 @@ let MASTER_NODE = bip32.fromBase58(MASTER_KEY);
 
 describe('Serialization / Deserialization', function () {
     it('Valid cbor should be fine', function () {
-        assert.strictEqual(JSON.stringify(EXAMPLE_TRANSACTION), signer_wasm.transaction_parse(EXAMPLE_CBOR_TX, true))
+        assert.deepStrictEqual(EXAMPLE_TRANSACTION, signer_wasm.transaction_parse(EXAMPLE_CBOR_TX, true))
     });
 
     it('Valid cbor should be fine - missing is undefined converted to false', function () {
-        assert.strictEqual(JSON.stringify(EXAMPLE_TRANSACTION_MAINNET), signer_wasm.transaction_parse(EXAMPLE_CBOR_TX))
+        assert.deepStrictEqual(EXAMPLE_TRANSACTION_MAINNET, signer_wasm.transaction_parse(EXAMPLE_CBOR_TX))
     });
 
     it('Extra bytes should fail', function () {
@@ -54,7 +54,12 @@ describe('Serialization / Deserialization', function () {
     });
 
     it('Serialize Transaction', () => {
-        assert.strictEqual(EXAMPLE_CBOR_TX, signer_wasm.transaction_serialize(EXAMPLE_TRANSACTION))
+        assert.strictEqual(EXAMPLE_CBOR_TX, signer_wasm.transaction_serialize(EXAMPLE_TRANSACTION));
+    });
+
+    it('Serialize Transaction return buffer', () => {
+        let cbor_uint8_array = signer_wasm.transaction_serialize_raw(EXAMPLE_TRANSACTION);
+        assert.strictEqual(EXAMPLE_CBOR_TX, Buffer.from(cbor_uint8_array).toString('hex'));
     });
 
     it('Serialize Transaction Fail (missing nonce)', () => {
@@ -318,7 +323,7 @@ describe('Parameterized Tests - Deserialize', function () {
         it("Parse Transaction : " + tc.description, () => {
             if (tc.valid) {
                 let result = signer_wasm.transaction_parse(tc.encoded_tx_hex, tc.testnet);
-                assert.equal(JSON.stringify(tc.message), result);
+                assert.deepStrictEqual(tc.message, result);
             } else {
                 // Not valid throw error
                 // TODO: Add error type to manual_testvectors.json file

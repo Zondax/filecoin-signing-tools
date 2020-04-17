@@ -154,7 +154,7 @@ pub fn transaction_serialize_raw(unsigned_message: JsValue) -> Result<Vec<u8>, J
 }
 
 #[wasm_bindgen]
-pub fn transaction_parse(cbor: JsValue, testnet: bool) -> Result<String, JsValue> {
+pub fn transaction_parse(cbor: JsValue, testnet: bool) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
     let mut cbor_bytes = Vec::new();
@@ -172,7 +172,7 @@ pub fn transaction_parse(cbor: JsValue, testnet: bool) -> Result<String, JsValue
     let message_parsed = filecoin_signer::transaction_parse(&CborBuffer(cbor_bytes), testnet)
         .map_err(|e| JsValue::from(e.to_string()))?;
 
-    let tx = serde_json::to_string(&message_parsed).map_err(|e| JsValue::from(e.to_string()))?;
+    let tx = JsValue::from_serde(&message_parsed).map_err(|e| JsValue::from(e.to_string()))?;
 
     Ok(tx)
 }
