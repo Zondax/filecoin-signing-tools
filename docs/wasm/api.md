@@ -46,7 +46,7 @@ console.log(keypair);
 Derive a child key from a seed following a [BIP44 path](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
 
 Arguments :
-* **seed**: a seed as a hex string;
+* **seed**: a seed (hexstring or Buffer);
 * **path**: a BIP44 path;
 
 ```javascript
@@ -71,8 +71,8 @@ console.log(keypair);
 Recover a extended key from a private key.
 
 Arguments :
-* **privateKey**: a private key as a hex string;
-* **testnet**: a boolean value. Indicate if you wnat testnet or mainnet address;
+* **privateKey**: a private key (hexstring or Buffer);
+* **testnet**: a boolean value. Indicate if you want testnet or mainnet address;
 
 ```javascript
 const signer_wasm = require('@zondax/filecoin-signer-wasm');
@@ -111,7 +111,36 @@ const transaction = {
     "params": ""
 };
 
-const cbor_transaction =  signer_wasm.transaction_serialize(JSON.stringify(transaction));
+const cbor_transaction =  signer_wasm.transaction_serialize(transaction);
+
+//
+console.log(cbor_transaction);
+```
+
+## transaction\_serialize\_raw
+
+Serialize a transaction and return teh CBOR equivalent as a Uint8Array.
+
+Arguments :
+* **transaction**: a filecoin transaction;
+
+```javascript
+const signer_wasm = require('@zondax/filecoin-signer-wasm');
+// or for browser
+// import * as signer_wasm from "@zondax/filecoin-signer-wasm";
+
+const transaction = {
+    "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+    "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
+    "nonce": 1,
+    "value": "100000",
+    "gasprice": "2500",
+    "gaslimit": 25000,
+    "method": 0,
+    "params": ""
+};
+
+const cbor_transaction =  signer_wasm.transaction_serialize(transaction);
 
 //
 console.log(cbor_transaction);
@@ -122,7 +151,7 @@ console.log(cbor_transaction);
 Parse a CBOR hextring into a filecoin transaction.
 
 Arguments:
-* **hexstring**: the cbor hexstring to parse;
+* **cbor_transaction**: the cbor (hexstring or Buffer);
 * **testnet**: boolean value `true` if testnet or `false` for mainnet;
 
 ```javascript
@@ -146,7 +175,7 @@ Sign a transaction and return the signature (RSV format).
 
 Arguments:
 * **transaction**: a filecoin transaction;
-* **privatekey**: a private key as hexstring;
+* **privatekey**: a private key (hexstring or buffer);
 
 ```javascript
 const signer_wasm = require('@zondax/filecoin-signer-wasm');

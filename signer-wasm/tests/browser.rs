@@ -62,9 +62,11 @@ fn sign() {
 
     let private_key: &str = r#"80c56e752ffdd06e3e0d9516e662e7ba883982404045a2c2d4cbe7c87e6c66fe"#;
 
-    let answer =
-        filecoin_signer_wasm::transaction_sign(example_unsigned_message, private_key.to_string())
-            .expect("unexpected error");
+    let answer = filecoin_signer_wasm::transaction_sign(
+        example_unsigned_message,
+        JsValue::from_str(private_key),
+    )
+    .expect("unexpected error");
 
     let expected_answer = JsValue::from_serde(&json!(
     {

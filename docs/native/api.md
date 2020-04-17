@@ -39,7 +39,7 @@ println!("{:?}", extended_key);
 Derive a child key from a seed following a [BIP44 path](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
 
 Arguments :
-* **seed**: a seed as a hex string;
+* **seed**: a seed;
 * **path**: a BIP44 path;
 
 ```rust
@@ -78,7 +78,7 @@ println!("{:?}", extended_key);
 
 ## transaction_serialize
 
-Serialize a transaction and return a CBOR hexstring.
+Serialize a transaction and return the CBOR equivalent.
 
 Arguments :
 * **transaction**: a filecoin transaction;
@@ -108,10 +108,10 @@ println!("{:?}", cbor_transaction);
 
 ## transaction_parse
 
-Parse a CBOR hextring into a filecoin transaction (signed or unsigned).
+Parse a CBOR transaction into a filecoin transaction (signed or unsigned).
 
 Arguments:
-* **hexstring**: the cbor hexstring to parse;
+* **cbor_data**: the CBOR transaction;
 * **testnet**: boolean value `true` if testnet or `false` for mainnet;
 
 ```rust
@@ -142,7 +142,7 @@ e.g :
 
 Arguments:
 * **transaction**: a filecoin transaction;
-* **privatekey**: a private key as hexstring (should be the associated private key of `from` address of the transaction);
+* **privatekey**: a`PrivateKey` (should be the associated private key of `from` address of the transaction);
 
 ```rust
 use signer::{transaction_sign_raw, PrivateKey};
@@ -188,7 +188,7 @@ pub struct SignedMessageAPI {
 
 Arguments:
 * **transaction**: a filecoin transaction;
-* **privatekey**: a private key as hexstring (should match the address of the `from` field);
+* **privatekey**: a `PrivateKey` (should match the address of the `from` field);
 
 ```rust
 use signer::{transaction_sign, PrivateKey};

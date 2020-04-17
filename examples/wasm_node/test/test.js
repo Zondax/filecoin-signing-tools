@@ -37,11 +37,11 @@ let MASTER_NODE = bip32.fromBase58(MASTER_KEY);
 
 describe('Serialization / Deserialization', function () {
     it('Valid cbor should be fine', function () {
-        assert.strictEqual(JSON.stringify(EXAMPLE_TRANSACTION), signer_wasm.transaction_parse(EXAMPLE_CBOR_TX, true))
+        assert.deepStrictEqual(EXAMPLE_TRANSACTION, signer_wasm.transaction_parse(EXAMPLE_CBOR_TX, true))
     });
 
     it('Valid cbor should be fine - missing is undefined converted to false', function () {
-        assert.strictEqual(JSON.stringify(EXAMPLE_TRANSACTION_MAINNET), signer_wasm.transaction_parse(EXAMPLE_CBOR_TX, false))
+        assert.deepStrictEqual(EXAMPLE_TRANSACTION_MAINNET, signer_wasm.transaction_parse(EXAMPLE_CBOR_TX, false));
     });
 
     it('Extra bytes should fail', function () {
@@ -54,7 +54,12 @@ describe('Serialization / Deserialization', function () {
     });
 
     it('Serialize Transaction', () => {
-        assert.strictEqual(EXAMPLE_CBOR_TX, signer_wasm.transaction_serialize(JSON.stringify(EXAMPLE_TRANSACTION)))
+        assert.strictEqual(EXAMPLE_CBOR_TX, signer_wasm.transaction_serialize(EXAMPLE_TRANSACTION));
+    });
+
+    it('Serialize Transaction return buffer', () => {
+        let cbor_uint8_array = signer_wasm.transaction_serialize_raw(EXAMPLE_TRANSACTION);
+        assert.strictEqual(EXAMPLE_CBOR_TX, Buffer.from(cbor_uint8_array).toString('hex'));
     });
 
     it('Serialize Transaction Fail (missing nonce)', () => {
@@ -69,7 +74,7 @@ describe('Serialization / Deserialization', function () {
         };
 
         assert.throws(
-            () => signer_wasm.transaction_serialize(JSON.stringify(invalid_transaction)),
+            () => signer_wasm.transaction_serialize(invalid_transaction),
             /missing field `nonce`/
         );
     });
@@ -151,6 +156,22 @@ describe('Key generation / derivation', function () {
         assert.strictEqual(keypair.address, "t1rovwtiuo5ncslpmpjftzu5akswbgsgighjazxoi");
     });
 
+    it('Key Derive From Seed Buffer', () => {
+        const seed = bip39.mnemonicToSeedSync(EXAMPLE_MNEMONIC);
+
+        const keypair = signer_wasm.key_derive_from_seed(seed, "m/44'/461'/0/0/1");
+
+        console.log("Public Key Raw         :", keypair.public_raw);
+        console.log("Public Key             :", keypair.public_hexstring);
+        console.log("Public Key Compressed  :", keypair.public_compressed_hexstring);
+        console.log("Private                :", keypair.private_hexstring);
+        console.log("Address                :", keypair.address);
+
+        const expected_keys = MASTER_NODE.derivePath("m/44'/461'/0/0/1");
+        assert.strictEqual(keypair.private_hexstring, expected_keys.privateKey.toString("hex"));
+        assert.strictEqual(keypair.address, "t1rovwtiuo5ncslpmpjftzu5akswbgsgighjazxoi");
+    });
+
     it('Key Derive Invalid Path', () => {
         assert.throws(
             () => signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/a/0/1", ""),
@@ -205,6 +226,22 @@ describe('Key Recover testnet/mainnet', function () {
     it("key recover testnet", () => {
         let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
         let privateKey = child.privateKey.toString('hex');
+
+        let recoveredKey = signer_wasm.key_recover(privateKey, true);
+
+        console.log("Public Key Raw         :", recoveredKey.public_raw);
+        console.log("Public Key             :", recoveredKey.public_hexstring);
+        console.log("Public Key Compressed  :", recoveredKey.public_compressed_hexstring);
+        console.log("Private                :", recoveredKey.private_hexstring);
+        console.log("Address                :", recoveredKey.address);
+
+        assert.equal(recoveredKey.private_hexstring, child.privateKey.toString("hex"));
+        assert.equal(recoveredKey.address, "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
+    });
+
+    it("key recover testnet buffer", () => {
+        let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+        let privateKey = child.privateKey;
 
         let recoveredKey = signer_wasm.key_recover(privateKey, true);
 
@@ -278,13 +315,13 @@ describe('Parameterized Tests - Serialize', function () {
         it("Create Transaction : " + tc.description, () => {
             if (tc.valid) {
                 // Valid doesn't throw
-                let result = signer_wasm.transaction_serialize(JSON.stringify(tc.message));
+                let result = signer_wasm.transaction_serialize(tc.message);
                 assert.equal(tc.encoded_tx_hex, result);
             } else {
                 // Not valid throw error
                 // TODO: Add error type to manual_testvectors.json file
                 assert.throws(
-                    () => signer_wasm.transaction_serialize(JSON.stringify(tc.message)),
+                    () => signer_wasm.transaction_serialize(tc.message),
                     /Error/
                 );
             }
@@ -310,7 +347,7 @@ describe('Parameterized Tests - Deserialize', function () {
         it("Parse Transaction : " + tc.description, () => {
             if (tc.valid) {
                 let result = signer_wasm.transaction_parse(tc.encoded_tx_hex, tc.testnet);
-                assert.equal(JSON.stringify(tc.message), result);
+                assert.deepStrictEqual(tc.message, result);
             } else {
                 // Not valid throw error
                 // TODO: Add error type to manual_testvectors.json file

@@ -1,4 +1,5 @@
 use filecoin_signer;
+use js_sys;
 use wasm_bindgen::prelude::*;
 
 use filecoin_signer::api::UnsignedMessageAPI;
@@ -90,10 +91,18 @@ pub fn key_derive(
 }
 
 #[wasm_bindgen]
-pub fn key_derive_from_seed(seed_hexstring: String, path: String) -> Result<ExtendedKey, JsValue> {
+pub fn key_derive_from_seed(seed: JsValue, path: String) -> Result<ExtendedKey, JsValue> {
     set_panic_hook();
 
-    let seed_bytes = from_hex_string(&seed_hexstring).map_err(|e| JsValue::from(e.to_string()))?;
+    let mut seed_bytes = Vec::new();
+    if seed.is_string() {
+        let seed_string = seed.as_string().unwrap();
+        seed_bytes = from_hex_string(&seed_string).map_err(|e| JsValue::from(e.to_string()))?;
+    } else if seed.is_object() {
+        seed_bytes = js_sys::Uint8Array::new(&seed).to_vec();
+    } else {
+        return Err(JsValue::from("Seed must be an hexstring or a buffer"));
+    }
 
     let key_address = filecoin_signer::key_derive_from_seed(&seed_bytes, &path)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
@@ -102,30 +111,41 @@ pub fn key_derive_from_seed(seed_hexstring: String, path: String) -> Result<Exte
 }
 
 #[wasm_bindgen]
-pub fn key_recover(private_key_hexstring: String, testnet: bool) -> Result<ExtendedKey, JsValue> {
+pub fn key_recover(private_key: JsValue, testnet: bool) -> Result<ExtendedKey, JsValue> {
     set_panic_hook();
 
-    let private_key =
-        PrivateKey::try_from(private_key_hexstring).map_err(|e| JsValue::from(e.to_string()))?;
+    let mut private_key_bytes;
+    if private_key.is_string() {
+        private_key_bytes = PrivateKey::try_from(private_key.as_string().unwrap())
+            .map_err(|e| JsValue::from(e.to_string()))?;
+    } else if private_key.is_object() {
+        private_key_bytes = PrivateKey::try_from(js_sys::Uint8Array::new(&private_key).to_vec())
+            .map_err(|e| JsValue::from(e.to_string()))?;
+    } else {
+        return Err(JsValue::from(
+            "Private key must be an hexstring or a buffer",
+        ));
+    }
 
-    let key_address = filecoin_signer::key_recover(&private_key, testnet)
+    let key_address = filecoin_signer::key_recover(&private_key_bytes, testnet)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
 
     Ok(ExtendedKey { 0: key_address })
 }
 
 #[wasm_bindgen]
-pub fn transaction_serialize(unsigned_message_string: String) -> Result<String, JsValue> {
+pub fn transaction_serialize(unsigned_message: JsValue) -> Result<String, JsValue> {
     set_panic_hook();
-    let s = transaction_serialize_raw(unsigned_message_string)?;
+    let s = transaction_serialize_raw(unsigned_message)?;
     Ok(to_hex_string(&s))
 }
 
 #[wasm_bindgen]
-pub fn transaction_serialize_raw(unsigned_message_string: String) -> Result<Vec<u8>, JsValue> {
+pub fn transaction_serialize_raw(unsigned_message: JsValue) -> Result<Vec<u8>, JsValue> {
     set_panic_hook();
 
-    let unsigned_message: UnsignedMessageAPI = serde_json::from_str(&unsigned_message_string)
+    let unsigned_message: UnsignedMessageAPI = unsigned_message
+        .into_serde()
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
     let cbor_buffer = filecoin_signer::transaction_serialize(&unsigned_message)
@@ -135,36 +155,53 @@ pub fn transaction_serialize_raw(unsigned_message_string: String) -> Result<Vec<
 }
 
 #[wasm_bindgen]
-pub fn transaction_parse(cbor_hexstring: String, testnet: bool) -> Result<String, JsValue> {
+pub fn transaction_parse(cbor: JsValue, testnet: bool) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let cbor_data =
-        CborBuffer(from_hex_string(&cbor_hexstring).map_err(|e| JsValue::from(e.to_string()))?);
+    let mut cbor_bytes = Vec::new();
+    if cbor.is_string() {
+        cbor_bytes = from_hex_string(&cbor.as_string().unwrap())
+            .map_err(|e| JsValue::from(e.to_string()))?;
+    } else if cbor.is_object() {
+        cbor_bytes = js_sys::Uint8Array::new(&cbor).to_vec();
+    } else {
+        return Err(JsValue::from(
+            "CBOR message must be an hexstring or a buffer",
+        ));
+    }
 
-    let message_parsed = filecoin_signer::transaction_parse(&cbor_data, testnet)
+    let message_parsed = filecoin_signer::transaction_parse(&CborBuffer(cbor_bytes), testnet)
         .map_err(|e| JsValue::from(e.to_string()))?;
 
-    let tx = serde_json::to_string(&message_parsed).map_err(|e| JsValue::from(e.to_string()))?;
+    let tx = JsValue::from_serde(&message_parsed).map_err(|e| JsValue::from(e.to_string()))?;
 
     Ok(tx)
 }
 
 #[wasm_bindgen]
-pub fn transaction_sign(
-    unsigned_tx_js: JsValue,
-    private_key_hexstring: String,
-) -> Result<JsValue, JsValue> {
+pub fn transaction_sign(unsigned_tx_js: JsValue, private_key: JsValue) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
     let unsigned_message = unsigned_tx_js
         .into_serde()
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
-    let private_key =
-        PrivateKey::try_from(private_key_hexstring).map_err(|e| JsValue::from(e.to_string()))?;
+    let mut private_key_bytes;
+    if private_key.is_string() {
+        private_key_bytes = PrivateKey::try_from(private_key.as_string().unwrap())
+            .map_err(|e| JsValue::from(e.to_string()))?;
+    } else if private_key.is_object() {
+        private_key_bytes = PrivateKey::try_from(js_sys::Uint8Array::new(&private_key).to_vec())
+            .map_err(|e| JsValue::from(e.to_string()))?;
+    } else {
+        return Err(JsValue::from(
+            "Private key must be an hexstring or a buffer",
+        ));
+    }
 
-    let signed_message = filecoin_signer::transaction_sign(&unsigned_message, &private_key)
-        .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
+    let signed_message =
+        filecoin_signer::transaction_sign(&unsigned_message, &private_key_bytes)
+            .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
 
     let signed_message_js = JsValue::from_serde(&signed_message)
         .map_err(|e| JsValue::from(format!("Error signing transaction: {}", e)))?;
@@ -196,37 +233,39 @@ pub fn transaction_sign_raw(
 }
 
 #[wasm_bindgen]
-pub fn verify_signature(signature_hex: String, message_hex: String) -> Result<bool, JsValue> {
+pub fn verify_signature(signature: JsValue, message: JsValue) -> Result<bool, JsValue> {
     set_panic_hook();
 
-    let signature = Signature::try_from(signature_hex).map_err(|e| JsValue::from(e.to_string()))?;
-
-    let message =
-        CborBuffer(from_hex_string(&message_hex).map_err(|e| JsValue::from(e.to_string()))?);
-
-    filecoin_signer::verify_signature(&signature, &message)
-        .map_err(|e| JsValue::from_str(format!("Error verifying signature: {}", e).as_str()))
-}
-
-#[cfg(test)]
-mod tests_local {
-    use crate::verify_signature;
-
-    #[test]
-    fn test_verify_signature() {
-        let tx = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040";
-        let signature = "646fa7e159c263289b7852c88ecfbd553c2bc0ef612630f20a851226b1ef5c7f65a6699066960eaa4796594acb26c5e13bb1335ce9bacb44ad9574723ff5623f01";
-
-        let ret = verify_signature(String::from(signature), tx.to_string());
-        assert_eq!(ret.is_ok(), true);
-        assert_eq!(ret.unwrap(), true);
+    let mut signature_bytes = Vec::new();
+    if signature.is_string() {
+        signature_bytes = from_hex_string(&signature.as_string().unwrap())
+            .map_err(|e| JsValue::from(e.to_string()))?;
+    } else if signature.is_object() {
+        signature_bytes = js_sys::Uint8Array::new(&signature).to_vec();
+    } else {
+        return Err(JsValue::from("Signature must be an hexstring or a buffer"));
     }
+
+    let sig = Signature::try_from(signature_bytes).map_err(|e| JsValue::from(e.to_string()))?;
+
+    let mut message_bytes = Vec::new();
+    if message.is_string() {
+        message_bytes = from_hex_string(&message.as_string().unwrap())
+            .map_err(|e| JsValue::from(e.to_string()))?;
+    } else if message.is_object() {
+        message_bytes = js_sys::Uint8Array::new(&message).to_vec();
+    } else {
+        return Err(JsValue::from("Signature must be an hexstring or a buffer"));
+    }
+
+    filecoin_signer::verify_signature(&sig, &CborBuffer(message_bytes))
+        .map_err(|e| JsValue::from_str(format!("Error verifying signature: {}", e).as_str()))
 }
 
 #[cfg(target_arch = "wasm32")]
 #[cfg(test)]
 mod tests_wasm {
-    use crate::transaction_sign;
+    use crate::{transaction_sign, verify_signature};
     use wasm_bindgen::prelude::*;
 
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
@@ -245,10 +284,20 @@ mod tests_wasm {
         "f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a";
 
     #[test]
+    fn test_verify_signature() {
+        let tx = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040";
+        let signature = "646fa7e159c263289b7852c88ecfbd553c2bc0ef612630f20a851226b1ef5c7f65a6699066960eaa4796594acb26c5e13bb1335ce9bacb44ad9574723ff5623f01";
+
+        let ret = verify_signature(JsValue::from_str(signature), JsValue::from_str(tx));
+        assert_eq!(ret.is_ok(), true);
+        assert_eq!(ret.unwrap(), true);
+    }
+
+    #[test]
     fn signature() {
         let signed_tx = transaction_sign(
             JsValue::from(EXAMPLE_UNSIGNED_MESSAGE),
-            EXAMPLE_PRIVATE_KEY.to_string(),
+            JsValue::from_str(EXAMPLE_PRIVATE_KEY),
         )
         .unwrap();
 
