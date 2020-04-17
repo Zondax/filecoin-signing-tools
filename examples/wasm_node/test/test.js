@@ -115,6 +115,14 @@ describe('Key generation / derivation', function () {
         assert(keypair.address.startsWith('t'));
     });
 
+    it('Key Derive missing password', () => {
+        assert.throws(() => {
+                signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1")
+            },
+            /argument must be of type string or an instance of Buffer or ArrayBuffer. Received undefined/
+        );
+    });
+
     it('Key Derive with password', () => {
         const keypair = signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "password");
 
@@ -148,10 +156,10 @@ describe('Key generation / derivation', function () {
     });
 
     it('Key Derive invalid paswword type (throw)', () => {
-      assert.throws(
-          () => signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", 123),
-          /Error/
-      );
+        assert.throws(
+            () => signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", 123),
+            /Error/
+        );
     });
 
     it('Key Derive From Seed', () => {
@@ -290,27 +298,27 @@ const bls_tests_vectors_path = "../generated_test_cases.json";
 let rawBLSData = fs.readFileSync(bls_tests_vectors_path);
 let jsonBLSData = JSON.parse(rawBLSData);
 
-describe('BLS support', function() {
+describe('BLS support', function () {
 
-  for (let i = 0; i < jsonBLSData.length; i += 1) {
-      let tc = jsonBLSData[i];
+    for (let i = 0; i < jsonBLSData.length; i += 1) {
+        let tc = jsonBLSData[i];
 
-    it(`BLS signing test case n°${i}`, function() {
-      var signed_tx = signer_wasm.transaction_sign(tc.message, tc.sk);
+        it(`BLS signing test case n°${i}`, function () {
+            var signed_tx = signer_wasm.transaction_sign(tc.message, tc.sk);
 
-      const signature = Buffer.from(signed_tx.signature.data, 'base64');
+            const signature = Buffer.from(signed_tx.signature.data, 'base64');
 
-      // Signature representation is R, S & V
-      console.log("Signature  :", signature.toString('hex'));
-      console.log("Private key:", tc.sk);
-      console.log("Public key :", tc.pk);
+            // Signature representation is R, S & V
+            console.log("Signature  :", signature.toString('hex'));
+            console.log("Private key:", tc.sk);
+            console.log("Public key :", tc.pk);
 
-      assert.equal(signature.length, 96);
+            assert.equal(signature.length, 96);
 
-      assert.equal(signature.toString('hex'), tc.sig);
+            assert.equal(signature.toString('hex'), tc.sig);
 
-    })
-  }
+        })
+    }
 });
 
 //////////////////////////////////////

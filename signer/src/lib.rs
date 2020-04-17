@@ -2,7 +2,7 @@ use crate::api::{
     MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI, UnsignedMessageAPI,
 };
 use crate::error::SignerError;
-use crate::utils::{from_hex_string, to_hex_string};
+use crate::utils::from_hex_string;
 use forest_address::{Address, Network};
 use forest_encoding::{from_slice, to_vec};
 use forest_message;
@@ -250,13 +250,9 @@ fn transaction_sign_bls_raw(
     let message_cbor = transaction_serialize(unsigned_message_api)?;
 
     let sk = bls_signatures::PrivateKey::from_bytes(&private_key.0)?;
-
-    // REVIEW: no pre-hashing ?
     let sig = sk.sign(&message_cbor.0);
 
-    let mut signature = SignatureBLS::try_from(sig.as_bytes())?;
-
-    Ok(signature)
+    Ok(SignatureBLS::try_from(sig.as_bytes())?)
 }
 
 /// Sign a transaction and return a raw signature (RSV format).
@@ -390,7 +386,7 @@ fn extract_from_pub_key_from_message(
     let message = transaction_parse(cbor_message, true)?;
 
     let unsigned_message_api = message.get_message();
-    let from_address = Address::from_str(&unsigned_message_api.from.to_string())?;
+    let from_address = Address::from_str(&unsigned_message_api.from)?;
 
     let pk = bls_signatures::PublicKey::from_bytes(&from_address.payload())?;
 
@@ -405,12 +401,12 @@ pub fn verify_aggregated_signature(
 
     // Get public keys from message
     let tmp: Result<Vec<_>, SignerError> = cbor_messages
-        .into_iter()
+        .iter()
         .map(|cbor_message| extract_from_pub_key_from_message(cbor_message))
         .collect();
 
     let pks = match tmp {
-        Ok(public_keys) => public_keys.to_owned(),
+        Ok(public_keys) => public_keys,
         Err(_) => {
             return Err(SignerError::GenericString(
                 "Invalid public key extracted from message".to_string(),
@@ -424,7 +420,7 @@ pub fn verify_aggregated_signature(
         .map(|cbor_message| bls_signatures::hash(cbor_message.as_ref()))
         .collect::<Vec<_>>();
 
-    return Ok(bls_signatures::verify(&sig, &hashes, pks.as_slice()));
+    Ok(bls_signatures::verify(&sig, &hashes, pks.as_slice()))
 }
 
 #[cfg(test)]
@@ -441,11 +437,10 @@ mod tests {
     use forest_encoding::to_vec;
     use std::convert::TryFrom;
 
-    use crate::utils;
     use bls_signatures;
     use bls_signatures::Serialize;
     use forest_address::Address;
-    use rand::{Rng, SeedableRng};
+    use rand::SeedableRng;
     use rand_xorshift::XorShiftRng;
     use rayon::prelude::*;
 
@@ -688,7 +683,7 @@ mod tests {
         let public_key = key_recover(&private_key, false).unwrap();
 
         // Sign
-        let mut signature = transaction_sign_raw(&message_user_api, &private_key).unwrap();
+        let signature = transaction_sign_raw(&message_user_api, &private_key).unwrap();
 
         // Verify
         let message = forest_message::UnsignedMessage::try_from(&message_user_api)
@@ -764,7 +759,7 @@ mod tests {
                 let bls_public_key = private_keys[i].public_key();
                 let bls_address = Address::new_bls(bls_public_key.as_bytes()).unwrap();
 
-                let message = UnsignedMessageAPI {
+                UnsignedMessageAPI {
                     to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
                     from: bls_address.to_string(),
                     nonce: 1,
@@ -773,9 +768,7 @@ mod tests {
                     gas_limit: 25000,
                     method: 0,
                     params: "".to_string(),
-                };
-
-                return message;
+                }
             })
             .collect();
 

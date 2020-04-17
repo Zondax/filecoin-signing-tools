@@ -4,7 +4,6 @@ use crate::service::cache::{cache_get_nonce, cache_put_nonce};
 use crate::service::error::RemoteNode::{EmptyNonce, InvalidNonce, InvalidStatusRequest, JSONRPC};
 use crate::service::error::ServiceError;
 use abscissa_core::tracing::info;
-use filecoin_signer::api::UnsignedMessageAPI;
 use jsonrpc_core::response::Output::{Failure, Success};
 use jsonrpc_core::{Id, MethodCall, Params, Response, Version};
 use serde_json::json;
@@ -20,7 +19,9 @@ pub async fn make_rpc_call(url: &str, jwt: &str, m: &MethodCall) -> Result<Respo
 
     ///// FIXME: This block is a workaround for a non-standard Lotus answer
     let mut workaround = node_answer.json::<Value>().await?;
-    let obj = workaround.as_object_mut().unwrap();
+    let obj = workaround
+        .as_object_mut()
+        .ok_or(ServiceError::RemoteNode(InvalidStatusRequest))?;
 
     if obj.contains_key("error") {
         obj.remove("result");
@@ -162,7 +163,11 @@ pub async fn is_mainnet(url: &str, jwt: &str) -> Result<bool, ServiceError> {
         _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
     };
 
-    let from_field = message.get("From").unwrap().as_str().unwrap();
+    let from_field = message
+        .get("From")
+        .ok_or(InvalidStatusRequest)?
+        .as_str()
+        .ok_or(InvalidStatusRequest)?;
 
     Ok(from_field.starts_with("f"))
 }

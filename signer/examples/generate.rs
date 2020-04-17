@@ -2,12 +2,9 @@ extern crate filecoin_signer;
 extern crate rand;
 extern crate rayon;
 
-use std::time::{Duration, Instant};
-
-use bls_signatures::paired::bls12_381::G2;
 use bls_signatures::Serialize;
 use bls_signatures::*;
-use rand::{Rng, SeedableRng};
+use rand::SeedableRng;
 use rand_xorshift::XorShiftRng;
 use rayon::prelude::*;
 
@@ -82,11 +79,10 @@ fn run(num_messages: usize) {
         })
         .collect::<Vec<Signature>>();
 
-    let public_keys: Vec<PublicKey>;
-    public_keys = private_keys
-        .par_iter()
-        .map(|sk| sk.public_key())
-        .collect::<Vec<_>>();
+    // let public_keys = private_keys
+    //     .par_iter()
+    //     .map(|sk| sk.public_key())
+    //     .collect::<Vec<_>>();
 
     let test_cases = sigs
         .par_iter()

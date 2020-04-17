@@ -78,9 +78,7 @@ impl warp::reject::Reject for ServiceError {}
 
 #[cfg(test)]
 mod tests {
-    use crate::config::RemoteNodeSection;
     use crate::service::handlers::v0_post;
-    use crate::service::test_helper::tests;
 
     use crate::service::test_helper::tests::get_remote_credentials;
     use futures_await_test::async_test;

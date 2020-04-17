@@ -213,7 +213,6 @@ pub async fn verify_signature(
 pub async fn get_status(c: MethodCall, config: RemoteNodeSection) -> Result<Success, ServiceError> {
     let call_params = c.params.parse::<GetStatusParamsAPI>()?;
     let params = json!({"/": call_params.cid_message.to_string()});
-
     let result = client::get_status(&config.url, &config.jwt, params).await?;
 
     let so = Success {
@@ -299,9 +298,7 @@ pub async fn send_sign(c: MethodCall, config: RemoteNodeSection) -> Result<Succe
 
 #[cfg(test)]
 mod tests {
-    use crate::config::RemoteNodeSection;
     use crate::service::methods::get_status;
-    use crate::service::test_helper::tests;
     use crate::service::test_helper::tests::get_remote_credentials;
     use jsonrpc_core::{Id, MethodCall, Params, Success, Version};
     use serde_json::json;
@@ -340,7 +337,7 @@ mod tests {
         println!("{:?}", status);
         println!("{:?}", expected_response);
 
-        assert!(status == expected_response);
+        assert_eq!(status, expected_response);
     }
 
     #[tokio::test]
