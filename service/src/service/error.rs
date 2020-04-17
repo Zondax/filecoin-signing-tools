@@ -44,5 +44,5 @@ pub enum ServiceError {
     HexDecode(#[from] HexDecodeError),
     /// Serde Json Error
     #[error("Serde JSON | {0}")]
-    Error(#[from] Error),
+    SerdeError(#[from] Error),
 }

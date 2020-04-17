@@ -20,9 +20,9 @@ link_wasm: build_wasm
 	cd examples/wasm_browser && yarn unlink $(PACKAGE_NAME) || true
 
 #	# Now use it in other places
-	cd signer-wasm/pkg && yarn link
-	cd examples/wasm_node && yarn link $(PACKAGE_NAME) && yarn install
-	cd examples/wasm_browser && yarn link $(PACKAGE_NAME)
+	cd signer-wasm/pkg && yarn install && yarn link
+	cd examples/wasm_node && yarn install && yarn link $(PACKAGE_NAME) && yarn install
+	cd examples/wasm_browser && yarn install && yarn link $(PACKAGE_NAME)
 
 test_wasm_unit: build_wasm
 	#wasm-pack test --chrome --firefox --headless ./signer-wasm

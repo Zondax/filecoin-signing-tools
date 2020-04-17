@@ -47,3 +47,22 @@ You can find more information in the [Documentation Site](https://zondax.github.
   | Swift           | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
   | React Native    | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
   | Flutter         | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
+
+## Running tests and examples
+
+> TIP: A good place to look for reproducible steps is the circleci configuration of this project
+
+### Installing dependencies
+
+```bash
+make deps
+```
+
+### WASM/Javascript tests
+
+- First you need to build wasm and link it so yarn/npm can find the local implementations.
+
+```bash
+make link_wasm
+```
+

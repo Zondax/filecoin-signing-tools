@@ -1,5 +1,4 @@
 use crate::utils::HexDecodeError;
-use forest_address::Error;
 use hmac::crypto_mac::InvalidKeyLength;
 use std::num::ParseIntError;
 use thiserror::Error;
