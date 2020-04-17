@@ -95,7 +95,7 @@ pub fn key_derive_from_seed(seed: JsValue, path: String) -> Result<ExtendedKey, 
     set_panic_hook();
 
     let seed_bytes = if seed.is_string() {
-        let seed_string = seed.as_string()?;
+        let seed_string = seed.as_string().ok_or("Invalid seed")?;
         from_hex_string(&seed_string).map_err(|e| JsValue::from(e.to_string()))?
     } else if seed.is_object() {
         js_sys::Uint8Array::new(&seed).to_vec()
@@ -114,10 +114,11 @@ pub fn key_recover(private_key: JsValue, testnet: bool) -> Result<ExtendedKey, J
     set_panic_hook();
 
     let private_key_bytes = if private_key.is_string() {
-        PrivateKey::try_from(private_key.as_string()?).map_err(|e| JsValue::from(e.to_string()))?
+        let tmp = private_key.as_string().ok_or("Invalid private key")?;
+        PrivateKey::try_from(tmp).map_err(|e| JsValue::from(e.to_string()))?
     } else if private_key.is_object() {
         PrivateKey::try_from(js_sys::Uint8Array::new(&private_key).to_vec())
-            .map_err(|e| JsValue::from(e.to_string()))?;
+            .map_err(|e| JsValue::from(e.to_string()))?
     } else {
         return Err(JsValue::from(
             "Private key must be an hexstring or a buffer",
@@ -156,9 +157,10 @@ pub fn transaction_parse(cbor: JsValue, testnet: bool) -> Result<JsValue, JsValu
     set_panic_hook();
 
     let cbor_bytes = if cbor.is_string() {
-        from_hex_string(&cbor.as_string()?).map_err(|e| JsValue::from(e.to_string()))?
+        let tmp = cbor.as_string().ok_or("Invalid cbor")?;
+        from_hex_string(&tmp).map_err(|e| JsValue::from(e.to_string()))?
     } else if cbor.is_object() {
-        js_sys::Uint8Array::new(&cbor).to_vec();
+        js_sys::Uint8Array::new(&cbor).to_vec()
     } else {
         return Err(JsValue::from(
             "CBOR message must be an hexstring or a buffer",
@@ -182,7 +184,8 @@ pub fn transaction_sign(unsigned_tx_js: JsValue, private_key: JsValue) -> Result
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
     let private_key_bytes = if private_key.is_string() {
-        PrivateKey::try_from(private_key.as_string()?).map_err(|e| JsValue::from(e.to_string()))?
+        let tmp = private_key.as_string().ok_or("Invalid private key")?;
+        PrivateKey::try_from(tmp).map_err(|e| JsValue::from(e.to_string()))?
     } else if private_key.is_object() {
         PrivateKey::try_from(js_sys::Uint8Array::new(&private_key).to_vec())
             .map_err(|e| JsValue::from(e.to_string()))?
@@ -230,9 +233,10 @@ pub fn verify_signature(signature: JsValue, message: JsValue) -> Result<bool, Js
     set_panic_hook();
 
     let signature_bytes = if signature.is_string() {
-        from_hex_string(&signature.as_string()?).map_err(|e| JsValue::from(e.to_string()))?;
+        let tmp = signature.as_string().ok_or("Invalid Signature")?;
+        from_hex_string(&tmp).map_err(|e| JsValue::from(e.to_string()))?
     } else if signature.is_object() {
-        js_sys::Uint8Array::new(&signature).to_vec();
+        js_sys::Uint8Array::new(&signature).to_vec()
     } else {
         return Err(JsValue::from("Signature must be an hexstring or a buffer"));
     };
@@ -240,7 +244,8 @@ pub fn verify_signature(signature: JsValue, message: JsValue) -> Result<bool, Js
     let sig = Signature::try_from(signature_bytes).map_err(|e| JsValue::from(e.to_string()))?;
 
     let message_bytes = if message.is_string() {
-        from_hex_string(&message.as_string()?).map_err(|e| JsValue::from(e.to_string()))?
+        let tmp = message.as_string().ok_or("Invalid message")?;
+        from_hex_string(&tmp).map_err(|e| JsValue::from(e.to_string()))?
     } else if message.is_object() {
         js_sys::Uint8Array::new(&message).to_vec()
     } else {
