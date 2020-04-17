@@ -246,7 +246,7 @@ mod tests {
         let master = ExtendedSecretKey::try_from(seed.as_bytes()).unwrap();
 
         let path = Bip44Path::from_string("m/44'/461'/0/0/0").unwrap();
-        let esk = master.derive_bip44(path).unwrap();
+        let esk = master.derive_bip44(&path).unwrap();
 
         println!("{}", esk);
         assert_eq!(
