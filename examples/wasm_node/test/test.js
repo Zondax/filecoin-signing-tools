@@ -98,7 +98,21 @@ describe('Key generation / derivation', function () {
 
         const expected_keys = MASTER_NODE.derivePath("m/44'/461'/0/0/1");
         assert.strictEqual(keypair.private_hexstring, expected_keys.privateKey.toString("hex"));
-        assert.strictEqual(keypair.address, "t1rovwtiuo5ncslpmpjftzu5akswbgsgighjazxoi");
+        assert.strictEqual(keypair.address, "f1rovwtiuo5ncslpmpjftzu5akswbgsgighjazxoi");
+    });
+
+    it('Key Derive testnet', () => {
+        const keypair = signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/1'/0/0/1", "");
+
+        console.log("Public Key Raw         :", keypair.public_raw);
+        console.log("Public Key             :", keypair.public_hexstring);
+        console.log("Public Key Compressed  :", keypair.public_compressed_hexstring);
+        console.log("Private                :", keypair.private_hexstring);
+        console.log("Address                :", keypair.address);
+
+        const expected_keys = MASTER_NODE.derivePath("m/44'/1'/0/0/1");
+        assert.strictEqual(keypair.private_hexstring, expected_keys.privateKey.toString("hex"));
+        assert(keypair.address.startsWith('t'));
     });
 
     it('Key Derive missing password', () => {
@@ -161,7 +175,7 @@ describe('Key generation / derivation', function () {
 
         const expected_keys = MASTER_NODE.derivePath("m/44'/461'/0/0/1");
         assert.strictEqual(keypair.private_hexstring, expected_keys.privateKey.toString("hex"));
-        assert.strictEqual(keypair.address, "t1rovwtiuo5ncslpmpjftzu5akswbgsgighjazxoi");
+        assert.strictEqual(keypair.address, "f1rovwtiuo5ncslpmpjftzu5akswbgsgighjazxoi");
     });
 
     it('Key Derive From Seed Buffer', () => {
@@ -177,7 +191,7 @@ describe('Key generation / derivation', function () {
 
         const expected_keys = MASTER_NODE.derivePath("m/44'/461'/0/0/1");
         assert.strictEqual(keypair.private_hexstring, expected_keys.privateKey.toString("hex"));
-        assert.strictEqual(keypair.address, "t1rovwtiuo5ncslpmpjftzu5akswbgsgighjazxoi");
+        assert.strictEqual(keypair.address, "f1rovwtiuo5ncslpmpjftzu5akswbgsgighjazxoi");
     });
 
     it('Key Derive Invalid Path', () => {
