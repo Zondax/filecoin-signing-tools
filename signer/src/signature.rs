@@ -54,9 +54,9 @@ impl TryFrom<Vec<u8>> for Signature {
             return Ok(Signature::SignatureBLS(sig_bls));
         }
 
-        return Err(SignerError::GenericString(
+        Err(SignerError::GenericString(
             "Unknown signature type".to_string(),
-        ));
+        ))
     }
 }
 
@@ -76,9 +76,9 @@ impl TryFrom<String> for Signature {
             return Ok(Signature::SignatureBLS(sig_bls));
         }
 
-        return Err(SignerError::GenericString(
+        Err(SignerError::GenericString(
             "Unknown signature type".to_string(),
-        ));
+        ))
     }
 }
 

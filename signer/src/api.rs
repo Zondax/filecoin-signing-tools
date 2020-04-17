@@ -1,5 +1,5 @@
 use crate::error::SignerError;
-use crate::signature::{Signature, SignatureSECP256K1};
+use crate::signature::Signature;
 use forest_address::{Address, Network};
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use hex::decode;
