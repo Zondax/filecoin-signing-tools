@@ -7,17 +7,24 @@ use forest_address::{Address, Network};
 use forest_encoding::{from_slice, to_vec};
 use forest_message;
 use std::convert::TryFrom;
+use std::str::FromStr;
 
 use crate::bip44::{Bip44Path, ExtendedSecretKey};
 use bip39::{Language, MnemonicType, Seed};
+use bls_signatures;
+use bls_signatures::Serialize;
+use rayon::prelude::*;
 use secp256k1::util::{
     COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
 };
 use secp256k1::{recover, sign, verify, Message, RecoveryId};
 
+use crate::signature::{Signature, SignatureBLS, SignatureSECP256K1};
+
 pub mod api;
 mod bip44;
 pub mod error;
+pub mod signature;
 pub mod utils;
 
 /// Mnemonic string
@@ -26,10 +33,13 @@ pub struct Mnemonic(pub String);
 /// CBOR message in a buffer
 pub struct CborBuffer(pub Vec<u8>);
 
-pub const SIGNATURE_RECOVERY_SIZE: usize = SIGNATURE_SIZE + 1;
+impl AsRef<[u8]> for CborBuffer {
+    fn as_ref(&self) -> &[u8] {
+        &self.0
+    }
+}
 
-/// Signature buffer
-pub struct Signature(pub [u8; SIGNATURE_RECOVERY_SIZE]);
+pub const SIGNATURE_RECOVERY_SIZE: usize = SIGNATURE_SIZE + 1;
 
 /// Private key buffer
 pub struct PrivateKey(pub [u8; SECRET_KEY_SIZE]);
@@ -50,33 +60,6 @@ pub struct ExtendedKey {
 
 #[cfg(feature = "ffi-support")]
 ffi_support::implement_into_ffi_by_pointer!(ExtendedKey);
-
-impl TryFrom<String> for Signature {
-    type Error = SignerError;
-
-    fn try_from(s: String) -> Result<Signature, Self::Error> {
-        let tmp = from_hex_string(&s)?;
-        Signature::try_from(tmp)
-    }
-}
-
-impl TryFrom<Vec<u8>> for Signature {
-    type Error = SignerError;
-
-    fn try_from(v: Vec<u8>) -> Result<Signature, Self::Error> {
-        if v.len() != SIGNATURE_RECOVERY_SIZE {
-            return Err(SignerError::GenericString(
-                "Invalid Signature Length".to_string(),
-            ));
-        }
-
-        let mut sk = Signature {
-            0: [0; SIGNATURE_RECOVERY_SIZE],
-        };
-        sk.0.copy_from_slice(&v[..SIGNATURE_RECOVERY_SIZE]);
-        Ok(sk)
-    }
-}
 
 impl TryFrom<String> for PrivateKey {
     type Error = SignerError;
@@ -215,7 +198,7 @@ pub fn transaction_parse(
     cbor_buffer: &CborBuffer,
     testnet: bool,
 ) -> Result<MessageTxAPI, SignerError> {
-    let message: MessageTx = from_slice(&cbor_buffer.0)?;
+    let message: MessageTx = from_slice(cbor_buffer.as_ref())?;
 
     let message_tx_with_network = MessageTxNetwork {
         message_tx: message,
@@ -225,6 +208,43 @@ pub fn transaction_parse(
     let parsed_message = MessageTxAPI::try_from(message_tx_with_network)?;
 
     Ok(parsed_message)
+}
+
+fn transaction_sign_secp56k1_raw(
+    unsigned_message_api: &UnsignedMessageAPI,
+    private_key: &PrivateKey,
+) -> Result<SignatureSECP256K1, SignerError> {
+    let message_cbor = transaction_serialize(unsigned_message_api)?;
+
+    let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
+
+    let cid_hashed = utils::get_digest(message_cbor.as_ref());
+
+    let message_digest = Message::parse_slice(&cid_hashed)?;
+
+    let (signature_rs, recovery_id) = sign(&message_digest, &secret_key);
+
+    let mut signature = SignatureSECP256K1 { 0: [0; 65] };
+    signature.0[..64].copy_from_slice(&signature_rs.serialize()[..]);
+    signature.0[64] = recovery_id.serialize();
+
+    Ok(signature)
+}
+
+fn transaction_sign_bls_raw(
+    unsigned_message_api: &UnsignedMessageAPI,
+    private_key: &PrivateKey,
+) -> Result<SignatureBLS, SignerError> {
+    let message_cbor = transaction_serialize(unsigned_message_api)?;
+
+    let sk = bls_signatures::PrivateKey::from_bytes(&private_key.0)?;
+
+    // REVIEW: no pre-hashing ?
+    let sig = sk.sign(&message_cbor.0);
+
+    let mut signature = SignatureBLS::try_from(sig.as_bytes())?;
+
+    Ok(signature)
 }
 
 /// Sign a transaction and return a raw signature (RSV format).
@@ -238,20 +258,21 @@ pub fn transaction_sign_raw(
     unsigned_message_api: &UnsignedMessageAPI,
     private_key: &PrivateKey,
 ) -> Result<Signature, SignerError> {
-    let message = forest_message::UnsignedMessage::try_from(unsigned_message_api)?;
-    let message_cbor = CborBuffer(to_vec(&message)?);
-
-    let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
-
-    let cid_hashed = utils::get_digest(&message_cbor.0);
-
-    let message_digest = Message::parse_slice(&cid_hashed)?;
-
-    let (signature_rs, recovery_id) = sign(&message_digest, &secret_key);
-
-    let mut signature = Signature { 0: [0; 65] };
-    signature.0[..64].copy_from_slice(&signature_rs.serialize()[..]);
-    signature.0[64] = recovery_id.serialize();
+    // the `from` address protocol let us know which signing scheme to use
+    let signature = match unsigned_message_api.from.as_bytes()[1] {
+        b'1' => Signature::SignatureSECP256K1(transaction_sign_secp56k1_raw(
+            unsigned_message_api,
+            private_key,
+        )?),
+        b'3' => {
+            Signature::SignatureBLS(transaction_sign_bls_raw(unsigned_message_api, private_key)?)
+        }
+        _ => {
+            return Err(SignerError::GenericString(
+                "Unknown signing protocol".to_string(),
+            ));
+        }
+    };
 
     Ok(signature)
 }
@@ -267,20 +288,7 @@ pub fn transaction_sign(
     unsigned_message: &UnsignedMessageAPI,
     private_key: &PrivateKey,
 ) -> Result<SignedMessageAPI, SignerError> {
-    let message = forest_message::UnsignedMessage::try_from(unsigned_message)?;
-    let message_cbor = CborBuffer(to_vec(&message)?);
-
-    let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
-
-    let cid_hashed = utils::get_digest(&message_cbor.0);
-
-    let message_digest = Message::parse_slice(&cid_hashed)?;
-
-    let (signature_rs, recovery_id) = sign(&message_digest, &secret_key);
-
-    let mut signature = Signature { 0: [0; 65] };
-    signature.0[..64].copy_from_slice(&signature_rs.serialize()[..]);
-    signature.0[64] = recovery_id.serialize();
+    let signature = transaction_sign_raw(unsigned_message, private_key)?;
 
     let signed_message = SignedMessageAPI {
         message: unsigned_message.to_owned(),
@@ -290,15 +298,8 @@ pub fn transaction_sign(
     Ok(signed_message)
 }
 
-/// Verify a signature. Return a boolean.
-///
-/// # Arguments
-///
-/// * `signature` - RSV format signature
-/// * `cbor_buffer` - the CBOR transaction to verify the signature against
-///
-pub fn verify_signature(
-    signature: &Signature,
+fn verify_secp256k1_signature(
+    signature: &SignatureSECP256K1,
     cbor_buffer: &CborBuffer,
 ) -> Result<bool, SignerError> {
     let network = Network::Testnet;
@@ -311,7 +312,7 @@ pub fn verify_signature(
     let tx = transaction_parse(cbor_buffer, network == Network::Testnet)?;
 
     // Decode the CBOR transaction hex string into CBOR transaction buffer
-    let message_digest = utils::get_digest(&cbor_buffer.0);
+    let message_digest = utils::get_digest(cbor_buffer.as_ref());
 
     let blob_to_sign = Message::parse_slice(&message_digest)?;
 
@@ -334,17 +335,111 @@ pub fn verify_signature(
     Ok(verify(&blob_to_sign, &signature_rs, &public_key))
 }
 
+fn verify_bls_signature(
+    signature: &SignatureBLS,
+    cbor_buffer: &CborBuffer,
+) -> Result<bool, SignerError> {
+    // TODO: need a function to extract from public key from cbor buffer directly
+    let message = transaction_parse(cbor_buffer, true)?;
+
+    let pk = bls_signatures::PublicKey::from_bytes(message.get_message().from.as_bytes())?;
+
+    let sig = bls_signatures::Signature::from_bytes(signature.as_ref())?;
+
+    let result = pk.verify(sig, cbor_buffer.as_ref());
+
+    Ok(result)
+}
+
+/// Verify a signature. Return a boolean.
+///
+/// # Arguments
+///
+/// * `signature` - RSV format signature or BLS signature
+/// * `cbor_buffer` - the CBOR transaction to verify the signature against
+///
+pub fn verify_signature(
+    signature: &Signature,
+    cbor_buffer: &CborBuffer,
+) -> Result<bool, SignerError> {
+    let result = match signature {
+        Signature::SignatureSECP256K1(sig_secp256k1) => {
+            verify_secp256k1_signature(sig_secp256k1, cbor_buffer)?
+        }
+        Signature::SignatureBLS(sig_bls) => verify_bls_signature(sig_bls, cbor_buffer)?,
+    };
+
+    Ok(result)
+}
+
+fn extract_from_pub_key_from_message(
+    cbor_message: &CborBuffer,
+) -> Result<bls_signatures::PublicKey, SignerError> {
+    let message = transaction_parse(cbor_message, true)?;
+
+    let unsigned_message_api = message.get_message();
+    let from_address = Address::from_str(&unsigned_message_api.from.to_string())?;
+
+    let pk = bls_signatures::PublicKey::from_bytes(&from_address.payload())?;
+
+    Ok(pk)
+}
+
+pub fn verify_aggregated_signature(
+    signature: &SignatureBLS,
+    cbor_messages: &[CborBuffer],
+) -> Result<bool, SignerError> {
+    let sig = bls_signatures::Signature::from_bytes(signature.as_ref())?;
+
+    // Get public keys from message
+    let tmp: Result<Vec<_>, SignerError> = cbor_messages
+        .into_iter()
+        .map(|cbor_message| extract_from_pub_key_from_message(cbor_message))
+        .collect();
+
+    let pks = match tmp {
+        Ok(public_keys) => public_keys.to_owned(),
+        Err(_) => {
+            return Err(SignerError::GenericString(
+                "Invalid public key extracted from message".to_string(),
+            ));
+        }
+    };
+
+    // Hashes
+    let hashes: Vec<_> = cbor_messages
+        .par_iter()
+        .map(|cbor_message| bls_signatures::hash(cbor_message.as_ref()))
+        .collect::<Vec<_>>();
+
+    return Ok(bls_signatures::verify(&sig, &hashes, pks.as_slice()));
+}
+
 #[cfg(test)]
 mod tests {
     use crate::api::{MessageTxAPI, UnsignedMessageAPI};
+    use crate::signature::{Signature, SignatureBLS};
     use crate::utils::{from_hex_string, to_hex_string};
     use crate::{
         key_derive, key_derive_from_seed, key_generate_mnemonic, key_recover, transaction_parse,
-        transaction_sign_raw, verify_signature, CborBuffer, Mnemonic, PrivateKey,
+        transaction_serialize, transaction_sign_bls_raw, transaction_sign_raw,
+        verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic, PrivateKey,
     };
     use bip39::{Language, Seed};
     use forest_encoding::to_vec;
     use std::convert::TryFrom;
+
+    use crate::utils;
+    use bls_signatures;
+    use bls_signatures::Serialize;
+    use forest_address::Address;
+    use rand::{Rng, SeedableRng};
+    use rand_xorshift::XorShiftRng;
+    use rayon::prelude::*;
+
+    const BLS_PUBKEY: &str = "ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc07904";
+    // FIXME! Might be invalid
+    const BLS_PRIVATEKEY: &str = "d31ed8d06197f7631e58117d99c5ae4791183f17b6772eb4afc5c840e0f7d412";
 
     // NOTE: not the same transaction used in other tests.
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
@@ -592,11 +687,110 @@ mod tests {
         assert!(valid_signature.unwrap());
 
         // Tampered signature and look if it valid
-        signature.0[5] = 0x01;
-        signature.0[34] = 0x00;
+        let mut sig = signature.as_bytes();
+        sig[5] = 0x01;
+        sig[34] = 0x00;
 
-        // Verify again
-        let valid_signature = verify_signature(&signature, &message_cbor);
+        let tampered_signature = Signature::try_from(sig).expect("FIX ME");
+
+        let valid_signature = verify_signature(&tampered_signature, &message_cbor);
         assert!(valid_signature.is_err() || !valid_signature.unwrap());
+    }
+
+    #[test]
+    fn sign_bls_transaction() {
+        // Get address
+        let bls_address = Address::new_bls(from_hex_string(BLS_PUBKEY).unwrap()).unwrap();
+
+        // Get BLS private key
+        let bls_key = PrivateKey::try_from(BLS_PRIVATEKEY.to_string()).unwrap();
+
+        println!("{}", bls_address.to_string());
+
+        // Prepare message with BLS address
+        let message = UnsignedMessageAPI {
+            to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
+            from: bls_address.to_string(),
+            nonce: 1,
+            value: "100000".to_string(),
+            gas_price: "2500".to_string(),
+            gas_limit: 25000,
+            method: 0,
+            params: "".to_string(),
+        };
+
+        let raw_sig = transaction_sign_bls_raw(&message, &bls_key).unwrap();
+        let sig = bls_signatures::Signature::from_bytes(&raw_sig.0).expect("FIX ME");
+
+        let bls_pk =
+            bls_signatures::PublicKey::from_bytes(&from_hex_string(BLS_PUBKEY).unwrap()).unwrap();
+
+        let message_cbor = transaction_serialize(&message).expect("FIX ME");
+
+        assert!(bls_pk.verify(sig, &message_cbor));
+    }
+
+    #[test]
+    fn test_verify_aggregated_signature() {
+        // sign 3 messages
+        let num_messages = 3;
+
+        let mut rng = XorShiftRng::from_seed([
+            0x59, 0x62, 0xbe, 0x5d, 0x76, 0x3d, 0x31, 0x8d, 0x17, 0xdb, 0x37, 0x32, 0x54, 0x06,
+            0xbc, 0xe5,
+        ]);
+
+        // generate private keys
+        let private_keys: Vec<_> = (0..num_messages)
+            .map(|_| bls_signatures::PrivateKey::generate(&mut rng))
+            .collect();
+
+        // generate messages
+        let messages: Vec<UnsignedMessageAPI> = (0..num_messages)
+            .map(|i| {
+                //Prepare transaction
+                let bls_public_key = private_keys[i].public_key();
+                let bls_address = Address::new_bls(bls_public_key.as_bytes()).unwrap();
+
+                let message = UnsignedMessageAPI {
+                    to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
+                    from: bls_address.to_string(),
+                    nonce: 1,
+                    value: "100000".to_string(),
+                    gas_price: "2500".to_string(),
+                    gas_limit: 25000,
+                    method: 0,
+                    params: "".to_string(),
+                };
+
+                return message;
+            })
+            .collect();
+
+        // sign messages
+        let sigs: Vec<bls_signatures::Signature>;
+        sigs = messages
+            .par_iter()
+            .zip(private_keys.par_iter())
+            .map(|(message, pk)| {
+                let private_key = PrivateKey::try_from(pk.as_bytes()).expect("FIX ME");
+                let raw_sig = transaction_sign_bls_raw(message, &private_key).unwrap();
+
+                bls_signatures::Serialize::from_bytes(&raw_sig.0).expect("FIX ME")
+            })
+            .collect::<Vec<bls_signatures::Signature>>();
+
+        // serialize messages
+        let cbor_messages: Vec<CborBuffer>;
+        cbor_messages = messages
+            .par_iter()
+            .map(|message| transaction_serialize(message).unwrap())
+            .collect::<Vec<CborBuffer>>();
+
+        let aggregated_signature = bls_signatures::aggregate(&sigs);
+
+        let sig = SignatureBLS::try_from(aggregated_signature.as_bytes()).expect("FIX ME");
+
+        assert!(verify_aggregated_signature(&sig, &cbor_messages[..]).unwrap());
     }
 }

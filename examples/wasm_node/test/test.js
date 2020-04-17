@@ -41,7 +41,7 @@ describe('Serialization / Deserialization', function () {
     });
 
     it('Valid cbor should be fine - missing is undefined converted to false', function () {
-        assert.deepStrictEqual(EXAMPLE_TRANSACTION_MAINNET, signer_wasm.transaction_parse(EXAMPLE_CBOR_TX))
+        assert.deepStrictEqual(EXAMPLE_TRANSACTION_MAINNET, signer_wasm.transaction_parse(EXAMPLE_CBOR_TX, false));
     });
 
     it('Extra bytes should fail', function () {
@@ -218,9 +218,6 @@ describe('Key generation / derivation', function () {
         console.log("RSV signature :", signatureRSV);
         console.log("CBOR Transaction hex :", EXAMPLE_CBOR_TX);
 
-        console.log(signatureRSV)
-        console.log(EXAMPLE_CBOR_TX)
-
         assert.equal(signer_wasm.verify_signature(signatureRSV, EXAMPLE_CBOR_TX), true);
     });
 });
@@ -273,6 +270,33 @@ describe('Key Recover testnet/mainnet', function () {
         assert.equal(recoveredKey.private_hexstring, child.privateKey.toString("hex"));
         assert.equal(recoveredKey.address, "f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
     })
+});
+
+const bls_tests_vectors_path = "../generated_test_cases.json";
+let rawBLSData = fs.readFileSync(bls_tests_vectors_path);
+let jsonBLSData = JSON.parse(rawBLSData);
+
+describe('BLS support', function() {
+
+  for (let i = 0; i < jsonBLSData.length; i += 1) {
+      let tc = jsonBLSData[i];
+
+    it(`BLS signing test case n°${i}`, function() {
+      var signed_tx = signer_wasm.transaction_sign(tc.message, tc.sk);
+
+      const signature = Buffer.from(signed_tx.signature.data, 'base64');
+
+      // Signature representation is R, S & V
+      console.log("Signature  :", signature.toString('hex'));
+      console.log("Private key:", tc.sk);
+      console.log("Public key :", tc.pk);
+
+      assert.equal(signature.length, 96);
+
+      assert.equal(signature.toString('hex'), tc.sig);
+
+    })
+  }
 });
 
 //////////////////////////////////////

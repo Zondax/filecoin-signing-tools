@@ -4,8 +4,9 @@ use crate::config::RemoteNodeSection;
 use crate::service::client;
 use crate::service::error::ServiceError;
 use filecoin_signer::api::{SignedMessageAPI, UnsignedMessageAPI};
+use filecoin_signer::signature::Signature;
 use filecoin_signer::utils::{from_hex_string, to_hex_string};
-use filecoin_signer::{CborBuffer, PrivateKey, Signature};
+use filecoin_signer::{CborBuffer, PrivateKey};
 use jsonrpc_core::{MethodCall, Success, Version};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -155,7 +156,7 @@ pub async fn transaction_parse(
     _: RemoteNodeSection,
 ) -> Result<Success, ServiceError> {
     let params = c.params.parse::<TransctionParseParamsAPI>()?;
-    let cbor_data = CborBuffer(from_hex_string(params.cbor_hex.as_ref()).unwrap());
+    let cbor_data = CborBuffer(from_hex_string(params.cbor_hex.as_ref())?);
 
     let message_parsed = filecoin_signer::transaction_parse(&cbor_data, params.testnet)?;
 
@@ -196,7 +197,7 @@ pub async fn verify_signature(
     let params = c.params.parse::<VerifySignatureParamsAPI>()?;
 
     let signature = Signature::try_from(params.signature_hex)?;
-    let message = CborBuffer(from_hex_string(params.message_hex.as_ref()).unwrap());
+    let message = CborBuffer(from_hex_string(params.message_hex.as_ref())?);
 
     let result = filecoin_signer::verify_signature(&signature, &message)?;
 
