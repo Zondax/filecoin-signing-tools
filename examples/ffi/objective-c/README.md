@@ -1,6 +1,6 @@
-# Objective-C bindingds
+# Objective-C bindings
 
-To use this example, download the latest header and library or compile the `signer-ffi` directory.
+Currently, we don't provide compiled artifacts, therefore, manual steps to build and orchestrate the libraries and headers are necessary.
 
 # Running
 

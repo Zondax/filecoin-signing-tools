@@ -1,5 +1,7 @@
-[workspace]
+[patch.crates-io]
+sha2 = { branch = "sha2ni", git = "https://github.com/Zondax/hashes", package = "sha2ni" }
 
+[workspace]
 members = [
     "service",
     "signer",

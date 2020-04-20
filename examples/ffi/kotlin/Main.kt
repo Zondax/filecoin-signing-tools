@@ -9,7 +9,7 @@ fun main() {
         error
     )
 
-    if (FilecoinSigner.errorCode(error) != 0L) {
+    if (FilecoinSigner.errorCode(error) != 0) {
         System.err.println(FilecoinSigner.errorMessage(error))
     }
     else {
