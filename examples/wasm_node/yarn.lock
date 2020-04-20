@@ -85,7 +85,7 @@
   dependencies:
     "@babel/runtime" "^7.9.2"
     "@ledgerhq/hw-transport-node-hid" "^5.12.0"
-    "@zondax/filecoin-signer-wasm" "file:../../../../../.cache/yarn/v6/npm-@zondax-filecoin-signer-0.2.0-78df931f-1688-4ca7-a189-aea82a15ee71-1587396295720/node_modules/@zondax/filecoin-signer/pkg"
+    "@zondax/filecoin-signer-wasm" "file:../../../../../.cache/yarn/v6/npm-@zondax-filecoin-signer-0.2.0-b8c08a3e-2285-4751-b667-57e8b8c230e4-1586519869858/node_modules/@zondax/filecoin-signer/pkg"
 
 ansi-colors@3.2.3:
   version "3.2.3"
