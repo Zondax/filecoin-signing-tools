@@ -125,9 +125,9 @@ Arguments :
 * **transaction**: a filecoin transaction;
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer-wasm');
+const signer_wasm = require('@zondax/filecoin-signer');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer-wasm";
+// import * as signer_wasm from "@zondax/filecoin-signer";
 
 const transaction = {
     "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
@@ -140,7 +140,7 @@ const transaction = {
     "params": ""
 };
 
-const cbor_transaction =  signer_wasm.transaction_serialize(transaction);
+const cbor_transaction =  signer_wasm.transactionSerialize(transaction);
 
 //
 console.log(cbor_transaction);

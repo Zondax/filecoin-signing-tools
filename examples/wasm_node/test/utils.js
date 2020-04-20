@@ -8,9 +8,12 @@ function getCID(message) {
     return Buffer.concat([CID_PREFIX, hasher.digest()]);
 }
 
-module.exports.getDigest = function (message) {
-    const hasher = blake2.createHash("blake2b", {digestLength: 32});
-    hasher.update(getCID(message));
-    const digest = hasher.digest();
-    return digest;
+function getDigest(message) {
+  // digest = blake2-256( prefix + blake2b-256(tx) )
+
+  const hasher = blake2.createHash("blake2b", { digestLength: 32 });
+  hasher.update(getCID(message));
+  return hasher.digest();
 }
+
+module.exports = { getCID, getDigest }

@@ -4,7 +4,6 @@ deps_wasm:
 
 build_wasm:
 	rm -rf signer-wasm/pkg/
-	git submodule update --init --recursive
 	wasm-pack build --no-typescript --target nodejs --out-dir pkg/nodejs  signer-wasm/
 	wasm-pack build --no-typescript --target browser --out-dir pkg/browser signer-wasm/
 	cd signer-wasm && make build
@@ -30,7 +29,7 @@ test_wasm_unit: build_wasm
 	wasm-pack test --firefox --headless ./signer-wasm
 
 test_wasm_node: link_wasm
-	cd examples/wasm_node && yarn install && yarn run test
+	cd examples/wasm_node && yarn install && yarn test
 
 test_wasm_browser: link_wasm
 	cd examples/wasm_browser && yarn install && yarn start
