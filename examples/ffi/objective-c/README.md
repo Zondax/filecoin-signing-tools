@@ -1,6 +1,6 @@
 # Objective-C bindings
 
-Currently, we don't provide compiled artifacts, threfore, manual steps to build and orchestrate the libraries and headers are necessary.
+Currently, we don't provide compiled artifacts, therefore, manual steps to build and orchestrate the libraries and headers are necessary.
 
 # Running
 
