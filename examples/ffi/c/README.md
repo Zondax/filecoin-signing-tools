@@ -1,4 +1,4 @@
-# C bindingds
+# C bindings
 
 Currently, we don't provide compiled artifacts, therefore, manual steps to build and orchestrate the libraries and headers are necessary.
 
