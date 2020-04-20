@@ -58,7 +58,7 @@ describe('Serialization / Deserialization', function () {
     });
 
     it('Serialize Transaction return buffer', () => {
-        let cbor_uint8_array = signer_wasm.transaction_serialize_raw(EXAMPLE_TRANSACTION);
+        let cbor_uint8_array = signer_wasm.transactionSerializeRaw(EXAMPLE_TRANSACTION);
         assert.strictEqual(EXAMPLE_CBOR_TX, Buffer.from(cbor_uint8_array).toString('hex'));
     });
 
@@ -102,7 +102,7 @@ describe('Key generation / derivation', function () {
     });
 
     it('Key Derive testnet', () => {
-        const keypair = signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/1'/0/0/1", "");
+        const keypair = signer_wasm.keyDerive(EXAMPLE_MNEMONIC, "m/44'/1'/0/0/1", "");
 
         console.log("Public Key Raw         :", keypair.public_raw);
         console.log("Public Key             :", keypair.public_hexstring);
@@ -117,14 +117,14 @@ describe('Key generation / derivation', function () {
 
     it('Key Derive missing password', () => {
         assert.throws(() => {
-                signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1")
+                signer_wasm.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1")
             },
             /argument must be of type string or an instance of Buffer or ArrayBuffer. Received undefined/
         );
     });
 
     it('Key Derive with password', () => {
-        const keypair = signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "password");
+        const keypair = signer_wasm.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "password");
 
         console.log("Public Key Raw         :", keypair.public_raw);
         console.log("Public Key             :", keypair.public_hexstring);
@@ -140,7 +140,7 @@ describe('Key generation / derivation', function () {
     });
 
     it('Key Derive with different password', () => {
-        const keypair = signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "password");
+        const keypair = signer_wasm.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "password");
 
         console.log("Public Key Raw         :", keypair.public_raw);
         console.log("Public Key             :", keypair.public_hexstring);
@@ -157,7 +157,7 @@ describe('Key generation / derivation', function () {
 
     it('Key Derive invalid paswword type (throw)', () => {
         assert.throws(
-            () => signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", 123),
+            () => signer_wasm.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", 123),
             /Error/
         );
     });
@@ -181,7 +181,7 @@ describe('Key generation / derivation', function () {
     it('Key Derive From Seed Buffer', () => {
         const seed = bip39.mnemonicToSeedSync(EXAMPLE_MNEMONIC);
 
-        const keypair = signer_wasm.key_derive_from_seed(seed, "m/44'/461'/0/0/1");
+        const keypair = signer_wasm.keyDeriveFromSeed(seed, "m/44'/461'/0/0/1");
 
         console.log("Public Key Raw         :", keypair.public_raw);
         console.log("Public Key             :", keypair.public_hexstring);
@@ -265,7 +265,7 @@ describe('Key Recover testnet/mainnet', function () {
         let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
         let privateKey = child.privateKey;
 
-        let recoveredKey = signer_wasm.key_recover(privateKey, true);
+        let recoveredKey = signer_wasm.keyRecover(privateKey, true);
 
         console.log("Public Key Raw         :", recoveredKey.public_raw);
         console.log("Public Key             :", recoveredKey.public_hexstring);
@@ -304,7 +304,7 @@ describe('BLS support', function () {
         let tc = jsonBLSData[i];
 
         it(`BLS signing test case n°${i}`, function () {
-            var signed_tx = signer_wasm.transaction_sign(tc.message, tc.sk);
+            var signed_tx = signer_wasm.transactionSign(tc.message, tc.sk);
 
             const signature = Buffer.from(signed_tx.signature.data, 'base64');
 
