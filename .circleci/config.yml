@@ -115,10 +115,8 @@ jobs:
       - restore-sccache-cache
       - run: sudo apt-get update && sudo apt-get install -y firefox-esr libnss3
       - run: make deps_wasm
-      # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-rs/issues/68
-      - run: make test_wasm_node
-      #- run: make test_wasm_browser
-      # No need to save this in cache
+      - run: make test_ledger
+
 
   tests_service:
     docker:
