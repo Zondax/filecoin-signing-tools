@@ -19,7 +19,13 @@ describe("LEDGER TEST", function () {
 
     const DEMO_APP_PATH = Resolve("bin/app.elf");
     sim = new Zemu(DEMO_APP_PATH);
-    await sim.start({ logging: true });
+    const APP_SEED = "equip will roof matter pink blind book anxiety banner elbow sun young";
+    const sim_options = {
+        logging: true,
+        custom: `-s "${APP_SEED}"`
+    };
+
+    await sim.start(sim_options);
 
     session = new DeviceSession(DeviceEnum.LEDGER, sim.getTransport());
   });
@@ -47,15 +53,8 @@ describe("LEDGER TEST", function () {
   });
 
   it("#keyRetrieveFromDevice()", async function() {
-    const path = "m/44'/461'/5'/0/3";
-    const resp = signer.keyRetrieveFromDevice(path, session);
-    await Zemu.sleep(2000);
-
-    // click right
-    await sim.clickRight();
-    await sim.clickRight();
-    await sim.clickBoth();
-
+    const path = "m/44'/461'/5/0/3";
+    const resp = await signer.keyRetrieveFromDevice(path, session);
 
     // eslint-disable-next-line no-console
     console.log(resp);
@@ -91,14 +90,18 @@ describe("LEDGER TEST", function () {
     // So we have enough time
     this.timeout(60000);
 
-    const path = "m/44'/461'/0'/0/1";
-    const resp = signer.showKeyOnDevice(path, session);
+    const path = "m/44'/461'/0/0/1";
+    const respRequest = signer.showKeyOnDevice(path, session);
     await Zemu.sleep(2000);
 
     // click right
-    await sim.clickRight()
-    await sim.clickRight()
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickRight();
     await sim.clickBoth();
+
+    const resp = await respRequest;
 
     // eslint-disable-next-line no-console
     console.log(resp);
@@ -128,7 +131,7 @@ describe("LEDGER TEST", function () {
   });
 
   it("#keyRetrieveFromDevice() Testnet", async function() {
-    const path = [44, 1, 0, 0, 0];
+    const path = "m/44'/1'/0/0/0";
     const resp = await signer.keyRetrieveFromDevice(path, session);
 
     // eslint-disable-next-line no-console
@@ -195,15 +198,32 @@ describe("LEDGER TEST", function () {
   it("#transactionSignRawWithDevice()", async function() {
     this.timeout(60000);
 
-    // Derivation path. First 3 items are automatically hardened!
-    const path = "m/44'/461'/0'/0/0";
+    const path = "m/44'/461'/0/0/0";
     const message = Buffer.from(
       "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040",
       "hex",
     );
 
     const responsePk = await signer.keyRetrieveFromDevice(path, session);
-    const responseSign = await signer.transactionSignRawWithDevice(message, path, session);
+    console.log(responsePk)
+    const responseRequest = signer.transactionSignRawWithDevice(message, path, session);
+    await Zemu.sleep(2000);
+
+    // 9 right + 1 both
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickBoth();
+
+    const responseSign = await responseRequest;
+
+    console.log(responseSign)
 
     assert.strictEqual(responsePk.return_code, 0x9000);
     assert.strictEqual(responsePk.error_message, "No errors");
@@ -230,10 +250,7 @@ describe("LEDGER TEST", function () {
   it("#transactionSignRawWithDevice() Testnet", async function() {
     this.timeout(60000);
 
-    // Derivation path. First 3 items are automatically hardened!
-    const path = [44, 1, 0, 0, 0];
-
-
+    const path = "m/44'/1'/0/0/0";
     const messageContent = {
       from: "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
       to: "t1t5gdjfb6jojpivbl5uek6vf6svlct7dph5q2jwa",
@@ -245,7 +262,23 @@ describe("LEDGER TEST", function () {
     };
 
     const responsePk = await signer.keyRetrieveFromDevice(path, session);
-    const responseSign = await signer.transactionSignRawWithDevice(messageContent, path, session);
+    console.log(responsePk)
+    const responseRequest = signer.transactionSignRawWithDevice(messageContent, path, session);
+    await Zemu.sleep(2000);
+
+    // 9 right + 1 both
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickRight();
+    await sim.clickBoth();
+
+    const responseSign = await responseRequest;
 
     assert.strictEqual(responsePk.return_code, 0x9000);
     assert.strictEqual(responsePk.error_message, "No errors");
