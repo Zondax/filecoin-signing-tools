@@ -232,6 +232,8 @@ workflows:
           <<: *no-tags
       - tests_service:
           <<: *no-tags
+      - tests_ledger:
+          <<: *no-tags
 
   release:
     jobs:
@@ -244,6 +246,8 @@ workflows:
       - tests_wasm:
           <<: *only-release-tags
       - tests_service:
+          <<: *only-release-tags
+      - tests_ledger:
           <<: *only-release-tags
 
 #      - rust_publish:
@@ -261,6 +265,7 @@ workflows:
             - tests_rust
             - tests_wasm
             - tests_service
+            - tests_ledger
 
       - vuepress_publish:
           <<: *only-release-tags
@@ -269,3 +274,4 @@ workflows:
             - tests_rust
             - tests_wasm
             - tests_service
+            - tests_ledger
