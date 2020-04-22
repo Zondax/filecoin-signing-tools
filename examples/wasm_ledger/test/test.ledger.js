@@ -2,7 +2,6 @@ const signer = require('@zondax/filecoin-signer');
 const DeviceSession = require('@zondax/filecoin-signer').DeviceSession;
 const DeviceEnum = require('@zondax/filecoin-signer').DeviceEnum;
 const assert = require('assert');
-const FilecoinApp = require("@zondax/ledger-filecoin").default;
 const secp256k1 = require('secp256k1/elliptic');
 const getDigest = require('./utils').getDigest;
 const Resolve = require("path").resolve;
@@ -209,7 +208,8 @@ describe("LEDGER TEST", function () {
     const responseRequest = signer.transactionSignRawWithDevice(message, path, session);
     await Zemu.sleep(2000);
 
-    // 9 right + 1 both
+    await sim.clickRight();
+    await sim.clickRight();
     await sim.clickRight();
     await sim.clickRight();
     await sim.clickRight();
