@@ -112,6 +112,8 @@ jobs:
     environment:
       BASH_ENV: "/opt/circleci/.nvm/nvm.sh"
     steps:
+      - checkout
+      - run: git submodule update --init --recursive
       - run:
           name: Install node + yarn
           command: |

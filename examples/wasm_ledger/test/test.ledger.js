@@ -268,11 +268,11 @@ describe("LEDGER TEST", function () {
     const responsePk = await signer.keyRetrieveFromDevice(path, session);
     console.log(responsePk)
     const responseRequest = signer.transactionSignRawWithDevice(messageContent, path, session);
-    /*await Zemu.sleep(2000);
+    await Zemu.sleep(2000);
 
     await sim.clickLeft();
     await sim.clickRight();
-    await sim.clickBoth();*/
+    await sim.clickBoth();
 
     const responseSign = await responseRequest;
 
