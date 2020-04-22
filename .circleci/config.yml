@@ -112,6 +112,7 @@ jobs:
     environment:
       BASH_ENV: "/opt/circleci/.nvm/nvm.sh"
     steps:
+      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev cargo
       - checkout
       - run: git submodule update --init --recursive
       - run: ls
