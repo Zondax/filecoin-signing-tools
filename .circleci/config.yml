@@ -119,6 +119,7 @@ jobs:
             curl https://sh.rustup.rs -o rustup.sh
             chmod +x rustup.sh
             ./rustup.sh -y
+            rm rustup.sh
       - checkout
       - run: git submodule update --init --recursive
       - run: ls
