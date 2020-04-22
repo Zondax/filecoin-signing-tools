@@ -113,7 +113,11 @@ jobs:
       BASH_ENV: "/opt/circleci/.nvm/nvm.sh"
     steps:
       - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev curl
-      - run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+      - run:
+          name: Install rustup
+          command: |
+            curl https://sh.rustup.rs -o rustup.sh
+            ./rustup.sh -y
       - checkout
       - run: git submodule update --init --recursive
       - run: ls
