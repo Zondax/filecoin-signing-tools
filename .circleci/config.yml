@@ -133,12 +133,12 @@ jobs:
           name: Install deps
           command: |
             source $HOME/.cargo/env
-            echo $PATH
             make deps_wasm
       - run:
           name: Run zemu tests
           command: |
             nvm use 13.12.0
+            source $HOME/.cargo/env
             make test_ledger
 
   tests_service:
