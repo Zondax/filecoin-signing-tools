@@ -7,6 +7,15 @@ const getDigest = require('./utils').getDigest;
 const Resolve = require("path").resolve;
 const Zemu = require("@zondax/zemu").default;
 
+const catchExit = async () => {
+  process.on("SIGINT", () => {
+    Zemu.stopAllEmuContainers(function () {
+      process.exit();
+    });
+  });
+};
+
+
 describe("LEDGER TEST", function () {
   this.timeout(10000);
 
@@ -14,14 +23,18 @@ describe("LEDGER TEST", function () {
       session;
 
   before(async function() {
-    // runs before each test in this block
+    // runs before tests start
+    /*await catchExit();
+    await Zemu.checkAndPullImage();
+    await Zemu.stopAllEmuContainers();*/
 
     const DEMO_APP_PATH = Resolve("bin/app.elf");
     sim = new Zemu(DEMO_APP_PATH);
     const APP_SEED = "equip will roof matter pink blind book anxiety banner elbow sun young";
     const sim_options = {
         logging: true,
-        custom: `-s "${APP_SEED}"`
+        custom: `-s "${APP_SEED}"`,
+        X11: true
     };
 
     await sim.start(sim_options);
@@ -30,7 +43,7 @@ describe("LEDGER TEST", function () {
   });
 
   after(async function() {
-    // runs after each test in this block
+    // runs after all the test are done
     await sim.close();
     // reset
     transport = null;
@@ -208,16 +221,7 @@ describe("LEDGER TEST", function () {
     const responseRequest = signer.transactionSignRawWithDevice(message, path, session);
     await Zemu.sleep(2000);
 
-    await sim.clickRight();
-    await sim.clickRight();
-    await sim.clickRight();
-    await sim.clickRight();
-    await sim.clickRight();
-    await sim.clickRight();
-    await sim.clickRight();
-    await sim.clickRight();
-    await sim.clickRight();
-    await sim.clickRight();
+    await sim.clickLeft();
     await sim.clickRight();
     await sim.clickBoth();
 
@@ -247,7 +251,7 @@ describe("LEDGER TEST", function () {
     assert(signatureOk);
   });
 
-  it("#transactionSignRawWithDevice() Testnet", async function() {
+  it.skip("#transactionSignRawWithDevice() Testnet", async function() {
     this.timeout(60000);
 
     const path = "m/44'/1'/0/0/0";
@@ -264,19 +268,11 @@ describe("LEDGER TEST", function () {
     const responsePk = await signer.keyRetrieveFromDevice(path, session);
     console.log(responsePk)
     const responseRequest = signer.transactionSignRawWithDevice(messageContent, path, session);
-    await Zemu.sleep(2000);
+    /*await Zemu.sleep(2000);
 
-    // 9 right + 1 both
+    await sim.clickLeft();
     await sim.clickRight();
-    await sim.clickRight();
-    await sim.clickRight();
-    await sim.clickRight();
-    await sim.clickRight();
-    await sim.clickRight();
-    await sim.clickRight();
-    await sim.clickRight();
-    await sim.clickRight();
-    await sim.clickBoth();
+    await sim.clickBoth();*/
 
     const responseSign = await responseRequest;
 
@@ -310,14 +306,21 @@ describe("LEDGER TEST", function () {
   it("#transactionSignRawWithDevice() Fail", async function() {
     this.timeout(60000);
 
-    const path = "m/44'/461'/0'/0/0";
+    const path = "m/44'/461'/0/0/0";
     let invalidMessage = Buffer.from(
       "88315501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040",
       "hex",
     );
     invalidMessage += "1";
 
-    const responseSign = await signer.transactionSignRawWithDevice(path, invalidMessage, session);
+    const responseRequest = signer.transactionSignRawWithDevice(invalidMessage, path, session);
+    await Zemu.sleep(2000);
+
+    /*await sim.clickLeft();
+    await sim.clickRight();
+    await sim.clickBoth();*/
+
+    const responseSign = await responseRequest;
 
     // eslint-disable-next-line no-console
     console.log(responseSign);
