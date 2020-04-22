@@ -117,6 +117,7 @@ jobs:
           name: Install rustup
           command: |
             curl https://sh.rustup.rs -o rustup.sh
+            chmod +x rustup.sh
             ./rustup.sh -y
       - checkout
       - run: git submodule update --init --recursive
