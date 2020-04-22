@@ -121,6 +121,7 @@ jobs:
             nvm install 13.12.0
             nvm use 13.12.0
             npm install -g yarn
+      - run: make deps_wasm
       - run:
           name: Run zemu tests
           command: |
