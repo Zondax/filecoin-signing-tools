@@ -134,6 +134,7 @@ jobs:
           command: |
             source $HOME/.cargo/env
             make deps_wasm
+      - run: docker pull zondax/builder-zemu
       - run:
           name: Run zemu tests
           command: |
