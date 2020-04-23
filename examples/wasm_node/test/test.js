@@ -1,4 +1,4 @@
-const signer_wasm = require('@zondax/filecoin-signer-wasm');
+const signer_wasm = require('@zondax/filecoin-signer');
 const bip32 = require('bip32');
 const bip39 = require('bip39');
 const getDigest = require('./utils').getDigest;
@@ -37,28 +37,28 @@ let MASTER_NODE = bip32.fromBase58(MASTER_KEY);
 
 describe('Serialization / Deserialization', function () {
     it('Valid cbor should be fine', function () {
-        assert.deepStrictEqual(EXAMPLE_TRANSACTION, signer_wasm.transaction_parse(EXAMPLE_CBOR_TX, true))
+        assert.deepStrictEqual(EXAMPLE_TRANSACTION, signer_wasm.transactionParse(EXAMPLE_CBOR_TX, true))
     });
 
     it('Valid cbor should be fine - missing is undefined converted to false', function () {
-        assert.deepStrictEqual(EXAMPLE_TRANSACTION_MAINNET, signer_wasm.transaction_parse(EXAMPLE_CBOR_TX, false));
+        assert.deepStrictEqual(EXAMPLE_TRANSACTION_MAINNET, signer_wasm.transactionParse(EXAMPLE_CBOR_TX, false));
     });
 
     it('Extra bytes should fail', function () {
         let cbor_transaction_extra_bytes = EXAMPLE_CBOR_TX + "00";
 
         assert.throws(
-            () => signer_wasm.transaction_parse(cbor_transaction_extra_bytes, false),
+            () => signer_wasm.transactionParse(cbor_transaction_extra_bytes, false),
             /CBOR error: 'trailing data at offset 61'/
         );
     });
 
     it('Serialize Transaction', () => {
-        assert.strictEqual(EXAMPLE_CBOR_TX, signer_wasm.transaction_serialize(EXAMPLE_TRANSACTION));
+        assert.strictEqual(EXAMPLE_CBOR_TX, signer_wasm.transactionSerialize(EXAMPLE_TRANSACTION));
     });
 
     it('Serialize Transaction return buffer', () => {
-        let cbor_uint8_array = signer_wasm.transaction_serialize_raw(EXAMPLE_TRANSACTION);
+        let cbor_uint8_array = signer_wasm.transactionSerializeRaw(EXAMPLE_TRANSACTION);
         assert.strictEqual(EXAMPLE_CBOR_TX, Buffer.from(cbor_uint8_array).toString('hex'));
     });
 
@@ -74,7 +74,7 @@ describe('Serialization / Deserialization', function () {
         };
 
         assert.throws(
-            () => signer_wasm.transaction_serialize(invalid_transaction),
+            () => signer_wasm.transactionSerialize(invalid_transaction),
             /missing field `nonce`/
         );
     });
@@ -82,13 +82,13 @@ describe('Serialization / Deserialization', function () {
 
 describe('Key generation / derivation', function () {
     it('Key Generate Mnemonic', () => {
-        const mnemonic = signer_wasm.mnemonic_generate();
+        const mnemonic = signer_wasm.generateMnemonic();
         console.log(mnemonic);
         assert.strictEqual(mnemonic.split(" ").length, 24);
     });
 
     it('Key Derive', () => {
-        const keypair = signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "");
+        const keypair = signer_wasm.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "");
 
         console.log("Public Key Raw         :", keypair.public_raw);
         console.log("Public Key             :", keypair.public_hexstring);
@@ -102,7 +102,7 @@ describe('Key generation / derivation', function () {
     });
 
     it('Key Derive testnet', () => {
-        const keypair = signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/1'/0/0/1", "");
+        const keypair = signer_wasm.keyDerive(EXAMPLE_MNEMONIC, "m/44'/1'/0/0/1", "");
 
         console.log("Public Key Raw         :", keypair.public_raw);
         console.log("Public Key             :", keypair.public_hexstring);
@@ -117,14 +117,14 @@ describe('Key generation / derivation', function () {
 
     it('Key Derive missing password', () => {
         assert.throws(() => {
-                signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1")
+                signer_wasm.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1")
             },
             /argument must be of type string or an instance of Buffer or ArrayBuffer. Received undefined/
         );
     });
 
     it('Key Derive with password', () => {
-        const keypair = signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "password");
+        const keypair = signer_wasm.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "password");
 
         console.log("Public Key Raw         :", keypair.public_raw);
         console.log("Public Key             :", keypair.public_hexstring);
@@ -140,7 +140,7 @@ describe('Key generation / derivation', function () {
     });
 
     it('Key Derive with different password', () => {
-        const keypair = signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "password");
+        const keypair = signer_wasm.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "password");
 
         console.log("Public Key Raw         :", keypair.public_raw);
         console.log("Public Key             :", keypair.public_hexstring);
@@ -157,7 +157,7 @@ describe('Key generation / derivation', function () {
 
     it('Key Derive invalid paswword type (throw)', () => {
         assert.throws(
-            () => signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", 123),
+            () => signer_wasm.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", 123),
             /Error/
         );
     });
@@ -165,7 +165,7 @@ describe('Key generation / derivation', function () {
     it('Key Derive From Seed', () => {
         const seed = bip39.mnemonicToSeedSync(EXAMPLE_MNEMONIC).toString('hex');
 
-        const keypair = signer_wasm.key_derive_from_seed(seed, "m/44'/461'/0/0/1");
+        const keypair = signer_wasm.keyDeriveFromSeed(seed, "m/44'/461'/0/0/1");
 
         console.log("Public Key Raw         :", keypair.public_raw);
         console.log("Public Key             :", keypair.public_hexstring);
@@ -181,7 +181,7 @@ describe('Key generation / derivation', function () {
     it('Key Derive From Seed Buffer', () => {
         const seed = bip39.mnemonicToSeedSync(EXAMPLE_MNEMONIC);
 
-        const keypair = signer_wasm.key_derive_from_seed(seed, "m/44'/461'/0/0/1");
+        const keypair = signer_wasm.keyDeriveFromSeed(seed, "m/44'/461'/0/0/1");
 
         console.log("Public Key Raw         :", keypair.public_raw);
         console.log("Public Key             :", keypair.public_hexstring);
@@ -196,7 +196,7 @@ describe('Key generation / derivation', function () {
 
     it('Key Derive Invalid Path', () => {
         assert.throws(
-            () => signer_wasm.key_derive(EXAMPLE_MNEMONIC, "m/44'/461'/a/0/1", ""),
+            () => signer_wasm.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/a/0/1", ""),
             /Cannot parse integer/
         );
     });
@@ -204,7 +204,7 @@ describe('Key generation / derivation', function () {
     it('Sign Transaction', () => {
         const example_key = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
 
-        var signed_tx = signer_wasm.transaction_sign(EXAMPLE_TRANSACTION, example_key.privateKey.toString("hex"));
+        var signed_tx = signer_wasm.transactionSign(EXAMPLE_TRANSACTION, example_key.privateKey.toString("hex"));
         console.log(signed_tx.signature);
         const signature = Buffer.from(signed_tx.signature.data, 'base64');
 
@@ -240,7 +240,7 @@ describe('Key generation / derivation', function () {
         console.log("RSV signature :", signatureRSV);
         console.log("CBOR Transaction hex :", EXAMPLE_CBOR_TX);
 
-        assert.equal(signer_wasm.verify_signature(signatureRSV, EXAMPLE_CBOR_TX), true);
+        assert.equal(signer_wasm.verifySignature(signatureRSV, EXAMPLE_CBOR_TX), true);
     });
 });
 
@@ -249,7 +249,7 @@ describe('Key Recover testnet/mainnet', function () {
         let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
         let privateKey = child.privateKey.toString('hex');
 
-        let recoveredKey = signer_wasm.key_recover(privateKey, true);
+        let recoveredKey = signer_wasm.keyRecover(privateKey, true);
 
         console.log("Public Key Raw         :", recoveredKey.public_raw);
         console.log("Public Key             :", recoveredKey.public_hexstring);
@@ -265,7 +265,7 @@ describe('Key Recover testnet/mainnet', function () {
         let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
         let privateKey = child.privateKey;
 
-        let recoveredKey = signer_wasm.key_recover(privateKey, true);
+        let recoveredKey = signer_wasm.keyRecover(privateKey, true);
 
         console.log("Public Key Raw         :", recoveredKey.public_raw);
         console.log("Public Key             :", recoveredKey.public_hexstring);
@@ -281,7 +281,7 @@ describe('Key Recover testnet/mainnet', function () {
         let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
         let privateKey = child.privateKey.toString('hex');
 
-        let recoveredKey = signer_wasm.key_recover(privateKey, false);
+        let recoveredKey = signer_wasm.keyRecover(privateKey, false);
 
         console.log("Public Key Raw         :", recoveredKey.public_raw);
         console.log("Public Key             :", recoveredKey.public_hexstring);
@@ -304,7 +304,7 @@ describe('BLS support', function () {
         let tc = jsonBLSData[i];
 
         it(`BLS signing test case n°${i}`, function () {
-            var signed_tx = signer_wasm.transaction_sign(tc.message, tc.sk);
+            var signed_tx = signer_wasm.transactionSign(tc.message, tc.sk);
 
             const signature = Buffer.from(signed_tx.signature.data, 'base64');
 
@@ -337,13 +337,13 @@ describe('Parameterized Tests - Serialize', function () {
         it("Create Transaction : " + tc.description, () => {
             if (tc.valid) {
                 // Valid doesn't throw
-                let result = signer_wasm.transaction_serialize(tc.message);
+                let result = signer_wasm.transactionSerialize(tc.message);
                 assert.equal(tc.encoded_tx_hex, result);
             } else {
                 // Not valid throw error
                 // TODO: Add error type to manual_testvectors.json file
                 assert.throws(
-                    () => signer_wasm.transaction_serialize(tc.message),
+                    () => signer_wasm.transactionSerialize(tc.message),
                     /Error/
                 );
             }
@@ -368,13 +368,13 @@ describe('Parameterized Tests - Deserialize', function () {
         // Create test case for each
         it("Parse Transaction : " + tc.description, () => {
             if (tc.valid) {
-                let result = signer_wasm.transaction_parse(tc.encoded_tx_hex, tc.testnet);
+                let result = signer_wasm.transactionParse(tc.encoded_tx_hex, tc.testnet);
                 assert.deepStrictEqual(tc.message, result);
             } else {
                 // Not valid throw error
                 // TODO: Add error type to manual_testvectors.json file
                 assert.throws(
-                    () => signer_wasm.transaction_parse(tc.encoded_tx_hex, tc.testnet),
+                    () => signer_wasm.transactionParse(tc.encoded_tx_hex, tc.testnet),
                     /error/
                 );
             }

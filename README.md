@@ -58,11 +58,42 @@ You can find more information in the [Documentation Site](https://zondax.github.
 make deps
 ```
 
-### WASM/Javascript tests
+### Rust
 
-- First you need to build wasm and link it so yarn/npm can find the local implementations.
+```bash
+cargo test -p filecoin-signer
+```
+
+### Service
+
+To run these tests, you need to set two environment variables first so tests can reach a Lotus node:
+
+|                  |          |
+| ---------------- | -------- |
+| LOTUS_SECRET_URL | some_url |
+| LOTUS_SECRET_JWT | some_jwt |
+
+Then you can run:
+
+```bash
+cargo test -p filecoin-signer
+```
+
+### WASM
+
+Build WASM and link it locally so examples are linked to the local version:
 
 ```bash
 make link_wasm
 ```
 
+After this, you can run the following tests / examples:
+
+| Command                  | Description               |
+| ------------------------ | ------------------------- |
+| `make test_wasm_unit`    | Unit tests                |
+| `make test_wasm_node`    | Node integration tests    |
+| `make test_wasm_browser` | Browser integration tests |
+| `make test_wasm_ledger`  | Ledger integration tests  |
+
+We suggest exploring these tests as they are great examples of how to use this functionality in different environments.

@@ -93,6 +93,7 @@ jobs:
     docker:
       - image: zondax/rust-ci:latest
     steps:
+      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
       - checkout
       - run: cargo --version
       - restore-sccache-cache
@@ -103,6 +104,43 @@ jobs:
       - run: make test_wasm_node
       #- run: make test_wasm_browser
       # No need to save this in cache
+
+  tests_ledger:
+    machine:
+      image: ubuntu-1604:201903-01
+    working_directory: ~/repo
+    environment:
+      BASH_ENV: "/opt/circleci/.nvm/nvm.sh"
+    steps:
+      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev curl
+      - run:
+          name: Install rustup
+          command: |
+            curl https://sh.rustup.rs -o rustup.sh
+            chmod +x rustup.sh
+            ./rustup.sh -y
+            source $HOME/.cargo/env
+            rm rustup.sh
+      - checkout
+      - run: git submodule update --init --recursive
+      - run:
+          name: Install node + yarn
+          command: |
+            nvm install 13.12.0
+            nvm use 13.12.0
+            npm install -g yarn
+      - run:
+          name: Install deps
+          command: |
+            source $HOME/.cargo/env
+            make deps_wasm
+      - run: docker pull zondax/builder-zemu
+      - run:
+          name: Run zemu tests
+          command: |
+            nvm use 13.12.0
+            source $HOME/.cargo/env
+            make test_ledger
 
   tests_service:
     docker:
@@ -148,6 +186,7 @@ jobs:
     docker:
       - image: zondax/rust-ci:latest
     steps:
+      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
       - checkout
       - restore-sccache-cache
       - run: make build_wasm
@@ -215,6 +254,8 @@ workflows:
           <<: *no-tags
       - tests_service:
           <<: *no-tags
+      - tests_ledger:
+          <<: *no-tags
 
   release:
     jobs:
@@ -227,6 +268,8 @@ workflows:
       - tests_wasm:
           <<: *only-release-tags
       - tests_service:
+          <<: *only-release-tags
+      - tests_ledger:
           <<: *only-release-tags
 
 #      - rust_publish:
@@ -244,6 +287,7 @@ workflows:
             - tests_rust
             - tests_wasm
             - tests_service
+            - tests_ledger
 
       - vuepress_publish:
           <<: *only-release-tags
@@ -252,3 +296,4 @@ workflows:
             - tests_rust
             - tests_wasm
             - tests_service
+            - tests_ledger

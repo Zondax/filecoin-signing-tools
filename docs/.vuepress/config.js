@@ -28,7 +28,8 @@ module.exports = {
           sidebarDepth: 2,    // optional, defaults to 1
           children: [
             '/wasm/',
-            '/wasm/api'
+            '/wasm/api',
+            '/wasm/ledger'
           ]
         },
         {
