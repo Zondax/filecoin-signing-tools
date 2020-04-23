@@ -1323,7 +1323,7 @@
   dependencies:
     "@babel/runtime" "^7.9.2"
     "@ledgerhq/hw-transport-node-hid" "^5.12.0"
-    "@zondax/filecoin-signer-wasm" "file:../../../../../.cache/yarn/v6/npm-@zondax-filecoin-signer-0.2.0-81098e65-2923-437f-9f97-7f88793366b0-1587464593011/node_modules/@zondax/filecoin-signer/pkg"
+    "@zondax/filecoin-signer-wasm" "file:../../../../../.cache/yarn/v6/npm-@zondax-filecoin-signer-0.2.0-22b6ba34-87ef-439f-be8d-92568986d48c-1587639663468/node_modules/@zondax/filecoin-signer/pkg"
 
 "@zondax/ledger-filecoin@^0.11.0":
   version "0.11.0"
@@ -1333,10 +1333,10 @@
     "@babel/runtime" "^7.8.3"
     "@ledgerhq/hw-transport" "^5.7.0"
 
-"@zondax/zemu@^0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@zondax/zemu/-/zemu-0.1.4.tgz#1a2c1b11b9a3ba6f59044b2c3fb069e2b5a2becb"
-  integrity sha512-euendifBqO0ylZcyVGNtMJa0YqFTnrcHQtBJ4fuLt9fbrM2i5af8MntSDoUYxSlvkDqMRxZMtI5P0AuRwm94CQ==
+"@zondax/zemu@^0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@zondax/zemu/-/zemu-0.1.5.tgz#696217d9755ee318cfb56d006219902390a6b19c"
+  integrity sha512-o2PysEj77UmHUiVMRl2cGL52u0p0uEPvkJmhHNTdjWJ5+oz61SmlmDlU3Xp56yhnL8aP1UQZvpOEtpJhqgKz8Q==
   dependencies:
     "@babel/runtime" "^7.9.2"
     "@ledgerhq/hw-transport" "^5.13.1"

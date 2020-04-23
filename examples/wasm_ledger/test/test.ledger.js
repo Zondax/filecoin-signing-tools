@@ -34,7 +34,8 @@ describe("LEDGER TEST", function () {
     const sim_options = {
         logging: true,
         custom: `-s "${APP_SEED}"`,
-        X11: true
+        press_delay: 150
+        //,X11: true
     };
 
     await sim.start(sim_options);
@@ -48,6 +49,16 @@ describe("LEDGER TEST", function () {
     // reset
     transport = null;
     session = null;
+  })
+
+  it("NotASession error", async function () {
+    signer.getVersionFromDevice("not a session")
+      .then(function () {
+        assert(false);
+      })
+      .catch(function (err) {
+        assert.strictEqual(err, "NotASession: Please pass a DeviceSession instance in order to communicate with the device.");
+      })
   })
 
   it("#getVersionFromDevice()", async function() {
@@ -251,6 +262,7 @@ describe("LEDGER TEST", function () {
     assert(signatureOk);
   });
 
+  // SKIP: because the ledger app is back to testnet2
   it.skip("#transactionSignRawWithDevice() Testnet", async function() {
     this.timeout(60000);
 
@@ -275,6 +287,8 @@ describe("LEDGER TEST", function () {
     await sim.clickBoth();
 
     const responseSign = await responseRequest;
+
+    console.log(responseSign);
 
     assert.strictEqual(responsePk.return_code, 0x9000);
     assert.strictEqual(responsePk.error_message, "No errors");
@@ -308,10 +322,9 @@ describe("LEDGER TEST", function () {
 
     const path = "m/44'/461'/0/0/0";
     let invalidMessage = Buffer.from(
-      "88315501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040",
+      "88315501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040" + "01",
       "hex",
     );
-    invalidMessage += "1";
 
     const responseRequest = signer.transactionSignRawWithDevice(invalidMessage, path, session);
     await Zemu.sleep(2000);

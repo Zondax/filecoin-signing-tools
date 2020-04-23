@@ -14,7 +14,7 @@ import {
 
 
 async function keyRetrieveFromDevice (path, session) {
-  if (!session instanceof DeviceSession) throw new NotASession();
+  if (!(session instanceof DeviceSession)) throw new NotASession();
 
   const pubkeys = await session.app.getAddressAndPubKey(path);
 
@@ -22,10 +22,10 @@ async function keyRetrieveFromDevice (path, session) {
 }
 
 async function transactionSignWithDevice (transaction, path, session) {
-  if (!session instanceof DeviceSession) throw new NotASession();
+  if (!(session instanceof DeviceSession)) throw new NotASession();
 
   let message = transaction;
-  if (!transaction instanceof String) {
+  if (!Buffer.isBuffer(transaction)) {
     // we serialize
     message = transaction_serialize_raw(transaction);
   }
@@ -44,10 +44,10 @@ async function transactionSignWithDevice (transaction, path, session) {
 }
 
 async function transactionSignRawWithDevice (transaction, path, session) {
-  if (!session instanceof DeviceSession) throw new NotASession();
+  if (!(session instanceof DeviceSession)) throw new NotASession();
 
   let message = transaction;
-  if (!transaction instanceof String) {
+  if (!Buffer.isBuffer(transaction)) {
     // we serialize
     message = transaction_serialize_raw(transaction);
   }
@@ -58,7 +58,7 @@ async function transactionSignRawWithDevice (transaction, path, session) {
 }
 
 async function getVersionFromDevice (session) {
-  if (!session instanceof DeviceSession) throw new NotASession();
+  if (!(session instanceof DeviceSession)) throw new NotASession();
 
   const version = await session.app.getVersion();
 
@@ -66,7 +66,7 @@ async function getVersionFromDevice (session) {
 }
 
 async function showKeyOnDevice (path, session) {
-  if (!session instanceof DeviceSession) throw new NotASession();
+  if (!(session instanceof DeviceSession)) throw new NotASession();
 
   const keys = await session.app.showAddressAndPubKey(path);
 
@@ -74,7 +74,7 @@ async function showKeyOnDevice (path, session) {
 }
 
 async function appInfo (session) {
-  if (!session instanceof DeviceSession) throw new NotASession();
+  if (!(session instanceof DeviceSession)) throw new NotASession();
 
   const info = await session.app.appInfo();
 
@@ -82,7 +82,7 @@ async function appInfo (session) {
 }
 
 async function deviceInfo (session) {
-  if (!session instanceof DeviceSession) throw new NotASession();
+  if (!(session instanceof DeviceSession)) throw new NotASession();
 
   const info = await session.app.deviceInfo();
 

@@ -25,7 +25,7 @@
     "@babel/runtime": "^7.9.2",
     "@zondax/filecoin-signer": "../../signer-wasm/",
     "@zondax/ledger-filecoin": "^0.11.0",
-    "@zondax/zemu": "^0.1.4",
+    "@zondax/zemu": "^0.1.5",
     "babel-esm-plugin": "^0.8.0",
     "babel-plugin-transform-default-import": "^1.0.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
