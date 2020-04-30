@@ -33,8 +33,8 @@ use self::params::{APDUErrors, PayloadType};
 use crate::params::{
     CLA, INS_GET_ADDR_SECP256K1, INS_GET_VERSION, INS_SIGN_SECP256K1, USER_MESSAGE_CHUNK_SIZE,
 };
-use std::str;
 use async_trait::async_trait;
+use std::str;
 
 /// hex string utilities
 pub mod utils;
@@ -213,7 +213,11 @@ impl FilecoinApp {
     }
 
     /// Retrieves the public key and address
-    pub async fn address(&self, path: &BIP44Path, require_confirmation: bool) -> Result<Address, Error> {
+    pub async fn address(
+        &self,
+        path: &BIP44Path,
+        require_confirmation: bool,
+    ) -> Result<Address, Error> {
         let serialized_path = serialize_bip44(path);
         let p1 = if require_confirmation { 1 } else { 0 };
 
@@ -236,7 +240,10 @@ impl FilecoinApp {
                     return Err(Error::InvalidPK);
                 }
 
-                let public_key = secp256k1::PublicKey::parse_slice(&response.data[..PK_LEN], Some(secp256k1::PublicKeyFormat::Full))?;
+                let public_key = secp256k1::PublicKey::parse_slice(
+                    &response.data[..PK_LEN],
+                    Some(secp256k1::PublicKeyFormat::Full),
+                )?;
                 let mut addr_byte = [Default::default(); 21];
                 addr_byte.copy_from_slice(&response.data[PK_LEN + 1..PK_LEN + 1 + 21]);
                 let tmp = str::from_utf8(&response.data[PK_LEN + 2 + 21..])?;
