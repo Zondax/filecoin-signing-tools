@@ -20,153 +20,48 @@
 #![deny(missing_docs)]
 #![doc(html_root_url = "https://docs.rs/ledger-filecoin/0.1.0")]
 
+extern crate byteorder;
+extern crate secp256k1;
+use serde::{Deserialize, Serialize};
+
 mod params;
 
-extern crate byteorder;
-#[macro_use]
-extern crate quick_error;
-extern crate secp256k1;
-
 use self::params::{APDUErrors, PayloadType};
-use crate::params::{
-    CLA, INS_GET_ADDR_SECP256K1, INS_GET_VERSION, INS_SIGN_SECP256K1, USER_MESSAGE_CHUNK_SIZE,
-};
+use crate::params::*;
+
 use ledger_generic::{ApduAnswer, ApduCommand};
 use std::str;
 
-#[cfg(not(target_arch = "wasm32"))]
-use futures::future;
+mod errors;
+use errors::Error;
 
 #[cfg(target_arch = "wasm32")]
-use js_sys::Promise;
+mod apdu_transport_wasm;
+
 #[cfg(target_arch = "wasm32")]
-use wasm_bindgen::prelude::*;
+pub use crate::apdu_transport_wasm::ApduTransport;
+
 #[cfg(target_arch = "wasm32")]
-use wasm_bindgen_futures::JsFuture;
+/// Trait for any APDU transport
+pub trait TransportWrapperTrait {
+    /// Send an APDU command and receive a promise of a response back
+    fn exchange_apdu(&self, apdu_command: &[u8]) -> js_sys::Promise;
+}
 
 #[cfg(not(target_arch = "wasm32"))]
-extern crate ledger;
+mod apdu_transport_native;
+
+#[cfg(not(target_arch = "wasm32"))]
+pub use crate::apdu_transport_native::ApduTransport;
 
 /// hex string utilities
 pub mod utils;
 
-/// Public Key Length
-const PK_LEN: usize = 65;
-
-quick_error! {
-    /// Ledger App Error
-    #[derive(Debug)]
-    pub enum Error {
-        /// Invalid version error
-        InvalidVersion{
-            description("This version is not supported")
-        }
-        /// The message cannot be empty
-        InvalidEmptyMessage{
-            description("message cannot be empty")
-        }
-        /// The size fo the message to sign is invalid
-        InvalidMessageSize{
-            description("message size is invalid (too big)")
-        }
-        /// Public Key is invalid
-        InvalidPK{
-            description("received an invalid PK")
-        }
-        /// No signature has been returned
-        NoSignature {
-            description("received no signature back")
-        }
-        /// The signature is not valid
-        InvalidSignature {
-            description("received an invalid signature")
-        }
-        /// The derivation is invalid
-        InvalidDerivationPath {
-            description("invalid derivation path")
-        }
-        // FIXME : was Ledger error
-        /// The derivation is invalid
-        TransportError {
-            description("Something went wrong wth the ledger")
-        }
-        /// Device related errors
-        Secp256k1 ( err: secp256k1::Error ) {
-            from()
-            description("Secp256k1 error")
-            display("Secp256k1 error: {}", err)
-            cause(err)
-        }
-
-        /// Utf8 conversion related error
-        Utf8 ( err: std::str::Utf8Error ) {
-            from()
-            description("Not a utf8 byte string")
-            display("Utf8Error error: {}", err)
-            cause(err)
-        }
-    }
-}
-
-#[cfg(target_arch = "wasm32")]
-#[wasm_bindgen(module = "/node_modules/@ledgerhq/hw-transport-node-hid/src/TransportNodeHid.js")]
-//#[wasm_bindgen(module = "/../node_modules/@ledgerhq/hw-transport/src/Transport.js")]
-extern "C" {
-    pub type TransportJS;
-
-    #[wasm_bindgen(method)]
-    fn exchange(this: &TransportJS, command: &[u8]) -> Promise;
-}
-
-/// Transport struct for non-wasm arch
-#[cfg(target_arch = "wasm32")]
-pub struct Transport {
-    /// Contain javascript transport object
-    pub transportjs: TransportJS,
-}
-
-/// Transport Impl for wasm
-#[cfg(target_arch = "wasm32")]
-impl Transport {
-    /// Use to talk to the ledger device
-    async fn exchange(&self, command: ApduCommand) -> Result<ApduAnswer, Error> {
-        let promise = self.transportjs.exchange(&command.serialize());
-        let future = JsFuture::from(promise);
-
-        let answer = future.await.unwrap();
-
-        let data = js_sys::Uint8Array::new(&answer).to_vec();
-
-        Ok(ApduAnswer {
-            data: data,
-            retcode: 0x9000,
-        })
-
-        //future::ready(Ok(ApduAnswer { data: vec![0x01, 0x01, 0x01, 0x01], retcode: 0x9000 })).await
-    }
-}
-
-/// Transport struct for non-wasm arch
-#[cfg(not(target_arch = "wasm32"))]
-pub struct Transport {
-    /// Native rust transport
-    pub transport: ledger::LedgerApp,
-}
-
-// Not wasm `transport` impl
-#[cfg(not(target_arch = "wasm32"))]
-impl Transport {
-    /// Use to talk to the ledger device
-    async fn exchange(&self, command: ApduCommand) -> Result<ApduAnswer, Error> {
-        let call = self.transport.exchange(command).unwrap();
-
-        future::ready(Ok(call)).await
-    }
-}
+use crate::utils::{serialize_bip44, BIP44Path};
 
 /// Filecoin App
 pub struct FilecoinApp {
-    transport: Transport,
+    apdu_transport: ApduTransport,
 }
 
 unsafe impl Send for FilecoinApp {}
@@ -199,6 +94,7 @@ pub struct Signature {
 }
 
 /// FilecoinApp App Version
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Version {
     /// Application Mode
     pub mode: u8,
@@ -210,40 +106,14 @@ pub struct Version {
     pub patch: u8,
 }
 
-/// BIP44 Path
-pub struct BIP44Path {
-    /// Purpose
-    pub purpose: u32,
-    /// Coin
-    pub coin: u32,
-    /// Account
-    pub account: u32,
-    /// Change
-    pub change: u32,
-    /// Address Index
-    pub index: u32,
-}
-
-fn serialize_bip44(path: &BIP44Path) -> Vec<u8> {
-    use byteorder::{LittleEndian, WriteBytesExt};
-    let mut m = Vec::new();
-    let harden = 0x8000_0000;
-    m.write_u32::<LittleEndian>(harden | path.purpose).unwrap();
-    m.write_u32::<LittleEndian>(harden | path.coin).unwrap();
-    m.write_u32::<LittleEndian>(path.account).unwrap();
-    m.write_u32::<LittleEndian>(path.change).unwrap();
-    m.write_u32::<LittleEndian>(path.index).unwrap();
-    m
-}
-
 impl FilecoinApp {
     /// Connect to the Ledger App
-    pub fn connect(transport: Transport) -> Result<Self, Error> {
-        Ok(FilecoinApp { transport })
+    pub fn connect(apdu_transport: ApduTransport) -> Result<Self, Error> {
+        Ok(FilecoinApp { apdu_transport })
     }
 
     /// Retrieve the app version
-    pub async fn version(&self) -> Result<Version, Error> {
+    pub async fn get_version(&self) -> Result<Version, Error> {
         let command = ApduCommand {
             cla: CLA,
             ins: INS_GET_VERSION,
@@ -253,7 +123,7 @@ impl FilecoinApp {
             data: Vec::new(),
         };
 
-        let response = self.transport.exchange(command).await?;
+        let response = self.apdu_transport.exchange(command).await?;
         if response.retcode != APDUErrors::NoError as u16 {
             return Err(Error::InvalidVersion);
         }
@@ -273,7 +143,7 @@ impl FilecoinApp {
     }
 
     /// Retrieves the public key and address
-    pub async fn address(
+    pub async fn get_address(
         &self,
         path: &BIP44Path,
         require_confirmation: bool,
@@ -290,7 +160,7 @@ impl FilecoinApp {
             data: serialized_path,
         };
 
-        match self.transport.exchange(command).await {
+        match self.apdu_transport.exchange(command).await {
             Ok(response) => {
                 if response.retcode != APDUErrors::NoError as u16 {
                     println!("WARNING: retcode={:X?}", response.retcode);
@@ -303,9 +173,12 @@ impl FilecoinApp {
                 let public_key = secp256k1::PublicKey::parse_slice(
                     &response.data[..PK_LEN],
                     Some(secp256k1::PublicKeyFormat::Full),
-                )?;
+                )
+                .map_err(|_| errors::Error::Secp256k1)?;
+
                 let mut addr_byte = [Default::default(); 21];
                 addr_byte.copy_from_slice(&response.data[PK_LEN + 1..PK_LEN + 1 + 21]);
+
                 let tmp = str::from_utf8(&response.data[PK_LEN + 2 + 21..])?;
                 let addr_string = tmp.to_owned();
 
@@ -347,7 +220,7 @@ impl FilecoinApp {
             data: bip44path,
         };
 
-        response = self.transport.exchange(_command).await?;
+        response = self.apdu_transport.exchange(_command).await?;
 
         // Send message chunks
         for (packet_idx, chunk) in chunks.enumerate() {
@@ -365,7 +238,7 @@ impl FilecoinApp {
                 data: chunk.to_vec(),
             };
 
-            response = self.transport.exchange(_command).await?;
+            response = self.apdu_transport.exchange(_command).await?;
         }
 
         if response.data.is_empty() && response.retcode == APDUErrors::NoError as u16 {
@@ -385,7 +258,8 @@ impl FilecoinApp {
 
         let v = response.data[64];
 
-        let sig = secp256k1::Signature::parse_der(&response.data[65..])?;
+        let sig = secp256k1::Signature::parse_der(&response.data[65..])
+            .map_err(|_| errors::Error::Secp256k1)?;
 
         let signature = Signature { r, s, v, sig };
 
@@ -394,24 +268,4 @@ impl FilecoinApp {
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::utils::to_hex_string;
-    use crate::{serialize_bip44, BIP44Path};
-
-    #[test]
-    fn bip44() {
-        let path = BIP44Path {
-            purpose: 0x2c,
-            coin: 1,
-            account: 0x1234,
-            change: 0,
-            index: 0x5678,
-        };
-        let serialized_path = serialize_bip44(&path);
-        assert_eq!(serialized_path.len(), 20);
-        assert_eq!(
-            to_hex_string(&serialized_path),
-            "2c00008001000080341200000000000078560000"
-        );
-    }
-}
+mod tests {}

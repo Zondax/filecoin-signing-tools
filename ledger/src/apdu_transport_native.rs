@@ -13,26 +13,32 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 ********************************************************************************/
+//! Support library for Filecoin Ledger Nano S/X apps
+
 #![deny(warnings, trivial_casts, trivial_numeric_casts)]
 #![deny(unused_import_braces, unused_qualifications)]
 #![deny(missing_docs)]
 #![doc(html_root_url = "https://docs.rs/ledger-filecoin/0.1.0")]
 
-pub const CLA: u8 = 0x06;
-pub const INS_GET_VERSION: u8 = 0x00;
-pub const INS_GET_ADDR_SECP256K1: u8 = 0x01;
-pub const INS_SIGN_SECP256K1: u8 = 0x02;
-pub const USER_MESSAGE_CHUNK_SIZE: usize = 250;
+use crate::errors::Error;
+use crate::errors::Error::TransportError;
+use futures::future;
+use ledger_generic::{ApduAnswer, ApduCommand};
 
-pub enum PayloadType {
-    Init = 0x00,
-    Add = 0x01,
-    Last = 0x02,
+/// Transport struct for non-wasm arch
+pub struct ApduTransport {
+    /// Native rust transport
+    pub transport_wrapper: ledger::LedgerApp,
 }
 
-pub enum APDUErrors {
-    NoError = 0x9000,
-}
+impl ApduTransport {
+    /// Use to talk to the ledger device
+    pub async fn exchange(&self, command: ApduCommand) -> Result<ApduAnswer, Error> {
+        let call = self
+            .transport_wrapper
+            .exchange(command)
+            .map_err(|_| TransportError)?;
 
-/// Public Key Length
-pub(crate) const PK_LEN: usize = 65;
+        future::ready(Ok(call)).await
+    }
+}

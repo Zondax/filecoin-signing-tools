@@ -27,7 +27,7 @@ export {
   transaction_sign as transactionSign,
   key_retrieve_from_device as keyRetrieveFromDevice,
   transaction_sign_raw_with_device as transactionSignRawWithDevice,
-  get_version as getVersionFromDevice,
+  get_version as getVersion,
   show_key_on_device as showKeyOnDevice,
   /*appInfo,
   deviceInfo*/

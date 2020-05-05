@@ -9,7 +9,7 @@ use forest_message;
 use std::convert::TryFrom;
 use std::str::FromStr;
 
-use crate::bip44::{Bip44Path, ExtendedSecretKey};
+use crate::bip44::{BIP44Path, ExtendedSecretKey};
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures;
 use bls_signatures::Serialize;
@@ -106,7 +106,7 @@ pub fn key_derive(mnemonic: &str, path: &str, password: &str) -> Result<Extended
 
     let master = ExtendedSecretKey::try_from(seed.as_bytes())?;
 
-    let bip44_path = Bip44Path::from_string(path)?;
+    let bip44_path = BIP44Path::from_string(path)?;
 
     let esk = master.derive_bip44(&bip44_path)?;
 
@@ -137,7 +137,7 @@ pub fn key_derive(mnemonic: &str, path: &str, password: &str) -> Result<Extended
 pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, SignerError> {
     let master = ExtendedSecretKey::try_from(seed)?;
 
-    let bip44_path = Bip44Path::from_string(path)?;
+    let bip44_path = BIP44Path::from_string(path)?;
 
     let esk = master.derive_bip44(&bip44_path)?;
 
