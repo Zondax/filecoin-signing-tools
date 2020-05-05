@@ -1,9 +1,9 @@
+use filecoin_signer_ledger;
 use js_sys::Promise;
-use ledger_filecoin;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
-use ledger_filecoin::{ApduTransport, TransportWrapperTrait, Version};
+use filecoin_signer_ledger::{ApduTransport, TransportWrapperTrait};
 
 // lifted from the `console_log` example
 #[wasm_bindgen]
@@ -43,23 +43,12 @@ pub async fn get_version(transport_wrapper: TransportWrapper) -> Promise {
     };
 
     // FIXME: handle the error
-    let app = ledger_filecoin::FilecoinApp::connect(apdu_transport).unwrap();
+    let app = filecoin_signer_ledger::FilecoinApp::connect(apdu_transport).unwrap();
     let v_result = app.get_version().await;
 
     // FIXME: Do this automatically to simplify this code
-
     match v_result {
-        Ok(v) => {
-            let version = Version {
-                mode: v.mode,
-                major: v.major,
-                minor: v.minor,
-                patch: v.patch,
-            };
-
-            // FIXME: handle the error
-            Promise::resolve(&JsValue::from_serde(&version).unwrap())
-        }
+        Ok(v) => Promise::resolve(&JsValue::from_serde(&v).unwrap()),
         Err(err) => {
             let error = Error {
                 return_code: 0x6f00,

@@ -179,7 +179,8 @@ impl FilecoinApp {
                 let mut addr_byte = [Default::default(); 21];
                 addr_byte.copy_from_slice(&response.data[PK_LEN + 1..PK_LEN + 1 + 21]);
 
-                let tmp = str::from_utf8(&response.data[PK_LEN + 2 + 21..])?;
+                let tmp =
+                    str::from_utf8(&response.data[PK_LEN + 2 + 21..]).map_err(|_e| Error::Utf8)?;
                 let addr_string = tmp.to_owned();
 
                 let address = Address {

@@ -14,10 +14,13 @@
 *  limitations under the License.
 ********************************************************************************/
 
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+// FIXME: This should probably go to the generic crate
+
 /// Ledger App Error
-#[derive(Copy, Clone, Debug, Eq, Error, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, Error, PartialEq, Deserialize, Serialize)]
 pub enum Error {
     /// Invalid version error
     #[error("This version is not supported")]
@@ -47,6 +50,7 @@ pub enum Error {
     #[error("Secp256k1")]
     Secp256k1,
     // Utf8 related errors
-    #[error("Utf8 | {0}")]
-    Utf8(#[from] std::str::Utf8Error),
+    #[error("Utf8 conversion error")]
+    Utf8,
+    // FIXME: We need to expose Ledger specific erros, including error code
 }

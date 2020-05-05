@@ -42,7 +42,7 @@ wee_alloc = { version = "0.4.2", optional = true }
 filecoin-signer = { path = "../signer" }
 
 # ledger app
-ledger-filecoin = { path = "../ledger" }
+filecoin-signer-ledger = { path = "../ledger" }
 ledger-generic = { git = "https://github.com/Zondax/ledger-rs", branch = "feature/refactoring-wasm"}
 
 [dependencies.wasm-bindgen]
