@@ -19,7 +19,7 @@ const Resolve = require("path").resolve;
 const TransportNodeHid = require('@ledgerhq/hw-transport-node-hid').default;
 const signer_wasm = require('@zondax/filecoin-signer');
 
-describe("Ledger device", function () {
+describe.skip("Ledger device", function () {
   it("Get version", async function () {
       this.timeout(10000);
 
@@ -51,7 +51,7 @@ describe("Ledger device", function () {
 })
 
 // Failing with Zemu
-it.skip("With Zemu", async function () {
+it("With Zemu", async function () {
     this.timeout(10000);
 
     const DEMO_APP_PATH = Resolve("bin/app.elf");
