@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@ledgerhq/hw-transport-node-hid": "^5.13.1"
+  }
+}

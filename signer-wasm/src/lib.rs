@@ -8,6 +8,8 @@ use filecoin_signer::utils::{from_hex_string, to_hex_string};
 use filecoin_signer::{CborBuffer, PrivateKey};
 use std::convert::TryFrom;
 
+pub mod ledger;
+
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
 #[cfg(feature = "wee_alloc")]

@@ -2,17 +2,6 @@
 
 This library can also help you to connect to a ledger device.
 
-## DeviceSession
-
-The `DeviceSession` class is an utility class. It will hold the connection with a device (`ledger` or `trezor` <- not yet supported) for you. It will need to be passed to functions that need device (generally the function name will have `WithDevice` in it).
-
-You can also use `DeviceEnum.LEDGER` or `DeviceEnum.TREZOR` as an argument for the constructor.
-
-```javascript
-import {DeviceSession, DeviceEnum} from '@zondax/filecoin-signer';
-
-const session = new DeviceSession(DeviceEnum.LEDGER);
-```
 
 ## API
 
@@ -24,52 +13,32 @@ Get the public key information from a device using a given path.
 
 Arguments:
 * **path**: the BIP44 path as a string (e.g "m/44'/461'/0/0/1");
-* **session**: the sesssion that hold the connection with the device (see [DeviceSession](#DeviceSession));
+* **transport**: the ledger transport;
 
 
 ```javascript
-import { DeviceSession, DeviceEnum, keyRetrieveFromDevice } from '@zondax/filecoin-signer';
+import { keyRetrieveFromDevice } from '@zondax/filecoin-signer';
+import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
 
-const session = new DeviceSession(DeviceEnum.LEDGER);
+const transport = await TransportNodeHid.create();
 
 const path = "m/44'/461'/0/0/1";
 
-const keys = await keyRetrieveFromDevice(path, session);
+const keys = await keyRetrieveFromDevice(path, transport);
 
 console.log(keys);
 ```
 
-### transactionSignWithDevice
+### transactionSignWithDevice <Badge text="Removed" type="warning" vertical="middle"/>
 
 Sign the transaction using a device using a given path. Return a ready to send transaction through the [JSON RPC service](/jsonrpc/). However it will not work with lotus json rpc service.
 
 Arguments:
 * **transaction**: the filecoin transaction to sign;
 * **path**: the BIP44 path as a string (e.g "m/44'/461'/0/0/1");
-* **session**: the sesssion that hold the connection with the device (see [DeviceSession](#DeviceSession));
+* **transport**: the transport initialized;
 
-```javascript
-import { DeviceSession, DeviceEnum, transactionSignWithDevice } from '@zondax/filecoin-signer';
-
-const session = new DeviceSession(DeviceEnum.LEDGER);
-
-const transaction = {
-    "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-    "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
-    "nonce": 1,
-    "value": "100000",
-    "gasprice": "2500",
-    "gaslimit": "25000",
-    "method": 0,
-    "params": ""
-};
-
-const path = "m/44'/461'/0/0/1";
-
-const signedTransaction = await transactionSignWithDevice(transaction, path, session);
-
-console.log(signedTransaction);
-```
+REMOVED
 
 ### transactionSignRawWithDevice
 
@@ -78,12 +47,13 @@ Sign the transaction using a device using a given path. Return only the signatur
 Arguments:
 * **transaction**: the filecoin transaction to sign;
 * **path**: the BIP44 path as a string (e.g "m/44'/461'/0/0/1");
-* **session**: the sesssion that hold the connection with the device (see [DeviceSession](#DeviceSession));
+* **transport**: the ledger transport;
 
 ```javascript
-import { DeviceSession, DeviceEnum, transactionSignRawWithDevice } from '@zondax/filecoin-signer';
+import { transactionSignRawWithDevice } from '@zondax/filecoin-signer';
+import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
 
-const session = new DeviceSession(DeviceEnum.LEDGER);
+const transport = await TransportNodeHid.create();
 
 const transaction = {
     "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
@@ -98,7 +68,7 @@ const transaction = {
 
 const path = "m/44'/461'/0/0/1";
 
-const signature = await transactionSignRawWithDevice(transaction, path, session);
+const signature = await transactionSignRawWithDevice(transaction, path, transport);
 
 console.log(signature);
 ```

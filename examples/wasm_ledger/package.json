@@ -9,7 +9,7 @@
     "test:unit": "jest -c jest.config.unit.js --detectOpenHandles",
     "test:ledger": "mocha test/test.ledger.js",
     "test:spec": "mocha test/test.spec.js",
-    "test:legacy": "mocha test/test.legacy.js"
+    "test:legacy": "mocha test/test.ledger.old.js"
   },
   "repository": {
     "type": "git",

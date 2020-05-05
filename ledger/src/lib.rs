@@ -23,18 +23,29 @@
 mod params;
 
 extern crate byteorder;
-extern crate ledger_generic;
 #[macro_use]
 extern crate quick_error;
 extern crate secp256k1;
 
-use self::ledger_generic::{ApduAnswer, ApduCommand};
+use ledger_generic::{ApduAnswer, ApduCommand};
 use self::params::{APDUErrors, PayloadType};
 use crate::params::{
     CLA, INS_GET_ADDR_SECP256K1, INS_GET_VERSION, INS_SIGN_SECP256K1, USER_MESSAGE_CHUNK_SIZE,
 };
-use async_trait::async_trait;
 use std::str;
+
+#[cfg(not(target_arch = "wasm32"))]
+use futures::future;
+
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
+#[cfg(target_arch = "wasm32")]
+use js_sys::Promise;
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen_futures::JsFuture;
+
+#[cfg(not(target_arch = "wasm32"))]
+extern crate ledger;
 
 /// hex string utilities
 pub mod utils;
@@ -97,16 +108,65 @@ quick_error! {
     }
 }
 
-/// Transport trait to be implemented for any ledger transport implementation
-#[async_trait]
-pub trait Transport {
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(module = "/node_modules/@ledgerhq/hw-transport-node-hid/src/TransportNodeHid.js")]
+//#[wasm_bindgen(module = "/../node_modules/@ledgerhq/hw-transport/src/Transport.js")]
+extern "C" {
+    pub type TransportJS;
+
+    #[wasm_bindgen(method)]
+    fn exchange(this: &TransportJS, command: &[u8]) -> Promise;
+}
+
+/// Transport struct for non-wasm arch
+#[cfg(target_arch = "wasm32")]
+pub struct Transport {
+    /// Contain javascript transport object
+    pub transportjs: TransportJS,
+}
+
+
+/// Transport Impl for wasm
+#[cfg(target_arch = "wasm32")]
+impl Transport {
     /// Use to talk to the ledger device
-    async fn exchange(&self, command: ApduCommand) -> Result<ApduAnswer, Error>;
+    async fn exchange(&self, command: ApduCommand) -> Result<ApduAnswer, Error> {
+
+        let promise = self.transportjs.exchange(&command.serialize());
+        let future = JsFuture::from(promise);
+
+        let answer = future.await.unwrap();
+
+        let data = js_sys::Uint8Array::new(&answer).to_vec();
+
+        Ok(ApduAnswer { data: data, retcode: 0x9000 })
+
+        //future::ready(Ok(ApduAnswer { data: vec![0x01, 0x01, 0x01, 0x01], retcode: 0x9000 })).await
+    }
+}
+
+/// Transport struct for non-wasm arch
+#[cfg(not(target_arch = "wasm32"))]
+pub struct Transport {
+    /// Native rust transport
+    pub transport: ledger::LedgerApp,
+}
+
+// Not wasm `transport` impl
+#[cfg(not(target_arch = "wasm32"))]
+impl Transport {
+    /// Use to talk to the ledger device
+    async fn exchange(&self, command: ApduCommand) -> Result<ApduAnswer, Error> {
+        let call = self.transport.exchange(command).unwrap();
+
+        future::ready(Ok(call)).await
+    }
 }
 
 /// Filecoin App
 pub struct FilecoinApp {
-    transport: Box<dyn Transport>,
+    transport: Transport,
 }
 
 unsafe impl Send for FilecoinApp {}
@@ -178,7 +238,7 @@ fn serialize_bip44(path: &BIP44Path) -> Vec<u8> {
 
 impl FilecoinApp {
     /// Connect to the Ledger App
-    pub fn connect(transport: Box<dyn Transport>) -> Result<Self, Error> {
+    pub fn connect(transport: Transport) -> Result<Self, Error> {
         Ok(FilecoinApp { transport })
     }
 
@@ -316,8 +376,6 @@ impl FilecoinApp {
         if response.data.len() < 3 {
             return Err(Error::InvalidSignature);
         }
-
-        //let sig_buffer_len = response.data.len();
 
         let mut r = [Default::default(); 32];
         r.copy_from_slice(&response.data[..32]);

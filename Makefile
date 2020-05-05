@@ -24,6 +24,7 @@ link_wasm: build_wasm
 	cd signer-wasm && yarn link
 	cd examples/wasm_node && yarn link $(PACKAGE_NAME) && yarn install
 	cd examples/wasm_browser && yarn link $(PACKAGE_NAME)
+	cd examples/wasm_ledger && yarn link $(PACKAGE_NAME)
 
 test_wasm_unit: build_wasm
 	#wasm-pack test --chrome --firefox --headless ./signer-wasm

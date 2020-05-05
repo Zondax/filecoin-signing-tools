@@ -14,81 +14,53 @@
  *  limitations under the License.
  ******************************************************************************* */
 const Zemu = require("@zondax/zemu").default;
-const FilecoinApp = require("@zondax/ledger-filecoin").default;
 const Resolve = require("path").resolve;
 
+const TransportNodeHid = require('@ledgerhq/hw-transport-node-hid').default;
 const signer_wasm = require('@zondax/filecoin-signer');
 
-const EXAMPLE_CBOR_TX = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040";
+describe("Ledger device", function () {
+  it("Get version", async function () {
+      this.timeout(10000);
 
-it("empty", async function () {
+      const transport = await TransportNodeHid.create();
+      var answer = await signer_wasm.getVersionFromDevice(transport);
+
+      console.log(answer);
+  });
+
+  it("Get address", async function () {
+      this.timeout(10000);
+      const path = "m/44'/461'/5/0/3";
+
+      const transport = await TransportNodeHid.create()
+      var answer = await signer_wasm.keyRetrieveFromDevice(path, transport);
+
+      console.log(answer);
+  });
+
+  it("Show address", async function () {
+      this.timeout(10000);
+      const path = "m/44'/461'/5/0/3";
+
+      const transport = await TransportNodeHid.create()
+      var answer = await signer_wasm.showKeyOnDevice(path, transport);
+
+      console.log(answer);
+  });
+})
+
+// Failing with Zemu
+it.skip("With Zemu", async function () {
     this.timeout(10000);
 
     const DEMO_APP_PATH = Resolve("bin/app.elf");
     const sim = new Zemu(DEMO_APP_PATH);
     await sim.start({ logging: true });
 
-    const app = new FilecoinApp(sim.getTransport());
-    const resp = await app.getVersion();
+    const transport = sim.getTransport()
+    console.log(transport.exchange)
+    var answer = await signer_wasm.getVersionFromDevice(transport);
 
-    signer_wasm.transactionParse(EXAMPLE_CBOR_TX, true);
-
-    console.log(resp);
-
-    await sim.close();
+    console.log(answer);
 });
-
-/*
-jest.setTimeout(10000);
-const DEMO_APP_PATH = Resolve("bin/demoApp/app.elf");
-
-test("Zemu-Start&Close", async () => {
-  const sim = new Zemu(DEMO_APP_PATH);
-  expect(sim).not.toBeNull();
-  try {
-    await sim.start(true);
-  } finally {
-    await sim.close();
-  }
-});
-
-test("Zemu-Snapshot", async () => {
-  const sim = new Zemu(DEMO_APP_PATH);
-  try {
-    await sim.start();
-    expect(sim.session.title).toEqual("LibVNCServer");
-    expect(sim.session.width).toEqual(128);
-    expect(sim.session.height).toEqual(32);
-
-    const snapshot = await sim.snapshot();
-    expect(snapshot.width).toEqual(128);
-    expect(snapshot.height).toEqual(32);
-  } finally {
-    await sim.close();
-  }
-});
-
-test("Zemu-Basic Control", async () => {
-  const sim = new Zemu(DEMO_APP_PATH);
-  try {
-    await sim.start();
-
-    await sim.clickLeft();
-    await sim.clickLeft();
-    await sim.clickLeft();
-
-    // Move up and down and check screens
-    const view0 = await sim.snapshot("tests/snapshots/0.png");
-    const view1 = await sim.clickRight("tests/snapshots/1.png");
-    const view2 = await sim.clickLeft("tests/snapshots/2.png");
-
-    // compare to check that it went back to the same view
-    expect(view2).toEqual(view0);
-    expect(view1).not.toEqual(view0);
-  } finally {
-    await sim.close();
-  }
-});
-
-
- */

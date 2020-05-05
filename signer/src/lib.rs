@@ -22,7 +22,7 @@ use secp256k1::{recover, sign, verify, Message, RecoveryId};
 use crate::signature::{Signature, SignatureBLS, SignatureSECP256K1};
 
 pub mod api;
-mod bip44;
+pub mod bip44;
 pub mod error;
 pub mod signature;
 pub mod utils;
