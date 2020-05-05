@@ -1,9 +1,9 @@
-use wasm_bindgen::prelude::*;
 use js_sys::Promise;
 use ledger_filecoin;
 use ledger_filecoin::{Transport, TransportJS};
-use serde::{Deserialize, Serialize};
 use secp256k1::util::COMPRESSED_PUBLIC_KEY_SIZE;
+use serde::{Deserialize, Serialize};
+use wasm_bindgen::prelude::*;
 
 use filecoin_signer::bip44::Bip44Path;
 use ledger_filecoin::BIP44Path;
@@ -110,13 +110,13 @@ impl FilecoinApp {
     }
 }*/
 
-
 #[wasm_bindgen]
 pub async fn get_version(transport_js: TransportJS) -> Promise {
-
     // We are connecting every call but it is not such a big deal...
     // However having a class that can hold the transport would be best
-    let transport_wrapper = Transport { transportjs: transport_js };
+    let transport_wrapper = Transport {
+        transportjs: transport_js,
+    };
 
     // FIXME: handle the error
     let app = ledger_filecoin::FilecoinApp::connect(transport_wrapper).unwrap();
@@ -129,7 +129,7 @@ pub async fn get_version(transport_js: TransportJS) -> Promise {
                 test_mode: v.mode != 0x00,
                 major: v.major,
                 minor: v.minor,
-                patch: v.patch
+                patch: v.patch,
             };
 
             // FIXME: handle the error
@@ -149,7 +149,9 @@ pub async fn get_version(transport_js: TransportJS) -> Promise {
 
 #[wasm_bindgen]
 pub async fn key_retrieve_from_device(path: String, transport_js: TransportJS) -> Promise {
-    let transport_wrapper = Transport { transportjs: transport_js };
+    let transport_wrapper = Transport {
+        transportjs: transport_js,
+    };
 
     // FIXME: handle the error
     let app = ledger_filecoin::FilecoinApp::connect(transport_wrapper).unwrap();
@@ -191,7 +193,9 @@ pub async fn key_retrieve_from_device(path: String, transport_js: TransportJS) -
 
 #[wasm_bindgen]
 pub async fn show_key_on_device(path: String, transport_js: TransportJS) -> Promise {
-    let transport_wrapper = Transport { transportjs: transport_js };
+    let transport_wrapper = Transport {
+        transportjs: transport_js,
+    };
 
     // FIXME: handle the error
     let app = ledger_filecoin::FilecoinApp::connect(transport_wrapper).unwrap();
@@ -232,8 +236,14 @@ pub async fn show_key_on_device(path: String, transport_js: TransportJS) -> Prom
 }
 
 #[wasm_bindgen]
-pub async fn transaction_sign_raw_with_device(message: Vec<u8>, path: String, transport_js: TransportJS) -> Promise {
-    let transport_wrapper = Transport { transportjs: transport_js };
+pub async fn transaction_sign_raw_with_device(
+    message: Vec<u8>,
+    path: String,
+    transport_js: TransportJS,
+) -> Promise {
+    let transport_wrapper = Transport {
+        transportjs: transport_js,
+    };
 
     // FIXME: handle the error
     let app = ledger_filecoin::FilecoinApp::connect(transport_wrapper).unwrap();
@@ -281,7 +291,9 @@ pub async fn transaction_sign_raw_with_device(message: Vec<u8>, path: String, tr
 
 #[wasm_bindgen]
 pub async fn app_info(transport_js: TransportJS) -> Promise {
-    let transport_wrapper = Transport { transportjs: transport_js };
+    let transport_wrapper = Transport {
+        transportjs: transport_js,
+    };
 
     // FIXME: handle the error
     let app = ledger_filecoin::FilecoinApp::connect(transport_wrapper).unwrap();
@@ -292,12 +304,13 @@ pub async fn app_info(transport_js: TransportJS) -> Promise {
 
 #[wasm_bindgen]
 pub async fn device_info(transport_js: TransportJS) -> Promise {
-    let transport_wrapper = Transport { transportjs: transport_js };
+    let transport_wrapper = Transport {
+        transportjs: transport_js,
+    };
 
     // FIXME: handle the error
     let app = ledger_filecoin::FilecoinApp::connect(transport_wrapper).unwrap();
 
     todo!()
     //let d_result = app.device().await;
-
 }

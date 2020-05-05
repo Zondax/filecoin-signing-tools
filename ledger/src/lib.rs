@@ -27,20 +27,20 @@ extern crate byteorder;
 extern crate quick_error;
 extern crate secp256k1;
 
-use ledger_generic::{ApduAnswer, ApduCommand};
 use self::params::{APDUErrors, PayloadType};
 use crate::params::{
     CLA, INS_GET_ADDR_SECP256K1, INS_GET_VERSION, INS_SIGN_SECP256K1, USER_MESSAGE_CHUNK_SIZE,
 };
+use ledger_generic::{ApduAnswer, ApduCommand};
 use std::str;
 
 #[cfg(not(target_arch = "wasm32"))]
 use futures::future;
 
 #[cfg(target_arch = "wasm32")]
-use wasm_bindgen::prelude::*;
-#[cfg(target_arch = "wasm32")]
 use js_sys::Promise;
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_futures::JsFuture;
 
@@ -108,7 +108,6 @@ quick_error! {
     }
 }
 
-
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen(module = "/node_modules/@ledgerhq/hw-transport-node-hid/src/TransportNodeHid.js")]
 //#[wasm_bindgen(module = "/../node_modules/@ledgerhq/hw-transport/src/Transport.js")]
@@ -126,13 +125,11 @@ pub struct Transport {
     pub transportjs: TransportJS,
 }
 
-
 /// Transport Impl for wasm
 #[cfg(target_arch = "wasm32")]
 impl Transport {
     /// Use to talk to the ledger device
     async fn exchange(&self, command: ApduCommand) -> Result<ApduAnswer, Error> {
-
         let promise = self.transportjs.exchange(&command.serialize());
         let future = JsFuture::from(promise);
 
@@ -140,7 +137,10 @@ impl Transport {
 
         let data = js_sys::Uint8Array::new(&answer).to_vec();
 
-        Ok(ApduAnswer { data: data, retcode: 0x9000 })
+        Ok(ApduAnswer {
+            data: data,
+            retcode: 0x9000,
+        })
 
         //future::ready(Ok(ApduAnswer { data: vec![0x01, 0x01, 0x01, 0x01], retcode: 0x9000 })).await
     }
