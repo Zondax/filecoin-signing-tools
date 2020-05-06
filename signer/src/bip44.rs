@@ -10,14 +10,14 @@ use zeroize::Zeroize;
 
 const HARDENED_BIT: u32 = 1 << 31;
 
-pub struct Bip44Path(pub [u32; 5]);
+pub struct BIP44Path(pub [u32; 5]);
 
 /// Bip44Path
 ///
 /// Implementation of the BIP44 standard for derivation path.
 ///
-impl Bip44Path {
-    pub fn from_slice(path: &[u32]) -> Result<Bip44Path, SignerError> {
+impl BIP44Path {
+    pub fn from_slice(path: &[u32]) -> Result<BIP44Path, SignerError> {
         let mut path_array: [u32; 5] = Default::default();
         if path.len() != 5 {
             return Err(SignerError::GenericString(
@@ -27,10 +27,10 @@ impl Bip44Path {
 
         path_array.copy_from_slice(path);
 
-        Ok(Bip44Path(path_array))
+        Ok(BIP44Path(path_array))
     }
 
-    pub fn from_string(path: &str) -> Result<Bip44Path, SignerError> {
+    pub fn from_string(path: &str) -> Result<BIP44Path, SignerError> {
         let mut path = path.split('/');
 
         if path.next() != Some("m") {
@@ -55,7 +55,7 @@ impl Bip44Path {
             })
             .collect::<Result<Vec<u32>, std::num::ParseIntError>>()?;
 
-        let bip44_path = Bip44Path::from_slice(&result)?;
+        let bip44_path = BIP44Path::from_slice(&result)?;
 
         Ok(bip44_path)
     }
@@ -163,7 +163,7 @@ impl ExtendedSecretKey {
         ExtendedSecretKey::new(child_secret_key, &child_chain_code)
     }
 
-    pub fn derive_bip44(&self, path: &Bip44Path) -> Result<ExtendedSecretKey, SignerError> {
+    pub fn derive_bip44(&self, path: &BIP44Path) -> Result<ExtendedSecretKey, SignerError> {
         let child0 = self.derive_child_key(path.0[0])?;
         let child1 = child0.derive_child_key(path.0[1])?;
         let child2 = child1.derive_child_key(path.0[2])?;
@@ -176,7 +176,7 @@ impl ExtendedSecretKey {
 
 #[cfg(test)]
 mod tests {
-    use crate::bip44::{Bip44Path, ExtendedSecretKey};
+    use crate::bip44::{BIP44Path, ExtendedSecretKey};
     use bip39::{Language, Mnemonic, Seed};
     use hex::encode;
     use std::convert::TryFrom;
@@ -245,7 +245,7 @@ mod tests {
         let seed = Seed::new(&mnemonic, "");
         let master = ExtendedSecretKey::try_from(seed.as_bytes()).unwrap();
 
-        let path = Bip44Path::from_string("m/44'/461'/0/0/0").unwrap();
+        let path = BIP44Path::from_string("m/44'/461'/0/0/0").unwrap();
         let esk = master.derive_bip44(&path).unwrap();
 
         println!("{}", esk);
@@ -264,7 +264,7 @@ mod tests {
     fn create_derive_path() {
         let path_string = "m/44'/461'/0/0/0";
 
-        let result = Bip44Path::from_string(path_string).unwrap();
+        let result = BIP44Path::from_string(path_string).unwrap();
 
         assert_eq!(result.0[0], (44 | HARDENED_BIT));
         assert_eq!(result.0[1], (461 | HARDENED_BIT));

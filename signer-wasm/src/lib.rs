@@ -1,5 +1,3 @@
-use filecoin_signer;
-use js_sys;
 use wasm_bindgen::prelude::*;
 
 use filecoin_signer::api::UnsignedMessageAPI;
@@ -8,6 +6,7 @@ use filecoin_signer::utils::{from_hex_string, to_hex_string};
 use filecoin_signer::{CborBuffer, PrivateKey};
 use std::convert::TryFrom;
 
+#[cfg(target_arch = "wasm32")]
 pub mod ledger;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
