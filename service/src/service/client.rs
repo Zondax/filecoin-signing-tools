@@ -169,7 +169,7 @@ pub async fn is_mainnet(url: &str, jwt: &str) -> Result<bool, ServiceError> {
         .as_str()
         .ok_or(InvalidStatusRequest)?;
 
-    Ok(from_field.starts_with("f"))
+    Ok(from_field.starts_with('f'))
 }
 
 #[cfg(test)]

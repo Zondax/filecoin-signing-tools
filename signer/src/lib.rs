@@ -5,7 +5,6 @@ use crate::error::SignerError;
 use crate::utils::from_hex_string;
 use forest_address::{Address, Network};
 use forest_encoding::{from_slice, to_vec};
-use forest_message;
 use std::convert::TryFrom;
 use std::str::FromStr;
 
