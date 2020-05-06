@@ -20,8 +20,8 @@
 #![deny(missing_docs)]
 
 use crate::{APDUErrorCodes, ApduAnswer, ApduCommand, ApduTransport};
+use serde::ser::{SerializeStruct, Serializer};
 use serde::{Deserialize, Serialize};
-use serde::ser::{Serializer, SerializeStruct};
 
 use crate::params::*;
 use bip44::BIP44Path;
