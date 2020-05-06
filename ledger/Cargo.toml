@@ -26,8 +26,9 @@ serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0.16"
 
 # Used for internal development
-# ledger-transport = { path = "../../ledger-rs/ledger-transport"}
-ledger-transport = { git = "https://github.com/Zondax/ledger-rs", branch = "feature/refactoring-wasm"}
+ledger-transport = { path = "../../ledger-rs/ledger-transport"}
+bip44 = { path = "../../ledger-rs/bip44"}
+#ledger-transport = { git = "https://github.com/Zondax/ledger-rs", branch = "feature/refactoring-wasm"}
 
 # For wasm compiling
 [target.'cfg(target_arch = "wasm32")'.dependencies]

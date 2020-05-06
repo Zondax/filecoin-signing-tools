@@ -21,9 +21,10 @@
 
 use crate::{APDUErrorCodes, ApduAnswer, ApduCommand, ApduTransport};
 use serde::{Deserialize, Serialize};
+use serde::ser::{Serializer, SerializeStruct};
 
 use crate::params::*;
-use crate::utils::{serialize_bip44, BIP44Path};
+use bip44::BIP44Path;
 
 use crate::errors::LedgerError;
 use std::str;
@@ -34,6 +35,7 @@ pub struct FilecoinApp {
 }
 
 /// FilecoinApp address (includes pubkey and the corresponding ss58 address)
+#[derive(Clone, Debug)]
 pub struct Address {
     /// Public Key
     pub public_key: secp256k1::PublicKey,
@@ -43,6 +45,20 @@ pub struct Address {
 
     /// Address string format
     pub addr_string: String,
+}
+
+impl Serialize for Address {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        // 3 is the number of fields in the struct.
+        let mut state = serializer.serialize_struct("Address", 3)?;
+        state.serialize_field("public_key", &self.public_key.serialize().to_vec())?;
+        state.serialize_field("addr_byte", &self.addr_byte)?;
+        state.serialize_field("addr_string", &self.addr_string)?;
+        state.end()
+    }
 }
 
 /// FilecoinApp signature (includes R, S, V and der format)
@@ -115,7 +131,7 @@ impl FilecoinApp {
         path: &BIP44Path,
         require_confirmation: bool,
     ) -> Result<Address, LedgerError> {
-        let serialized_path = serialize_bip44(path);
+        let serialized_path = path.serialize();
         let p1 = if require_confirmation { 1 } else { 0 };
 
         let command = ApduCommand {
@@ -165,7 +181,7 @@ impl FilecoinApp {
 
     /// Sign a transaction
     pub async fn sign(&self, path: &BIP44Path, message: &[u8]) -> Result<Signature, LedgerError> {
-        let bip44path = serialize_bip44(&path);
+        let bip44path = path.serialize();
         let chunks = message.chunks(USER_MESSAGE_CHUNK_SIZE);
 
         if chunks.len() > 255 {
