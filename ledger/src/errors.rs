@@ -14,14 +14,13 @@
 *  limitations under the License.
 ********************************************************************************/
 
+use ledger_transport::errors::TransportError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-// FIXME: This should probably go to the generic crate
-
-/// Ledger App Error
+/// Filecoin App Error
 #[derive(Copy, Clone, Debug, Eq, Error, PartialEq, Deserialize, Serialize)]
-pub enum Error {
+pub enum LedgerError {
     /// Invalid version error
     #[error("This version is not supported")]
     InvalidVersion,
@@ -44,12 +43,12 @@ pub enum Error {
     #[error("invalid derivation path")]
     InvalidDerivationPath,
     /// The derivation is invalid
-    #[error("Something went wrong wth the ledger")]
-    TransportError,
+    #[error("Transport | {0}")]
+    TransportError(#[from] TransportError),
     /// Secp256k1 related errors
     #[error("Secp256k1")]
     Secp256k1,
-    // Utf8 related errors
+    /// Utf8 related errors
     #[error("Utf8 conversion error")]
     Utf8,
     // FIXME: We need to expose Ledger specific erros, including error code

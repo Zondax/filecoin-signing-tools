@@ -16,7 +16,6 @@ autobenches = false
 name = "filecoin_signer_ledger"
 
 [dependencies]
-ledger-generic = { git = "https://github.com/Zondax/ledger-rs", branch = "feature/refactoring-wasm"}
 byteorder = "1.3.1"
 matches = "0.1.8"
 lazy_static = "1.2.0"
@@ -26,15 +25,16 @@ futures = "0.3.4"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0.16"
 
+# Used for internal development
+# ledger-transport = { path = "../../ledger-rs/ledger-transport"}
+ledger-transport = { git = "https://github.com/Zondax/ledger-rs", branch = "feature/refactoring-wasm"}
+
 # For wasm compiling
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2.60"
 wasm-bindgen-futures = "0.4.10"
 js-sys = "0.3.37"
 
-# For not wasm compilation (native rust) compiling
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-ledger-transport = { git = "https://github.com/Zondax/ledger-rs", branch = "feature/refactoring-wasm"}
 
 [dev-dependencies]
 sha2 = "0.8.1"

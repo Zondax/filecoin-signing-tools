@@ -43,7 +43,7 @@ pub async fn get_version(transport_wrapper: TransportWrapper) -> Promise {
     };
 
     // FIXME: handle the error
-    let app = filecoin_signer_ledger::FilecoinApp::connect(apdu_transport).unwrap();
+    let app = filecoin_signer_ledger::app::FilecoinApp::connect(apdu_transport).unwrap();
     let v_result = app.get_version().await;
 
     // FIXME: Do this automatically to simplify this code

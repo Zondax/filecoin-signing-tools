@@ -30,9 +30,5 @@ pub enum PayloadType {
     Last = 0x02,
 }
 
-pub enum APDUErrors {
-    NoError = 0x9000,
-}
-
 /// Public Key Length
 pub(crate) const PK_LEN: usize = 65;
