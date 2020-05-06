@@ -43,7 +43,6 @@ filecoin-signer = { path = "../signer" }
 
 # ledger app
 filecoin-signer-ledger = { path = "../ledger" }
-ledger-generic = { git = "https://github.com/Zondax/ledger-rs", branch = "feature/refactoring-wasm"}
 
 [dependencies.wasm-bindgen]
 version = "^0.2"

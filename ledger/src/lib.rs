@@ -29,7 +29,7 @@ mod params;
 use self::params::{APDUErrors, PayloadType};
 use crate::params::*;
 
-use ledger_generic::{ApduAnswer, ApduCommand};
+pub use ledger_generic::{ApduAnswer, ApduCommand};
 use std::str;
 
 mod errors;
