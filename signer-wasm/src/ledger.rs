@@ -1,7 +1,7 @@
 use filecoin_signer_ledger;
 use js_sys::Promise;
-use serde::{Deserialize, Serialize};
 use serde::ser::{SerializeStruct, Serializer};
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 use filecoin_signer_ledger::{ApduTransport, TransportWrapperTrait};
@@ -139,7 +139,6 @@ pub async fn show_key_on_device(path: String, transport_wrapper: TransportWrappe
     }
 }
 
-
 #[wasm_bindgen]
 pub async fn transaction_sign_raw_with_device(
     message: Vec<u8>,
@@ -167,7 +166,11 @@ pub async fn transaction_sign_raw_with_device(
             der_signature.push(s.v);
 
             let obj = js_sys::Object::new();
-            js_sys::Reflect::set(&obj, &"signature_compact".into(), &Buffer::from(&s.sig.serialize().to_vec()));
+            js_sys::Reflect::set(
+                &obj,
+                &"signature_compact".into(),
+                &Buffer::from(&s.sig.serialize().to_vec()),
+            );
             js_sys::Reflect::set(&obj, &"signature_der".into(), &Buffer::from(&der_signature));
 
             // FIXME: handle the error

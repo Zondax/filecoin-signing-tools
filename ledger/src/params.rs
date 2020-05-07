@@ -27,7 +27,6 @@ pub const USER_MESSAGE_CHUNK_SIZE: usize = 250;
 pub const CLA_INFO: u8 = 0xb0;
 pub const INS_INFO: u8 = 0x01;
 
-
 pub enum PayloadType {
     Init = 0x00,
     Add = 0x01,
