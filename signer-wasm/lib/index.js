@@ -11,7 +11,8 @@ import {
   get_version,
   key_retrieve_from_device,
   show_key_on_device,
-  transaction_sign_raw_with_device
+  transaction_sign_raw_with_device,
+  app_info
 } from '@zondax/filecoin-signer-wasm'
 
 // Renaming functions to fit with camelCase standard
@@ -29,6 +30,6 @@ export {
   transaction_sign_raw_with_device as transactionSignRawWithDevice,
   get_version as getVersion,
   show_key_on_device as showKeyOnDevice,
-  /*appInfo,
-  deviceInfo*/
+  app_info as appInfo,
+  /*deviceInfo*/
 };

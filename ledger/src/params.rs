@@ -24,6 +24,10 @@ pub const INS_GET_ADDR_SECP256K1: u8 = 0x01;
 pub const INS_SIGN_SECP256K1: u8 = 0x02;
 pub const USER_MESSAGE_CHUNK_SIZE: usize = 250;
 
+pub const CLA_INFO: u8 = 0xb0;
+pub const INS_INFO: u8 = 0x01;
+
+
 pub enum PayloadType {
     Init = 0x00,
     Add = 0x01,

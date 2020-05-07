@@ -1,6 +1,4 @@
 const signer = require('@zondax/filecoin-signer');
-const DeviceSession = require('@zondax/filecoin-signer').DeviceSession;
-const DeviceEnum = require('@zondax/filecoin-signer').DeviceEnum;
 const assert = require('assert');
 const secp256k1 = require('secp256k1/elliptic');
 const getDigest = require('./utils').getDigest;
@@ -20,7 +18,7 @@ describe("LEDGER TEST", function () {
   this.timeout(10000);
 
   var sim,
-      session;
+      transport;
 
   before(async function() {
     // runs before tests start
@@ -35,12 +33,12 @@ describe("LEDGER TEST", function () {
         logging: true,
         custom: `-s "${APP_SEED}"`,
         press_delay: 150
-        //,X11: true
+        ,X11: true
     };
 
     await sim.start(sim_options);
 
-    session = new DeviceSession(DeviceEnum.LEDGER, sim.getTransport());
+    transport = sim.getTransport();
   });
 
   after(async function() {
@@ -48,21 +46,10 @@ describe("LEDGER TEST", function () {
     await sim.close();
     // reset
     transport = null;
-    session = null;
-  })
-
-  it("NotASession error", async function () {
-    signer.getVersionFromDevice("not a session")
-      .then(function () {
-        assert(false);
-      })
-      .catch(function (err) {
-        assert.strictEqual(err, "NotASession: Please pass a DeviceSession instance in order to communicate with the device.");
-      })
   })
 
   it("#getVersionFromDevice()", async function() {
-    const resp = await signer.getVersionFromDevice(session);
+    const resp = await signer.getVersionFromDevice(transport);
 
     // eslint-disable-next-line no-console
     console.log(resp);
@@ -77,7 +64,7 @@ describe("LEDGER TEST", function () {
 
   it("#keyRetrieveFromDevice()", async function() {
     const path = "m/44'/461'/5/0/3";
-    const resp = await signer.keyRetrieveFromDevice(path, session);
+    const resp = await signer.keyRetrieveFromDevice(path, transport);
 
     // eslint-disable-next-line no-console
     console.log(resp);
@@ -114,7 +101,7 @@ describe("LEDGER TEST", function () {
     this.timeout(60000);
 
     const path = "m/44'/461'/0/0/1";
-    const respRequest = signer.showKeyOnDevice(path, session);
+    const respRequest = signer.showKeyOnDevice(path, transport);
     await Zemu.sleep(2000);
 
     // click right
@@ -155,7 +142,7 @@ describe("LEDGER TEST", function () {
 
   it("#keyRetrieveFromDevice() Testnet", async function() {
     const path = "m/44'/1'/0/0/0";
-    const resp = await signer.keyRetrieveFromDevice(path, session);
+    const resp = await signer.keyRetrieveFromDevice(path, transport);
 
     // eslint-disable-next-line no-console
     console.log(resp);
@@ -204,7 +191,7 @@ describe("LEDGER TEST", function () {
   });
 
   it("deviceInfo", async function() {
-    const resp = await signer.deviceInfo(session);
+    const resp = await signer.deviceInfo(transport);
 
     // eslint-disable-next-line no-console
     console.log(resp);
@@ -227,9 +214,9 @@ describe("LEDGER TEST", function () {
       "hex",
     );
 
-    const responsePk = await signer.keyRetrieveFromDevice(path, session);
+    const responsePk = await signer.keyRetrieveFromDevice(path, transport);
     console.log(responsePk)
-    const responseRequest = signer.transactionSignRawWithDevice(message, path, session);
+    const responseRequest = signer.transactionSignRawWithDevice(message, path, transport);
     await Zemu.sleep(2000);
 
     await sim.clickLeft();
@@ -277,9 +264,9 @@ describe("LEDGER TEST", function () {
       nonce: 0,
     };
 
-    const responsePk = await signer.keyRetrieveFromDevice(path, session);
+    const responsePk = await signer.keyRetrieveFromDevice(path, transport);
     console.log(responsePk)
-    const responseRequest = signer.transactionSignRawWithDevice(messageContent, path, session);
+    const responseRequest = signer.transactionSignRawWithDevice(messageContent, path, transport);
     await Zemu.sleep(2000);
 
     await sim.clickLeft();
@@ -317,7 +304,7 @@ describe("LEDGER TEST", function () {
     console.log(`compact   : ${responseSign.signature_compact.toString("base64")}`);
   });
 
-  it("#transactionSignRawWithDevice() Fail", async function() {
+  it.skip("#transactionSignRawWithDevice() Fail", async function() {
     this.timeout(60000);
 
     const path = "m/44'/461'/0/0/0";
@@ -326,7 +313,7 @@ describe("LEDGER TEST", function () {
       "hex",
     );
 
-    const responseRequest = signer.transactionSignRawWithDevice(invalidMessage, path, session);
+    const responseRequest = signer.transactionSignRawWithDevice(invalidMessage, path, transport);
     await Zemu.sleep(2000);
 
     /*await sim.clickLeft();

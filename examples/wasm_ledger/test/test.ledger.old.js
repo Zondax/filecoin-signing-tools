@@ -89,14 +89,6 @@ it.skip("With Zemu", async function () {
         console.log(s);
     } )
 
-    // FIXME:
-    // WASM is sending uint8array.. but HTTP transport expects Buffer.. so BOOM.. it breaks..
-    // We can instrument and convert from Buffer to uint8array but ideally WASM should send the correct type...
-    transport.old_exchange = transport.exchange
-    transport.exchange = async (apdu) => {
-        return transport.old_exchange( Buffer.from(apdu));
-    }
-
     var answer = await signer_wasm.getVersion(transport);
     console.log(answer);
     // FIXME: The reply is not correct. Ideally, we need to return the error code, etc
@@ -104,7 +96,7 @@ it.skip("With Zemu", async function () {
 
 });
 
-it("With Zemu get address", async function () {
+it.skip("With Zemu get address", async function () {
   this.timeout(10000);
 
   const DEMO_APP_PATH = Resolve("bin/app.elf");
@@ -119,18 +111,65 @@ it("With Zemu get address", async function () {
       console.log(s);
   } )
 
-  // FIXME:
-  // WASM is sending uint8array.. but HTTP transport expects Buffer.. so BOOM.. it breaks..
-  // We can instrument and convert from Buffer to uint8array but ideally WASM should send the correct type...
-  transport.old_exchange = transport.exchange
-  transport.exchange = async (apdu) => {
-    console.log(apdu);
-    return transport.old_exchange( Buffer.from(apdu));
-  }
-
   var answer = await signer_wasm.keyRetrieveFromDevice(path, transport);
   console.log(answer);
   // FIXME: The reply is not correct. Ideally, we need to return the error code, etc
   // We should be as backwards compatible as possible to what we already have
+
+})
+
+it.skip("With Zemu show address", async function () {
+  this.timeout(10000);
+
+  const DEMO_APP_PATH = Resolve("bin/app.elf");
+  const sim = new Zemu(DEMO_APP_PATH);
+  await sim.start(SIM_OPTIONS);
+
+  const transport = sim.getTransport()
+  const path = "m/44'/461'/5/0/3";
+
+  // Subscribe to transport events to see what is going on...
+  LogListen( (s) => {
+      console.log(s);
+  } )
+
+  const respRequest = signer_wasm.showKeyOnDevice(path, transport);
+  await Zemu.sleep(2000);
+
+  // click right
+  await sim.clickRight();
+  await sim.clickRight();
+  await sim.clickRight();
+  await sim.clickRight();
+  await sim.clickBoth();
+
+  const answer = await respRequest;
+  console.log(answer);
+
+})
+
+it("With Zemu signature", async function () {
+  this.timeout(50000);
+
+  const DEMO_APP_PATH = Resolve("bin/app.elf");
+  const sim = new Zemu(DEMO_APP_PATH);
+  await sim.start(SIM_OPTIONS);
+
+  const transport = sim.getTransport()
+  const path = "m/44'/461'/5/0/3";
+
+  const message = Buffer.from(
+    "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040",
+    "hex",
+  );
+
+  // Subscribe to transport events to see what is going on...
+  LogListen( (s) => {
+      console.log(s);
+  } )
+
+  const answer = await signer_wasm.transactionSignRawWithDevice(message, path, transport);
+
+  console.log(answer);
 
 })

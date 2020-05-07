@@ -89,6 +89,27 @@ pub struct Version {
     pub patch: u8,
 }
 
+/// FilecoinApp App Info Answer
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct AppInfo {
+    /// Name of the application
+    pub app_name: String,
+    /// App version
+    pub app_version: String,
+    /// Flag length
+    pub flag_len: u8,
+    /// Flag value
+    pub flags_value: u8,
+    /// Flag Recovery
+    pub flag_recovery: bool,
+    /// Flag Signed MCU code
+    pub flag_signed_mcu_code: bool,
+    /// Flag Onboarded
+    pub flag_onboarded: bool,
+    /// Flag Pin Validated
+    pub flag_pin_validated: bool,
+}
+
 impl FilecoinApp {
     /// Connect to the Ledger App
     pub fn connect(apdu_transport: ApduTransport) -> Result<Self, LedgerError> {
@@ -248,5 +269,39 @@ impl FilecoinApp {
         let signature = Signature { r, s, v, sig };
 
         Ok(signature)
+    }
+
+    /// Retrieve the app info
+    pub async fn get_info(&self) -> Result<AppInfo, LedgerError> {
+        let command = ApduCommand {
+            cla: CLA_INFO,
+            ins: INS_INFO,
+            p1: 0x00,
+            p2: 0x00,
+            length: 0,
+            data: Vec::new(),
+        };
+
+        let response = self.apdu_transport.exchange(command).await?;
+        if response.retcode != APDUErrorCodes::NoError as u16 {
+            return Err(LedgerError::InvalidVersion);
+        }
+
+        if response.data.len() < 4 {
+            return Err(LedgerError::InvalidVersion);
+        }
+
+        let app_info = AppInfo {
+            app_name: "test".to_string(),
+            app_version: "test".to_string(),
+            flag_len: 0x01,
+            flags_value: 0x01,
+            flag_recovery: true,
+            flag_signed_mcu_code: true,
+            flag_onboarded: true,
+            flag_pin_validated: true,
+        };
+
+        Ok(app_info)
     }
 }
