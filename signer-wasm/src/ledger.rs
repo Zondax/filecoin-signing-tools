@@ -7,7 +7,7 @@ use filecoin_signer_ledger::{ApduTransport, TransportWrapperTrait};
 
 use bip44::BIP44Path;
 
-use crate::utils::{Buffer, address_to_object, signature_to_object, bytes_to_buffer};
+use crate::utils::{address_to_object, bytes_to_buffer, signature_to_object, Buffer};
 
 // lifted from the `console_log` example
 #[wasm_bindgen]
@@ -52,9 +52,7 @@ pub async fn get_version(transport_wrapper: TransportWrapper) -> Promise {
 
     // FIXME: Do this automatically to simplify this code
     match v_result {
-        Ok(v) => {
-            Promise::resolve(&JsValue::from_serde(&v).unwrap())
-        },
+        Ok(v) => Promise::resolve(&JsValue::from_serde(&v).unwrap()),
         Err(err) => {
             let error = Error {
                 return_code: 0x6f00,

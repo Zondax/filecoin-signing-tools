@@ -19,9 +19,20 @@ pub fn address_to_object(address: &Address) -> Object {
         &obj,
         &"compressed_pk".into(),
         &Buffer::from(&address.public_key.serialize().to_vec()),
-    ).unwrap();
-    js_sys::Reflect::set(&obj, &"addrString".into(), &JsValue::from_str(&address.addr_string)).unwrap();
-    js_sys::Reflect::set(&obj, &"addrByte".into(), &Buffer::from(&address.addr_byte.to_vec())).unwrap();
+    )
+    .unwrap();
+    js_sys::Reflect::set(
+        &obj,
+        &"addrString".into(),
+        &JsValue::from_str(&address.addr_string),
+    )
+    .unwrap();
+    js_sys::Reflect::set(
+        &obj,
+        &"addrByte".into(),
+        &Buffer::from(&address.addr_byte.to_vec()),
+    )
+    .unwrap();
 
     obj
 }
@@ -29,16 +40,21 @@ pub fn address_to_object(address: &Address) -> Object {
 /// Convert a signature answer into a javascript object with proper buffer field
 pub fn signature_to_object(signature: &Signature) -> Object {
     let obj = js_sys::Object::new();
-    
+
     js_sys::Reflect::set(
         &obj,
         &"signature_compact".into(),
         &Buffer::from(&signature.sig.serialize().to_vec()),
-    ).unwrap();
-    js_sys::Reflect::set(&obj, &"signature_der".into(), &Buffer::from(&signature.sig.serialize_der().as_ref().to_vec())).unwrap();
+    )
+    .unwrap();
+    js_sys::Reflect::set(
+        &obj,
+        &"signature_der".into(),
+        &Buffer::from(&signature.sig.serialize_der().as_ref().to_vec()),
+    )
+    .unwrap();
     js_sys::Reflect::set(&obj, &"r".into(), &Buffer::from(&signature.r)).unwrap();
     js_sys::Reflect::set(&obj, &"s".into(), &Buffer::from(&signature.s)).unwrap();
-
 
     obj
 }

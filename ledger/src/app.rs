@@ -290,7 +290,9 @@ impl FilecoinApp {
 
         let response = self.apdu_transport.exchange(command).await?;
         if response.retcode != APDUErrorCodes::NoError as u16 {
-            return Err(LedgerError::TransportError(TransportError::APDUExchangeError));
+            return Err(LedgerError::TransportError(
+                TransportError::APDUExchangeError,
+            ));
         }
 
         if response.data[0] != 1 {
@@ -341,27 +343,29 @@ impl FilecoinApp {
 
         let response = self.apdu_transport.exchange(command).await?;
         if response.retcode != APDUErrorCodes::NoError as u16 {
-            return Err(LedgerError::TransportError(TransportError::APDUExchangeError));
+            return Err(LedgerError::TransportError(
+                TransportError::APDUExchangeError,
+            ));
         }
 
         let target_id_slice = &response.data[0..4];
         let mut idx = 4;
         let se_version_len: usize = response.data[idx] as usize;
         idx += 1;
-        let se_version_bytes = &response.data[idx..idx+se_version_len];
+        let se_version_bytes = &response.data[idx..idx + se_version_len];
 
         idx += se_version_len;
 
         let flags_len: usize = response.data[idx] as usize;
         idx += 1;
-        let flag = &response.data[idx..idx+flags_len];
+        let flag = &response.data[idx..idx + flags_len];
         idx += flags_len;
 
         let mcu_version_len: usize = response.data[idx] as usize;
         idx += 1;
-        let mut tmp = &response.data[idx..idx+mcu_version_len];
+        let mut tmp = &response.data[idx..idx + mcu_version_len];
         if tmp[mcu_version_len - 1] == 0 {
-          tmp = &response.data[idx..idx+mcu_version_len-1];
+            tmp = &response.data[idx..idx + mcu_version_len - 1];
         }
 
         let mut target_id = [Default::default(); 4];
