@@ -19,8 +19,7 @@
 #![deny(unused_import_braces, unused_qualifications)]
 #![deny(missing_docs)]
 
-use crate::{APDUErrorCodes, ApduAnswer, ApduCommand, ApduTransport};
-use serde::ser::{SerializeStruct, Serializer};
+use crate::{APDUErrorCodes, ApduAnswer, ApduCommand, ApduTransport, TransportError};
 use serde::{Deserialize, Serialize};
 
 use crate::params::*;
@@ -47,20 +46,6 @@ pub struct Address {
     pub addr_string: String,
 }
 
-impl Serialize for Address {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        // 3 is the number of fields in the struct.
-        let mut state = serializer.serialize_struct("Address", 3)?;
-        state.serialize_field("public_key", &self.public_key.serialize().to_vec())?;
-        state.serialize_field("addr_byte", &self.addr_byte)?;
-        state.serialize_field("addr_string", &self.addr_string)?;
-        state.end()
-    }
-}
-
 /// FilecoinApp signature (includes R, S, V and der format)
 pub struct Signature {
     /// r value
@@ -80,6 +65,7 @@ pub struct Signature {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Version {
     /// Application Mode
+    #[serde(rename(serialize = "test_mode"))]
     pub mode: u8,
     /// Version Major
     pub major: u8,
@@ -93,12 +79,16 @@ pub struct Version {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AppInfo {
     /// Name of the application
+    #[serde(rename(serialize = "appName"))]
     pub app_name: String,
     /// App version
+    #[serde(rename(serialize = "appVersion"))]
     pub app_version: String,
     /// Flag length
+    #[serde(rename(serialize = "flagLen"))]
     pub flag_len: u8,
     /// Flag value
+    #[serde(rename(serialize = "flagsValue"))]
     pub flags_value: u8,
     /// Flag Recovery
     pub flag_recovery: bool,
@@ -108,6 +98,22 @@ pub struct AppInfo {
     pub flag_onboarded: bool,
     /// Flag Pin Validated
     pub flag_pin_validated: bool,
+}
+
+/// Ledger Device Info Answer
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct DeviceInfo {
+    /// Target ID
+    #[serde(rename(serialize = "targetId"))]
+    pub target_id: [u8; 4],
+    /// Secure Element Version
+    #[serde(rename(serialize = "seVersion"))]
+    pub se_version: String,
+    /// Device Flag
+    pub flag: Vec<u8>,
+    /// MCU Version
+    #[serde(rename(serialize = "mcuVersion"))]
+    pub mcu_version: String,
 }
 
 impl FilecoinApp {
@@ -272,10 +278,10 @@ impl FilecoinApp {
     }
 
     /// Retrieve the app info
-    pub async fn get_info(&self) -> Result<AppInfo, LedgerError> {
+    pub async fn get_app_info(&self) -> Result<AppInfo, LedgerError> {
         let command = ApduCommand {
-            cla: CLA_INFO,
-            ins: INS_INFO,
+            cla: CLA_APP_INFO,
+            ins: INS_APP_INFO,
             p1: 0x00,
             p2: 0x00,
             length: 0,
@@ -284,24 +290,93 @@ impl FilecoinApp {
 
         let response = self.apdu_transport.exchange(command).await?;
         if response.retcode != APDUErrorCodes::NoError as u16 {
-            return Err(LedgerError::InvalidVersion);
+            return Err(LedgerError::TransportError(TransportError::APDUExchangeError));
         }
 
-        if response.data.len() < 4 {
-            return Err(LedgerError::InvalidVersion);
+        if response.data[0] != 1 {
+            return Err(LedgerError::InvalidFormatID);
         }
+
+        let app_name_len: usize = response.data[1] as usize;
+        let app_name_bytes = &response.data[2..app_name_len];
+
+        let mut idx = 2 + app_name_len;
+        let app_version_len: usize = response.data[idx] as usize;
+        idx += 1;
+        let app_version_bytes = &response.data[idx..idx + app_version_len];
+
+        idx += app_version_len;
+
+        let app_flags_len = response.data[idx];
+        idx += 1;
+        let flags_value = response.data[idx];
+
+        let app_name = str::from_utf8(app_name_bytes).map_err(|_e| LedgerError::Utf8)?;
+        let app_version = str::from_utf8(app_version_bytes).map_err(|_e| LedgerError::Utf8)?;
 
         let app_info = AppInfo {
-            app_name: "test".to_string(),
-            app_version: "test".to_string(),
-            flag_len: 0x01,
-            flags_value: 0x01,
-            flag_recovery: true,
-            flag_signed_mcu_code: true,
-            flag_onboarded: true,
-            flag_pin_validated: true,
+            app_name: app_name.to_string(),
+            app_version: app_version.to_string(),
+            flag_len: app_flags_len,
+            flags_value: flags_value,
+            flag_recovery: (flags_value & 1) != 0,
+            flag_signed_mcu_code: (flags_value & 2) != 0,
+            flag_onboarded: (flags_value & 4) != 0,
+            flag_pin_validated: (flags_value & 128) != 0,
         };
 
         Ok(app_info)
+    }
+
+    /// Retrieve the app info
+    pub async fn get_device_info(&self) -> Result<DeviceInfo, LedgerError> {
+        let command = ApduCommand {
+            cla: CLA_DEVICE_INFO,
+            ins: INS_DEVICE_INFO,
+            p1: 0x00,
+            p2: 0x00,
+            length: 0,
+            data: Vec::new(),
+        };
+
+        let response = self.apdu_transport.exchange(command).await?;
+        if response.retcode != APDUErrorCodes::NoError as u16 {
+            return Err(LedgerError::TransportError(TransportError::APDUExchangeError));
+        }
+
+        let target_id_slice = &response.data[0..4];
+        let mut idx = 4;
+        let se_version_len: usize = response.data[idx] as usize;
+        idx += 1;
+        let se_version_bytes = &response.data[idx..idx+se_version_len];
+
+        idx += se_version_len;
+
+        let flags_len: usize = response.data[idx] as usize;
+        idx += 1;
+        let flag = &response.data[idx..idx+flags_len];
+        idx += flags_len;
+
+        let mcu_version_len: usize = response.data[idx] as usize;
+        idx += 1;
+        let mut tmp = &response.data[idx..idx+mcu_version_len];
+        if tmp[mcu_version_len - 1] == 0 {
+          tmp = &response.data[idx..idx+mcu_version_len-1];
+        }
+
+        let mut target_id = [Default::default(); 4];
+        target_id.copy_from_slice(target_id_slice);
+
+        let se_version = str::from_utf8(se_version_bytes).map_err(|_e| LedgerError::Utf8)?;
+        let mcu_version = str::from_utf8(tmp).map_err(|_e| LedgerError::Utf8)?;
+
+        let device_info = DeviceInfo {
+            target_id,
+            se_version: se_version.to_string(),
+            flag: flag.to_vec(),
+            mcu_version: mcu_version.to_string(),
+        };
+
+        Ok(device_info)
     }
 }

@@ -49,12 +49,11 @@ describe("LEDGER TEST", function () {
   })
 
   it("#getVersionFromDevice()", async function() {
-    const resp = await signer.getVersionFromDevice(transport);
+    const resp = await signer.getVersion(transport);
 
     // eslint-disable-next-line no-console
     console.log(resp);
 
-    assert.strictEqual(resp.error_message, "No errors");
     assert("test_mode" in resp);
     assert("major" in resp);
     assert("minor" in resp);
@@ -68,12 +67,6 @@ describe("LEDGER TEST", function () {
 
     // eslint-disable-next-line no-console
     console.log(resp);
-
-    //expect(resp.return_code).toEqual(ERROR_CODE.NoError);
-    assert.strictEqual(
-      resp.error_message,
-      "No errors"
-    );
 
     assert("addrByte" in resp);
     assert("addrString" in resp);
@@ -116,9 +109,6 @@ describe("LEDGER TEST", function () {
     // eslint-disable-next-line no-console
     console.log(resp);
 
-    assert.strictEqual(resp.return_code, 0x9000);
-    assert.strictEqual(resp.error_message, "No errors");
-
     assert("addrByte" in resp);
     assert("addrString" in resp);
     assert("compressed_pk" in resp);
@@ -147,9 +137,6 @@ describe("LEDGER TEST", function () {
     // eslint-disable-next-line no-console
     console.log(resp);
 
-    assert.strictEqual(resp.return_code, 0x9000);
-    assert.strictEqual(resp.error_message, "No errors");
-
     assert("addrByte" in resp);
     assert("addrString" in resp);
     assert("compressed_pk" in resp);
@@ -172,13 +159,10 @@ describe("LEDGER TEST", function () {
   });
 
   it("#appInfo()", async function() {
-    const resp = await signer.appInfo(session);
+    const resp = await signer.appInfo(transport);
 
     // eslint-disable-next-line no-console
     console.log(resp);
-
-    assert.strictEqual(resp.return_code, 0x9000);
-    assert.strictEqual(resp.error_message, "No errors");
 
     assert("appName" in resp);
     assert("appVersion" in resp);
@@ -195,9 +179,6 @@ describe("LEDGER TEST", function () {
 
     // eslint-disable-next-line no-console
     console.log(resp);
-
-    assert.strictEqual(resp.return_code, 0x9000);
-    assert.strictEqual(resp.error_message, "No errors");
 
     assert("targetId" in resp);
     assert("seVersion" in resp);
@@ -226,11 +207,6 @@ describe("LEDGER TEST", function () {
     const responseSign = await responseRequest;
 
     console.log(responseSign)
-
-    assert.strictEqual(responsePk.return_code, 0x9000);
-    assert.strictEqual(responsePk.error_message, "No errors");
-    assert.strictEqual(responseSign.return_code, 0x9000);
-    assert.strictEqual(responseSign.error_message, "No errors");
 
     // Calculate message digest
     const msgDigest = getDigest(message);
@@ -276,11 +252,6 @@ describe("LEDGER TEST", function () {
     const responseSign = await responseRequest;
 
     console.log(responseSign);
-
-    assert.strictEqual(responsePk.return_code, 0x9000);
-    assert.strictEqual(responsePk.error_message, "No errors");
-    assert.strictEqual(responseSign.return_code, 0x9000);
-    assert.strictEqual(responseSign.error_message, "No errors");
 
     // Calculate message digest
     const msgDigest = getDigest(message);

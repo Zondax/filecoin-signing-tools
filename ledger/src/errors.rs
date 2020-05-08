@@ -51,5 +51,8 @@ pub enum LedgerError {
     /// Utf8 related errors
     #[error("Utf8 conversion error")]
     Utf8,
+    /// Format ID error
+    #[error("response format ID not recognized")]
+    InvalidFormatID,
     // FIXME: We need to expose Ledger specific erros, including error code
 }

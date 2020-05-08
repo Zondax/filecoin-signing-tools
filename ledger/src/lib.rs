@@ -31,6 +31,7 @@ pub mod errors;
 #[cfg(target_arch = "wasm32")]
 pub use ledger_transport::TransportWrapperTrait;
 pub use ledger_transport::{APDUErrorCodes, ApduAnswer, ApduCommand, ApduTransport};
+pub use ledger_transport::errors::TransportError;
 
 /// Filecoin app
 pub mod app;

@@ -6,6 +6,8 @@ use filecoin_signer::utils::{from_hex_string, to_hex_string};
 use filecoin_signer::{CborBuffer, PrivateKey};
 use std::convert::TryFrom;
 
+mod utils;
+
 #[cfg(target_arch = "wasm32")]
 pub mod ledger;
 
