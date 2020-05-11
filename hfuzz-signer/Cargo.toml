@@ -1,0 +1,8 @@
+[package]
+name = "hfuzz-signer"
+version = "0.0.0"
+authors = ["Zondax <info@zondax.ch>"]
+edition = "2018"
+
+[dependencies]
+honggfuzz = "0.5"

@@ -22,3 +22,5 @@ examples/wasm_node/yarn-error.log
 /.tree_*
 
 examples/wasm_browser/yarn.lock
+/hfuzz_target/
+/hfuzz_workspace/

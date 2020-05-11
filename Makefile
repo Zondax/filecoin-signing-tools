@@ -83,3 +83,7 @@ docs_build:
 tree:
 	cargo tree --manifest-path signer-wasm/Cargo.toml > .tree_signer_wasm
 	cargo tree --manifest-path signer/Cargo.toml > .tree_signer
+
+fuzz_signer:
+	cargo hfuzz run hfuzz-signer-zondax
+
