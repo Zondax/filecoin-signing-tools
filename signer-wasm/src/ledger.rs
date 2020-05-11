@@ -3,7 +3,7 @@ use js_sys::Promise;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
-use filecoin_signer_ledger::{ApduTransport, TransportWrapperTrait};
+use filecoin_signer_ledger::{APDUTransport, TransportWrapperTrait};
 
 use bip44::BIP44Path;
 
@@ -25,6 +25,7 @@ pub struct Error {
     pub error_message: String,
 }
 
+
 #[wasm_bindgen(module = "/transportWrapper.js")]
 extern "C" {
     pub type TransportWrapper;
@@ -42,7 +43,7 @@ impl TransportWrapperTrait for TransportWrapper {
 #[wasm_bindgen]
 pub async fn get_version(transport_wrapper: TransportWrapper) -> Promise {
     let tmp = Box::new(transport_wrapper);
-    let apdu_transport = ApduTransport {
+    let apdu_transport = APDUTransport {
         transport_wrapper: tmp,
     };
 
@@ -52,7 +53,9 @@ pub async fn get_version(transport_wrapper: TransportWrapper) -> Promise {
 
     // FIXME: Do this automatically to simplify this code
     match v_result {
-        Ok(v) => Promise::resolve(&JsValue::from_serde(&v).unwrap()),
+        Ok(v) => {
+            Promise::resolve(&JsValue::from_serde(&v).unwrap())
+        },
         Err(err) => {
             let error = Error {
                 return_code: 0x6f00,
@@ -71,7 +74,7 @@ pub async fn key_retrieve_from_device(
     transport_wrapper: TransportWrapper,
 ) -> Promise {
     let tmp = Box::new(transport_wrapper);
-    let apdu_transport = ApduTransport {
+    let apdu_transport = APDUTransport {
         transport_wrapper: tmp,
     };
 
@@ -79,7 +82,9 @@ pub async fn key_retrieve_from_device(
     let app = filecoin_signer_ledger::app::FilecoinApp::connect(apdu_transport).unwrap();
 
     // FIXME: reconcile BIP44Path different implementation
-    let bip44_path = BIP44Path::from_string(&path).unwrap();
+    let bip44_path = BIP44Path::from_string(&path).map_err(|_e| {
+        Promise::reject(&JsValue::from_str("Invalid BIP44 Path"))
+    }).unwrap();
 
     let a_result = app.get_address(&bip44_path, false).await;
 
@@ -104,14 +109,16 @@ pub async fn key_retrieve_from_device(
 #[wasm_bindgen]
 pub async fn show_key_on_device(path: String, transport_wrapper: TransportWrapper) -> Promise {
     let tmp = Box::new(transport_wrapper);
-    let apdu_transport = ApduTransport {
+    let apdu_transport = APDUTransport {
         transport_wrapper: tmp,
     };
 
     // FIXME: handle the error
     let app = filecoin_signer_ledger::app::FilecoinApp::connect(apdu_transport).unwrap();
 
-    let bip44_path = BIP44Path::from_string(&path).unwrap();
+    let bip44_path = BIP44Path::from_string(&path).map_err(|_e| {
+        Promise::reject(&js_sys::Error::new("Invalid BIP44 Path"))
+    }).unwrap();
 
     let a_result = app.get_address(&bip44_path, true).await;
 
@@ -140,14 +147,16 @@ pub async fn transaction_sign_raw_with_device(
     transport_wrapper: TransportWrapper,
 ) -> Promise {
     let tmp = Box::new(transport_wrapper);
-    let apdu_transport = ApduTransport {
+    let apdu_transport = APDUTransport {
         transport_wrapper: tmp,
     };
 
     // FIXME: handle the error
     let app = filecoin_signer_ledger::app::FilecoinApp::connect(apdu_transport).unwrap();
 
-    let bip44_path = BIP44Path::from_string(&path).unwrap();
+    let bip44_path = BIP44Path::from_string(&path).map_err(|_e| {
+        Promise::reject(&js_sys::Error::new("Invalid BIP44 Path"))
+    }).unwrap();
 
     let s_result = app.sign(&bip44_path, &message).await;
 
@@ -172,7 +181,7 @@ pub async fn transaction_sign_raw_with_device(
 #[wasm_bindgen]
 pub async fn app_info(transport_wrapper: TransportWrapper) -> Promise {
     let tmp = Box::new(transport_wrapper);
-    let apdu_transport = ApduTransport {
+    let apdu_transport = APDUTransport {
         transport_wrapper: tmp,
     };
 
@@ -201,7 +210,7 @@ pub async fn app_info(transport_wrapper: TransportWrapper) -> Promise {
 #[wasm_bindgen]
 pub async fn device_info(transport_wrapper: TransportWrapper) -> Promise {
     let tmp = Box::new(transport_wrapper);
-    let apdu_transport = ApduTransport {
+    let apdu_transport = APDUTransport {
         transport_wrapper: tmp,
     };
 

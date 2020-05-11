@@ -19,7 +19,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 /// Filecoin App Error
-#[derive(Copy, Clone, Debug, Eq, Error, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, Error, PartialEq, Deserialize, Serialize)]
 pub enum LedgerError {
     /// Invalid version error
     #[error("This version is not supported")]

@@ -19,7 +19,7 @@
 #![deny(unused_import_braces, unused_qualifications)]
 #![deny(missing_docs)]
 
-use crate::{APDUErrorCodes, ApduAnswer, ApduCommand, ApduTransport, TransportError};
+use crate::{APDUErrorCodes, APDUAnswer, APDUCommand, APDUTransport, TransportError};
 use serde::{Deserialize, Serialize};
 
 use crate::params::*;
@@ -30,7 +30,7 @@ use std::str;
 
 /// Filecoin App
 pub struct FilecoinApp {
-    apdu_transport: ApduTransport,
+    apdu_transport: APDUTransport,
 }
 
 /// FilecoinApp address (includes pubkey and the corresponding ss58 address)
@@ -118,13 +118,13 @@ pub struct DeviceInfo {
 
 impl FilecoinApp {
     /// Connect to the Ledger App
-    pub fn connect(apdu_transport: ApduTransport) -> Result<Self, LedgerError> {
+    pub fn connect(apdu_transport: APDUTransport) -> Result<Self, LedgerError> {
         Ok(FilecoinApp { apdu_transport })
     }
 
     /// Retrieve the app version
     pub async fn get_version(&self) -> Result<Version, LedgerError> {
-        let command = ApduCommand {
+        let command = APDUCommand {
             cla: CLA,
             ins: INS_GET_VERSION,
             p1: 0x00,
@@ -161,7 +161,7 @@ impl FilecoinApp {
         let serialized_path = path.serialize();
         let p1 = if require_confirmation { 1 } else { 0 };
 
-        let command = ApduCommand {
+        let command = APDUCommand {
             cla: CLA,
             ins: INS_GET_ADDR_SECP256K1,
             p1,
@@ -220,9 +220,9 @@ impl FilecoinApp {
         }
 
         let packet_count = chunks.len() as u8;
-        let mut response: ApduAnswer;
+        let mut response: APDUAnswer;
 
-        let _command = ApduCommand {
+        let _command = APDUCommand {
             cla: CLA,
             ins: INS_SIGN_SECP256K1,
             p1: PayloadType::Init as u8,
@@ -240,7 +240,7 @@ impl FilecoinApp {
                 p1 = PayloadType::Last as u8
             }
 
-            let _command = ApduCommand {
+            let _command = APDUCommand {
                 cla: CLA,
                 ins: INS_SIGN_SECP256K1,
                 p1,
@@ -279,7 +279,7 @@ impl FilecoinApp {
 
     /// Retrieve the app info
     pub async fn get_app_info(&self) -> Result<AppInfo, LedgerError> {
-        let command = ApduCommand {
+        let command = APDUCommand {
             cla: CLA_APP_INFO,
             ins: INS_APP_INFO,
             p1: 0x00,
@@ -332,7 +332,7 @@ impl FilecoinApp {
 
     /// Retrieve the app info
     pub async fn get_device_info(&self) -> Result<DeviceInfo, LedgerError> {
-        let command = ApduCommand {
+        let command = APDUCommand {
             cla: CLA_DEVICE_INFO,
             ins: INS_DEVICE_INFO,
             p1: 0x00,

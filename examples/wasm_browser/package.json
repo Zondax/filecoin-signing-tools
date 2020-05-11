@@ -7,7 +7,8 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --config webpack.config.js",
-    "start": "webpack-dev-server"
+    "start": "webpack-dev-server",
+    "certificate": "openssl req -nodes -config certs/openssl.cnf -new -x509 -keyout certs/server.key -out certs/server.cert; openssl x509 -in certs/server.cert -out certs/cert.pem -outform PEM"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,8 @@
     "filecoin"
   ],
   "dependencies": {
+    "@ledgerhq/hw-transport-u2f": "^5.15.0",
+    "@ledgerhq/hw-transport-webusb": "^5.15.0",
     "@zondax/filecoin-signer-wasm": "^0"
   },
   "devDependencies": {
