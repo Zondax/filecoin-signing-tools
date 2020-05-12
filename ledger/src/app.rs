@@ -19,7 +19,7 @@
 #![deny(unused_import_braces, unused_qualifications)]
 #![deny(missing_docs)]
 
-use crate::{APDUErrorCodes, APDUAnswer, APDUCommand, APDUTransport, TransportError};
+use crate::{APDUAnswer, APDUCommand, APDUErrorCodes, APDUTransport, TransportError};
 use serde::{Deserialize, Serialize};
 
 use crate::params::*;

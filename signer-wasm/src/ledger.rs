@@ -25,7 +25,6 @@ pub struct Error {
     pub error_message: String,
 }
 
-
 #[wasm_bindgen(module = "/transportWrapper.js")]
 extern "C" {
     pub type TransportWrapper;
@@ -53,9 +52,7 @@ pub async fn get_version(transport_wrapper: TransportWrapper) -> Promise {
 
     // FIXME: Do this automatically to simplify this code
     match v_result {
-        Ok(v) => {
-            Promise::resolve(&JsValue::from_serde(&v).unwrap())
-        },
+        Ok(v) => Promise::resolve(&JsValue::from_serde(&v).unwrap()),
         Err(err) => {
             let error = Error {
                 return_code: 0x6f00,
@@ -82,9 +79,9 @@ pub async fn key_retrieve_from_device(
     let app = filecoin_signer_ledger::app::FilecoinApp::connect(apdu_transport).unwrap();
 
     // FIXME: reconcile BIP44Path different implementation
-    let bip44_path = BIP44Path::from_string(&path).map_err(|_e| {
-        Promise::reject(&JsValue::from_str("Invalid BIP44 Path"))
-    }).unwrap();
+    let bip44_path = BIP44Path::from_string(&path)
+        .map_err(|_e| Promise::reject(&JsValue::from_str("Invalid BIP44 Path")))
+        .unwrap();
 
     let a_result = app.get_address(&bip44_path, false).await;
 
@@ -116,9 +113,9 @@ pub async fn show_key_on_device(path: String, transport_wrapper: TransportWrappe
     // FIXME: handle the error
     let app = filecoin_signer_ledger::app::FilecoinApp::connect(apdu_transport).unwrap();
 
-    let bip44_path = BIP44Path::from_string(&path).map_err(|_e| {
-        Promise::reject(&js_sys::Error::new("Invalid BIP44 Path"))
-    }).unwrap();
+    let bip44_path = BIP44Path::from_string(&path)
+        .map_err(|_e| Promise::reject(&js_sys::Error::new("Invalid BIP44 Path")))
+        .unwrap();
 
     let a_result = app.get_address(&bip44_path, true).await;
 
@@ -154,9 +151,9 @@ pub async fn transaction_sign_raw_with_device(
     // FIXME: handle the error
     let app = filecoin_signer_ledger::app::FilecoinApp::connect(apdu_transport).unwrap();
 
-    let bip44_path = BIP44Path::from_string(&path).map_err(|_e| {
-        Promise::reject(&js_sys::Error::new("Invalid BIP44 Path"))
-    }).unwrap();
+    let bip44_path = BIP44Path::from_string(&path)
+        .map_err(|_e| Promise::reject(&js_sys::Error::new("Invalid BIP44 Path")))
+        .unwrap();
 
     let s_result = app.sign(&bip44_path, &message).await;
 
