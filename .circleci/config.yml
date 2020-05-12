@@ -153,6 +153,7 @@ jobs:
     steps:
       - checkout
       - restore-sccache-cache
+      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev curl
       - run: cargo build
       - run:
           name: patch configuration file
