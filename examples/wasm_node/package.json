@@ -7,7 +7,6 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "test:ledger": "mocha test/test.ledger.js",
     "test:spec": "mocha test/test.spec.js",
     "test:legacy": "mocha test/test.legacy.js"
   },

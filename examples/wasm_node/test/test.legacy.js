@@ -5,75 +5,7 @@ const secp256k1 = require('secp256k1/elliptic');
 const utils = require('./utils');
 const serializePathv1 = require('@zondax/filecoin-signer').serializePathv1;
 var assert = require('assert');
-
-/*
-  Legacy test for serializePathv1
-  but this will soon be serialize inside rust
-*/
-describe("SerializePathv1", function() {
-  it("serializePathv1", function() {
-    const path = "m/44'/461'/0/0/5";
-    const buf = Buffer.alloc(20);
-    buf.writeUInt32LE(0x80000000 + 44, 0);
-    buf.writeUInt32LE(0x80000000 + 461, 4);
-    buf.writeUInt32LE(0, 8);
-    buf.writeUInt32LE(0, 12);
-    buf.writeUInt32LE(5, 16);
-
-    const bufPath = serializePathv1(path);
-
-    assert.deepStrictEqual(bufPath, buf);
-  });
-
-  it("serializePathv1 should be a string", function() {
-    const path = [44, 461, 0, 2, 3];
-
-    assert.throws(() => {
-      serializePathv1(path);
-    }, /Path should be a string/);
-  });
-
-  it("serializePathv1 doesn't start with 'm'", function() {
-    const path = "/44'/461'/0/0/5";
-
-    assert.throws(() => {
-      serializePathv1(path);
-    }, /Path should start with "m"/);
-  });
-
-  it("serializePathv1 length needs to be 5", function() {
-    const path = "m/44'/461'/0/0";
-
-    assert.throws(() => {
-      serializePathv1(path);
-    }, /Invalid path/);
-  });
-
-  it("serializePathv1 invalid number", function() {
-    const path = "m/44'/461'/0/0/l";
-
-    assert.throws(() => {
-      serializePathv1(path);
-    }, /Invalid path : l is not a number/);
-  });
-
-  it("serializePathv1 bigger than 0x80000000", function() {
-    const path = "m/44'/461'/0/0/2147483648";
-
-    assert.throws(() => {
-      serializePathv1(path);
-    }, "Error: Incorrect child value (bigger or equal to 0x80000000)");
-  });
-
-  it("serializePathv1 bigger than 0x80000000", function() {
-    const path = "m/44'/461'/0/0/2147483649";
-
-    assert.throws(() => {
-      serializePathv1(path);
-    }, "Error: Incorrect child value (bigger or equal to 0x80000000)");
-  });
-})
-
+  
 describe("Test for utils.js", function() {
   it("cidBytes", function() {
     const message = Buffer.from(
