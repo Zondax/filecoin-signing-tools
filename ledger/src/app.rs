@@ -129,7 +129,6 @@ impl FilecoinApp {
             ins: INS_GET_VERSION,
             p1: 0x00,
             p2: 0x00,
-            length: 0,
             data: Vec::new(),
         };
 
@@ -166,7 +165,6 @@ impl FilecoinApp {
             ins: INS_GET_ADDR_SECP256K1,
             p1,
             p2: 0x00,
-            length: 0,
             data: serialized_path,
         };
 
@@ -227,7 +225,6 @@ impl FilecoinApp {
             ins: INS_SIGN_SECP256K1,
             p1: PayloadType::Init as u8,
             p2: 0x00,
-            length: bip44path.len() as u8,
             data: bip44path,
         };
 
@@ -245,7 +242,6 @@ impl FilecoinApp {
                 ins: INS_SIGN_SECP256K1,
                 p1,
                 p2: 0,
-                length: chunk.len() as u8,
                 data: chunk.to_vec(),
             };
 
@@ -284,7 +280,6 @@ impl FilecoinApp {
             ins: INS_APP_INFO,
             p1: 0x00,
             p2: 0x00,
-            length: 0,
             data: Vec::new(),
         };
 
@@ -320,7 +315,7 @@ impl FilecoinApp {
             app_name: app_name.to_string(),
             app_version: app_version.to_string(),
             flag_len: app_flags_len,
-            flags_value: flags_value,
+            flags_value,
             flag_recovery: (flags_value & 1) != 0,
             flag_signed_mcu_code: (flags_value & 2) != 0,
             flag_onboarded: (flags_value & 4) != 0,
@@ -337,7 +332,6 @@ impl FilecoinApp {
             ins: INS_DEVICE_INFO,
             p1: 0x00,
             p2: 0x00,
-            length: 0,
             data: Vec::new(),
         };
 
