@@ -8,7 +8,7 @@
   "scripts": {
     "test:unit": "jest -c jest.config.unit.js --detectOpenHandles",
     "test:ledger": "mocha test/test.ledger.js",
-    "test:spec": "mocha test/test.spec.js",
+    "test:spec": "mocha test/test.spec.js"
   },
   "repository": {
     "type": "git",
