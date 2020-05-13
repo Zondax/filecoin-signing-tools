@@ -6,9 +6,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test:unit": "jest -c jest.config.unit.js --detectOpenHandles",
-    "test:ledger": "mocha test/test.ledger.js",
-    "test:spec": "mocha test/test.spec.js"
+    "test:ledger": "mocha test/test.ledger.js"
   },
   "repository": {
     "type": "git",
