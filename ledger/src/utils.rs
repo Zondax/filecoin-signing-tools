@@ -66,7 +66,7 @@ pub fn from_hex_string(s: &str) -> Result<Vec<u8>, DecodeError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::{from_hex_string, serialize_bip44, to_hex_string, BIP44Path};
+    use crate::utils::{from_hex_string, to_hex_string};
 
     #[test]
     fn example_to_hex() {
