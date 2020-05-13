@@ -8,7 +8,6 @@
   "scripts": {
     "test": "mocha",
     "test:spec": "mocha test/test.spec.js",
-    "test:legacy": "mocha test/test.legacy.js"
   },
   "repository": {
     "type": "git",

@@ -30,6 +30,9 @@ pub enum SignerError {
     /// BLS error
     #[error("bls error")]
     BLS(#[from] bls_signatures::Error),
+    /// Invalid BIP44Path
+    #[error("Invalid BIP44 path : `{0}`")]
+    InvalidBIP44Path(#[from] bip44::errors::BIP44PathError),
 }
 
 #[cfg(feature = "with-ffi-support")]
@@ -44,6 +47,7 @@ impl From<SignerError> for ffi_support::ExternError {
             SignerError::GenericString(_) => 6,
             SignerError::ParseIntError(_) => 7,
             SignerError::BLS(_) => 8,
+            SignerError::InvalidBIP44Path(_) => 9,
         };
         Self::new_error(ffi_support::ErrorCode::new(code), e.to_string())
     }

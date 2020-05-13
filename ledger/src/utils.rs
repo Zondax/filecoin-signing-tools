@@ -64,34 +64,6 @@ pub fn from_hex_string(s: &str) -> Result<Vec<u8>, DecodeError> {
     Ok(vec)
 }
 
-/// BIP44 Path
-pub struct BIP44Path {
-    /// Purpose
-    pub purpose: u32,
-    /// Coin
-    pub coin: u32,
-    /// Account
-    pub account: u32,
-    /// Change
-    pub change: u32,
-    /// Address Index
-    pub index: u32,
-}
-
-// FIXME: We are duplicating things here.. Ideally, we should converge the funcionality of the signer and this crate
-/// Serialize BIP44 path
-pub fn serialize_bip44(path: &BIP44Path) -> Vec<u8> {
-    use byteorder::{LittleEndian, WriteBytesExt};
-    let mut m = Vec::new();
-    let harden = 0x8000_0000;
-    m.write_u32::<LittleEndian>(harden | path.purpose).unwrap();
-    m.write_u32::<LittleEndian>(harden | path.coin).unwrap();
-    m.write_u32::<LittleEndian>(path.account).unwrap();
-    m.write_u32::<LittleEndian>(path.change).unwrap();
-    m.write_u32::<LittleEndian>(path.index).unwrap();
-    m
-}
-
 #[cfg(test)]
 mod tests {
     use crate::utils::{from_hex_string, serialize_bip44, to_hex_string, BIP44Path};
@@ -112,22 +84,5 @@ mod tests {
     fn example_from_hex_bad() {
         let input = "010";
         assert!(from_hex_string(&input).is_err());
-    }
-
-    #[test]
-    fn bip44() {
-        let path = BIP44Path {
-            purpose: 0x2c,
-            coin: 1,
-            account: 0x1234,
-            change: 0,
-            index: 0x5678,
-        };
-        let serialized_path = serialize_bip44(&path);
-        assert_eq!(serialized_path.len(), 20);
-        assert_eq!(
-            to_hex_string(&serialized_path),
-            "2c00008001000080341200000000000078560000"
-        );
     }
 }

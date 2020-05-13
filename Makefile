@@ -41,9 +41,6 @@ test_wasm: test_wasm_unit test_wasm_node
 test_ledger: link_wasm
 	cd examples/wasm_ledger && yarn install && yarn test:ledger
 
-test_ledger_legacy: link_wasm
-	cd examples/wasm_ledger && yarn install && yarn test:legacy
-
 deps_rust:
 	cargo install cargo-audit
 	cargo install cargo-tree

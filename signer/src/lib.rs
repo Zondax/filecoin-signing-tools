@@ -8,7 +8,8 @@ use forest_encoding::{from_slice, to_vec};
 use std::convert::TryFrom;
 use std::str::FromStr;
 
-use crate::bip44::{BIP44Path, ExtendedSecretKey};
+use crate::extended_key::ExtendedSecretKey;
+use bip44::BIP44Path;
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures;
 use bls_signatures::Serialize;
@@ -21,7 +22,7 @@ use secp256k1::{recover, sign, verify, Message, RecoveryId};
 use crate::signature::{Signature, SignatureBLS, SignatureSECP256K1};
 
 pub mod api;
-pub mod bip44;
+pub mod extended_key;
 pub mod error;
 pub mod signature;
 pub mod utils;
