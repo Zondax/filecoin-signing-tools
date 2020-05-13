@@ -110,8 +110,7 @@ pub fn key_derive(mnemonic: &str, path: &str, password: &str) -> Result<Extended
 
     let esk = master.derive_bip44(&bip44_path)?;
 
-    let mut address = Address::new_secp256k1(&esk.public_key().to_vec())
-        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+    let mut address = Address::new_secp256k1(&esk.public_key().to_vec());
 
     if bip44_path.is_testnet() {
         address.set_network(Network::Testnet);
@@ -141,8 +140,7 @@ pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, Sign
 
     let esk = master.derive_bip44(&bip44_path)?;
 
-    let mut address = Address::new_secp256k1(&esk.public_key().to_vec())
-        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+    let mut address = Address::new_secp256k1(&esk.public_key().to_vec());
 
     if bip44_path.is_testnet() {
         address.set_network(Network::Testnet);
@@ -168,8 +166,7 @@ pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, Sign
 pub fn key_recover(private_key: &PrivateKey, testnet: bool) -> Result<ExtendedKey, SignerError> {
     let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
     let public_key = secp256k1::PublicKey::from_secret_key(&secret_key);
-    let mut address = Address::new_secp256k1(&public_key.serialize())
-        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+    let mut address = Address::new_secp256k1(&public_key.serialize());
 
     if testnet {
         address.set_network(Network::Testnet);
@@ -325,8 +322,7 @@ fn verify_secp256k1_signature(
     let blob_to_sign = Message::parse_slice(&message_digest)?;
 
     let public_key = recover(&blob_to_sign, &signature_rs, &recovery_id)?;
-    let mut from = Address::new_secp256k1(&public_key.serialize_compressed().to_vec())
-        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+    let mut from = Address::new_secp256k1(&public_key.serialize_compressed().to_vec());
     from.set_network(network);
 
     let tx_from = match tx {
@@ -388,7 +384,7 @@ fn extract_from_pub_key_from_message(
     let unsigned_message_api = message.get_message();
     let from_address = Address::from_str(&unsigned_message_api.from)?;
 
-    let pk = bls_signatures::PublicKey::from_bytes(&from_address.payload())?;
+    let pk = bls_signatures::PublicKey::from_bytes(&from_address.payload_bytes())?;
 
     Ok(pk)
 }
@@ -590,7 +586,7 @@ mod tests {
     fn parse_signed_transaction() {
         let cbor_data = CborBuffer(from_hex_string(SIGNED_MESSAGE_CBOR).unwrap());
 
-        let signed_tx = transaction_parse(&cbor_data, true).expect("FIX ME");
+        let signed_tx = transaction_parse(&cbor_data, true).expect("Could not parse");
         let signature = match signed_tx {
             MessageTxAPI::UnsignedMessageAPI(_) => panic!("Should be a Signed Message!"),
             MessageTxAPI::SignedMessageAPI(tx) => tx.signature,
@@ -606,7 +602,7 @@ mod tests {
     fn parse_transaction_with_network() {
         let cbor_data = CborBuffer(from_hex_string(EXAMPLE_CBOR_DATA).unwrap());
 
-        let unsigned_tx_mainnet = transaction_parse(&cbor_data, false).expect("FIX ME");
+        let unsigned_tx_mainnet = transaction_parse(&cbor_data, false).expect("Could not parse");
         let (to, from) = match unsigned_tx_mainnet {
             MessageTxAPI::UnsignedMessageAPI(tx) => (tx.to, tx.from),
             MessageTxAPI::SignedMessageAPI(_) => panic!("Should be a Unsigned Message!"),
@@ -624,7 +620,7 @@ mod tests {
     fn parse_transaction_with_network_testnet() {
         let cbor_data = CborBuffer(from_hex_string(EXAMPLE_CBOR_DATA).unwrap());
 
-        let unsigned_tx_testnet = transaction_parse(&cbor_data, true).expect("FIX ME");
+        let unsigned_tx_testnet = transaction_parse(&cbor_data, true).expect("Could not parse");
         let (to, from) = match unsigned_tx_testnet {
             MessageTxAPI::UnsignedMessageAPI(tx) => (tx.to, tx.from),
             MessageTxAPI::SignedMessageAPI(_) => panic!("Should be a Unsigned Message!"),
@@ -642,7 +638,7 @@ mod tests {
     fn parse_transaction_signed_with_network() {
         let cbor_data = CborBuffer(from_hex_string(SIGNED_MESSAGE_CBOR).unwrap());
 
-        let signed_tx_mainnet = transaction_parse(&cbor_data, false).expect("FIX ME");
+        let signed_tx_mainnet = transaction_parse(&cbor_data, false).expect("Could not parse");
         let (to, from) = match signed_tx_mainnet {
             MessageTxAPI::UnsignedMessageAPI(_) => panic!("Should be a Signed Message!"),
             MessageTxAPI::SignedMessageAPI(tx) => (tx.message.to, tx.message.from),
@@ -660,7 +656,7 @@ mod tests {
     fn parse_transaction_signed_with_network_testnet() {
         let cbor_data = CborBuffer(from_hex_string(SIGNED_MESSAGE_CBOR).unwrap());
 
-        let signed_tx_testnet = transaction_parse(&cbor_data, true).expect("FIX ME");
+        let signed_tx_testnet = transaction_parse(&cbor_data, true).expect("Could not parse");
         let (to, from) = match signed_tx_testnet {
             MessageTxAPI::UnsignedMessageAPI(_) => panic!("Should be a Signed Message!"),
             MessageTxAPI::SignedMessageAPI(tx) => (tx.message.to, tx.message.from),
@@ -707,7 +703,8 @@ mod tests {
     #[test]
     fn sign_bls_transaction() {
         // Get address
-        let bls_address = Address::new_bls(from_hex_string(BLS_PUBKEY).unwrap()).unwrap();
+        let bls_pubkey = from_hex_string(BLS_PUBKEY).unwrap();
+        let bls_address = Address::new_bls(bls_pubkey.as_slice()).unwrap();
 
         // Get BLS private key
         let bls_key = PrivateKey::try_from(BLS_PRIVATEKEY.to_string()).unwrap();
@@ -757,7 +754,7 @@ mod tests {
             .map(|i| {
                 //Prepare transaction
                 let bls_public_key = private_keys[i].public_key();
-                let bls_address = Address::new_bls(bls_public_key.as_bytes()).unwrap();
+                let bls_address = Address::new_bls(&bls_public_key.as_bytes()).unwrap();
 
                 UnsignedMessageAPI {
                     to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
