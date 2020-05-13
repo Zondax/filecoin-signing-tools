@@ -9,8 +9,8 @@ use std::convert::TryFrom;
 use std::str::FromStr;
 
 use crate::extended_key::ExtendedSecretKey;
-use bip44::BIP44Path;
 use bip39::{Language, MnemonicType, Seed};
+use bip44::BIP44Path;
 use bls_signatures;
 use bls_signatures::Serialize;
 use rayon::prelude::*;
@@ -22,8 +22,8 @@ use secp256k1::{recover, sign, verify, Message, RecoveryId};
 use crate::signature::{Signature, SignatureBLS, SignatureSECP256K1};
 
 pub mod api;
-pub mod extended_key;
 pub mod error;
+pub mod extended_key;
 pub mod signature;
 pub mod utils;
 

@@ -2,12 +2,12 @@ use secp256k1::util::{COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_K
 use secp256k1::{PublicKey, SecretKey};
 
 use crate::error::SignerError;
+use bip44::BIP44Path;
 use hmac::{Hmac, Mac};
 use sha2::Sha512;
 use std::convert::TryFrom;
 use std::fmt;
 use zeroize::Zeroize;
-use bip44::BIP44Path;
 
 const HMAC_SEED: &[u8; 12] = b"Bitcoin seed";
 const HARDENED_BIT: u32 = 1 << 31;
@@ -122,8 +122,8 @@ impl ExtendedSecretKey {
 #[cfg(test)]
 mod tests {
     use crate::extended_key::ExtendedSecretKey;
-    use bip44::BIP44Path;
     use bip39::{Language, Mnemonic, Seed};
+    use bip44::BIP44Path;
     use hex::encode;
     use std::convert::TryFrom;
 
