@@ -23,7 +23,11 @@ jobs:
     steps:
       - checkout
       - restore-sccache-cache
+<<<<<<< HEAD
       - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
+=======
+      - run: sudo apt-get update -y && sudo apt-get install -y ocl-icd-opencl-dev
+>>>>>>> Install opencl in CI;
       - run:
           name: rustfmt
           command: |
@@ -47,7 +51,11 @@ jobs:
     steps:
       - checkout
       - restore-sccache-cache
+<<<<<<< HEAD
       - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
+=======
+      - run: sudo apt-get update -y && sudo apt-get install -y ocl-icd-opencl-dev
+>>>>>>> Install opencl in CI;
       - run:
           name: rust unit tests --all-features
           command: |
@@ -65,7 +73,7 @@ jobs:
       - run:
           name: External dependencies
           command: |
-            sudo apt-get install -y clang default-jdk g++ gcc gnustep gnustep-devel gobjc golang libicu-dev libtinfo5 valgrind
+            sudo apt-get install -y clang default-jdk g++ gcc gnustep gnustep-devel gobjc golang libicu-dev libtinfo5 valgrind ocl-icd-opencl-dev
       - run:
           name: Cbindgen
           command: |
@@ -95,7 +103,7 @@ jobs:
     docker:
       - image: zondax/rust-ci:latest
     steps:
-      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
+      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev ocl-icd-opencl-dev
       - checkout
       - run: cargo --version
       - restore-sccache-cache
@@ -114,7 +122,7 @@ jobs:
     environment:
       BASH_ENV: "/opt/circleci/.nvm/nvm.sh"
     steps:
-      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev curl
+      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev curl ocl-icd-opencl-dev
       - run:
           name: Install rustup
           command: |
@@ -153,7 +161,11 @@ jobs:
     steps:
       - checkout
       - restore-sccache-cache
+<<<<<<< HEAD
       - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev curl
+=======
+      - run: sudo apt-get update -y && sudo apt-get install -y ocl-icd-opencl-dev
+>>>>>>> Install opencl in CI;
       - run: cargo build
       - run:
           name: patch configuration file
