@@ -118,8 +118,8 @@ pub struct DeviceInfo {
 
 impl FilecoinApp {
     /// Connect to the Ledger App
-    pub fn connect(apdu_transport: APDUTransport) -> Result<Self, LedgerError> {
-        Ok(FilecoinApp { apdu_transport })
+    pub fn new(apdu_transport: APDUTransport) -> Self {
+        FilecoinApp { apdu_transport }
     }
 
     /// Retrieve the app version

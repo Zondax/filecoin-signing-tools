@@ -39,15 +39,14 @@ impl TransportWrapperTrait for TransportWrapper {
     }
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = getVersion)]
 pub async fn get_version(transport_wrapper: TransportWrapper) -> Promise {
     let tmp = Box::new(transport_wrapper);
     let apdu_transport = APDUTransport {
         transport_wrapper: tmp,
     };
 
-    // FIXME: handle the error
-    let app = filecoin_signer_ledger::app::FilecoinApp::connect(apdu_transport).unwrap();
+    let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
     let v_result = app.get_version().await;
 
     // FIXME: Do this automatically to simplify this code
@@ -65,7 +64,7 @@ pub async fn get_version(transport_wrapper: TransportWrapper) -> Promise {
     }
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = keyRetrieveFromDevice)]
 pub async fn key_retrieve_from_device(
     path: String,
     transport_wrapper: TransportWrapper,
@@ -75,8 +74,7 @@ pub async fn key_retrieve_from_device(
         transport_wrapper: tmp,
     };
 
-    // FIXME: handle the error
-    let app = filecoin_signer_ledger::app::FilecoinApp::connect(apdu_transport).unwrap();
+    let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
 
     // FIXME: reconcile BIP44Path different implementation
     let bip44_path = BIP44Path::from_string(&path)
@@ -103,15 +101,14 @@ pub async fn key_retrieve_from_device(
     }
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = showKeyOnDevice)]
 pub async fn show_key_on_device(path: String, transport_wrapper: TransportWrapper) -> Promise {
     let tmp = Box::new(transport_wrapper);
     let apdu_transport = APDUTransport {
         transport_wrapper: tmp,
     };
 
-    // FIXME: handle the error
-    let app = filecoin_signer_ledger::app::FilecoinApp::connect(apdu_transport).unwrap();
+    let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
 
     let bip44_path = BIP44Path::from_string(&path)
         .map_err(|_e| Promise::reject(&js_sys::Error::new("Invalid BIP44 Path")))
@@ -137,7 +134,7 @@ pub async fn show_key_on_device(path: String, transport_wrapper: TransportWrappe
     }
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = transactionSignRawWithDevice)]
 pub async fn transaction_sign_raw_with_device(
     message: Vec<u8>,
     path: String,
@@ -148,8 +145,7 @@ pub async fn transaction_sign_raw_with_device(
         transport_wrapper: tmp,
     };
 
-    // FIXME: handle the error
-    let app = filecoin_signer_ledger::app::FilecoinApp::connect(apdu_transport).unwrap();
+    let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
 
     let bip44_path = BIP44Path::from_string(&path)
         .map_err(|_e| Promise::reject(&js_sys::Error::new("Invalid BIP44 Path")))
@@ -175,22 +171,23 @@ pub async fn transaction_sign_raw_with_device(
     }
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = appInfo)]
 pub async fn app_info(transport_wrapper: TransportWrapper) -> Promise {
     let tmp = Box::new(transport_wrapper);
     let apdu_transport = APDUTransport {
         transport_wrapper: tmp,
     };
 
-    // FIXME: handle the error
-    let app = filecoin_signer_ledger::app::FilecoinApp::connect(apdu_transport).unwrap();
+    let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
 
     let i_result = app.get_app_info().await;
 
     match i_result {
         Ok(i) => {
-            // FIXME: handle the error
-            Promise::resolve(&JsValue::from_serde(&i).unwrap())
+            let answer = JsValue::from_serde(&i)
+                .map_err(|_e| Promise::reject(&js_sys::Error::new("Error converting answer message to javascript value.")))
+                .unwrap();
+            Promise::resolve(&answer)
         }
         Err(err) => {
             let error = Error {
@@ -198,28 +195,33 @@ pub async fn app_info(transport_wrapper: TransportWrapper) -> Promise {
                 error_message: err.to_string(),
             };
 
-            // FIXME: handle the error
-            Promise::reject(&JsValue::from_serde(&error).unwrap())
+            let error_answer = JsValue::from_serde(&error)
+                .map_err(|_e| Promise::reject(&js_sys::Error::new("Error converting error message to javascript value.")))
+                .unwrap();
+
+            Promise::reject(&error_answer)
         }
     }
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = deviceInfo)]
 pub async fn device_info(transport_wrapper: TransportWrapper) -> Promise {
     let tmp = Box::new(transport_wrapper);
     let apdu_transport = APDUTransport {
         transport_wrapper: tmp,
     };
 
-    // FIXME: handle the error
-    let app = filecoin_signer_ledger::app::FilecoinApp::connect(apdu_transport).unwrap();
+    let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
 
     let d_result = app.get_device_info().await;
 
     match d_result {
         Ok(d) => {
-            // FIXME: handle the error
-            Promise::resolve(&JsValue::from_serde(&d).unwrap())
+            let answer = JsValue::from_serde(&d)
+                .map_err(|_e| Promise::reject(&js_sys::Error::new("Error converting answer message to javascript value.")))
+                .unwrap();
+
+            Promise::resolve(&answer)
         }
         Err(err) => {
             let error = Error {
@@ -227,8 +229,11 @@ pub async fn device_info(transport_wrapper: TransportWrapper) -> Promise {
                 error_message: err.to_string(),
             };
 
-            // FIXME: handle the error
-            Promise::reject(&JsValue::from_serde(&error).unwrap())
+            let error_answer = JsValue::from_serde(&error)
+                .map_err(|_e| Promise::reject(&js_sys::Error::new("Error converting error message to javascript value.")))
+                .unwrap();
+
+            Promise::reject(&error_answer)
         }
     }
 }
