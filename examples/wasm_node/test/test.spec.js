@@ -5,7 +5,7 @@ const secp256k1 = require('secp256k1');
 var assert = require('assert');
 const blake2 = require('blake2');
 const utils = require('./utils');
-  
+
 it("hex to base64", function() {
   const hex =
     "8855016055f878cce452b68cb0b78baaa8a683a7124b655501e14734e92a0aa6239432259006c3858f387dd475004800038d7ea4c68000420001430003e80040";
@@ -195,5 +195,18 @@ describe("Test for utils.js", function() {
 
     console.log(sigStr);
     assert.strictEqual(sigStr, expectedSignature);
+  });
+
+
+  it("Signing (used to generate signature in signer crate lib.rs test)", function() {
+    const message = "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040";
+    const message_digest = utils.getDigest(Buffer.from(message, 'hex'));
+    const prvkey = "f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a";
+
+    // Get hex signature in the format (R,S)
+    let signature = secp256k1.ecdsaSign(message_digest, Buffer.from(prvkey, 'hex'));
+
+    console.log(Buffer.from(signature.signature).toString('hex'))
+    console.log(signature)
   });
 })
