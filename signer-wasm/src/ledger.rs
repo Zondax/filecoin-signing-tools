@@ -185,7 +185,11 @@ pub async fn app_info(transport_wrapper: TransportWrapper) -> Promise {
     match i_result {
         Ok(i) => {
             let answer = JsValue::from_serde(&i)
-                .map_err(|_e| Promise::reject(&js_sys::Error::new("Error converting answer message to javascript value.")))
+                .map_err(|_e| {
+                    Promise::reject(&js_sys::Error::new(
+                        "Error converting answer message to javascript value.",
+                    ))
+                })
                 .unwrap();
             Promise::resolve(&answer)
         }
@@ -196,7 +200,11 @@ pub async fn app_info(transport_wrapper: TransportWrapper) -> Promise {
             };
 
             let error_answer = JsValue::from_serde(&error)
-                .map_err(|_e| Promise::reject(&js_sys::Error::new("Error converting error message to javascript value.")))
+                .map_err(|_e| {
+                    Promise::reject(&js_sys::Error::new(
+                        "Error converting error message to javascript value.",
+                    ))
+                })
                 .unwrap();
 
             Promise::reject(&error_answer)
@@ -218,7 +226,11 @@ pub async fn device_info(transport_wrapper: TransportWrapper) -> Promise {
     match d_result {
         Ok(d) => {
             let answer = JsValue::from_serde(&d)
-                .map_err(|_e| Promise::reject(&js_sys::Error::new("Error converting answer message to javascript value.")))
+                .map_err(|_e| {
+                    Promise::reject(&js_sys::Error::new(
+                        "Error converting answer message to javascript value.",
+                    ))
+                })
                 .unwrap();
 
             Promise::resolve(&answer)
@@ -230,7 +242,11 @@ pub async fn device_info(transport_wrapper: TransportWrapper) -> Promise {
             };
 
             let error_answer = JsValue::from_serde(&error)
-                .map_err(|_e| Promise::reject(&js_sys::Error::new("Error converting error message to javascript value.")))
+                .map_err(|_e| {
+                    Promise::reject(&js_sys::Error::new(
+                        "Error converting error message to javascript value.",
+                    ))
+                })
                 .unwrap();
 
             Promise::reject(&error_answer)
