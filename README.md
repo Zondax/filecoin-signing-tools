@@ -30,11 +30,11 @@ You can find more information in the [Documentation Site](https://zondax.github.
 - Examples
 
   | Caller          | Callee          | Status                           |                                  |
-  | --------------- | --------------- | -------------------------------- | -------------------------------- |
+  |-----------------|-----------------|----------------------------------|----------------------------------|
   | Node.js         | JSONRPC Service | Ready :heavy_check_mark:         | [Link](examples/service_jsonrpc) |
   |                 |                 |                                  |                                  |
   | Browser         | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm_browser)    |
-  | Browser         | WASM + Ledger   | Planned :hourglass_flowing_sand: | [Soon]()                         |
+  | Browser         | WASM + Ledger   | Ready :heavy_check_mark:         | [Link](examples/wasm_node)       |
   | Node.js / Mocha | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm_node)       |
   |                 |                 |                                  |                                  |
   | Rust            | Rust + Ledger   | Planned :hourglass_flowing_sand: | [Soon]()                         |
@@ -42,11 +42,11 @@ You can find more information in the [Documentation Site](https://zondax.github.
   | C++             | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/c++)         |
   | Java            | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/java)        |
   | Kotlin          | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/kotlin)      |
-  | Go              | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
-  | Objective-C     | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
-  | Swift           | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
+  | Go              | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/go)          |
+  | Objective-C     | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/objective-c) |
+  | Swift           | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/swift)       |
+  | Flutter         | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/flutter)     |
   | React Native    | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
-  | Flutter         | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
 
 ## Running tests and examples
 
@@ -69,7 +69,7 @@ cargo test -p filecoin-signer
 To run these tests, you need to set two environment variables first so tests can reach a Lotus node:
 
 |                  |          |
-| ---------------- | -------- |
+|------------------|----------|
 | LOTUS_SECRET_URL | some_url |
 | LOTUS_SECRET_JWT | some_jwt |
 
@@ -90,7 +90,7 @@ make link_wasm
 After this, you can run the following tests / examples:
 
 | Command                  | Description               |
-| ------------------------ | ------------------------- |
+|--------------------------|---------------------------|
 | `make test_wasm_unit`    | Unit tests                |
 | `make test_wasm_node`    | Node integration tests    |
 | `make test_wasm_browser` | Browser integration tests |
