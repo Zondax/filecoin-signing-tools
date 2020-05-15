@@ -6,10 +6,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test:unit": "jest -c jest.config.unit.js --detectOpenHandles",
-    "test:ledger": "mocha test/test.ledger.js",
-    "test:spec": "mocha test/test.spec.js",
-    "test:legacy": "mocha test/test.legacy.js"
+    "test:ledger": "mocha test/test.ledger.js"
   },
   "repository": {
     "type": "git",
@@ -23,8 +20,6 @@
   ],
   "dependencies": {
     "@babel/runtime": "^7.9.2",
-    "@zondax/filecoin-signer": "../../signer-wasm/",
-    "@zondax/ledger-filecoin": "^0.11.0",
     "@zondax/zemu": "^0.1.5",
     "babel-esm-plugin": "^0.8.0",
     "babel-plugin-transform-default-import": "^1.0.0",
@@ -32,6 +27,7 @@
     "bip39": "^3.0.2"
   },
   "devDependencies": {
+    "@ledgerhq/logs": "^5.13.1",
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.9.0",
     "@babel/node": "^7.8.7",

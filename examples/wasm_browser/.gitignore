@@ -1,3 +1,6 @@
 node_modules
 dist
 /.idea
+certs/cert.pem
+certs/server.cert
+certs/server.key

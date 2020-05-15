@@ -1,4 +1,4 @@
-const signer_wasm = require('@zondax/filecoin-signer');
+const signer_wasm = require('@zondax/filecoin-signer-wasm');
 const bip32 = require('bip32');
 const bip39 = require('bip39');
 const getDigest = require('./utils').getDigest;

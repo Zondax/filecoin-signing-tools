@@ -1,0 +1,12 @@
+[ req ]
+prompt = no
+distinguished_name = req_distinguished_name
+
+[ req_distinguished_name ]
+C = CH
+ST = TestState
+L = TestLocality
+O = Zondax
+OU = Development
+CN = Zondax
+emailAddress = info@zondax.ch

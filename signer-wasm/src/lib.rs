@@ -1,5 +1,3 @@
-use filecoin_signer;
-use js_sys;
 use wasm_bindgen::prelude::*;
 
 use filecoin_signer::api::UnsignedMessageAPI;
@@ -7,6 +5,11 @@ use filecoin_signer::signature::Signature;
 use filecoin_signer::utils::{from_hex_string, to_hex_string};
 use filecoin_signer::{CborBuffer, PrivateKey};
 use std::convert::TryFrom;
+
+mod utils;
+
+#[cfg(target_arch = "wasm32")]
+pub mod ledger;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -66,7 +69,7 @@ impl ExtendedKey {
     }
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = generateMnemonic)]
 pub fn mnemonic_generate() -> Result<String, JsValue> {
     set_panic_hook();
 
@@ -76,7 +79,7 @@ pub fn mnemonic_generate() -> Result<String, JsValue> {
     Ok(mnemonic.0)
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = keyDerive)]
 pub fn key_derive(
     mnemonic: String,
     path: String,
@@ -90,7 +93,7 @@ pub fn key_derive(
     Ok(ExtendedKey { 0: key_address })
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = keyDeriveFromSeed)]
 pub fn key_derive_from_seed(seed: JsValue, path: String) -> Result<ExtendedKey, JsValue> {
     set_panic_hook();
 
@@ -109,7 +112,7 @@ pub fn key_derive_from_seed(seed: JsValue, path: String) -> Result<ExtendedKey, 
     Ok(ExtendedKey { 0: key_address })
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = keyRecover)]
 pub fn key_recover(private_key: JsValue, testnet: bool) -> Result<ExtendedKey, JsValue> {
     set_panic_hook();
 
@@ -131,14 +134,14 @@ pub fn key_recover(private_key: JsValue, testnet: bool) -> Result<ExtendedKey, J
     Ok(ExtendedKey { 0: key_address })
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = transactionSerialize)]
 pub fn transaction_serialize(unsigned_message: JsValue) -> Result<String, JsValue> {
     set_panic_hook();
     let s = transaction_serialize_raw(unsigned_message)?;
     Ok(to_hex_string(&s))
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = transactionSerializeRaw)]
 pub fn transaction_serialize_raw(unsigned_message: JsValue) -> Result<Vec<u8>, JsValue> {
     set_panic_hook();
 
@@ -152,7 +155,7 @@ pub fn transaction_serialize_raw(unsigned_message: JsValue) -> Result<Vec<u8>, J
     Ok(cbor_buffer.0.to_vec())
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = transactionParse)]
 pub fn transaction_parse(cbor: JsValue, testnet: bool) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
@@ -175,7 +178,7 @@ pub fn transaction_parse(cbor: JsValue, testnet: bool) -> Result<JsValue, JsValu
     Ok(tx)
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = transactionSign)]
 pub fn transaction_sign(unsigned_tx_js: JsValue, private_key: JsValue) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
@@ -205,7 +208,7 @@ pub fn transaction_sign(unsigned_tx_js: JsValue, private_key: JsValue) -> Result
     Ok(signed_message_js)
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = transactionSignRaw)]
 pub fn transaction_sign_raw(
     unsigned_tx_js: JsValue,
     private_key_hexstring: String,
@@ -228,7 +231,7 @@ pub fn transaction_sign_raw(
     Ok(signed_message_js)
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = verifySignature)]
 pub fn verify_signature(signature: JsValue, message: JsValue) -> Result<bool, JsValue> {
     set_panic_hook();
 

@@ -5,12 +5,12 @@ use crate::error::SignerError;
 use crate::utils::from_hex_string;
 use forest_address::{Address, Network};
 use forest_encoding::{from_slice, to_vec};
-use forest_message;
 use std::convert::TryFrom;
 use std::str::FromStr;
 
-use crate::bip44::{Bip44Path, ExtendedSecretKey};
+use crate::extended_key::ExtendedSecretKey;
 use bip39::{Language, MnemonicType, Seed};
+use bip44::BIP44Path;
 use bls_signatures;
 use bls_signatures::Serialize;
 use rayon::prelude::*;
@@ -22,8 +22,8 @@ use secp256k1::{recover, sign, verify, Message, RecoveryId};
 use crate::signature::{Signature, SignatureBLS, SignatureSECP256K1};
 
 pub mod api;
-mod bip44;
 pub mod error;
+pub mod extended_key;
 pub mod signature;
 pub mod utils;
 
@@ -106,7 +106,7 @@ pub fn key_derive(mnemonic: &str, path: &str, password: &str) -> Result<Extended
 
     let master = ExtendedSecretKey::try_from(seed.as_bytes())?;
 
-    let bip44_path = Bip44Path::from_string(path)?;
+    let bip44_path = BIP44Path::from_string(path)?;
 
     let esk = master.derive_bip44(&bip44_path)?;
 
@@ -137,7 +137,7 @@ pub fn key_derive(mnemonic: &str, path: &str, password: &str) -> Result<Extended
 pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, SignerError> {
     let master = ExtendedSecretKey::try_from(seed)?;
 
-    let bip44_path = Bip44Path::from_string(path)?;
+    let bip44_path = BIP44Path::from_string(path)?;
 
     let esk = master.derive_bip44(&bip44_path)?;
 

@@ -8,22 +8,24 @@ build_wasm:
 	wasm-pack build --no-typescript --target browser --out-dir pkg/browser signer-wasm/
 	cd signer-wasm && make build
 
-PACKAGE_NAME:="@zondax/filecoin-signer"
+PACKAGE_NAME:="@zondax/filecoin-signer-wasm"
 
 clean_wasm:
 	rm -rf examples/wasm_node/node_modules || true
 	rm -rf examples/wasm_browser/node_modules || true
+	rm -rf examples/wasm_ledger/node_modules || true
 
 link_wasm: build_wasm
-	cd signer-wasm && yarn unlink  || true
+	cd signer-wasm/pkg && yarn unlink  || true
 	cd examples/wasm_node && yarn unlink $(PACKAGE_NAME) || true
 	cd examples/wasm_browser && yarn unlink $(PACKAGE_NAME) || true
 	cd examples/wasm_ledger && yarn unlink $(PACKAGE_NAME) || true
 
 #	# Now use it in other places
-	cd signer-wasm && yarn link
+	cd signer-wasm/pkg && yarn link
 	cd examples/wasm_node && yarn link $(PACKAGE_NAME) && yarn install
 	cd examples/wasm_browser && yarn link $(PACKAGE_NAME)
+	cd examples/wasm_ledger && yarn link $(PACKAGE_NAME)
 
 test_wasm_unit: build_wasm
 	#wasm-pack test --chrome --firefox --headless ./signer-wasm

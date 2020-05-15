@@ -42,6 +42,9 @@ forest_encoding = { git = "https://github.com/zondax/forest", tag="working" }
 tiny-bip39 = "0.7.3"
 num_bigint_chainsafe = { package = "forest_bigint", git = "https://github.com/zondax/forest", tag="working"}
 
+bip44 = { git = "https://github.com/Zondax/ledger-rs", branch = "feature/refactoring-wasm"}
+
+
 [dev-dependencies]
 rand_xorshift = "0.2.0"
 rand = "0.7"

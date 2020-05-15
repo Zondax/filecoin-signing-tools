@@ -272,12 +272,12 @@ pub async fn send_sign(c: MethodCall, config: RemoteNodeSection) -> Result<Succe
 
     if result {
         // Is mainnet
-        if signed_message.message.from.starts_with("t") {
+        if signed_message.message.from.starts_with('t') {
             return Err(ServiceError::WrongNetwork);
         }
     } else {
         // Not mainnet
-        if signed_message.message.from.starts_with("f") {
+        if signed_message.message.from.starts_with('f') {
             return Err(ServiceError::WrongNetwork);
         }
     }
