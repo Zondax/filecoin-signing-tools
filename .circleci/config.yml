@@ -192,6 +192,7 @@ jobs:
       - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
       - checkout
       - restore-sccache-cache
+      - run: make deps_wasm
       - run: make build_wasm
       - run:
           name: Update tag
