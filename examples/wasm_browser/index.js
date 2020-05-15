@@ -12,7 +12,7 @@ async function example_ledger() {
   try {
      transport = await TransportU2F.create(10000);
      // We need this scramble key
-     // Maybe add this in rust ?
+     // TODO: move this to the Rust implementation for the specific coin (not ledger-rs)
      transport.setScrambleKey("FIL");
   } catch (e) {
     log(`Err : ${JSON.stringify(e, 0, 4)}`);
