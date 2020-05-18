@@ -8,7 +8,7 @@ const assert = require('assert');
 
 const EXAMPLE_MNEMONIC = "equip will roof matter pink blind book anxiety banner elbow sun young";
 
-const EXAMPLE_CBOR_TX = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040";
+const EXAMPLE_CBOR_TX = "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040";
 
 const EXAMPLE_TRANSACTION = {
     "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
@@ -49,7 +49,7 @@ describe('Serialization / Deserialization', function () {
 
         assert.throws(
             () => signer_wasm.transactionParse(cbor_transaction_extra_bytes, false),
-            /CBOR error: 'trailing data at offset 61'/
+            /CBOR error: 'trailing data at offset 62'/
         );
     });
 

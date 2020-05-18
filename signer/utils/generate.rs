@@ -53,7 +53,7 @@ fn run(num_messages: usize) {
         .par_iter()
         .map(|sk| UnsignedMessageAPI {
             to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
-            from: Address::new_bls(sk.public_key().as_bytes())
+            from: Address::new_bls(&sk.public_key().as_bytes())
                 .unwrap()
                 .to_string(),
             nonce: 1,
