@@ -54,5 +54,8 @@ pub enum LedgerError {
     /// Format ID error
     #[error("response format ID not recognized")]
     InvalidFormatID,
+    /// HexEncode
+    #[error("Couldn't encode string to HEX")]
+    HexEncode,
     // FIXME: We need to expose Ledger specific erros, including error code
 }

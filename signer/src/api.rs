@@ -1,8 +1,8 @@
 use crate::error::SignerError;
 use crate::signature::Signature;
+use crate::utils::from_hex_string;
 use forest_address::{Address, Network};
 use forest_message::{Message, SignedMessage, UnsignedMessage};
-use hex::decode;
 use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
@@ -194,7 +194,7 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
         let value = BigUint::from_str(&message_api.value)?;
         let gas_limit = message_api.gas_limit;
         let gas_price = BigUint::from_str(&message_api.gas_price)?;
-        let params = Serialized::new(decode(&message_api.params)?);
+        let params = Serialized::new(from_hex_string(&message_api.params)?);
 
         let tmp = UnsignedMessage::builder()
             .to(to)

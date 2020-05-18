@@ -1,35 +1,37 @@
-use crate::utils::HexDecodeError::InvalidLength;
+use crate::utils::HexError::DecodeInvalidLength;
 use blake2b_simd::Params;
-use std::convert::TryInto;
-use std::fmt::Write;
+use core::{array::TryFromSliceError, convert::TryInto, fmt::Write};
 use thiserror::Error;
 
 static CID_PREFIX: &[u8] = &[0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20];
 
 /// DecoderError
 #[derive(Error, Debug, PartialEq)]
-pub enum HexDecodeError {
-    /// Invalid length 0 or odd number of characters
+pub enum HexError {
+    /// String length is invalid and could not be decoded
     #[error("Invalid length 0 or odd number of characters")]
-    InvalidLength,
+    DecodeInvalidLength,
     /// hex value could not be decoded
-    #[error("ParseInt error")]
-    ParseInt(#[from] std::num::ParseIntError),
+    #[error("{0}")]
+    DecodeParseInt(#[from] core::num::ParseIntError),
+    /// EncodeError
+    #[error("Couldn't encode to HEX: {0}")]
+    EncodeError(#[from] core::fmt::Error),
 }
 
 /// convert array to hexstring
-pub fn to_hex_string(data: &[u8]) -> String {
+pub fn to_hex_string(data: &[u8]) -> Result<String, HexError> {
     let mut s = String::with_capacity(data.len() * 2);
     for &byte in data {
-        write!(&mut s, "{:02x}", byte).expect("ERR");
+        write!(&mut s, "{:02x}", byte)?;
     }
-    s
+    Ok(s)
 }
 
 /// convert hexstring to array
-pub fn from_hex_string(s: &str) -> Result<Vec<u8>, HexDecodeError> {
+pub fn from_hex_string(s: &str) -> Result<Vec<u8>, HexError> {
     if s.is_empty() || s.len() % 2 != 0 {
-        return Err(InvalidLength);
+        return Err(DecodeInvalidLength);
     }
 
     let mut vec = Vec::with_capacity(s.len() / 2);
@@ -41,7 +43,7 @@ pub fn from_hex_string(s: &str) -> Result<Vec<u8>, HexDecodeError> {
 }
 
 /// transform a message into a hashed message ready to be signed and following Filecoin standard
-pub fn get_digest(message: &[u8]) -> [u8; 32] {
+pub fn get_digest(message: &[u8]) -> Result<[u8; 32], TryFromSliceError> {
     let message_hashed = Params::new()
         .hash_length(32)
         .to_state()
@@ -55,27 +57,26 @@ pub fn get_digest(message: &[u8]) -> [u8; 32] {
         .update(message_hashed.as_bytes())
         .finalize();
 
-    cid_hashed.as_bytes().try_into().unwrap()
+    cid_hashed.as_bytes().try_into()
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::HexDecodeError::InvalidLength;
-    use crate::utils::{from_hex_string, get_digest, HexDecodeError};
+    use crate::utils::{from_hex_string, get_digest, HexError};
     use hex::{decode, encode};
 
     #[test]
     fn empty_string() {
         let result = from_hex_string("");
         assert!(result.is_err());
-        assert_eq!(result.err().unwrap(), HexDecodeError::InvalidLength);
+        assert_eq!(result.err().unwrap(), HexError::DecodeInvalidLength);
     }
 
     #[test]
     fn odd_string() {
         let result = from_hex_string("abc");
         assert!(result.is_err());
-        assert_eq!(result, Err(InvalidLength));
+        assert_eq!(result, Err(HexError::DecodeInvalidLength));
     }
 
     #[test]
@@ -96,7 +97,7 @@ mod tests {
         const EXAMPLE_CBOR_DATA: &str =
             "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040";
 
-        let message_digest = get_digest(&decode(EXAMPLE_CBOR_DATA.as_bytes()).unwrap());
+        let message_digest = get_digest(&decode(EXAMPLE_CBOR_DATA.as_bytes()).unwrap()).unwrap();
 
         assert_eq!(
             encode(message_digest),

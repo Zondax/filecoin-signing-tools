@@ -2,9 +2,10 @@ use wasm_bindgen::prelude::*;
 
 use filecoin_signer::api::UnsignedMessageAPI;
 use filecoin_signer::signature::Signature;
-use filecoin_signer::utils::{from_hex_string, to_hex_string};
+use filecoin_signer::utils::from_hex_string;
 use filecoin_signer::{CborBuffer, PrivateKey};
 use std::convert::TryFrom;
+use utils::to_hex_string_wasm;
 
 mod utils;
 
@@ -49,18 +50,18 @@ impl ExtendedKey {
     }
 
     #[wasm_bindgen(getter)]
-    pub fn public_hexstring(&self) -> String {
-        to_hex_string(&self.public_raw())
+    pub fn public_hexstring(&self) -> Result<String, JsValue> {
+        to_hex_string_wasm(&self.public_raw())
     }
 
     #[wasm_bindgen(getter)]
-    pub fn public_compressed_hexstring(&self) -> String {
-        to_hex_string(&self.public_compressed_raw())
+    pub fn public_compressed_hexstring(&self) -> Result<String, JsValue> {
+        to_hex_string_wasm(&self.public_compressed_raw())
     }
 
     #[wasm_bindgen(getter)]
-    pub fn private_hexstring(&self) -> String {
-        to_hex_string(&self.private_raw())
+    pub fn private_hexstring(&self) -> Result<String, JsValue> {
+        to_hex_string_wasm(&self.private_raw())
     }
 
     #[wasm_bindgen(getter)]
@@ -138,7 +139,7 @@ pub fn key_recover(private_key: JsValue, testnet: bool) -> Result<ExtendedKey, J
 pub fn transaction_serialize(unsigned_message: JsValue) -> Result<String, JsValue> {
     set_panic_hook();
     let s = transaction_serialize_raw(unsigned_message)?;
-    Ok(to_hex_string(&s))
+    to_hex_string_wasm(&s)
 }
 
 #[wasm_bindgen(js_name = transactionSerializeRaw)]

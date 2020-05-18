@@ -1,6 +1,6 @@
-use crate::utils::HexDecodeError;
+use crate::utils::HexError;
+use core::{array::TryFromSliceError, num::ParseIntError};
 use hmac::crypto_mac::InvalidKeyLength;
-use std::num::ParseIntError;
 use thiserror::Error;
 
 /// Filecoin Signer Error
@@ -12,12 +12,9 @@ pub enum SignerError {
     /// Secp256k1 error
     #[error("secp256k1 error")]
     Secp256k1(#[from] secp256k1::Error),
-    /// Hex error
-    #[error("Hex error")]
-    Hex(#[from] hex::FromHexError),
     /// Cannot parse hexstring
     #[error("Cannot parse hexstring")]
-    HexDecodeError(#[from] HexDecodeError),
+    HexError(#[from] HexError),
     /// InvalidBigInt error
     #[error("InvalidBigInt error")]
     InvalidBigInt(#[from] num_bigint_chainsafe::ParseBigIntError),
@@ -33,6 +30,9 @@ pub enum SignerError {
     /// Invalid BIP44Path
     #[error("Invalid BIP44 path : `{0}`")]
     InvalidBIP44Path(#[from] bip44::errors::BIP44PathError),
+    /// BLS error
+    #[error("Couldn't convert from slice")]
+    TryFromSlice(#[from] TryFromSliceError),
 }
 
 #[cfg(feature = "with-ffi-support")]
@@ -41,13 +41,13 @@ impl From<SignerError> for ffi_support::ExternError {
         let code = match e {
             SignerError::CBOR(_) => 1,
             SignerError::Secp256k1(_) => 2,
-            SignerError::Hex(_) => 3,
-            SignerError::HexDecodeError(_) => 4,
-            SignerError::InvalidBigInt(_) => 5,
-            SignerError::GenericString(_) => 6,
-            SignerError::ParseIntError(_) => 7,
-            SignerError::BLS(_) => 8,
-            SignerError::InvalidBIP44Path(_) => 9,
+            SignerError::HexError(_) => 3,
+            SignerError::InvalidBigInt(_) => 4,
+            SignerError::GenericString(_) => 5,
+            SignerError::ParseIntError(_) => 6,
+            SignerError::BLS(_) => 7,
+            SignerError::InvalidBIP44Path(_) => 8,
+            SignerError::TryFromSlice(_) => 9,
         };
         Self::new_error(ffi_support::ErrorCode::new(code), e.to_string())
     }

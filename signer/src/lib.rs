@@ -230,7 +230,7 @@ fn transaction_sign_secp56k1_raw(
 
     let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
 
-    let cid_hashed = utils::get_digest(message_cbor.as_ref());
+    let cid_hashed = utils::get_digest(message_cbor.as_ref())?;
 
     let message_digest = Message::parse_slice(&cid_hashed)?;
 
@@ -320,7 +320,7 @@ fn verify_secp256k1_signature(
     let tx = transaction_parse(cbor_buffer, network == Network::Testnet)?;
 
     // Decode the CBOR transaction hex string into CBOR transaction buffer
-    let message_digest = utils::get_digest(cbor_buffer.as_ref());
+    let message_digest = utils::get_digest(cbor_buffer.as_ref())?;
 
     let blob_to_sign = Message::parse_slice(&message_digest)?;
 
@@ -494,7 +494,7 @@ mod tests {
         let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "").unwrap();
 
         assert_eq!(
-            to_hex_string(&extended_key.private_key.0),
+            to_hex_string(&extended_key.private_key.0).unwrap(),
             EXAMPLE_PRIVATE_KEY
         );
     }
@@ -531,7 +531,7 @@ mod tests {
         let extended_key = key_derive_from_seed(seed.as_bytes(), "m/44'/461'/0/0/0").unwrap();
 
         assert_eq!(
-            to_hex_string(&extended_key.private_key.0),
+            to_hex_string(&extended_key.private_key.0).unwrap(),
             EXAMPLE_PRIVATE_KEY
         );
     }
@@ -544,7 +544,7 @@ mod tests {
         let recovered_key = key_recover(&private_key, testnet).unwrap();
 
         assert_eq!(
-            to_hex_string(&recovered_key.private_key.0),
+            to_hex_string(&recovered_key.private_key.0).unwrap(),
             EXAMPLE_PRIVATE_KEY
         );
 
@@ -562,7 +562,7 @@ mod tests {
         let recovered_key = key_recover(&private_key, testnet).unwrap();
 
         assert_eq!(
-            to_hex_string(&recovered_key.private_key.0),
+            to_hex_string(&recovered_key.private_key.0).unwrap(),
             EXAMPLE_PRIVATE_KEY
         );
 
@@ -597,7 +597,7 @@ mod tests {
         };
 
         assert_eq!(
-            to_hex_string(&signature.data),
+            to_hex_string(&signature.data).unwrap(),
             "541025ca93d7d15508854520549f6a3c1582fbde1a511f21b12dcb3e49e8bdff3eb824cd8236c66b120b45941fd07252908131ffb1dffa003813b9f2bdd0c2f601".to_string()
         );
     }

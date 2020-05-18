@@ -32,7 +32,7 @@ pub fn app_config() -> config::Reader<FcserviceApp> {
 #[derive(Debug)]
 pub struct FcserviceApp {
     /// Application configuration.
-    config: Option<FcserviceConfig>,
+    config: FcserviceConfig,
 
     /// Application state.
     state: application::State<Self>,
@@ -45,8 +45,8 @@ pub struct FcserviceApp {
 impl Default for FcserviceApp {
     fn default() -> Self {
         Self {
-            config: None,
-            state: application::State::default(),
+            config: Default::default(),
+            state: Default::default(),
         }
     }
 }
@@ -63,7 +63,7 @@ impl Application for FcserviceApp {
 
     /// Accessor for application configuration.
     fn config(&self) -> &FcserviceConfig {
-        self.config.as_ref().expect("config not loaded")
+        &self.config
     }
 
     /// Borrow the application state immutably.
@@ -94,7 +94,7 @@ impl Application for FcserviceApp {
     fn after_config(&mut self, config: Self::Cfg) -> Result<(), FrameworkError> {
         // Configure components
         self.state.components.after_config(&config)?;
-        self.config = Some(config);
+        self.config = config;
         Ok(())
     }
 
