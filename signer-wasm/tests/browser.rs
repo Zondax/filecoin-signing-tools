@@ -50,7 +50,7 @@ fn sign() {
     let example_unsigned_message = JsValue::from_serde(&json!(
     {
         "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-        "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
+        "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
         "nonce": 1,
         "value": "100000",
         "gasprice": "2500",
@@ -60,7 +60,7 @@ fn sign() {
     }))
     .unwrap();
 
-    let private_key: &str = r#"80c56e752ffdd06e3e0d9516e662e7ba883982404045a2c2d4cbe7c87e6c66fe"#;
+    let private_key: &str = r#"f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a"#;
 
     let answer = filecoin_signer_wasm::transaction_sign(
         example_unsigned_message,
@@ -72,7 +72,7 @@ fn sign() {
     {
         "message" : {
         "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-        "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
+        "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
         "nonce": 1,
         "value": "100000",
         "gasprice": "2500",
@@ -82,7 +82,7 @@ fn sign() {
         },
         "signature" : {
         "type":"secp256k1",
-        "data":"m3DSIxELGKdhb1tM8Jjbf9qjjiOhzZY9FrG79uJIpFw1Iyu1sM/a5OWfYL2PRpR6C3n8O79RULlqnshAPivTdwA="
+        "data":"vprta9OwSTq4VZWQ9h3BJGFOMXTTaWSf5GGiGLq0GTZR8nXwo+DDzmfW71eAu6EFdL5aLbtPFJDvxxRj/ZXTPAE="
         }
     }))
     .unwrap();
