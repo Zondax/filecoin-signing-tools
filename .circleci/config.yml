@@ -33,7 +33,7 @@ jobs:
           name: clippy
           command: |
             cargo clippy --version
-            cargo clippy --all-features
+            cargo clippy --all-targets --all-features
       - run:
           name: audit
           command: |

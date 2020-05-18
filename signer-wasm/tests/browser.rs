@@ -2,8 +2,6 @@
 
 #![cfg(target_arch = "wasm32")]
 
-extern crate wasm_bindgen_test;
-
 use filecoin_signer::api::SignedMessageAPI;
 use serde_json::json;
 use wasm_bindgen::prelude::*;

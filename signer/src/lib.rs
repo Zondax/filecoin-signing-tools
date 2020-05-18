@@ -11,7 +11,6 @@ use std::str::FromStr;
 use crate::extended_key::ExtendedSecretKey;
 use bip39::{Language, MnemonicType, Seed};
 use bip44::BIP44Path;
-use bls_signatures;
 use bls_signatures::Serialize;
 use rayon::prelude::*;
 use secp256k1::util::{
@@ -437,7 +436,6 @@ mod tests {
     use forest_encoding::to_vec;
     use std::convert::TryFrom;
 
-    use bls_signatures;
     use bls_signatures::Serialize;
     use forest_address::Address;
     use rand::SeedableRng;
@@ -582,7 +580,7 @@ mod tests {
             MessageTxAPI::SignedMessageAPI(_) => panic!("Should be a Unsigned Message!"),
         };
 
-        println!("{}", to.to_string());
+        println!("{}", to);
         assert_eq!(to, "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
     }
 
@@ -612,7 +610,7 @@ mod tests {
             MessageTxAPI::SignedMessageAPI(_) => panic!("Should be a Unsigned Message!"),
         };
 
-        println!("{}", to.to_string());
+        println!("{}", to);
         assert_eq!(to, "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
         assert_eq!(
             from,
@@ -630,7 +628,7 @@ mod tests {
             MessageTxAPI::SignedMessageAPI(_) => panic!("Should be a Unsigned Message!"),
         };
 
-        println!("{}", to.to_string());
+        println!("{}", to);
         assert_eq!(to, "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
         assert_eq!(
             from,
@@ -648,7 +646,7 @@ mod tests {
             MessageTxAPI::SignedMessageAPI(tx) => (tx.message.to, tx.message.from),
         };
 
-        println!("{}", to.to_string());
+        println!("{}", to);
         assert_eq!(to, "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
         assert_eq!(
             from,
@@ -679,8 +677,6 @@ mod tests {
         let private_key = PrivateKey::try_from(EXAMPLE_PRIVATE_KEY.to_string()).unwrap();
         let message_user_api: UnsignedMessageAPI = serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE)
             .expect("Could not serialize unsigned message");
-
-        let public_key = key_recover(&private_key, false).unwrap();
 
         // Sign
         let signature = transaction_sign_raw(&message_user_api, &private_key).unwrap();
