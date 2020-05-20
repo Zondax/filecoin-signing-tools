@@ -7,7 +7,6 @@ use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use std::str::FromStr;
-use vm::Serialized;
 
 /// Unsigned message api structure
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -194,7 +193,7 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
         let value = BigUint::from_str(&message_api.value)?;
         let gas_limit = message_api.gas_limit;
         let gas_price = BigUint::from_str(&message_api.gas_price)?;
-        let params = Serialized::new(from_hex_string(&message_api.params)?);
+        let params = vm::Serialized::new(from_hex_string(&message_api.params)?);
 
         let tmp = UnsignedMessage::builder()
             .to(to)
@@ -263,7 +262,7 @@ mod tests {
         }"#;
 
     const EXAMPLE_CBOR_DATA: &str =
-        "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c41961a80040";
+        "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c41961a80040";
 
     #[test]
     fn json_to_cbor() {
