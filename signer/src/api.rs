@@ -193,7 +193,7 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
         let value = BigUint::from_str(&message_api.value)?;
         let gas_limit = message_api.gas_limit;
         let gas_price = BigUint::from_str(&message_api.gas_price)?;
-        let params = vm::Serialized::new(decode(&message_api.params)?);
+        let params = forest_vm::Serialized::new(decode(&message_api.params)?);
 
         let tmp = UnsignedMessage::builder()
             .to(to)
