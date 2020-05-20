@@ -5,7 +5,6 @@ use crate::service::client;
 use crate::service::error::ServiceError;
 use filecoin_signer::api::{SignedMessageAPI, UnsignedMessageAPI};
 use filecoin_signer::signature::Signature;
-use filecoin_signer::utils::{from_hex_string, to_hex_string};
 use filecoin_signer::{CborBuffer, PrivateKey};
 use jsonrpc_core::{MethodCall, Success, Version};
 use serde::{Deserialize, Serialize};
@@ -90,9 +89,9 @@ pub async fn key_derive(c: MethodCall, _: RemoteNodeSection) -> Result<Success, 
         filecoin_signer::key_derive(&params.mnemonic, &params.path, &params.password)?;
 
     let result = KeyDeriveResultAPI {
-        public_hexstring: to_hex_string(&key_address.public_key.0),
-        public_compressed_hexstring: to_hex_string(&key_address.public_key_compressed.0),
-        private_hexstring: to_hex_string(&key_address.private_key.0),
+        public_hexstring: hex::encode(&key_address.public_key.0[..]),
+        public_compressed_hexstring: hex::encode(&key_address.public_key_compressed.0[..]),
+        private_hexstring: hex::encode(&key_address.private_key.0),
         address: key_address.address,
     };
 
@@ -113,14 +112,14 @@ pub async fn key_derive_from_seed(
 ) -> Result<Success, ServiceError> {
     let params = c.params.parse::<KeyDeriveFromSeedParamsAPI>()?;
 
-    let seed = from_hex_string(params.seed.as_ref())?;
+    let seed = hex::decode(&params.seed)?;
 
     let key_address = filecoin_signer::key_derive_from_seed(&seed, &params.path)?;
 
     let result = KeyDeriveResultAPI {
-        public_hexstring: to_hex_string(&key_address.public_key.0),
-        public_compressed_hexstring: to_hex_string(&key_address.public_key_compressed.0),
-        private_hexstring: to_hex_string(&key_address.private_key.0),
+        public_hexstring: hex::encode(&key_address.public_key.0[..]),
+        public_compressed_hexstring: hex::encode(&key_address.public_key_compressed.0[..]),
+        private_hexstring: hex::encode(&key_address.private_key.0),
         address: key_address.address,
     };
 
@@ -156,7 +155,7 @@ pub async fn transaction_parse(
     _: RemoteNodeSection,
 ) -> Result<Success, ServiceError> {
     let params = c.params.parse::<TransctionParseParamsAPI>()?;
-    let cbor_data = CborBuffer(from_hex_string(params.cbor_hex.as_ref())?);
+    let cbor_data = CborBuffer(hex::decode(&params.cbor_hex)?);
 
     let message_parsed = filecoin_signer::transaction_parse(&cbor_data, params.testnet)?;
 
@@ -197,7 +196,7 @@ pub async fn verify_signature(
     let params = c.params.parse::<VerifySignatureParamsAPI>()?;
 
     let signature = Signature::try_from(params.signature_hex)?;
-    let message = CborBuffer(from_hex_string(params.message_hex.as_ref())?);
+    let message = CborBuffer(hex::decode(&params.message_hex)?);
 
     let result = filecoin_signer::verify_signature(&signature, &message)?;
 

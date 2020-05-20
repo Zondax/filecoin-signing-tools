@@ -2,7 +2,6 @@ use crate::api::{
     MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI, UnsignedMessageAPI,
 };
 use crate::error::SignerError;
-use crate::utils::from_hex_string;
 use forest_address::{Address, Network};
 use forest_encoding::{from_slice, to_vec};
 use std::convert::TryFrom;
@@ -64,7 +63,7 @@ impl TryFrom<String> for PrivateKey {
     type Error = SignerError;
 
     fn try_from(s: String) -> Result<PrivateKey, Self::Error> {
-        let v = from_hex_string(&s)?;
+        let v = hex::decode(&s)?;
         PrivateKey::try_from(v)
     }
 }
@@ -226,7 +225,7 @@ fn transaction_sign_secp56k1_raw(
 
     let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
 
-    let cid_hashed = utils::get_digest(message_cbor.as_ref());
+    let cid_hashed = utils::get_digest(message_cbor.as_ref())?;
 
     let message_digest = Message::parse_slice(&cid_hashed)?;
 
@@ -316,7 +315,7 @@ fn verify_secp256k1_signature(
     let tx = transaction_parse(cbor_buffer, network == Network::Testnet)?;
 
     // Decode the CBOR transaction hex string into CBOR transaction buffer
-    let message_digest = utils::get_digest(cbor_buffer.as_ref());
+    let message_digest = utils::get_digest(cbor_buffer.as_ref())?;
 
     let blob_to_sign = Message::parse_slice(&message_digest)?;
 
@@ -422,7 +421,6 @@ pub fn verify_aggregated_signature(
 mod tests {
     use crate::api::{MessageTxAPI, UnsignedMessageAPI};
     use crate::signature::{Signature, SignatureBLS};
-    use crate::utils::{from_hex_string, to_hex_string};
     use crate::{
         key_derive, key_derive_from_seed, key_generate_mnemonic, key_recover, transaction_parse,
         transaction_serialize, transaction_sign_bls_raw, transaction_sign_raw,
@@ -487,7 +485,7 @@ mod tests {
         let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "").unwrap();
 
         assert_eq!(
-            to_hex_string(&extended_key.private_key.0),
+            hex::encode(&extended_key.private_key.0),
             EXAMPLE_PRIVATE_KEY
         );
     }
@@ -506,8 +504,8 @@ mod tests {
         let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "password").unwrap();
 
         assert_eq!(
-            to_hex_string(&extended_key.private_key.0),
-            to_hex_string(&extended_key_expected.private_key.0)
+            hex::encode(&extended_key.private_key.0),
+            hex::encode(&extended_key_expected.private_key.0)
         );
     }
 
@@ -524,7 +522,7 @@ mod tests {
         let extended_key = key_derive_from_seed(seed.as_bytes(), "m/44'/461'/0/0/0").unwrap();
 
         assert_eq!(
-            to_hex_string(&extended_key.private_key.0),
+            hex::encode(&extended_key.private_key.0),
             EXAMPLE_PRIVATE_KEY
         );
     }
@@ -537,7 +535,7 @@ mod tests {
         let recovered_key = key_recover(&private_key, testnet).unwrap();
 
         assert_eq!(
-            to_hex_string(&recovered_key.private_key.0),
+            hex::encode(&recovered_key.private_key.0),
             EXAMPLE_PRIVATE_KEY
         );
 
@@ -555,7 +553,7 @@ mod tests {
         let recovered_key = key_recover(&private_key, testnet).unwrap();
 
         assert_eq!(
-            to_hex_string(&recovered_key.private_key.0),
+            hex::encode(&recovered_key.private_key.0),
             EXAMPLE_PRIVATE_KEY
         );
 
@@ -567,7 +565,7 @@ mod tests {
 
     #[test]
     fn parse_unsigned_transaction() {
-        let cbor_data = CborBuffer(from_hex_string(EXAMPLE_CBOR_DATA).unwrap());
+        let cbor_data = CborBuffer(hex::decode(EXAMPLE_CBOR_DATA).unwrap());
 
         let unsigned_tx = transaction_parse(&cbor_data, true).expect("FIX ME");
         let to = match unsigned_tx {
@@ -581,7 +579,7 @@ mod tests {
 
     #[test]
     fn parse_signed_transaction() {
-        let cbor_data = CborBuffer(from_hex_string(SIGNED_MESSAGE_CBOR).unwrap());
+        let cbor_data = CborBuffer(hex::decode(SIGNED_MESSAGE_CBOR).unwrap());
 
         let signed_tx = transaction_parse(&cbor_data, true).expect("Could not parse");
         let signature = match signed_tx {
@@ -590,14 +588,14 @@ mod tests {
         };
 
         assert_eq!(
-            to_hex_string(&signature.data),
+            hex::encode(&signature.data),
             "be9aed6bd3b0493ab8559590f61dc124614e3174d369649fe461a218bab4193651f275f0a3e0c3ce67d6ef5780bba10574be5a2dbb4f1490efc71463fd95d33c01".to_string()
         );
     }
 
     #[test]
     fn parse_transaction_with_network() {
-        let cbor_data = CborBuffer(from_hex_string(EXAMPLE_CBOR_DATA).unwrap());
+        let cbor_data = CborBuffer(hex::decode(EXAMPLE_CBOR_DATA).unwrap());
 
         let unsigned_tx_mainnet = transaction_parse(&cbor_data, false).expect("Could not parse");
         let (to, from) = match unsigned_tx_mainnet {
@@ -615,7 +613,7 @@ mod tests {
 
     #[test]
     fn parse_transaction_with_network_testnet() {
-        let cbor_data = CborBuffer(from_hex_string(EXAMPLE_CBOR_DATA).unwrap());
+        let cbor_data = CborBuffer(hex::decode(EXAMPLE_CBOR_DATA).unwrap());
 
         let unsigned_tx_testnet = transaction_parse(&cbor_data, true).expect("Could not parse");
         let (to, from) = match unsigned_tx_testnet {
@@ -633,7 +631,7 @@ mod tests {
 
     #[test]
     fn parse_transaction_signed_with_network() {
-        let cbor_data = CborBuffer(from_hex_string(SIGNED_MESSAGE_CBOR).unwrap());
+        let cbor_data = CborBuffer(hex::decode(SIGNED_MESSAGE_CBOR).unwrap());
 
         let signed_tx_mainnet = transaction_parse(&cbor_data, false).expect("Could not parse");
         let (to, from) = match signed_tx_mainnet {
@@ -651,7 +649,7 @@ mod tests {
 
     #[test]
     fn parse_transaction_signed_with_network_testnet() {
-        let cbor_data = CborBuffer(from_hex_string(SIGNED_MESSAGE_CBOR).unwrap());
+        let cbor_data = CborBuffer(hex::decode(SIGNED_MESSAGE_CBOR).unwrap());
 
         let signed_tx_testnet = transaction_parse(&cbor_data, true).expect("Could not parse");
         let (to, from) = match signed_tx_testnet {
@@ -698,7 +696,7 @@ mod tests {
     #[test]
     fn sign_bls_transaction() {
         // Get address
-        let bls_pubkey = from_hex_string(BLS_PUBKEY).unwrap();
+        let bls_pubkey = hex::decode(BLS_PUBKEY).unwrap();
         let bls_address = Address::new_bls(bls_pubkey.as_slice()).unwrap();
 
         // Get BLS private key
@@ -722,7 +720,7 @@ mod tests {
         let sig = bls_signatures::Signature::from_bytes(&raw_sig.0).expect("FIX ME");
 
         let bls_pk =
-            bls_signatures::PublicKey::from_bytes(&from_hex_string(BLS_PUBKEY).unwrap()).unwrap();
+            bls_signatures::PublicKey::from_bytes(&hex::decode(BLS_PUBKEY).unwrap()).unwrap();
 
         let message_cbor = transaction_serialize(&message).expect("FIX ME");
 

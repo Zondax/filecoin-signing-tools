@@ -2,7 +2,6 @@ use crate::error::SignerError;
 use crate::signature::Signature;
 use forest_address::{Address, Network};
 use forest_message::{Message, SignedMessage, UnsignedMessage};
-use hex::decode;
 use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
