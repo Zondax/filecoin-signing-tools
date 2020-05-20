@@ -20,9 +20,6 @@
 #![deny(missing_docs)]
 #![doc(html_root_url = "https://docs.rs/ledger-filecoin/0.1.0")]
 
-extern crate byteorder;
-extern crate secp256k1;
-
 mod params;
 
 /// Ledger related errors

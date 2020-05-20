@@ -1,7 +1,3 @@
-extern crate filecoin_signer;
-extern crate rand;
-extern crate rayon;
-
 use bls_signatures::Serialize;
 use bls_signatures::*;
 use rand::SeedableRng;
@@ -15,8 +11,6 @@ use forest_message::UnsignedMessage;
 use std::convert::TryFrom;
 
 use hex::encode;
-use serde;
-use serde_json;
 use std::fs;
 
 #[derive(serde::Serialize)]
