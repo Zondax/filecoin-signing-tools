@@ -1,5 +1,4 @@
 use filecoin_signer::error::SignerError;
-use filecoin_signer::utils::HexError;
 use serde_json::error::Error;
 use thiserror::Error;
 
@@ -40,8 +39,8 @@ pub enum ServiceError {
     #[error("Remote node | {0}")]
     RemoteNode(#[from] RemoteNode),
     /// Hex Error
-    #[error("Hex error | {0}")]
-    HexDecode(#[from] HexError),
+    #[error("Hex decoding error | {0}")]
+    HexDecode(#[from] hex::FromHexError),
     /// Serde Json Error
     #[error("Serde JSON | {0}")]
     SerdeError(#[from] Error),

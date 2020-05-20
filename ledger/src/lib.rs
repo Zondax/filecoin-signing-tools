@@ -33,8 +33,5 @@ pub use ledger_transport::{APDUAnswer, APDUCommand, APDUErrorCodes, APDUTranspor
 /// Filecoin app
 pub mod app;
 
-/// hex string utilities
-pub mod utils;
-
 #[cfg(test)]
 mod tests {}

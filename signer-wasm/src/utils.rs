@@ -1,4 +1,3 @@
-use filecoin_signer::utils::to_hex_string;
 use filecoin_signer_ledger::app::{Address, Signature};
 use js_sys::Object;
 use wasm_bindgen::prelude::*;

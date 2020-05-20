@@ -1,4 +1,3 @@
-use crate::utils::HexError;
 use core::{array::TryFromSliceError, num::ParseIntError};
 use hmac::crypto_mac::InvalidKeyLength;
 use thiserror::Error;
@@ -12,9 +11,9 @@ pub enum SignerError {
     /// Secp256k1 error
     #[error("secp256k1 error")]
     Secp256k1(#[from] secp256k1::Error),
-    /// Cannot parse hexstring
-    #[error("Cannot parse hexstring")]
-    HexError(#[from] HexError),
+    /// Hex Error
+    #[error("Hex decoding error | {0}")]
+    HexDecode(#[from] hex::FromHexError),
     /// InvalidBigInt error
     #[error("InvalidBigInt error")]
     InvalidBigInt(#[from] num_bigint_chainsafe::ParseBigIntError),
@@ -41,7 +40,7 @@ impl From<SignerError> for ffi_support::ExternError {
         let code = match e {
             SignerError::CBOR(_) => 1,
             SignerError::Secp256k1(_) => 2,
-            SignerError::HexError(_) => 3,
+            SignerError::HexDecode(_) => 3,
             SignerError::InvalidBigInt(_) => 4,
             SignerError::GenericString(_) => 5,
             SignerError::ParseIntError(_) => 6,

@@ -2,7 +2,6 @@ use secp256k1::util::SIGNATURE_SIZE;
 use std::convert::TryFrom;
 
 use crate::error::SignerError;
-use crate::utils::from_hex_string;
 
 pub const SIGNATURE_RECOVERY_SIZE: usize = SIGNATURE_SIZE + 1;
 
@@ -86,7 +85,7 @@ impl TryFrom<String> for SignatureSECP256K1 {
     type Error = SignerError;
 
     fn try_from(s: String) -> Result<SignatureSECP256K1, Self::Error> {
-        let tmp = from_hex_string(&s)?;
+        let tmp = hex::decode(&s)?;
         SignatureSECP256K1::try_from(tmp)
     }
 }
@@ -131,7 +130,7 @@ impl TryFrom<String> for SignatureBLS {
     type Error = SignerError;
 
     fn try_from(s: String) -> Result<SignatureBLS, Self::Error> {
-        let tmp = from_hex_string(&s)?;
+        let tmp = hex::decode(&s)?;
         SignatureBLS::try_from(tmp)
     }
 }
