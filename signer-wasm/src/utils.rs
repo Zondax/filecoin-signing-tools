@@ -63,7 +63,3 @@ pub fn signature_to_object(signature: &Signature) -> Object {
 pub fn bytes_to_buffer(b: &[u8]) -> Buffer {
     Buffer::from(b)
 }
-
-pub fn to_hex_string_wasm(b: &[u8]) -> Result<String, JsValue> {
-    to_hex_string(b).map_err(|e| JsValue::from(e.to_string()))
-}

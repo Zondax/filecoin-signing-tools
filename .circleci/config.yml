@@ -33,7 +33,7 @@ jobs:
           name: clippy
           command: |
             cargo clippy --version
-            cargo clippy --all-targets --all-features -- -D clippy::option_unwrap_used -D clippy::option_expect_used -D clippy::result_unwrap_used -D clippy::result_expect_used
+            cargo clippy --all-features --all-targets 
       - run:
           name: audit
           command: |

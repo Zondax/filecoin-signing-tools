@@ -90,9 +90,9 @@ pub async fn key_derive(c: MethodCall, _: RemoteNodeSection) -> Result<Success, 
         filecoin_signer::key_derive(&params.mnemonic, &params.path, &params.password)?;
 
     let result = KeyDeriveResultAPI {
-        public_hexstring: to_hex_string(&key_address.public_key.0)?,
-        public_compressed_hexstring: to_hex_string(&key_address.public_key_compressed.0)?,
-        private_hexstring: to_hex_string(&key_address.private_key.0)?,
+        public_hexstring: to_hex_string(&key_address.public_key.0),
+        public_compressed_hexstring: to_hex_string(&key_address.public_key_compressed.0),
+        private_hexstring: to_hex_string(&key_address.private_key.0),
         address: key_address.address,
     };
 
@@ -118,9 +118,9 @@ pub async fn key_derive_from_seed(
     let key_address = filecoin_signer::key_derive_from_seed(&seed, &params.path)?;
 
     let result = KeyDeriveResultAPI {
-        public_hexstring: to_hex_string(&key_address.public_key.0)?,
-        public_compressed_hexstring: to_hex_string(&key_address.public_key_compressed.0)?,
-        private_hexstring: to_hex_string(&key_address.private_key.0)?,
+        public_hexstring: to_hex_string(&key_address.public_key.0),
+        public_compressed_hexstring: to_hex_string(&key_address.public_key_compressed.0),
+        private_hexstring: to_hex_string(&key_address.private_key.0),
         address: key_address.address,
     };
 

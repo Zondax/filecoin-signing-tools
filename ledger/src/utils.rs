@@ -31,12 +31,12 @@ pub enum HexError {
 }
 
 /// convert array to hexstring
-pub fn to_hex_string(data: &[u8]) -> Result<String, HexError> {
+pub fn to_hex_string(data: &[u8]) -> String {
     let mut s = String::with_capacity(data.len() * 2);
     for &byte in data {
-        write!(&mut s, "{:02x}", byte)?
+        write!(&mut s, "{:02x}", byte).unwrap()
     }
-    Ok(s)
+    s
 }
 
 /// convert hexstring to array
@@ -60,7 +60,7 @@ mod tests {
     #[test]
     fn example_to_hex() {
         let input = [1, 2, 3, 4, 0xFF];
-        assert_eq!(to_hex_string(&input).unwrap(), "01020304ff");
+        assert_eq!(to_hex_string(&input), "01020304ff");
     }
 
     #[test]

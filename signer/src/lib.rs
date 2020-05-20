@@ -487,7 +487,7 @@ mod tests {
         let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "").unwrap();
 
         assert_eq!(
-            to_hex_string(&extended_key.private_key.0).unwrap(),
+            to_hex_string(&extended_key.private_key.0),
             EXAMPLE_PRIVATE_KEY
         );
     }
@@ -524,7 +524,7 @@ mod tests {
         let extended_key = key_derive_from_seed(seed.as_bytes(), "m/44'/461'/0/0/0").unwrap();
 
         assert_eq!(
-            to_hex_string(&extended_key.private_key.0).unwrap(),
+            to_hex_string(&extended_key.private_key.0),
             EXAMPLE_PRIVATE_KEY
         );
     }
@@ -537,7 +537,7 @@ mod tests {
         let recovered_key = key_recover(&private_key, testnet).unwrap();
 
         assert_eq!(
-            to_hex_string(&recovered_key.private_key.0).unwrap(),
+            to_hex_string(&recovered_key.private_key.0),
             EXAMPLE_PRIVATE_KEY
         );
 
@@ -555,7 +555,7 @@ mod tests {
         let recovered_key = key_recover(&private_key, testnet).unwrap();
 
         assert_eq!(
-            to_hex_string(&recovered_key.private_key.0).unwrap(),
+            to_hex_string(&recovered_key.private_key.0),
             EXAMPLE_PRIVATE_KEY
         );
 
@@ -590,7 +590,7 @@ mod tests {
         };
 
         assert_eq!(
-            to_hex_string(&signature.data).unwrap(),
+            to_hex_string(&signature.data),
             "be9aed6bd3b0493ab8559590f61dc124614e3174d369649fe461a218bab4193651f275f0a3e0c3ce67d6ef5780bba10574be5a2dbb4f1490efc71463fd95d33c01".to_string()
         );
     }

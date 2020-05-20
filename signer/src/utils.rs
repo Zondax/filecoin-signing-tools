@@ -20,12 +20,12 @@ pub enum HexError {
 }
 
 /// convert array to hexstring
-pub fn to_hex_string(data: &[u8]) -> Result<String, HexError> {
+pub fn to_hex_string(data: &[u8]) -> String {
     let mut s = String::with_capacity(data.len() * 2);
     for &byte in data {
-        write!(&mut s, "{:02x}", byte)?;
+        write!(&mut s, "{:02x}", byte).unwrap();
     }
-    Ok(s)
+    s
 }
 
 /// convert hexstring to array
