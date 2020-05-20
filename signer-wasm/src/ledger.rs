@@ -9,6 +9,16 @@ use bip44::BIP44Path;
 
 use crate::utils::{address_to_object, bytes_to_buffer, signature_to_object, Buffer};
 
+macro_rules! ok_or_ret_promise {
+    ($rslt:expr, $err_msg:literal) => {
+        if let Ok(r) = $rslt {
+            r
+        } else {
+            return Promise::reject(&js_sys::Error::new($err_msg));
+        }
+    };
+}
+
 // lifted from the `console_log` example
 #[wasm_bindgen]
 extern "C" {
@@ -51,15 +61,19 @@ pub async fn get_version(transport_wrapper: TransportWrapper) -> Promise {
 
     // FIXME: Do this automatically to simplify this code
     match v_result {
-        Ok(v) => Promise::resolve(&JsValue::from_serde(&v).unwrap()),
+        Ok(v) => Promise::resolve(&ok_or_ret_promise!(
+            JsValue::from_serde(&v),
+            "Error converting error message to javascript value."
+        )),
         Err(err) => {
             let error = Error {
                 return_code: 0x6f00,
                 error_message: err.to_string(),
             };
-
-            // FIXME: handle the error
-            Promise::reject(&JsValue::from_serde(&error).unwrap())
+            Promise::reject(&ok_or_ret_promise!(
+                JsValue::from_serde(&error),
+                "Error converting error message to javascript value."
+            ))
         }
     }
 }
@@ -77,9 +91,7 @@ pub async fn key_retrieve_from_device(
     let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
 
     // FIXME: reconcile BIP44Path different implementation
-    let bip44_path = BIP44Path::from_string(&path)
-        .map_err(|_e| Promise::reject(&JsValue::from_str("Invalid BIP44 Path")))
-        .unwrap();
+    let bip44_path = ok_or_ret_promise!(BIP44Path::from_string(&path), "Invalid BIP44 Path");
 
     let a_result = app.get_address(&bip44_path, false).await;
 
@@ -94,9 +106,10 @@ pub async fn key_retrieve_from_device(
                 return_code: 0x6f00,
                 error_message: err.to_string(),
             };
-
-            // FIXME: handle the error
-            Promise::reject(&JsValue::from_serde(&error).unwrap())
+            Promise::reject(&ok_or_ret_promise!(
+                JsValue::from_serde(&error),
+                "Error converting error message to javascript value."
+            ))
         }
     }
 }
@@ -110,9 +123,7 @@ pub async fn show_key_on_device(path: String, transport_wrapper: TransportWrappe
 
     let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
 
-    let bip44_path = BIP44Path::from_string(&path)
-        .map_err(|_e| Promise::reject(&js_sys::Error::new("Invalid BIP44 Path")))
-        .unwrap();
+    let bip44_path = ok_or_ret_promise!(BIP44Path::from_string(&path), "Invalid BIP44 Path");
 
     let a_result = app.get_address(&bip44_path, true).await;
 
@@ -127,9 +138,10 @@ pub async fn show_key_on_device(path: String, transport_wrapper: TransportWrappe
                 return_code: 0x6f00,
                 error_message: err.to_string(),
             };
-
-            // FIXME: handle the error
-            Promise::reject(&JsValue::from_serde(&error).unwrap())
+            Promise::reject(&ok_or_ret_promise!(
+                JsValue::from_serde(&error),
+                "Error converting error message to javascript value."
+            ))
         }
     }
 }
@@ -147,9 +159,7 @@ pub async fn transaction_sign_raw_with_device(
 
     let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
 
-    let bip44_path = BIP44Path::from_string(&path)
-        .map_err(|_e| Promise::reject(&js_sys::Error::new("Invalid BIP44 Path")))
-        .unwrap();
+    let bip44_path = ok_or_ret_promise!(BIP44Path::from_string(&path), "Invalid BIP44 Path");
 
     let s_result = app.sign(&bip44_path, &message).await;
 
@@ -164,9 +174,10 @@ pub async fn transaction_sign_raw_with_device(
                 return_code: 0x6f00,
                 error_message: err.to_string(),
             };
-
-            // FIXME: handle the error
-            Promise::reject(&JsValue::from_serde(&error).unwrap())
+            Promise::reject(&ok_or_ret_promise!(
+                JsValue::from_serde(&error),
+                "Error converting error message to javascript value."
+            ))
         }
     }
 }
@@ -183,31 +194,19 @@ pub async fn app_info(transport_wrapper: TransportWrapper) -> Promise {
     let i_result = app.get_app_info().await;
 
     match i_result {
-        Ok(i) => {
-            let answer = JsValue::from_serde(&i)
-                .map_err(|_e| {
-                    Promise::reject(&js_sys::Error::new(
-                        "Error converting answer message to javascript value.",
-                    ))
-                })
-                .unwrap();
-            Promise::resolve(&answer)
-        }
+        Ok(i) => Promise::resolve(&ok_or_ret_promise!(
+            JsValue::from_serde(&i),
+            "Error converting error message to javascript value."
+        )),
         Err(err) => {
             let error = Error {
                 return_code: 0x6f00,
                 error_message: err.to_string(),
             };
-
-            let error_answer = JsValue::from_serde(&error)
-                .map_err(|_e| {
-                    Promise::reject(&js_sys::Error::new(
-                        "Error converting error message to javascript value.",
-                    ))
-                })
-                .unwrap();
-
-            Promise::reject(&error_answer)
+            Promise::reject(&ok_or_ret_promise!(
+                JsValue::from_serde(&error),
+                "Error converting error message to javascript value."
+            ))
         }
     }
 }
@@ -224,32 +223,19 @@ pub async fn device_info(transport_wrapper: TransportWrapper) -> Promise {
     let d_result = app.get_device_info().await;
 
     match d_result {
-        Ok(d) => {
-            let answer = JsValue::from_serde(&d)
-                .map_err(|_e| {
-                    Promise::reject(&js_sys::Error::new(
-                        "Error converting answer message to javascript value.",
-                    ))
-                })
-                .unwrap();
-
-            Promise::resolve(&answer)
-        }
+        Ok(d) => Promise::resolve(&ok_or_ret_promise!(
+            JsValue::from_serde(&d),
+            "Error converting error message to javascript value."
+        )),
         Err(err) => {
             let error = Error {
                 return_code: 0x6f00,
                 error_message: err.to_string(),
             };
-
-            let error_answer = JsValue::from_serde(&error)
-                .map_err(|_e| {
-                    Promise::reject(&js_sys::Error::new(
-                        "Error converting error message to javascript value.",
-                    ))
-                })
-                .unwrap();
-
-            Promise::reject(&error_answer)
+            Promise::reject(&ok_or_ret_promise!(
+                JsValue::from_serde(&error),
+                "Error converting error message to javascript value."
+            ))
         }
     }
 }

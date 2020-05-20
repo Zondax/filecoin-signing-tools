@@ -2,7 +2,6 @@ use wasm_bindgen::prelude::*;
 
 use filecoin_signer::api::UnsignedMessageAPI;
 use filecoin_signer::signature::Signature;
-use filecoin_signer::utils::{from_hex_string, to_hex_string};
 use filecoin_signer::{CborBuffer, PrivateKey};
 use std::convert::TryFrom;
 
@@ -50,17 +49,17 @@ impl ExtendedKey {
 
     #[wasm_bindgen(getter)]
     pub fn public_hexstring(&self) -> String {
-        to_hex_string(&self.public_raw())
+        hex::encode(&self.public_raw())
     }
 
     #[wasm_bindgen(getter)]
     pub fn public_compressed_hexstring(&self) -> String {
-        to_hex_string(&self.public_compressed_raw())
+        hex::encode(&self.public_compressed_raw())
     }
 
     #[wasm_bindgen(getter)]
     pub fn private_hexstring(&self) -> String {
-        to_hex_string(&self.private_raw())
+        hex::encode(&self.private_raw())
     }
 
     #[wasm_bindgen(getter)]
@@ -99,7 +98,7 @@ pub fn key_derive_from_seed(seed: JsValue, path: String) -> Result<ExtendedKey, 
 
     let seed_bytes = if seed.is_string() {
         let seed_string = seed.as_string().ok_or("Invalid seed")?;
-        from_hex_string(&seed_string).map_err(|e| JsValue::from(e.to_string()))?
+        hex::decode(&seed_string).map_err(|e| JsValue::from(e.to_string()))?
     } else if seed.is_object() {
         js_sys::Uint8Array::new(&seed).to_vec()
     } else {
@@ -138,7 +137,7 @@ pub fn key_recover(private_key: JsValue, testnet: bool) -> Result<ExtendedKey, J
 pub fn transaction_serialize(unsigned_message: JsValue) -> Result<String, JsValue> {
     set_panic_hook();
     let s = transaction_serialize_raw(unsigned_message)?;
-    Ok(to_hex_string(&s))
+    Ok(hex::encode(&s))
 }
 
 #[wasm_bindgen(js_name = transactionSerializeRaw)]
@@ -161,7 +160,7 @@ pub fn transaction_parse(cbor: JsValue, testnet: bool) -> Result<JsValue, JsValu
 
     let cbor_bytes = if cbor.is_string() {
         let tmp = cbor.as_string().ok_or("Invalid cbor")?;
-        from_hex_string(&tmp).map_err(|e| JsValue::from(e.to_string()))?
+        hex::decode(&tmp).map_err(|e| JsValue::from(e.to_string()))?
     } else if cbor.is_object() {
         js_sys::Uint8Array::new(&cbor).to_vec()
     } else {
@@ -237,7 +236,7 @@ pub fn verify_signature(signature: JsValue, message: JsValue) -> Result<bool, Js
 
     let signature_bytes = if signature.is_string() {
         let tmp = signature.as_string().ok_or("Invalid Signature")?;
-        from_hex_string(&tmp).map_err(|e| JsValue::from(e.to_string()))?
+        hex::decode(&tmp).map_err(|e| JsValue::from(e.to_string()))?
     } else if signature.is_object() {
         js_sys::Uint8Array::new(&signature).to_vec()
     } else {
@@ -248,7 +247,7 @@ pub fn verify_signature(signature: JsValue, message: JsValue) -> Result<bool, Js
 
     let message_bytes = if message.is_string() {
         let tmp = message.as_string().ok_or("Invalid message")?;
-        from_hex_string(&tmp).map_err(|e| JsValue::from(e.to_string()))?
+        hex::decode(&tmp).map_err(|e| JsValue::from(e.to_string()))?
     } else if message.is_object() {
         js_sys::Uint8Array::new(&message).to_vec()
     } else {
