@@ -75,6 +75,21 @@
         "encoded_tx_hex": "8900430080084300c10d0144000186a0430009c41961a80040"
     },
     {
+        "description": "Using Protocol 0 addresses 3",
+        "valid": true,
+        "testnet": false,
+        "message": {
+            "to": "f018446744073709551615",
+            "from": "f00",
+            "nonce": 1,
+            "value": "100000",
+            "gasprice": "2500",
+            "gaslimit": 25000,
+            "method": 0
+        },
+        "encoded_tx_hex": "89004b00ffffffffffffffffff014200000144000186a0430009c41961a80040"
+    },
+    {
         "description": "Using Protocol 1 addresses",
         "valid": true,
         "testnet": false,
