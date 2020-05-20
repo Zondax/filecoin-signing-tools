@@ -225,8 +225,7 @@ describe("LEDGER TEST", function () {
     assert(signatureOk);
   });
 
-  // SKIP: because the ledger app is back to testnet2
-  it.skip("#transactionSignRawWithDevice() Testnet", async function() {
+  it("#transactionSignRawWithDevice() Testnet", async function() {
     this.timeout(60000);
 
     const path = "m/44'/1'/0/0/0";
@@ -275,7 +274,7 @@ describe("LEDGER TEST", function () {
     console.log(`compact   : ${responseSign.signature_compact.toString("base64")}`);
   });
 
-  it.skip("#transactionSignRawWithDevice() Fail", async function() {
+  it("#transactionSignRawWithDevice() Fail", async function() {
     this.timeout(60000);
 
     const path = "m/44'/461'/0/0/0";
