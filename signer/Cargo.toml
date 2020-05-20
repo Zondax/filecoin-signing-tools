@@ -33,16 +33,16 @@ env_logger = "0.7"
 ffi-support = { optional = true, version = "0.4" }
 
 # TODO: Update once crates are available
-vm = { git = "https://github.com/zondax/forest", tag="testnet3" }
-forest_message = { git = "https://github.com/zondax/forest", tag="testnet3" }
-forest_address = { git = "https://github.com/zondax/forest", tag="testnet3" }
-forest_encoding = { git = "https://github.com/zondax/forest", tag="testnet3" }
+vm = { git = "https://github.com/zondax/forest", rev="187ca6cc59d593fec07ad4517dd8236232215af7" }
+forest_message = { git = "https://github.com/zondax/forest", rev="187ca6cc59d593fec07ad4517dd8236232215af7" }
+forest_address = { git = "https://github.com/zondax/forest", rev="187ca6cc59d593fec07ad4517dd8236232215af7" }
+forest_encoding = { git = "https://github.com/zondax/forest", rev="187ca6cc59d593fec07ad4517dd8236232215af7" }
 
 # TODO: Maybe we can replace these with something leaner
 tiny-bip39 = "0.7.3"
-num_bigint_chainsafe = { package = "forest_bigint", git = "https://github.com/zondax/forest", tag="testnet3"}
+num_bigint_chainsafe = { package = "forest_bigint", git = "https://github.com/zondax/forest", rev="187ca6cc59d593fec07ad4517dd8236232215af7"}
 
-bip44 = { git = "https://github.com/Zondax/ledger-rs", branch = "feature/refactoring-wasm"}
+bip44 = { git = "https://github.com/Zondax/ledger-rs"}
 
 
 [dev-dependencies]
