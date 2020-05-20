@@ -33,7 +33,7 @@ jobs:
           name: clippy
           command: |
             cargo clippy --version
-            cargo clippy --all-features --all-targets 
+            cargo clippy --all-features --all-targets
       - run:
           name: audit
           command: |
@@ -101,6 +101,7 @@ jobs:
       - restore-sccache-cache
       - run: sudo apt-get update && sudo apt-get install -y firefox-esr libnss3
       - run: make deps_wasm
+      - save-sccache-cache
       # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-rs/issues/68
       - run: make test_wasm_unit
       - run: make test_wasm_node
@@ -114,6 +115,7 @@ jobs:
     environment:
       BASH_ENV: "/opt/circleci/.nvm/nvm.sh"
     steps:
+      - restore-sccache-cache
       - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev curl
       - run:
           name: Install rustup
@@ -137,6 +139,7 @@ jobs:
             source $HOME/.cargo/env
             make deps_wasm
       - run: docker pull zondax/builder-zemu
+      - save-sccache-cache
       - run:
           name: Run zemu tests
           command: |
