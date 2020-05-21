@@ -221,7 +221,7 @@ mod tests {
             "Nonce":21131,
             "Value":"5000000000000000",
             "GasPrice":"0",
-            "GasLimit":1000,
+            "GasLimit":10000,
             "Method":0,
             "Params":"",
             "Version": 0
