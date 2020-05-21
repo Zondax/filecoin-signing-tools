@@ -213,15 +213,15 @@ mod tests {
     #[tokio::test]
     async fn example_get_status_transaction() {
         let params =
-            json!({ "/": "bafy2bzacea2ob4bctlucgp2okbczqvk5ctx4jqjapslz57mbcmnnzyftgeqgu" });
+            json!({ "/": "bafy2bzacean3gqtnc6lepgaankwh6tmgoefvo2raj7fuhot4urzutrsarjdjo" });
 
         let expected_response = json!({
-            "To":"t1lv32q33y64xs64pnyn6om7ftirax5ikspkumwsa",
-            "From":"t3wjxuftije2evjmzo2yoy5ghfe2o42mavrpmwuzooghzcxdhqjdu7kn6dvkzf4ko37w7sfnnzdzstcjmeooea",
-            "Nonce":66867,
+            "To":"t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+            "From":"t1hw4amnow4gsgk2ottjdpdverfwhaznyrslsmoni",
+            "Nonce":21131,
             "Value":"5000000000000000",
             "GasPrice":"0",
-            "GasLimit":"1000",
+            "GasLimit":1000,
             "Method":0,
             "Params":""
         });
