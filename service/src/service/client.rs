@@ -223,7 +223,8 @@ mod tests {
             "GasPrice":"0",
             "GasLimit":1000,
             "Method":0,
-            "Params":""
+            "Params":"",
+            "Version": 0
         });
 
         let credentials = tests::get_remote_credentials();

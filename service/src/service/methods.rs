@@ -304,7 +304,7 @@ mod tests {
 
     #[tokio::test]
     async fn example_get_status_transaction() {
-        let params_str = json!({ "cid_message": "bafy2bzacea2ob4bctlucgp2okbczqvk5ctx4jqjapslz57mbcmnnzyftgeqgu" });
+        let params_str = json!({ "cid_message": "bafy2bzacean3gqtnc6lepgaankwh6tmgoefvo2raj7fuhot4urzutrsarjdjo" });
         let params: Params =
             serde_json::from_str(&params_str.to_string()).expect("could not deserialize");
 
@@ -318,7 +318,8 @@ mod tests {
                 "GasPrice":"0",
                 "GasLimit":"1000",
                 "Method":0,
-                "Params":""
+                "Params":"",
+                "Version": 0
             }),
             id: Id::Num(123),
         };
