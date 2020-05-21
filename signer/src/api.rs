@@ -7,6 +7,11 @@ use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use std::str::FromStr;
 
+pub enum SigTypes {
+    SigTypeSecp256k1 = 0x01,
+    SigTypeBLS = 0x02,
+}
+
 /// Unsigned message api structure
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -31,7 +36,7 @@ pub struct UnsignedMessageAPI {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SignatureAPI {
     #[serde(rename = "type")]
-    pub sig_type: String,
+    pub sig_type: u8,
     #[serde(with = "serde_base64_vector")]
     pub data: Vec<u8>,
 }
@@ -82,11 +87,11 @@ impl From<&Signature> for SignatureAPI {
     fn from(sig: &Signature) -> SignatureAPI {
         match sig {
             Signature::SignatureSECP256K1(sig_secp256k1) => SignatureAPI {
-                sig_type: "secp256k1".to_string(),
+                sig_type: SigTypes::SigTypeSecp256k1 as u8,
                 data: sig_secp256k1.0.to_vec(),
             },
             Signature::SignatureBLS(sig_bls) => SignatureAPI {
-                sig_type: "bls".to_string(),
+                sig_type: SigTypes::SigTypeBLS as u8,
                 data: sig_bls.0.to_vec(),
             },
         }
@@ -233,7 +238,7 @@ impl From<SignedMessage> for SignedMessageAPI {
         SignedMessageAPI {
             message: UnsignedMessageAPI::from(signed_message.message().clone()),
             signature: SignatureAPI {
-                sig_type: "secp256k1".to_string(),
+                sig_type: SigTypes::SigTypeSecp256k1 as u8,
                 data: signed_message.signature().bytes().to_vec(),
             },
         }
