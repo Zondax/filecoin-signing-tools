@@ -219,7 +219,7 @@ mod tests {
             "To":"t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
             "From":"t1hw4amnow4gsgk2ottjdpdverfwhaznyrslsmoni",
             "Nonce":21131,
-            "Value":"5000000000000000",
+            "Value":"50000000000000000000",
             "GasPrice":"0",
             "GasLimit":10000,
             "Method":0,
