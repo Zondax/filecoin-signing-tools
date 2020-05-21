@@ -16,11 +16,11 @@ const EXPECTED_SEED = "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8E
 const EXPECTED_ROOT_NODE = bip32.fromBase58(EXPECTED_SEED);
 
 const EXAMPLE_TRANSACTION_CBOR =
-  "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040";
+  "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a0430009c41961a80040";
 
 const EXAMPLE_TRANSACTION = {
   to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-  from: "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
+  from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
   nonce: 1,
   value: "100000",
   gasprice: "2500",
@@ -260,6 +260,43 @@ test("verify_signature", async () => {
   expect(response.result).toEqual(true);
 });
 
+test("verify_signature signed with lotus", async () => {
+  const child = EXPECTED_ROOT_NODE.derivePath("m/44'/461'/0/0/0");
+
+  const tx = {
+    to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+	  from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+	  nonce: 1,
+    value: "100000",
+    method: 0,
+    gasprice: "2500",
+    gaslimit: 25000,
+    params: ""
+  }
+
+  const serialized_tx = await callMethod(URL, "transaction_serialize", tx, 1);
+  const cbor_tx = Buffer.from(serialized_tx.result).toString("hex")
+  const message_digest = getDigest(Buffer.from(cbor_tx, "hex"));
+
+
+  const signatureRSV =
+    Buffer.from("BjmEhQYMoqTeuXAn9Rj0VWk2DDhzpDA5JvppCacpnUxViDRjEgg2NY/zOWiC7g3CzxWWG9SVzfs94e4ui9N2jgE=", "base64").toString("hex");
+
+  const signatureBuffer = Buffer.from(signatureRSV, "hex").slice(0, -1);
+  const recoveredID = Buffer.from(signatureRSV, "hex")[64]
+
+  const result = secp256k1.ecdsaVerify(signatureBuffer, message_digest, child.publicKey);
+
+  const recovered_pubkey = secp256k1.ecdsaRecover(signatureBuffer, 1, message_digest);
+  expect(Buffer.from(recovered_pubkey).toString("hex") == child.publicKey.toString("hex")).toEqual(true);
+
+  const response = await callMethod(URL, "verify_signature", [signatureRSV, cbor_tx], 1);
+
+  console.log(response);
+
+  expect(response.result).toEqual(true);
+});
+
 test("verify_invalid_signature", async () => {
   const child = EXPECTED_ROOT_NODE.derivePath("m/44'/461'/0/0/0");
 
@@ -284,21 +321,22 @@ test("verify_invalid_signature", async () => {
 });
 
 test("get_status", async () => {
-  let message_cid = "bafy2bzacea2ob4bctlucgp2okbczqvk5ctx4jqjapslz57mbcmnnzyftgeqgu";
+  let message_cid = "bafy2bzacean3gqtnc6lepgaankwh6tmgoefvo2raj7fuhot4urzutrsarjdjo";
   const response = await callMethod(URL, "get_status", [message_cid], 1);
   console.log(response);
 
   // Do we have a results
   expect(response).toHaveProperty("result");
   expect(response.result).toEqual({
-        "From": "t3wjxuftije2evjmzo2yoy5ghfe2o42mavrpmwuzooghzcxdhqjdu7kn6dvkzf4ko37w7sfnnzdzstcjmeooea",
-        "GasLimit": "1000",
+        "From": "t1hw4amnow4gsgk2ottjdpdverfwhaznyrslsmoni",
+        "GasLimit": 10000,
         "GasPrice": "0",
         "Method": 0,
-        "Nonce": 66867,
+        "Nonce": 21131,
         "Params": "",
-        "To": "t1lv32q33y64xs64pnyn6om7ftirax5ikspkumwsa",
-        "Value": "5000000000000000"
+        "To": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+        "Value": "50000000000000000000",
+        "Version": 0
     });
 });
 
@@ -312,7 +350,7 @@ test("get_status fail", async () => {
 });
 
 test("get_nonce", async () => {
-  const account = "t1lv32q33y64xs64pnyn6om7ftirax5ikspkumwsa";
+  const account = "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy";
 
   const response = await callMethod(
     URL,
@@ -323,7 +361,7 @@ test("get_nonce", async () => {
 
   console.log(response);
 
-  expect(response.result).toBeGreaterThanOrEqual(2);
+  expect(response.result).toBeGreaterThanOrEqual(0);
 });
 
 test("send_signed_tx", async () => {
@@ -339,8 +377,9 @@ test("send_signed_tx", async () => {
   let nonce = nonceResponse.result;
   nonce++;
   console.log("Nonce: ", nonce);
+  console.log("Nonce: ", !isNaN(nonce));
 
-  expect(!isNaN(nonce));
+  expect(!isNaN(nonce)).toBeTruthy();
 
   const transaction = {
     to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
@@ -393,7 +432,7 @@ test("send_sign", async () => {
   console.log("Nonce: ", nonce);
 
   const transaction = {
-    to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+    to: "t12af556jrt3e2qlphobrvl53qf6xborrscg4ibeq",
     from: keyAddressResponse.result.address,
     nonce: nonce,
     value: "1",

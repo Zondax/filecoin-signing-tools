@@ -48,7 +48,7 @@ fn sign() {
     let example_unsigned_message = JsValue::from_serde(&json!(
     {
         "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-        "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
+        "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
         "nonce": 1,
         "value": "100000",
         "gasprice": "2500",
@@ -70,7 +70,7 @@ fn sign() {
     {
         "message" : {
         "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-        "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
+        "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
         "nonce": 1,
         "value": "100000",
         "gasprice": "2500",
@@ -79,8 +79,8 @@ fn sign() {
         "params": ""
         },
         "signature" : {
-        "type":"secp256k1",
-        "data":"vprta9OwSTq4VZWQ9h3BJGFOMXTTaWSf5GGiGLq0GTZR8nXwo+DDzmfW71eAu6EFdL5aLbtPFJDvxxRj/ZXTPAE="
+        "type": 1,
+        "data":"BjmEhQYMoqTeuXAn9Rj0VWk2DDhzpDA5JvppCacpnUxViDRjEgg2NY/zOWiC7g3CzxWWG9SVzfs94e4ui9N2jgE="
         }
     }))
     .unwrap();

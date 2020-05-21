@@ -320,7 +320,7 @@ fn verify_secp256k1_signature(
     let blob_to_sign = Message::parse_slice(&message_digest)?;
 
     let public_key = recover(&blob_to_sign, &signature_rs, &recovery_id)?;
-    let mut from = Address::new_secp256k1(&public_key.serialize_compressed().to_vec());
+    let mut from = Address::new_secp256k1(&public_key.serialize().to_vec());
     from.set_network(network);
 
     let tx_from = match tx {

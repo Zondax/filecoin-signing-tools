@@ -143,7 +143,7 @@ pub async fn is_mainnet(url: &str, jwt: &str) -> Result<bool, ServiceError> {
     let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
 
     let params = Params::Array(vec![
-        json!({"/": "bafy2bzacea2ob4bctlucgp2okbczqvk5ctx4jqjapslz57mbcmnnzyftgeqgu" }),
+        json!({"/": "bafy2bzacean3gqtnc6lepgaankwh6tmgoefvo2raj7fuhot4urzutrsarjdjo" }),
     ]);
 
     // Prepare request
