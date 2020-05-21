@@ -444,7 +444,7 @@ mod tests {
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
         {
             "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-            "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
+            "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
             "nonce": 1,
             "value": "100000",
             "gasprice": "2500",
@@ -454,7 +454,7 @@ mod tests {
         }"#;
 
     const EXAMPLE_CBOR_DATA: &str =
-        "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040";
+        "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a0430009c41961a80040";
 
     /* signed message :
     [
@@ -464,7 +464,7 @@ mod tests {
         h'01be9aed6bd3b0493ab8559590f61dc124614e3174d369649fe461a218bab4193651f275f0a3e0c3ce67d6ef5780bba10574be5a2dbb4f1490efc71463fd95d33c01']
     */
     const SIGNED_MESSAGE_CBOR: &str =
-        "8289005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41909c40040584201be9aed6bd3b0493ab8559590f61dc124614e3174d369649fe461a218bab4193651f275f0a3e0c3ce67d6ef5780bba10574be5a2dbb4f1490efc71463fd95d33c01";
+        "8289005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a0430009c41909c4004058420106398485060ca2a4deb97027f518f45569360c3873a4303926fa6909a7299d4c55883463120836358ff3396882ee0dc2cf15961bd495cdfb3de1ee2e8bd3768e01";
 
     const EXAMPLE_PRIVATE_KEY: &str =
         "f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a";
@@ -589,7 +589,7 @@ mod tests {
 
         assert_eq!(
             hex::encode(&signature.data),
-            "be9aed6bd3b0493ab8559590f61dc124614e3174d369649fe461a218bab4193651f275f0a3e0c3ce67d6ef5780bba10574be5a2dbb4f1490efc71463fd95d33c01".to_string()
+            "06398485060ca2a4deb97027f518f45569360c3873a4303926fa6909a7299d4c55883463120836358ff3396882ee0dc2cf15961bd495cdfb3de1ee2e8bd3768e01".to_string()
         );
     }
 
@@ -607,7 +607,7 @@ mod tests {
         assert_eq!(to, "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
         assert_eq!(
             from,
-            "f1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka".to_string()
+            "f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string()
         );
     }
 
@@ -625,7 +625,7 @@ mod tests {
         assert_eq!(to, "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
         assert_eq!(
             from,
-            "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka".to_string()
+            "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string()
         );
     }
 
@@ -643,7 +643,7 @@ mod tests {
         assert_eq!(to, "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
         assert_eq!(
             from,
-            "f1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka".to_string()
+            "f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string()
         );
     }
 
@@ -660,7 +660,7 @@ mod tests {
         assert_eq!(to, "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
         assert_eq!(
             from,
-            "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka".to_string()
+            "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string()
         );
     }
 
