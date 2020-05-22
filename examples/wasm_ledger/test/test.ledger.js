@@ -22,9 +22,9 @@ describe("LEDGER TEST", function () {
 
   before(async function() {
     // runs before tests start
-    /*await catchExit();
+    await catchExit();
     await Zemu.checkAndPullImage();
-    await Zemu.stopAllEmuContainers();*/
+    await Zemu.stopAllEmuContainers();
 
     const DEMO_APP_PATH = Resolve("bin/app.elf");
     sim = new Zemu(DEMO_APP_PATH);
@@ -33,7 +33,7 @@ describe("LEDGER TEST", function () {
         logging: true,
         custom: `-s "${APP_SEED}"`,
         press_delay: 150
-        //,X11: true
+        ,X11: true
     };
 
     await sim.start(sim_options);
@@ -225,8 +225,7 @@ describe("LEDGER TEST", function () {
     assert(signatureOk);
   });
 
-  // SKIP: because the ledger app is back to testnet2
-  it.skip("#transactionSignRawWithDevice() Testnet", async function() {
+  it.skip("#transactionSignWithDevice() Testnet", async function() {
     this.timeout(60000);
 
     const path = "m/44'/1'/0/0/0";
@@ -236,13 +235,14 @@ describe("LEDGER TEST", function () {
       value: "1000",
       method: 0,
       gasPrice: "1",
-      gasLimit: "1000",
+      gasLimit: 1000,
       nonce: 0,
+      params: ""
     };
 
     const responsePk = await signer.keyRetrieveFromDevice(path, transport);
     console.log(responsePk)
-    const responseRequest = signer.transactionSignRawWithDevice(messageContent, path, transport);
+    const responseRequest = signer.transactionSignWithDevice(messageContent, path, transport);
     await Zemu.sleep(2000);
 
     await sim.clickLeft();

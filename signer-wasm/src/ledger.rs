@@ -1,4 +1,6 @@
 use filecoin_signer_ledger;
+use filecoin_signer::api::{SignatureAPI, SignedMessageAPI, UnsignedMessageAPI};
+use filecoin_signer::utils::get_digest;
 use js_sys::Promise;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -168,6 +170,67 @@ pub async fn transaction_sign_raw_with_device(
             let signature_object = signature_to_object(&s);
 
             Promise::resolve(&signature_object)
+        }
+        Err(err) => {
+            let error = Error {
+                return_code: 0x6f00,
+                error_message: err.to_string(),
+            };
+            Promise::reject(&ok_or_ret_promise!(
+                JsValue::from_serde(&error),
+                "Error converting error message to javascript value."
+            ))
+        }
+    }
+}
+
+#[wasm_bindgen(js_name = transactionSignWithDevice)]
+pub async fn transaction_sign_with_device(
+    unsigned_tx_js: JsValue,
+    path: String,
+    transport_wrapper: TransportWrapper,
+) -> Promise {
+    let tmp = Box::new(transport_wrapper);
+    let apdu_transport = APDUTransport {
+        transport_wrapper: tmp,
+    };
+
+    let unsigned_message : UnsignedMessageAPI = unsigned_tx_js
+        .into_serde()
+        .map_err(|e| {
+            Promise::reject(&JsValue::from(format!("Error parsing parameters: {}", e)))
+        }).unwrap();
+
+    let cbor_message = filecoin_signer::transaction_serialize(&unsigned_message)
+        .map_err(|e| {
+            Promise::reject(&JsValue::from(format!("Error serializing transaction: {}", e)))
+        }).unwrap();
+
+    let message = get_digest(cbor_message.as_ref())
+        .map_err(|e| {
+            Promise::reject(&JsValue::from(format!("Error preparing transaction for signing: {}", e)))
+        }).unwrap();
+
+    let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
+
+    let bip44_path = ok_or_ret_promise!(BIP44Path::from_string(&path), "Invalid BIP44 Path");
+
+    let s_result = app.sign(&bip44_path, &message).await;
+
+    match s_result {
+        Ok(s) => {
+            let signed_message = SignedMessageAPI {
+                message: unsigned_message,
+                signature: SignatureAPI {
+                    sig_type: filecoin_signer::api::SigTypes::SigTypeSecp256k1 as u8,
+                    data: s.sig.serialize().to_vec(),
+                }
+            };
+
+            Promise::resolve(&ok_or_ret_promise!(
+                JsValue::from_serde(&signed_message),
+                "Error converting error message to javascript value."
+            ))
         }
         Err(err) => {
             let error = Error {
