@@ -47,7 +47,6 @@ describe('Key generation / derivation', function () {
 
         console.log("Public Key Raw         :", keypair.public_raw);
         console.log("Public Key             :", keypair.public_hexstring);
-        console.log("Public Key Compressed  :", keypair.public_compressed_hexstring);
         console.log("Private                :", keypair.private_hexstring);
         console.log("Address                :", keypair.address);
 
@@ -61,7 +60,6 @@ describe('Key generation / derivation', function () {
 
         console.log("Public Key Raw         :", keypair.public_raw);
         console.log("Public Key             :", keypair.public_hexstring);
-        console.log("Public Key Compressed  :", keypair.public_compressed_hexstring);
         console.log("Private                :", keypair.private_hexstring);
         console.log("Address                :", keypair.address);
 
@@ -83,7 +81,6 @@ describe('Key generation / derivation', function () {
 
         console.log("Public Key Raw         :", keypair.public_raw);
         console.log("Public Key             :", keypair.public_hexstring);
-        console.log("Public Key Compressed  :", keypair.public_compressed_hexstring);
         console.log("Private                :", keypair.private_hexstring);
         console.log("Address                :", keypair.address);
 
@@ -99,7 +96,6 @@ describe('Key generation / derivation', function () {
 
         console.log("Public Key Raw         :", keypair.public_raw);
         console.log("Public Key             :", keypair.public_hexstring);
-        console.log("Public Key Compressed  :", keypair.public_compressed_hexstring);
         console.log("Private                :", keypair.private_hexstring);
         console.log("Address                :", keypair.address);
 
@@ -124,7 +120,6 @@ describe('Key generation / derivation', function () {
 
         console.log("Public Key Raw         :", keypair.public_raw);
         console.log("Public Key             :", keypair.public_hexstring);
-        console.log("Public Key Compressed  :", keypair.public_compressed_hexstring);
         console.log("Private                :", keypair.private_hexstring);
         console.log("Address                :", keypair.address);
 
@@ -140,7 +135,6 @@ describe('Key generation / derivation', function () {
 
         console.log("Public Key Raw         :", keypair.public_raw);
         console.log("Public Key             :", keypair.public_hexstring);
-        console.log("Public Key Compressed  :", keypair.public_compressed_hexstring);
         console.log("Private                :", keypair.private_hexstring);
         console.log("Address                :", keypair.address);
 
@@ -195,7 +189,7 @@ describe('Key generation / derivation', function () {
         console.log("RSV signature :", signatureRSV);
         console.log("CBOR Transaction hex :", EXAMPLE_CBOR_TX);
 
-        assert.equal(signer_wasm.verifySignature(signatureRSV, EXAMPLE_CBOR_TX), true);
+        assert.strictEqual(signer_wasm.verifySignature(signatureRSV, EXAMPLE_CBOR_TX), true);
     });
 });
 
@@ -208,12 +202,11 @@ describe('Key Recover testnet/mainnet', function () {
 
         console.log("Public Key Raw         :", recoveredKey.public_raw);
         console.log("Public Key             :", recoveredKey.public_hexstring);
-        console.log("Public Key Compressed  :", recoveredKey.public_compressed_hexstring);
         console.log("Private                :", recoveredKey.private_hexstring);
         console.log("Address                :", recoveredKey.address);
 
-        assert.equal(recoveredKey.private_hexstring, child.privateKey.toString("hex"));
-        assert.equal(recoveredKey.address, "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
+        assert.strictEqual(recoveredKey.private_hexstring, child.privateKey.toString("hex"));
+        assert.strictEqual(recoveredKey.address, "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
     });
 
     it("key recover testnet buffer", () => {
@@ -224,12 +217,11 @@ describe('Key Recover testnet/mainnet', function () {
 
         console.log("Public Key Raw         :", recoveredKey.public_raw);
         console.log("Public Key             :", recoveredKey.public_hexstring);
-        console.log("Public Key Compressed  :", recoveredKey.public_compressed_hexstring);
         console.log("Private                :", recoveredKey.private_hexstring);
         console.log("Address                :", recoveredKey.address);
 
-        assert.equal(recoveredKey.private_hexstring, child.privateKey.toString("hex"));
-        assert.equal(recoveredKey.address, "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
+        assert.strictEqual(recoveredKey.private_hexstring, child.privateKey.toString("hex"));
+        assert.strictEqual(recoveredKey.address, "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
     });
 
     it("key recover mainnet", () => {
@@ -240,12 +232,28 @@ describe('Key Recover testnet/mainnet', function () {
 
         console.log("Public Key Raw         :", recoveredKey.public_raw);
         console.log("Public Key             :", recoveredKey.public_hexstring);
-        console.log("Public Key Compressed  :", recoveredKey.public_compressed_hexstring);
         console.log("Private                :", recoveredKey.private_hexstring);
         console.log("Address                :", recoveredKey.address);
 
-        assert.equal(recoveredKey.private_hexstring, child.privateKey.toString("hex"));
-        assert.equal(recoveredKey.address, "f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
+        assert.strictEqual(recoveredKey.private_hexstring, child.privateKey.toString("hex"));
+        assert.strictEqual(recoveredKey.address, "f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
+    })
+
+    it("key recover mainnet base64", () => {
+        let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+        let privateKey = child.privateKey.toString('base64');
+
+        let recoveredKey = signer_wasm.keyRecover(privateKey, false);
+
+        console.log("Public Key Raw         :", recoveredKey.public_raw);
+        console.log("Public Key (hex)       :", recoveredKey.public_hexstring);
+        console.log("Private Key (hex)      :", recoveredKey.private_hexstring);
+        console.log("Public Key (base64)    :", recoveredKey.public_base64);
+        console.log("Private Key (base64)   :", recoveredKey.private_base64);
+        console.log("Address                :", recoveredKey.address);
+
+        assert.strictEqual(recoveredKey.private_hexstring, child.privateKey.toString("hex"));
+        assert.strictEqual(recoveredKey.address, "f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
     })
 });
 
@@ -258,7 +266,7 @@ describe("Lotus support", function () {
       console.log(signed_tx)
 
       // Order is important...
-      assert.equal(signed_tx, JSON.stringify({
+      assert.strictEqual(signed_tx, JSON.stringify({
         "Message": {
           "From": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
           "GasLimit": 25000,
@@ -296,9 +304,9 @@ describe('BLS support', function () {
             console.log("Private key:", tc.sk);
             console.log("Public key :", tc.pk);
 
-            assert.equal(signature.length, 96);
+            assert.strictEqual(signature.length, 96);
 
-            assert.equal(signature.toString('hex'), tc.sig);
+            assert.strictEqual(signature.toString('hex'), tc.sig);
 
         })
     }
@@ -366,7 +374,7 @@ describe('Transaction Serialization - Parameterized', function () {
             if (tc.valid) {
                 // Valid doesn't throw
                 let result = signer_wasm.transactionSerialize(tc.message);
-                assert.equal(tc.encoded_tx_hex, result);
+                assert.strictEqual(tc.encoded_tx_hex, result);
             } else {
                 // Not valid throw error
                 // TODO: Add error type to manual_testvectors.json file

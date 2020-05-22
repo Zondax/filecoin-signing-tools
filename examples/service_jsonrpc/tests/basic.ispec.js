@@ -61,7 +61,7 @@ test("key_derive testnet path", async () => {
   // Do we have a results
   expect(response).toHaveProperty("result");
   expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
-  expect(response.result.public_compressed_hexstring).toEqual(child.publicKey.toString("hex"));
+  expect(response.result.public_hexstring).toEqual(child.publicKey.toString("hex"));
   expect(response.result.address.startsWith('t')).toBeTruthy();
 });
 
@@ -97,7 +97,7 @@ test("key_derive missing password parameter (verify default)", async () => {
 
   expect(response).toHaveProperty("result");
   expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
-  expect(response.result.public_compressed_hexstring).toEqual(child.publicKey.toString("hex"));
+  expect(response.result.public_hexstring).toEqual(child.publicKey.toString("hex"));
   expect(response.result.address).toEqual("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
 });
 
@@ -112,7 +112,7 @@ test("key_derive_from_seed", async () => {
   // Do we have a results
   expect(response).toHaveProperty("result");
   expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
-  expect(response.result.public_compressed_hexstring).toEqual(child.publicKey.toString("hex"));
+  expect(response.result.public_hexstring).toEqual(child.publicKey.toString("hex"));
   expect(response.result.address).toEqual("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
 });
 
