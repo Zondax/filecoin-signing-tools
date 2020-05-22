@@ -35,51 +35,6 @@ const EXAMPLE_TRANSACTION_MAINNET = {
 const MASTER_KEY = "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5";
 let MASTER_NODE = bip32.fromBase58(MASTER_KEY);
 
-describe('Serialization / Deserialization', function () {
-    it('Valid cbor should be fine', function () {
-        assert.deepStrictEqual(EXAMPLE_TRANSACTION, signer_wasm.transactionParse(EXAMPLE_CBOR_TX, true))
-    });
-
-    it('Valid cbor should be fine - missing is undefined converted to false', function () {
-        assert.deepStrictEqual(EXAMPLE_TRANSACTION_MAINNET, signer_wasm.transactionParse(EXAMPLE_CBOR_TX, false));
-    });
-
-    it('Extra bytes should fail', function () {
-        let cbor_transaction_extra_bytes = EXAMPLE_CBOR_TX + "00";
-
-        assert.throws(
-            () => signer_wasm.transactionParse(cbor_transaction_extra_bytes, false),
-            /CBOR error: 'trailing data at offset 62'/
-        );
-    });
-
-    it('Serialize Transaction', () => {
-        assert.strictEqual(EXAMPLE_CBOR_TX, signer_wasm.transactionSerialize(EXAMPLE_TRANSACTION));
-    });
-
-    it('Serialize Transaction return buffer', () => {
-        let cbor_uint8_array = signer_wasm.transactionSerializeRaw(EXAMPLE_TRANSACTION);
-        assert.strictEqual(EXAMPLE_CBOR_TX, Buffer.from(cbor_uint8_array).toString('hex'));
-    });
-
-    it('Serialize Transaction Fail (missing nonce)', () => {
-        let invalid_transaction = {
-            "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-            "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
-            "value": "100000",
-            "gasprice": "2500",
-            "gaslimit": 25000,
-            "method": 0,
-            "params": ""
-        };
-
-        assert.throws(
-            () => signer_wasm.transactionSerialize(invalid_transaction),
-            /missing field `nonce`/
-        );
-    });
-});
-
 describe('Key generation / derivation', function () {
     it('Key Generate Mnemonic', () => {
         const mnemonic = signer_wasm.generateMnemonic();
@@ -355,7 +310,52 @@ const tests_vectors_path = "../manual_testvectors.json";
 let rawData = fs.readFileSync(tests_vectors_path);
 let jsonData = JSON.parse(rawData);
 
-describe('Parameterized Tests - Serialize', function () {
+describe('Transaction Serialization / Deserialization', function () {
+    it('Valid cbor should be fine', function () {
+        assert.deepStrictEqual(EXAMPLE_TRANSACTION, signer_wasm.transactionParse(EXAMPLE_CBOR_TX, true))
+    });
+
+    it('Valid cbor should be fine - missing is undefined converted to false', function () {
+        assert.deepStrictEqual(EXAMPLE_TRANSACTION_MAINNET, signer_wasm.transactionParse(EXAMPLE_CBOR_TX, false));
+    });
+
+    it('Extra bytes should fail', function () {
+        let cbor_transaction_extra_bytes = EXAMPLE_CBOR_TX + "00";
+
+        assert.throws(
+            () => signer_wasm.transactionParse(cbor_transaction_extra_bytes, false),
+            /CBOR error: 'trailing data at offset 62'/
+        );
+    });
+
+    it('Serialize Transaction', () => {
+        assert.strictEqual(EXAMPLE_CBOR_TX, signer_wasm.transactionSerialize(EXAMPLE_TRANSACTION));
+    });
+
+    it('Serialize Transaction return buffer', () => {
+        let cbor_uint8_array = signer_wasm.transactionSerializeRaw(EXAMPLE_TRANSACTION);
+        assert.strictEqual(EXAMPLE_CBOR_TX, Buffer.from(cbor_uint8_array).toString('hex'));
+    });
+
+    it('Serialize Transaction Fail (missing nonce)', () => {
+        let invalid_transaction = {
+            "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+            "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
+            "value": "100000",
+            "gasprice": "2500",
+            "gaslimit": 25000,
+            "method": 0,
+            "params": ""
+        };
+
+        assert.throws(
+            () => signer_wasm.transactionSerialize(invalid_transaction),
+            /missing field `nonce`/
+        );
+    });
+});
+
+describe('Transaction Serialization - Parameterized', function () {
     for (let i = 0; i < jsonData.length; i += 1) {
         let tc = jsonData[i];
         if (!tc.message.params) {
@@ -379,7 +379,7 @@ describe('Parameterized Tests - Serialize', function () {
     }
 });
 
-describe('Parameterized Tests - Deserialize', function () {
+describe('Transaction Deserialization - Parameterized', function () {
     for (let i = 0; i < jsonData.length; i += 1) {
         let tc = jsonData[i];
         if (!tc.message.params) {

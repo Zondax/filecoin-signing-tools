@@ -1,6 +1,5 @@
 deps_wasm:
 	cargo install wasm-pack
-	cargo install cargo-watch
 
 build_wasm:
 	rm -rf signer-wasm/pkg/
