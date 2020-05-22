@@ -143,7 +143,7 @@ pub async fn is_mainnet(url: &str, jwt: &str) -> Result<bool, ServiceError> {
     let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
 
     let params = Params::Array(vec![
-        json!({"/": "bafy2bzacea2ob4bctlucgp2okbczqvk5ctx4jqjapslz57mbcmnnzyftgeqgu" }),
+        json!({"/": "bafy2bzacean3gqtnc6lepgaankwh6tmgoefvo2raj7fuhot4urzutrsarjdjo" }),
     ]);
 
     // Prepare request
@@ -213,17 +213,18 @@ mod tests {
     #[tokio::test]
     async fn example_get_status_transaction() {
         let params =
-            json!({ "/": "bafy2bzacea2ob4bctlucgp2okbczqvk5ctx4jqjapslz57mbcmnnzyftgeqgu" });
+            json!({ "/": "bafy2bzacean3gqtnc6lepgaankwh6tmgoefvo2raj7fuhot4urzutrsarjdjo" });
 
         let expected_response = json!({
-            "To":"t1lv32q33y64xs64pnyn6om7ftirax5ikspkumwsa",
-            "From":"t3wjxuftije2evjmzo2yoy5ghfe2o42mavrpmwuzooghzcxdhqjdu7kn6dvkzf4ko37w7sfnnzdzstcjmeooea",
-            "Nonce":66867,
-            "Value":"5000000000000000",
+            "To":"t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+            "From":"t1hw4amnow4gsgk2ottjdpdverfwhaznyrslsmoni",
+            "Nonce":21131,
+            "Value":"50000000000000000000",
             "GasPrice":"0",
-            "GasLimit":"1000",
+            "GasLimit":10000,
             "Method":0,
-            "Params":""
+            "Params":"",
+            "Version": 0
         });
 
         let credentials = tests::get_remote_credentials();

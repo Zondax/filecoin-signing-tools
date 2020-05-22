@@ -95,7 +95,6 @@ jobs:
     docker:
       - image: zondax/rust-ci:latest
     steps:
-      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
       - checkout
       - run: cargo --version
       - restore-sccache-cache
@@ -105,7 +104,6 @@ jobs:
       # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-rs/issues/68
       - run: make test_wasm_unit
       - run: make test_wasm_node
-      #- run: make test_wasm_browser
       # No need to save this in cache
 
   tests_ledger:
@@ -134,18 +132,18 @@ jobs:
             nvm use 13.12.0
             npm install -g yarn
       - run:
-          name: Install deps
+          name: Install deps wasm
           command: |
             source $HOME/.cargo/env
             make deps_wasm
       - run: docker pull zondax/builder-zemu
-      - save-sccache-cache
       - run:
           name: Run zemu tests
           command: |
             nvm use 13.12.0
             source $HOME/.cargo/env
             make test_ledger
+      - save-sccache-cache
 
   tests_service:
     docker:
@@ -193,7 +191,6 @@ jobs:
     docker:
       - image: zondax/rust-ci:latest
     steps:
-      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
       - checkout
       - restore-sccache-cache
       - run: make deps_wasm
@@ -256,14 +253,27 @@ workflows:
           <<: *no-tags
       - tests_rust:
           <<: *no-tags
+
       - tests_ffi:
           <<: *no-tags
+          requires:
+            - build
+            - tests_rust
       - tests_wasm:
           <<: *no-tags
+          requires:
+            - build
+            - tests_rust
       - tests_service:
           <<: *no-tags
+          requires:
+            - build
+            - tests_rust
       - tests_ledger:
           <<: *no-tags
+          requires:
+            - build
+            - tests_rust
 
   release:
     jobs:

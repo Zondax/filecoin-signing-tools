@@ -28,8 +28,8 @@ fn key_derive() {
         filecoin_signer_wasm::key_derive(mnemonic, path, "".to_string()).expect("unexpected error");
 
     assert_eq!(
-        answer.public_compressed_hexstring(),
-        "02fc016f3d88dc7070cdd95b5754d32fd5290f850b7c2208fca0f715d35861de18"
+        answer.public_hexstring(),
+        "04fc016f3d88dc7070cdd95b5754d32fd5290f850b7c2208fca0f715d35861de1841d9a342a487692a63810a6c906b443a18aa804d9d508d69facc5b06789a01b4"
     );
 
     assert_eq!(
@@ -48,7 +48,7 @@ fn sign() {
     let example_unsigned_message = JsValue::from_serde(&json!(
     {
         "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-        "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
+        "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
         "nonce": 1,
         "value": "100000",
         "gasprice": "2500",
@@ -70,7 +70,7 @@ fn sign() {
     {
         "message" : {
         "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-        "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
+        "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
         "nonce": 1,
         "value": "100000",
         "gasprice": "2500",
@@ -79,8 +79,8 @@ fn sign() {
         "params": ""
         },
         "signature" : {
-        "type":"secp256k1",
-        "data":"vprta9OwSTq4VZWQ9h3BJGFOMXTTaWSf5GGiGLq0GTZR8nXwo+DDzmfW71eAu6EFdL5aLbtPFJDvxxRj/ZXTPAE="
+        "type": 1,
+        "data":"BjmEhQYMoqTeuXAn9Rj0VWk2DDhzpDA5JvppCacpnUxViDRjEgg2NY/zOWiC7g3CzxWWG9SVzfs94e4ui9N2jgE="
         }
     }))
     .unwrap();

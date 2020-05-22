@@ -46,7 +46,6 @@ pub struct KeyDeriveFromSeedParamsAPI {
 pub struct KeyDeriveResultAPI {
     pub private_hexstring: String,
     pub public_hexstring: String,
-    pub public_compressed_hexstring: String,
     pub address: String,
 }
 
@@ -90,7 +89,6 @@ pub async fn key_derive(c: MethodCall, _: RemoteNodeSection) -> Result<Success, 
 
     let result = KeyDeriveResultAPI {
         public_hexstring: hex::encode(&key_address.public_key.0[..]),
-        public_compressed_hexstring: hex::encode(&key_address.public_key_compressed.0[..]),
         private_hexstring: hex::encode(&key_address.private_key.0),
         address: key_address.address,
     };
@@ -118,7 +116,6 @@ pub async fn key_derive_from_seed(
 
     let result = KeyDeriveResultAPI {
         public_hexstring: hex::encode(&key_address.public_key.0[..]),
-        public_compressed_hexstring: hex::encode(&key_address.public_key_compressed.0[..]),
         private_hexstring: hex::encode(&key_address.private_key.0),
         address: key_address.address,
     };
@@ -304,21 +301,22 @@ mod tests {
 
     #[tokio::test]
     async fn example_get_status_transaction() {
-        let params_str = json!({ "cid_message": "bafy2bzacea2ob4bctlucgp2okbczqvk5ctx4jqjapslz57mbcmnnzyftgeqgu" });
+        let params_str = json!({ "cid_message": "bafy2bzacean3gqtnc6lepgaankwh6tmgoefvo2raj7fuhot4urzutrsarjdjo" });
         let params: Params =
             serde_json::from_str(&params_str.to_string()).expect("could not deserialize");
 
         let expected_response = Success {
             jsonrpc: Some(Version::V2),
             result: json!({
-                "To":"t1lv32q33y64xs64pnyn6om7ftirax5ikspkumwsa",
-                "From":"t3wjxuftije2evjmzo2yoy5ghfe2o42mavrpmwuzooghzcxdhqjdu7kn6dvkzf4ko37w7sfnnzdzstcjmeooea",
-                "Nonce":66867,
-                "Value":"5000000000000000",
+                "To":"t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+                "From":"t1hw4amnow4gsgk2ottjdpdverfwhaznyrslsmoni",
+                "Nonce":21131,
+                "Value":"50000000000000000000",
                 "GasPrice":"0",
-                "GasLimit":"1000",
+                "GasLimit": 10000,
                 "Method":0,
-                "Params":""
+                "Params":"",
+                "Version": 0
             }),
             id: Id::Num(123),
         };
