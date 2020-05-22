@@ -302,7 +302,7 @@ mod tests_wasm {
         "f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a";
 
     #[test]
-    fn verify_signature() {
+    fn check_signature() {
         let tx = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040";
         let signature = "646fa7e159c263289b7852c88ecfbd553c2bc0ef612630f20a851226b1ef5c7f65a6699066960eaa4796594acb26c5e13bb1335ce9bacb44ad9574723ff5623f01";
 

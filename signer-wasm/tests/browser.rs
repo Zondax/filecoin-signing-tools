@@ -29,7 +29,7 @@ fn key_derive() {
 
     assert_eq!(
         answer.public_hexstring(),
-        "02fc016f3d88dc7070cdd95b5754d32fd5290f850b7c2208fca0f715d35861de18"
+        "04fc016f3d88dc7070cdd95b5754d32fd5290f850b7c2208fca0f715d35861de1841d9a342a487692a63810a6c906b443a18aa804d9d508d69facc5b06789a01b4"
     );
 
     assert_eq!(
