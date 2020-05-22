@@ -207,6 +207,36 @@ pub fn transaction_sign(unsigned_tx_js: JsValue, private_key: JsValue) -> Result
     Ok(signed_message_js)
 }
 
+#[wasm_bindgen(js_name = transactionSignLotus)]
+pub fn transaction_sign_lotus(unsigned_tx_js: JsValue, private_key: JsValue) -> Result<String, JsValue> {
+    set_panic_hook();
+
+    let unsigned_message = unsigned_tx_js
+        .into_serde()
+        .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
+
+    // TODO: macro this
+    let private_key_bytes = if private_key.is_string() {
+        let tmp = private_key.as_string().ok_or("Invalid private key")?;
+        PrivateKey::try_from(tmp).map_err(|e| JsValue::from(e.to_string()))?
+    } else if private_key.is_object() {
+        PrivateKey::try_from(js_sys::Uint8Array::new(&private_key).to_vec())
+            .map_err(|e| JsValue::from(e.to_string()))?
+    } else {
+        return Err(JsValue::from(
+            "Private key must be an hexstring or a buffer",
+        ));
+    };
+
+    let signed_message =
+        filecoin_signer::transaction_sign(&unsigned_message, &private_key_bytes)
+            .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
+
+    let signed_message_lotus = utils::convert_to_lotus_signed_message(signed_message);
+
+    Ok(signed_message_lotus)
+}
+
 #[wasm_bindgen(js_name = transactionSignRaw)]
 pub fn transaction_sign_raw(
     unsigned_tx_js: JsValue,

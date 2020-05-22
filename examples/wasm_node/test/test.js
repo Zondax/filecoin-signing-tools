@@ -294,6 +294,34 @@ describe('Key Recover testnet/mainnet', function () {
     })
 });
 
+describe("Lotus support", function () {
+    it("transactionSignLotus", () => {
+      const example_key = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+
+      var signed_tx = signer_wasm.transactionSignLotus(EXAMPLE_TRANSACTION, example_key.privateKey.toString("hex"));
+
+      console.log(signed_tx)
+
+      // Order is important...
+      assert.equal(signed_tx, JSON.stringify({
+        "Message": {
+          "From": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+          "GasLimit": 25000,
+          "GasPrice": "2500",
+          "Method": 0,
+          "Nonce": 1,
+          "Params": "",
+          "To": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+          "Value": "100000"
+        },
+        "Signature": {
+          "Data": "BjmEhQYMoqTeuXAn9Rj0VWk2DDhzpDA5JvppCacpnUxViDRjEgg2NY/zOWiC7g3CzxWWG9SVzfs94e4ui9N2jgE=",
+          "Type": 1
+        }
+      }));
+    })
+})
+
 const bls_tests_vectors_path = "../generated_test_cases.json";
 let rawBLSData = fs.readFileSync(bls_tests_vectors_path);
 let jsonBLSData = JSON.parse(rawBLSData);
