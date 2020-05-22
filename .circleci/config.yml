@@ -136,13 +136,14 @@ jobs:
           command: |
             source $HOME/.cargo/env
             make deps_wasm
-      - save-sccache-cache
+      - run: docker pull zondax/builder-zemu
       - run:
           name: Run zemu tests
           command: |
             nvm use 13.12.0
             source $HOME/.cargo/env
             make test_ledger
+      - save-sccache-cache
 
   tests_service:
     docker:
