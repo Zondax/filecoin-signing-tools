@@ -225,7 +225,7 @@ describe("LEDGER TEST", function () {
     assert(signatureOk);
   });
 
-  it("#transactionSignRawWithDevice() Testnet", async function() {
+  it.skip("#transactionSignRawWithDevice() Testnet", async function() {
     this.timeout(60000);
 
     const path = "m/44'/1'/0/0/0";
