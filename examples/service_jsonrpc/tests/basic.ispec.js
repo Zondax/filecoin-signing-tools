@@ -1,5 +1,4 @@
-/* eslint-disable no-console */
-import { test, expect } from "jest";
+import { expect, test } from "jest";
 import * as bip32 from "bip32";
 import * as bip39 from "bip39";
 import secp256k1 from "secp256k1";
@@ -48,7 +47,6 @@ test("key_derive", async () => {
   // Do we have a results
   expect(response).toHaveProperty("result");
   expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
-  expect(response.result.public_compressed_hexstring).toEqual(child.publicKey.toString("hex"));
   expect(response.result.address).toEqual("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
 });
 
@@ -56,13 +54,15 @@ test("key_derive testnet path", async () => {
   const path = "m/44'/1'/0/0/0";
   const response = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path, ""], 1);
   const child = EXPECTED_ROOT_NODE.derivePath(path);
+  const expectedPubKey = Buffer.from(secp256k1.publicKeyCreate(child.privateKey, false));
+
   console.log(response);
 
   // Do we have a results
   expect(response).toHaveProperty("result");
   expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
-  expect(response.result.public_hexstring).toEqual(child.publicKey.toString("hex"));
-  expect(response.result.address.startsWith('t')).toBeTruthy();
+  expect(response.result.public_hexstring).toEqual(expectedPubKey.toString("hex"));
+  expect(response.result.address.startsWith("t")).toBeTruthy();
 });
 
 test("key_derive missing all parameters", async () => {
@@ -93,26 +93,28 @@ test("key_derive missing password parameter (verify default)", async () => {
   const path = "m/44'/461'/0/0/0";
   const response = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path], 1);
   const child = EXPECTED_ROOT_NODE.derivePath(path);
+  const expectedPubKey = Buffer.from(secp256k1.publicKeyCreate(child.privateKey, false));
   console.log(response);
 
   expect(response).toHaveProperty("result");
   expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
-  expect(response.result.public_hexstring).toEqual(child.publicKey.toString("hex"));
+  expect(response.result.public_hexstring).toEqual(expectedPubKey.toString("hex"));
   expect(response.result.address).toEqual("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
 });
 
 test("key_derive_from_seed", async () => {
   const path = "m/44'/461'/0/0/0";
-  const seed = bip39.mnemonicToSeedSync(EXPECTED_MNEMONIC).toString('hex');
+  const seed = bip39.mnemonicToSeedSync(EXPECTED_MNEMONIC).toString("hex");
 
   const response = await callMethod(URL, "key_derive_from_seed", [seed, path], 1);
   const child = EXPECTED_ROOT_NODE.derivePath(path);
+  const expectedPubKey = Buffer.from(secp256k1.publicKeyCreate(child.privateKey, false));
   console.log(response);
 
   // Do we have a results
   expect(response).toHaveProperty("result");
   expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
-  expect(response.result.public_hexstring).toEqual(child.publicKey.toString("hex"));
+  expect(response.result.public_hexstring).toEqual(expectedPubKey.toString("hex"));
   expect(response.result.address).toEqual("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
 });
 
@@ -129,7 +131,7 @@ test("transaction_parse", async () => {
 });
 
 test("transaction_parse_invalid_length", async () => {
-  const response = await callMethod(URL, "transaction_parse", [EXAMPLE_TRANSACTION_CBOR+"'", true], 1);
+  const response = await callMethod(URL, "transaction_parse", [EXAMPLE_TRANSACTION_CBOR + "'", true], 1);
 
   expect(response).toHaveProperty("error");
   expect(response.error.message).toMatch(/Hex decoding | Invalid length/);
@@ -265,17 +267,17 @@ test("verify_signature signed with lotus", async () => {
 
   const tx = {
     to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-	  from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-	  nonce: 1,
+    from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+    nonce: 1,
     value: "100000",
     method: 0,
     gasprice: "2500",
     gaslimit: 25000,
-    params: ""
-  }
+    params: "",
+  };
 
   const serialized_tx = await callMethod(URL, "transaction_serialize", tx, 1);
-  const cbor_tx = Buffer.from(serialized_tx.result).toString("hex")
+  const cbor_tx = Buffer.from(serialized_tx.result).toString("hex");
   const message_digest = getDigest(Buffer.from(cbor_tx, "hex"));
 
 
@@ -283,7 +285,7 @@ test("verify_signature signed with lotus", async () => {
     Buffer.from("BjmEhQYMoqTeuXAn9Rj0VWk2DDhzpDA5JvppCacpnUxViDRjEgg2NY/zOWiC7g3CzxWWG9SVzfs94e4ui9N2jgE=", "base64").toString("hex");
 
   const signatureBuffer = Buffer.from(signatureRSV, "hex").slice(0, -1);
-  const recoveredID = Buffer.from(signatureRSV, "hex")[64]
+  const recoveredID = Buffer.from(signatureRSV, "hex")[64];
 
   const result = secp256k1.ecdsaVerify(signatureBuffer, message_digest, child.publicKey);
 
@@ -328,16 +330,16 @@ test("get_status", async () => {
   // Do we have a results
   expect(response).toHaveProperty("result");
   expect(response.result).toEqual({
-        "From": "t1hw4amnow4gsgk2ottjdpdverfwhaznyrslsmoni",
-        "GasLimit": 10000,
-        "GasPrice": "0",
-        "Method": 0,
-        "Nonce": 21131,
-        "Params": "",
-        "To": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
-        "Value": "50000000000000000000",
-        "Version": 0
-    });
+    "From": "t1hw4amnow4gsgk2ottjdpdverfwhaznyrslsmoni",
+    "GasLimit": 10000,
+    "GasPrice": "0",
+    "Method": 0,
+    "Nonce": 21131,
+    "Params": "",
+    "To": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+    "Value": "50000000000000000000",
+    "Version": 0,
+  });
 });
 
 test("get_status fail", async () => {
@@ -403,7 +405,7 @@ test("send_signed_tx", async () => {
 
   console.log("SignedTx: ", signedTxResponse);
 
-  let signature_hex = Buffer.from(signedTxResponse.result.signature.data, 'base64').toString('hex');
+  let signature_hex = Buffer.from(signedTxResponse.result.signature.data, "base64").toString("hex");
   console.log("Signature_hex: ", signature_hex);
   console.log("Signature_hex_len: ", signature_hex.length);
   expect(signature_hex.length).toBe(130);
