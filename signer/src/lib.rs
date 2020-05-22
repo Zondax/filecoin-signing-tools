@@ -473,10 +473,7 @@ mod tests {
     #[test]
     fn decode_key() {
         let pk = PrivateKey::try_from(EXAMPLE_PRIVATE_KEY.to_string()).unwrap();
-        assert_eq!(
-            hex::encode(&pk.0),
-            EXAMPLE_PRIVATE_KEY
-        );
+        assert_eq!(hex::encode(&pk.0), EXAMPLE_PRIVATE_KEY);
     }
 
     #[test]

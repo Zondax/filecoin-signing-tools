@@ -24,7 +24,7 @@ pub fn set_panic_hook() {
     // For more details see
     // https://github.com/rustwasm/console_error_panic_hook#readme
     #[cfg(feature = "console_error_panic_hook")]
-        console_error_panic_hook::set_once();
+    console_error_panic_hook::set_once();
 }
 
 #[wasm_bindgen]
@@ -76,13 +76,14 @@ fn extract_private_key(private_key_js: JsValue) -> Result<PrivateKey, JsValue> {
     if private_key_js.is_object() {
         let v = js_sys::Uint8Array::new(&private_key_js).to_vec();
 
-        let result = PrivateKey::try_from(v)
-            .map_err(|e| JsValue::from(e.to_string()))?;
+        let result = PrivateKey::try_from(v).map_err(|e| JsValue::from(e.to_string()))?;
 
         return Ok(result);
     }
 
-    Err(JsValue::from("Private key must be encoded as hexstring, base64 or buffer"))
+    Err(JsValue::from(
+        "Private key must be encoded as hexstring, base64 or buffer",
+    ))
 }
 
 fn extract_bytes(encoded_bytes_js: JsValue, error_message: &str) -> Result<Vec<u8>, JsValue> {
@@ -179,7 +180,10 @@ pub fn transaction_serialize_raw(unsigned_message: JsValue) -> Result<Vec<u8>, J
 pub fn transaction_parse(cbor_js: JsValue, testnet: bool) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let cbor_bytes = extract_bytes(cbor_js, "CBOR message must be encoded as hexstring, base64 or a buffer")?;
+    let cbor_bytes = extract_bytes(
+        cbor_js,
+        "CBOR message must be encoded as hexstring, base64 or a buffer",
+    )?;
 
     let message_parsed = filecoin_signer::transaction_parse(&CborBuffer(cbor_bytes), testnet)
         .map_err(|e| JsValue::from(e.to_string()))?;
@@ -190,7 +194,10 @@ pub fn transaction_parse(cbor_js: JsValue, testnet: bool) -> Result<JsValue, JsV
 }
 
 #[wasm_bindgen(js_name = transactionSign)]
-pub fn transaction_sign(unsigned_tx_js: JsValue, private_key_js: JsValue) -> Result<JsValue, JsValue> {
+pub fn transaction_sign(
+    unsigned_tx_js: JsValue,
+    private_key_js: JsValue,
+) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
     let unsigned_message = unsigned_tx_js
@@ -257,11 +264,17 @@ pub fn transaction_sign_raw(
 pub fn verify_signature(signature_js: JsValue, message_js: JsValue) -> Result<bool, JsValue> {
     set_panic_hook();
 
-    let signature_bytes = extract_bytes(signature_js, "Signature must be encoded as hexstring, base64 or a buffer")?;
+    let signature_bytes = extract_bytes(
+        signature_js,
+        "Signature must be encoded as hexstring, base64 or a buffer",
+    )?;
 
     let sig = Signature::try_from(signature_bytes).map_err(|e| JsValue::from(e.to_string()))?;
 
-    let message_bytes = extract_bytes(message_js, "Message must be encoced as hexstring, base64 or a buffer")?;
+    let message_bytes = extract_bytes(
+        message_js,
+        "Message must be encoced as hexstring, base64 or a buffer",
+    )?;
 
     filecoin_signer::verify_signature(&sig, &CborBuffer(message_bytes))
         .map_err(|e| JsValue::from_str(format!("Error verifying signature: {}", e).as_str()))
@@ -304,7 +317,7 @@ mod tests_wasm {
             JsValue::from(EXAMPLE_UNSIGNED_MESSAGE),
             JsValue::from_str(EXAMPLE_PRIVATE_KEY),
         )
-            .unwrap();
+        .unwrap();
 
         println!("{:?}", signed_tx);
     }
