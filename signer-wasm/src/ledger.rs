@@ -1,6 +1,6 @@
-use filecoin_signer_ledger;
 use filecoin_signer::api::{SignatureAPI, SignedMessageAPI, UnsignedMessageAPI};
 use filecoin_signer::utils::get_digest;
+use filecoin_signer_ledger;
 use js_sys::Promise;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -195,21 +195,28 @@ pub async fn transaction_sign_with_device(
         transport_wrapper: tmp,
     };
 
-    let unsigned_message : UnsignedMessageAPI = unsigned_tx_js
+    let unsigned_message: UnsignedMessageAPI = unsigned_tx_js
         .into_serde()
-        .map_err(|e| {
-            Promise::reject(&JsValue::from(format!("Error parsing parameters: {}", e)))
-        }).unwrap();
+        .map_err(|e| Promise::reject(&JsValue::from(format!("Error parsing parameters: {}", e))))
+        .unwrap();
 
     let cbor_message = filecoin_signer::transaction_serialize(&unsigned_message)
         .map_err(|e| {
-            Promise::reject(&JsValue::from(format!("Error serializing transaction: {}", e)))
-        }).unwrap();
+            Promise::reject(&JsValue::from(format!(
+                "Error serializing transaction: {}",
+                e
+            )))
+        })
+        .unwrap();
 
     let message = get_digest(cbor_message.as_ref())
         .map_err(|e| {
-            Promise::reject(&JsValue::from(format!("Error preparing transaction for signing: {}", e)))
-        }).unwrap();
+            Promise::reject(&JsValue::from(format!(
+                "Error preparing transaction for signing: {}",
+                e
+            )))
+        })
+        .unwrap();
 
     let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
 
@@ -224,7 +231,7 @@ pub async fn transaction_sign_with_device(
                 signature: SignatureAPI {
                     sig_type: filecoin_signer::api::SigTypes::SigTypeSecp256k1 as u8,
                     data: s.sig.serialize().to_vec(),
-                }
+                },
             };
 
             Promise::resolve(&ok_or_ret_promise!(
