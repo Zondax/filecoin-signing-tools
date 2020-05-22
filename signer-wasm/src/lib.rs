@@ -208,7 +208,10 @@ pub fn transaction_sign(unsigned_tx_js: JsValue, private_key: JsValue) -> Result
 }
 
 #[wasm_bindgen(js_name = transactionSignLotus)]
-pub fn transaction_sign_lotus(unsigned_tx_js: JsValue, private_key: JsValue) -> Result<String, JsValue> {
+pub fn transaction_sign_lotus(
+    unsigned_tx_js: JsValue,
+    private_key: JsValue,
+) -> Result<String, JsValue> {
     set_panic_hook();
 
     let unsigned_message = unsigned_tx_js

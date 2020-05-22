@@ -1,8 +1,8 @@
+use filecoin_signer::api::SignedMessageAPI;
 use filecoin_signer_ledger::app::{Address, Signature};
 use js_sys::Object;
-use wasm_bindgen::prelude::*;
-use filecoin_signer::api::SignedMessageAPI;
 use serde_json::json;
+use wasm_bindgen::prelude::*;
 
 // This defines the Node.js Buffer type
 #[wasm_bindgen]
@@ -13,7 +13,7 @@ extern "C" {
     fn from(buffer_array: &[u8]) -> Buffer;
 }
 
-pub fn convert_to_lotus_signed_message(signed_message : SignedMessageAPI) -> String {
+pub fn convert_to_lotus_signed_message(signed_message: SignedMessageAPI) -> String {
     let signed_message_lotus = json!({
         "Message": {
             "To": signed_message.message.to,
