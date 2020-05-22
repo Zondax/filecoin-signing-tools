@@ -224,6 +224,31 @@ const signed_tx = signer_wasm.transactionSign(EXAMPLE_TRANSACTION, example_key.p
 console.log(signed_tx);
 ```
 
+## transactionSignLotus (support Lotus schema)
+
+Sign a transaction and return a JSON string of the signed transaction which can then be sent to a lotus node.
+
+Arguments:
+* **transaction**: a filecoin transaction;
+* **privatekey**: a private key (hexstring or buffer);
+
+```javascript
+const signer_wasm = require('@zondax/filecoin-signer');
+// or for browser
+// import * as signer_wasm from "@zondax/filecoin-signer";
+const bip32 = require('bip32');
+
+// Use your private key
+const MASTER_KEY = "xprv424242424242424242";
+
+let MASTER_NODE = bip32.fromBase58(MASTER_KEY);
+const example_key = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+
+const signed_tx_json = signer_wasm.transactionSignLotus(EXAMPLE_TRANSACTION, example_key.privateKey.toString("hex"));
+
+console.log(signed_tx_json);
+```
+
 ## verifySignature
 
 Verify a signature.
