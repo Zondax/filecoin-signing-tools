@@ -104,7 +104,6 @@ jobs:
       # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-rs/issues/68
       - run: make test_wasm_unit
       - run: make test_wasm_node
-      - run: make test_wasm_browser
       # No need to save this in cache
 
   tests_ledger:

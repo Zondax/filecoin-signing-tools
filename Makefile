@@ -33,13 +33,13 @@ test_wasm_unit: build_wasm
 test_wasm_node: link_wasm
 	cd examples/wasm_node && yarn install && yarn test
 
-test_wasm_browser: link_wasm
-	cd examples/wasm_browser && yarn install && yarn start
-
 test_wasm: test_wasm_unit test_wasm_node
 
 test_ledger: link_wasm
 	cd examples/wasm_ledger && yarn install && yarn test:ledger
+
+demo_wasm_browser: link_wasm
+	cd examples/wasm_browser && yarn install && yarn certificate && yarn start
 
 deps_rust:
 	cargo install cargo-audit
