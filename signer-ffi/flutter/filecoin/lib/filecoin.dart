@@ -32,10 +32,6 @@ class Filecoin {
     filecoin
       .lookup<NativeFunction<Pointer<Utf8> Function(Pointer)>>("filecoin_signer_extended_key_public_key")
       .asFunction();
-  static final Pointer<Utf8> Function(Pointer) extendedKeyPublicKeyCompressed =
-    filecoin
-      .lookup<NativeFunction<Pointer<Utf8> Function(Pointer)>>("filecoin_signer_extended_key_public_key_compressed")
-      .asFunction();
   static final void Function(Pointer) extendedKeyFree =
     filecoin
       .lookup<NativeFunction<Void Function(Pointer)>>("filecoin_signer_extended_key_free")
