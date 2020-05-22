@@ -52,7 +52,6 @@ pub struct PublicKeyCompressed(pub [u8; COMPRESSED_PUBLIC_KEY_SIZE]);
 pub struct ExtendedKey {
     pub private_key: PrivateKey,
     pub public_key: PublicKey,
-    pub public_key_compressed: PublicKeyCompressed,
     pub address: String,
 }
 
@@ -63,8 +62,15 @@ impl TryFrom<String> for PrivateKey {
     type Error = SignerError;
 
     fn try_from(s: String) -> Result<PrivateKey, Self::Error> {
-        let v = hex::decode(&s)?;
-        PrivateKey::try_from(v)
+        if let Ok(v) = hex::decode(&s) {
+            return PrivateKey::try_from(v);
+        }
+
+        if let Ok(v) = base64::decode(&s) {
+            return PrivateKey::try_from(v);
+        }
+
+        Err(SignerError::KeyDecoding())
     }
 }
 
@@ -110,16 +116,14 @@ pub fn key_derive(mnemonic: &str, path: &str, password: &str) -> Result<Extended
 
     let mut address = Address::new_secp256k1(&esk.public_key().to_vec());
 
+    address.set_network(Network::Mainnet);
     if bip44_path.is_testnet() {
         address.set_network(Network::Testnet);
-    } else {
-        address.set_network(Network::Mainnet);
     }
 
     Ok(ExtendedKey {
         private_key: PrivateKey(esk.secret_key()),
         public_key: PublicKey(esk.public_key()),
-        public_key_compressed: PublicKeyCompressed(esk.public_key_compressed()),
         address: address.to_string(),
     })
 }
@@ -140,16 +144,14 @@ pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, Sign
 
     let mut address = Address::new_secp256k1(&esk.public_key().to_vec());
 
+    address.set_network(Network::Mainnet);
     if bip44_path.is_testnet() {
         address.set_network(Network::Testnet);
-    } else {
-        address.set_network(Network::Mainnet);
     }
 
     Ok(ExtendedKey {
         private_key: PrivateKey(esk.secret_key()),
         public_key: PublicKey(esk.public_key()),
-        public_key_compressed: PublicKeyCompressed(esk.public_key_compressed()),
         address: address.to_string(),
     })
 }
@@ -175,7 +177,6 @@ pub fn key_recover(private_key: &PrivateKey, testnet: bool) -> Result<ExtendedKe
     Ok(ExtendedKey {
         private_key: PrivateKey(secret_key.serialize()),
         public_key: PublicKey(public_key.serialize()),
-        public_key_compressed: PublicKeyCompressed(public_key.serialize_compressed()),
         address: address.to_string(),
     })
 }
@@ -468,6 +469,12 @@ mod tests {
 
     const EXAMPLE_PRIVATE_KEY: &str =
         "f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a";
+
+    #[test]
+    fn decode_key() {
+        let pk = PrivateKey::try_from(EXAMPLE_PRIVATE_KEY.to_string()).unwrap();
+        assert_eq!(hex::encode(&pk.0), EXAMPLE_PRIVATE_KEY);
+    }
 
     #[test]
     fn generate_mnemonic() {

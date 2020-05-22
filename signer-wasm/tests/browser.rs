@@ -28,8 +28,8 @@ fn key_derive() {
         filecoin_signer_wasm::key_derive(mnemonic, path, "".to_string()).expect("unexpected error");
 
     assert_eq!(
-        answer.public_compressed_hexstring(),
-        "02fc016f3d88dc7070cdd95b5754d32fd5290f850b7c2208fca0f715d35861de18"
+        answer.public_hexstring(),
+        "04fc016f3d88dc7070cdd95b5754d32fd5290f850b7c2208fca0f715d35861de1841d9a342a487692a63810a6c906b443a18aa804d9d508d69facc5b06789a01b4"
     );
 
     assert_eq!(
