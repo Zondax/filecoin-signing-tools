@@ -157,8 +157,7 @@ jobs:
       - checkout
       - restore-sccache-cache
 
-      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev curl
-      - run: cargo build
+      - run: cargo build --manifest-path service/Cargo.toml
       - run:
           name: patch configuration file
           command: |
@@ -171,7 +170,7 @@ jobs:
           name: start service
           background: true
           command: |
-            cargo run -- start
+            cargo run --manifest-path service/Cargo.toml -- start
       - run:
           name: install node dependencies
           command: |
