@@ -20,7 +20,7 @@ describe("LEDGER TEST", function () {
   var sim,
       transport;
 
-  before(async function() {
+  beforeEach(async function() {
     // runs before tests start
     await catchExit();
     await Zemu.checkAndPullImage();
@@ -33,7 +33,7 @@ describe("LEDGER TEST", function () {
         logging: true,
         custom: `-s "${APP_SEED}"`,
         press_delay: 150
-        ,X11: true
+        //,X11: true
     };
 
     await sim.start(sim_options);
@@ -41,7 +41,7 @@ describe("LEDGER TEST", function () {
     transport = sim.getTransport();
   });
 
-  after(async function() {
+  afterEach(async function() {
     // runs after all the test are done
     await sim.close();
     // reset
