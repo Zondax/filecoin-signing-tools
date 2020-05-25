@@ -20,7 +20,7 @@ describe("LEDGER TEST", function () {
   var sim,
       transport;
 
-  beforeEach(async function() {
+  before(async function() {
     // runs before tests start
     await catchExit();
     await Zemu.checkAndPullImage();
@@ -33,7 +33,7 @@ describe("LEDGER TEST", function () {
         logging: true,
         custom: `-s "${APP_SEED}"`,
         press_delay: 150
-        // ,X11: true
+        ,X11: true
     };
 
     await sim.start(sim_options);
@@ -41,7 +41,7 @@ describe("LEDGER TEST", function () {
     transport = sim.getTransport();
   });
 
-  afterEach(async function() {
+  after(async function() {
     // runs after all the test are done
     await sim.close();
     // reset
@@ -181,9 +181,11 @@ describe("LEDGER TEST", function () {
   });
 
   it("#transactionSignRawWithDevice()", async function() {
+    this.timeout(10000);
+
     const path = "m/44'/461'/0/0/0";
     const message = Buffer.from(
-      "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040",
+      "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a0430009c41961a80040",
       "hex",
     );
 
@@ -268,9 +270,11 @@ describe("LEDGER TEST", function () {
   });
 
   it("#transactionSignRawWithDevice() Fail", async function() {
+    this.timeout(10000);
+    
     const path = "m/44'/461'/0/0/0";
     let invalidMessage = Buffer.from(
-      "88315501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040" + "01",
+      "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a0430009c41961a80040" + "01",
       "hex",
     );
 
