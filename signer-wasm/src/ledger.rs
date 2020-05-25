@@ -4,13 +4,13 @@ use filecoin_signer_ledger;
 use js_sys::Promise;
 use wasm_bindgen::prelude::*;
 
-use filecoin_signer_ledger::{APDUTransport, TransportWrapperTrait};
 use filecoin_signer_ledger::errors::LedgerError;
+use filecoin_signer_ledger::{APDUTransport, TransportWrapperTrait};
 
 use bip44::BIP44Path;
 
-use crate::utils::{address_to_object, bytes_to_buffer, signature_to_object, Buffer};
 use crate::ledger_errors::{ledger_error_to_javascript_error, Error};
+use crate::utils::{address_to_object, bytes_to_buffer, signature_to_object, Buffer};
 
 macro_rules! ok_or_ret_promise {
     ($rslt:expr, $err_msg:literal) => {
@@ -162,7 +162,7 @@ pub async fn transaction_sign_raw_with_device(
             let signature_object = signature_to_object(&s);
 
             Promise::resolve(&signature_object)
-        },
+        }
         Err(err) => {
             let error = ledger_error_to_javascript_error(err);
             Promise::reject(&ok_or_ret_promise!(
