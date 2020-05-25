@@ -2,14 +2,15 @@ use filecoin_signer::api::{SignatureAPI, SignedMessageAPI, UnsignedMessageAPI};
 use filecoin_signer::utils::get_digest;
 use filecoin_signer_ledger;
 use js_sys::Promise;
-use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
 use filecoin_signer_ledger::{APDUTransport, TransportWrapperTrait};
+use filecoin_signer_ledger::errors::LedgerError;
 
 use bip44::BIP44Path;
 
 use crate::utils::{address_to_object, bytes_to_buffer, signature_to_object, Buffer};
+use crate::ledger_errors::{ledger_error_to_javascript_error, Error};
 
 macro_rules! ok_or_ret_promise {
     ($rslt:expr, $err_msg:literal) => {
@@ -26,15 +27,6 @@ macro_rules! ok_or_ret_promise {
 extern "C" {
     #[wasm_bindgen(js_namespace = console)]
     fn log(s: &str);
-}
-
-/// FilecoinApp Error message
-#[derive(Deserialize, Serialize)]
-pub struct Error {
-    /// Message return code
-    pub return_code: u16,
-    /// Error message
-    pub error_message: String,
 }
 
 #[wasm_bindgen(module = "/transportWrapper.js")]
@@ -170,12 +162,9 @@ pub async fn transaction_sign_raw_with_device(
             let signature_object = signature_to_object(&s);
 
             Promise::resolve(&signature_object)
-        }
+        },
         Err(err) => {
-            let error = Error {
-                return_code: 0x6f00,
-                error_message: err.to_string(),
-            };
+            let error = ledger_error_to_javascript_error(err);
             Promise::reject(&ok_or_ret_promise!(
                 JsValue::from_serde(&error),
                 "Error converting error message to javascript value."

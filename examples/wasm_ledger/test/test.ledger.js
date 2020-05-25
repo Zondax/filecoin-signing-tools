@@ -288,7 +288,7 @@ describe("LEDGER TEST", function () {
       assert.strictEqual(e.return_code, 0x6984);
       assert.strictEqual(
         e.error_message,
-        "Data is invalid : Unexpected data type"
+        "[APDU_CODE_DATA_INVALID] data reversibly blocked (invalidated)"
       );
 
       return

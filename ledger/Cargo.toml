@@ -25,7 +25,8 @@ futures = "0.3.4"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0.16"
 
-ledger-transport = { git = "https://github.com/Zondax/ledger-rs" }
+# get master once PR has been merged
+ledger-transport = { git = "https://github.com/Zondax/ledger-rs",  branch = "bug/handle-retcode"}
 bip44 = { git = "https://github.com/Zondax/ledger-rs" }
 
 # For wasm compiling
