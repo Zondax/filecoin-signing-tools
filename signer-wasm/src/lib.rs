@@ -5,6 +5,7 @@ use filecoin_signer::signature::Signature;
 use filecoin_signer::{CborBuffer, PrivateKey};
 use std::convert::TryFrom;
 
+mod ledger_errors;
 mod utils;
 
 #[cfg(target_arch = "wasm32")]

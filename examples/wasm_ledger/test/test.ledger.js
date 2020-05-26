@@ -33,7 +33,7 @@ describe("LEDGER TEST", function () {
         logging: true,
         custom: `-s "${APP_SEED}"`,
         press_delay: 150
-        // ,X11: true
+        //,X11: true
     };
 
     await sim.start(sim_options);
@@ -181,9 +181,11 @@ describe("LEDGER TEST", function () {
   });
 
   it("#transactionSignRawWithDevice()", async function() {
+    this.timeout(10000);
+
     const path = "m/44'/461'/0/0/0";
     const message = Buffer.from(
-      "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040",
+      "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a0430009c41961a80040",
       "hex",
     );
 
@@ -192,7 +194,7 @@ describe("LEDGER TEST", function () {
     const responseRequest = signer.transactionSignRawWithDevice(message, path, transport);
     await Zemu.sleep(2000);
 
-    await sim.clickLeft();
+    await sim.clickBoth();
     await sim.clickRight();
     await sim.clickBoth();
 
@@ -267,29 +269,33 @@ describe("LEDGER TEST", function () {
     console.log(`compact   : ${responseSign.signature_compact.toString("base64")}`);
   });
 
-  it.skip("#transactionSignRawWithDevice() Fail", async function() {
+  it("#transactionSignRawWithDevice() Fail", async function() {
+    this.timeout(10000);
+
     const path = "m/44'/461'/0/0/0";
     let invalidMessage = Buffer.from(
-      "88315501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040" + "01",
+      "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a0430009c41961a80040" + "01",
       "hex",
     );
 
     const responseRequest = signer.transactionSignRawWithDevice(invalidMessage, path, transport);
-    await Zemu.sleep(2000);
 
-    /*await sim.clickLeft();
-    await sim.clickRight();
-    await sim.clickBoth();*/
 
-    const responseSign = await responseRequest;
+    try {
+      const responseSign = await responseRequest;
+    } catch(e) {
+      console.log(e)
+      assert.strictEqual(e.return_code, 0x6984);
+      assert.strictEqual(
+        e.error_message,
+        "[APDU_CODE_DATA_INVALID] data reversibly blocked (invalidated)"
+      );
 
-    // eslint-disable-next-line no-console
-    console.log(responseSign);
-    assert.strictEqual(responseSign.return_code, 0x6984);
-    assert.strictEqual(
-      responseSign.error_message,
-      "Data is invalid : Unexpected data type"
-    );
+      return
+    }
+
+    assert(false);
+
   });
 
 })
