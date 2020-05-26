@@ -24,13 +24,13 @@ class Filecoin {
       .lookup<NativeFunction<Void Function(Pointer)>>("filecoin_signer_error_free")
       .asFunction();
 
-  static final Pointer<Utf8> Function(Pointer) extendedKeyPrivateKey =
+  static final Pointer<Utf8> Function(Pointer, Pointer) extendedKeyPrivateKey =
     filecoin
-      .lookup<NativeFunction<Pointer<Utf8> Function(Pointer)>>("filecoin_signer_extended_key_private_key")
+      .lookup<NativeFunction<Pointer<Utf8> Function(Pointer, Pointer)>>("filecoin_signer_extended_key_private_key")
       .asFunction();
-  static final Pointer<Utf8> Function(Pointer) extendedKeyPublicKey =
+  static final Pointer<Utf8> Function(Pointer, Pointer) extendedKeyPublicKey =
     filecoin
-      .lookup<NativeFunction<Pointer<Utf8> Function(Pointer)>>("filecoin_signer_extended_key_public_key")
+      .lookup<NativeFunction<Pointer<Utf8> Function(Pointer, Pointer)>>("filecoin_signer_extended_key_public_key")
       .asFunction();
   static final void Function(Pointer) extendedKeyFree =
     filecoin

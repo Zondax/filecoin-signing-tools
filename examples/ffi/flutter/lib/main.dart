@@ -26,7 +26,7 @@ class _MyAppState extends State<MyApp> {
       stderr.write(Filecoin.errorMessage(error));
     }
     else {
-      var privateKeyPtr = Filecoin.extendedKeyPrivateKey(extendedKey);
+      var privateKeyPtr = Filecoin.extendedKeyPrivateKey(extendedKey, error);
       privateKey = Utf8.fromUtf8(privateKeyPtr);
       assert(privateKey == 'f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a');
       Filecoin.stringFree(privateKeyPtr);

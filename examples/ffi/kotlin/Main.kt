@@ -13,7 +13,7 @@ fun main() {
         System.err.println(FilecoinSigner.errorMessage(error))
     }
     else {
-        val privateKey = FilecoinSigner.extendedKeyPrivateKey(extendedKey);
+        val privateKey = FilecoinSigner.extendedKeyPrivateKey(extendedKey, error);
         assert(privateKey == "f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a")
     }
 

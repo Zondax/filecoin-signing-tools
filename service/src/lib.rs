@@ -6,6 +6,15 @@
 
 // Tip: Deny warnings with `RUSTFLAGS="-D warnings"` environment variable in CI
 
+#![cfg_attr(
+    not(test),
+    deny(
+        clippy::option_unwrap_used,
+        clippy::option_expect_used,
+        clippy::result_unwrap_used,
+        clippy::result_expect_used,
+    )
+)]
 #![forbid(unsafe_code)]
 #![warn(
     missing_docs,

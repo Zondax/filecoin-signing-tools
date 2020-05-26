@@ -4,21 +4,44 @@ use filecoin_signer_ledger;
 use js_sys::Promise;
 use wasm_bindgen::prelude::*;
 
-use filecoin_signer_ledger::errors::LedgerError;
 use filecoin_signer_ledger::{APDUTransport, TransportWrapperTrait};
 
 use bip44::BIP44Path;
 
-use crate::ledger_errors::{ledger_error_to_javascript_error, Error};
+use crate::ledger_errors::ledger_error_to_javascript_error;
 use crate::utils::{address_to_object, bytes_to_buffer, signature_to_object, Buffer};
 
-macro_rules! ok_or_ret_promise {
-    ($rslt:expr, $err_msg:literal) => {
-        if let Ok(r) = $rslt {
-            r
-        } else {
-            return Promise::reject(&js_sys::Error::new($err_msg));
+const INVALID_BIP44: &str = "Invalid BIP44 Path";
+
+macro_rules! ok_or_reject {
+    ($rslt:expr) => {
+        match $rslt {
+            Err(_) => return Promise::reject(&js_sys::Error::new("Error")),
+            Ok(o) => o,
         }
+    };
+    ($rslt:expr, $err_msg:expr) => {
+        match $rslt {
+            Err(e) => {
+                return Promise::reject(&js_sys::Error::new(&{
+                    let mut s = String::with_capacity(32);
+                    s.push_str($err_msg);
+                    s.push_str(": ");
+                    s.push_str(&e.to_string());
+                    s
+                }))
+            }
+            Ok(o) => o,
+        }
+    };
+}
+
+macro_rules! js_or_reject {
+    ($from_serde:expr) => {
+        ok_or_reject!(
+            JsValue::from_serde($from_serde),
+            "Error converting message to javascript value"
+        )
     };
 }
 
@@ -49,25 +72,17 @@ pub async fn get_version(transport_wrapper: TransportWrapper) -> Promise {
     let apdu_transport = APDUTransport {
         transport_wrapper: tmp,
     };
-
     let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
     let v_result = app.get_version().await;
 
-    // FIXME: Do this automatically to simplify this code
     match v_result {
-        Ok(v) => Promise::resolve(&ok_or_ret_promise!(
-            JsValue::from_serde(&v),
-            "Error converting error message to javascript value."
-        )),
+        Ok(v) => {
+            let js_value = js_or_reject!(&v);
+            Promise::resolve(&js_value)
+        }
         Err(err) => {
-            let error = Error {
-                return_code: 0x6f00,
-                error_message: err.to_string(),
-            };
-            Promise::reject(&ok_or_ret_promise!(
-                JsValue::from_serde(&error),
-                "Error converting error message to javascript value."
-            ))
+            let js_value = js_or_reject!(&ledger_error_to_javascript_error(err));
+            Promise::reject(&js_value)
         }
     }
 }
@@ -81,29 +96,18 @@ pub async fn key_retrieve_from_device(
     let apdu_transport = APDUTransport {
         transport_wrapper: tmp,
     };
-
     let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
+    let bip44_path = ok_or_reject!(BIP44Path::from_string(&path), INVALID_BIP44);
 
-    // FIXME: reconcile BIP44Path different implementation
-    let bip44_path = ok_or_ret_promise!(BIP44Path::from_string(&path), "Invalid BIP44 Path");
-
-    let a_result = app.get_address(&bip44_path, false).await;
-
-    match a_result {
-        Ok(a) => {
-            let address_object = address_to_object(&a);
-
-            Promise::resolve(&address_object)
+    match app.get_address(&bip44_path, false).await {
+        Ok(address) => {
+            let obj_rslt = address_to_object(&address);
+            let obj = ok_or_reject!(&obj_rslt);
+            Promise::resolve(&obj)
         }
         Err(err) => {
-            let error = Error {
-                return_code: 0x6f00,
-                error_message: err.to_string(),
-            };
-            Promise::reject(&ok_or_ret_promise!(
-                JsValue::from_serde(&error),
-                "Error converting error message to javascript value."
-            ))
+            let js_value = js_or_reject!(&ledger_error_to_javascript_error(err));
+            Promise::reject(&js_value)
         }
     }
 }
@@ -114,28 +118,18 @@ pub async fn show_key_on_device(path: String, transport_wrapper: TransportWrappe
     let apdu_transport = APDUTransport {
         transport_wrapper: tmp,
     };
-
     let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
+    let bip44_path = ok_or_reject!(BIP44Path::from_string(&path), INVALID_BIP44);
 
-    let bip44_path = ok_or_ret_promise!(BIP44Path::from_string(&path), "Invalid BIP44 Path");
-
-    let a_result = app.get_address(&bip44_path, true).await;
-
-    match a_result {
-        Ok(a) => {
-            let address_object = address_to_object(&a);
-
-            Promise::resolve(&address_object)
+    match app.get_address(&bip44_path, true).await {
+        Ok(address) => {
+            let obj_rslt = address_to_object(&address);
+            let obj = ok_or_reject!(&obj_rslt);
+            Promise::resolve(&obj)
         }
         Err(err) => {
-            let error = Error {
-                return_code: 0x6f00,
-                error_message: err.to_string(),
-            };
-            Promise::reject(&ok_or_ret_promise!(
-                JsValue::from_serde(&error),
-                "Error converting error message to javascript value."
-            ))
+            let js_value = js_or_reject!(&ledger_error_to_javascript_error(err));
+            Promise::reject(&js_value)
         }
     }
 }
@@ -150,25 +144,18 @@ pub async fn transaction_sign_raw_with_device(
     let apdu_transport = APDUTransport {
         transport_wrapper: tmp,
     };
-
     let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
+    let bip44_path = ok_or_reject!(BIP44Path::from_string(&path), INVALID_BIP44);
 
-    let bip44_path = ok_or_ret_promise!(BIP44Path::from_string(&path), "Invalid BIP44 Path");
-
-    let s_result = app.sign(&bip44_path, &message).await;
-
-    match s_result {
-        Ok(s) => {
-            let signature_object = signature_to_object(&s);
-
-            Promise::resolve(&signature_object)
+    match app.sign(&bip44_path, &message).await {
+        Ok(sig) => {
+            let obj_rslt = signature_to_object(&sig);
+            let obj = ok_or_reject!(&obj_rslt);
+            Promise::resolve(&obj)
         }
         Err(err) => {
-            let error = ledger_error_to_javascript_error(err);
-            Promise::reject(&ok_or_ret_promise!(
-                JsValue::from_serde(&error),
-                "Error converting error message to javascript value."
-            ))
+            let js_value = js_or_reject!(&ledger_error_to_javascript_error(err));
+            Promise::reject(&js_value)
         }
     }
 }
@@ -184,59 +171,34 @@ pub async fn transaction_sign_with_device(
         transport_wrapper: tmp,
     };
 
-    let unsigned_message: UnsignedMessageAPI = unsigned_tx_js
-        .into_serde()
-        .map_err(|e| Promise::reject(&JsValue::from(format!("Error parsing parameters: {}", e))))
-        .unwrap();
+    let unsigned_message: UnsignedMessageAPI =
+        ok_or_reject!(unsigned_tx_js.into_serde(), "Error parsing parameters");
 
-    let cbor_message = filecoin_signer::transaction_serialize(&unsigned_message)
-        .map_err(|e| {
-            Promise::reject(&JsValue::from(format!(
-                "Error serializing transaction: {}",
-                e
-            )))
-        })
-        .unwrap();
+    let cbor_message = ok_or_reject!(
+        filecoin_signer::transaction_serialize(&unsigned_message),
+        "Error serializing transaction"
+    );
 
-    let message = get_digest(cbor_message.as_ref())
-        .map_err(|e| {
-            Promise::reject(&JsValue::from(format!(
-                "Error preparing transaction for signing: {}",
-                e
-            )))
-        })
-        .unwrap();
+    let message = ok_or_reject!(
+        get_digest(cbor_message.as_ref()),
+        "Error preparing transaction for signing"
+    );
 
     let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
 
-    let bip44_path = ok_or_ret_promise!(BIP44Path::from_string(&path), "Invalid BIP44 Path");
+    let bip44_path = ok_or_reject!(BIP44Path::from_string(&path), INVALID_BIP44);
 
-    let s_result = app.sign(&bip44_path, &message).await;
-
-    match s_result {
-        Ok(s) => {
-            let signed_message = SignedMessageAPI {
-                message: unsigned_message,
-                signature: SignatureAPI {
-                    sig_type: filecoin_signer::api::SigTypes::SigTypeSecp256k1 as u8,
-                    data: s.sig.serialize().to_vec(),
-                },
-            };
-
-            Promise::resolve(&ok_or_ret_promise!(
-                JsValue::from_serde(&signed_message),
-                "Error converting error message to javascript value."
-            ))
-        }
+    match app.sign(&bip44_path, &message).await {
+        Ok(s) => Promise::resolve(&js_or_reject!(&SignedMessageAPI {
+            message: unsigned_message,
+            signature: SignatureAPI {
+                sig_type: filecoin_signer::api::SigTypes::SigTypeSecp256k1 as u8,
+                data: s.sig.serialize().to_vec(),
+            },
+        })),
         Err(err) => {
-            let error = Error {
-                return_code: 0x6f00,
-                error_message: err.to_string(),
-            };
-            Promise::reject(&ok_or_ret_promise!(
-                JsValue::from_serde(&error),
-                "Error converting error message to javascript value."
-            ))
+            let js_value = js_or_reject!(&ledger_error_to_javascript_error(err));
+            Promise::reject(&js_value)
         }
     }
 }
@@ -247,25 +209,16 @@ pub async fn app_info(transport_wrapper: TransportWrapper) -> Promise {
     let apdu_transport = APDUTransport {
         transport_wrapper: tmp,
     };
-
     let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
 
-    let i_result = app.get_app_info().await;
-
-    match i_result {
-        Ok(i) => Promise::resolve(&ok_or_ret_promise!(
-            JsValue::from_serde(&i),
-            "Error converting error message to javascript value."
-        )),
+    match app.get_app_info().await {
+        Ok(i) => {
+            let js_value = js_or_reject!(&i);
+            Promise::resolve(&js_value)
+        }
         Err(err) => {
-            let error = Error {
-                return_code: 0x6f00,
-                error_message: err.to_string(),
-            };
-            Promise::reject(&ok_or_ret_promise!(
-                JsValue::from_serde(&error),
-                "Error converting error message to javascript value."
-            ))
+            let js_value = js_or_reject!(&ledger_error_to_javascript_error(err));
+            Promise::reject(&js_value)
         }
     }
 }
@@ -276,25 +229,16 @@ pub async fn device_info(transport_wrapper: TransportWrapper) -> Promise {
     let apdu_transport = APDUTransport {
         transport_wrapper: tmp,
     };
-
     let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
 
-    let d_result = app.get_device_info().await;
-
-    match d_result {
-        Ok(d) => Promise::resolve(&ok_or_ret_promise!(
-            JsValue::from_serde(&d),
-            "Error converting error message to javascript value."
-        )),
+    match app.get_device_info().await {
+        Ok(d) => {
+            let js_value = js_or_reject!(&d);
+            Promise::resolve(&js_value)
+        }
         Err(err) => {
-            let error = Error {
-                return_code: 0x6f00,
-                error_message: err.to_string(),
-            };
-            Promise::reject(&ok_or_ret_promise!(
-                JsValue::from_serde(&error),
-                "Error converting error message to javascript value."
-            ))
+            let js_value = js_or_reject!(&ledger_error_to_javascript_error(err));
+            Promise::reject(&js_value)
         }
     }
 }

@@ -1,15 +1,25 @@
-use wasm_bindgen::prelude::*;
+#![cfg_attr(
+    not(test),
+    deny(
+        clippy::option_unwrap_used,
+        clippy::option_expect_used,
+        clippy::result_unwrap_used,
+        clippy::result_expect_used,
+    )
+)]
 
 use filecoin_signer::api::UnsignedMessageAPI;
 use filecoin_signer::signature::Signature;
 use filecoin_signer::{CborBuffer, PrivateKey};
 use std::convert::TryFrom;
+use wasm_bindgen::prelude::*;
 
-mod ledger_errors;
 mod utils;
 
 #[cfg(target_arch = "wasm32")]
 pub mod ledger;
+#[cfg(target_arch = "wasm32")]
+mod ledger_errors;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
