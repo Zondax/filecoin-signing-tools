@@ -257,10 +257,6 @@ impl FilecoinApp {
             return Err(LedgerError::InvalidSignature);
         }
 
-        /*if response.retcode != APDUErrorCodes::NoError as u16 {
-            return Err(LedgerError::NoSignature);
-        }*/
-
         let mut r = [Default::default(); 32];
         r.copy_from_slice(&response.data[..32]);
 
