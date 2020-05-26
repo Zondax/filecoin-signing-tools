@@ -146,7 +146,7 @@ pub async fn is_mainnet(url: &str, jwt: &str) -> Result<bool, ServiceError> {
     let m = MethodCall {
         jsonrpc: Some(Version::V2),
         method: "Filecoin.StateNetworkName".to_owned(),
-        params: Params::Array(vec!()),
+        params: Params::Array(vec![]),
         id: Id::Num(call_id),
     };
 
@@ -164,7 +164,6 @@ pub async fn is_mainnet(url: &str, jwt: &str) -> Result<bool, ServiceError> {
     } else {
         Ok(true)
     }
-
 }
 
 #[cfg(test)]
