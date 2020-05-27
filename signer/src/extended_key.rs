@@ -80,7 +80,7 @@ impl ExtendedSecretKey {
     }
 
     #[inline]
-    pub fn public_key_compressed(&self) -> [u8; COMPRESSED_PUBLIC_KEY_SIZE] {
+    fn public_key_compressed(&self) -> [u8; COMPRESSED_PUBLIC_KEY_SIZE] {
         let pubkey = PublicKey::from_secret_key(&self.secret_key);
         pubkey.serialize_compressed()
     }

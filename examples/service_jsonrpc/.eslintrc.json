@@ -28,7 +28,9 @@
     "vue/max-attributes-per-line": "off",
     "import/no-unresolved": [
       2,
-      { "caseSensitive": false }
+      {
+        "caseSensitive": false
+      }
     ]
   }
 }

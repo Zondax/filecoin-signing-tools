@@ -11,6 +11,9 @@ pub enum SignerError {
     /// Secp256k1 error
     #[error("secp256k1 error")]
     Secp256k1(#[from] secp256k1::Error),
+    // Key decoding error
+    #[error("key decoding error (only hex or base64 is accepted)")]
+    KeyDecoding(),
     /// Hex Error
     #[error("Hex decoding error | {0}")]
     HexDecode(#[from] hex::FromHexError),
@@ -40,13 +43,14 @@ impl From<SignerError> for ffi_support::ExternError {
         let code = match e {
             SignerError::CBOR(_) => 1,
             SignerError::Secp256k1(_) => 2,
-            SignerError::HexDecode(_) => 3,
-            SignerError::InvalidBigInt(_) => 4,
-            SignerError::GenericString(_) => 5,
-            SignerError::ParseIntError(_) => 6,
-            SignerError::BLS(_) => 7,
+            SignerError::KeyDecoding() => 3,
+            SignerError::HexDecode(_) => 4,
+            SignerError::InvalidBigInt(_) => 5,
+            SignerError::GenericString(_) => 6,
+            SignerError::ParseIntError(_) => 7,
+            SignerError::BLS(_) => 8,
             SignerError::InvalidBIP44Path(_) => 8,
-            SignerError::TryFromSlice(_) => 9,
+            SignerError::TryFromSlice(_) => 10,
         };
         Self::new_error(ffi_support::ErrorCode::new(code), e.to_string())
     }

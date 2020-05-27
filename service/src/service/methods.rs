@@ -46,7 +46,6 @@ pub struct KeyDeriveFromSeedParamsAPI {
 pub struct KeyDeriveResultAPI {
     pub private_hexstring: String,
     pub public_hexstring: String,
-    pub public_compressed_hexstring: String,
     pub address: String,
 }
 
@@ -90,7 +89,6 @@ pub async fn key_derive(c: MethodCall, _: RemoteNodeSection) -> Result<Success, 
 
     let result = KeyDeriveResultAPI {
         public_hexstring: hex::encode(&key_address.public_key.0[..]),
-        public_compressed_hexstring: hex::encode(&key_address.public_key_compressed.0[..]),
         private_hexstring: hex::encode(&key_address.private_key.0),
         address: key_address.address,
     };
@@ -118,7 +116,6 @@ pub async fn key_derive_from_seed(
 
     let result = KeyDeriveResultAPI {
         public_hexstring: hex::encode(&key_address.public_key.0[..]),
-        public_compressed_hexstring: hex::encode(&key_address.public_key_compressed.0[..]),
         private_hexstring: hex::encode(&key_address.private_key.0),
         address: key_address.address,
     };

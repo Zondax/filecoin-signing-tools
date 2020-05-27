@@ -40,7 +40,7 @@ pub fn address_to_object(address: &Address) -> Object {
 
     js_sys::Reflect::set(
         &obj,
-        &"compressed_pk".into(),
+        &"publicKey".into(),
         &Buffer::from(&address.public_key.serialize().to_vec()),
     )
     .unwrap();

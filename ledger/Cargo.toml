@@ -37,6 +37,3 @@ js-sys = "0.3.37"
 
 [dev-dependencies]
 sha2 = "0.8.1"
-
-[profile.release]
-overflow-checks = true

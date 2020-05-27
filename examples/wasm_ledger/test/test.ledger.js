@@ -15,12 +15,12 @@ const catchExit = async () => {
 
 
 describe("LEDGER TEST", function () {
-  this.timeout(10000);
+  this.timeout(5000);
 
   var sim,
       transport;
 
-  before(async function() {
+  beforeEach(async function() {
     // runs before tests start
     await catchExit();
     await Zemu.checkAndPullImage();
@@ -33,7 +33,7 @@ describe("LEDGER TEST", function () {
         logging: true,
         custom: `-s "${APP_SEED}"`,
         press_delay: 150
-        // ,X11: true
+        //,X11: true
     };
 
     await sim.start(sim_options);
@@ -41,7 +41,7 @@ describe("LEDGER TEST", function () {
     transport = sim.getTransport();
   });
 
-  after(async function() {
+  afterEach(async function() {
     // runs after all the test are done
     await sim.close();
     // reset
@@ -70,11 +70,10 @@ describe("LEDGER TEST", function () {
 
     assert("addrByte" in resp);
     assert("addrString" in resp);
-    assert("compressed_pk" in resp);
+    assert("publicKey" in resp);
 
-    //expect(resp.compressed_pk.length).toEqual(PKLEN);
     assert.strictEqual(
-      resp.compressed_pk.toString("hex"),
+      resp.publicKey.toString("hex"),
       "04240ecf6ec722b701f051aaaffde7455a56e433139e4c0ff2ad7c8675e2cce104a8027ba13e5bc640ec9932cce184f33a789bb9c32f41e34328118b7862fc9ca2",
     );
 
@@ -90,9 +89,6 @@ describe("LEDGER TEST", function () {
   });
 
   it("#showKeyOnDevice()", async function() {
-    // So we have enough time
-    this.timeout(60000);
-
     const path = "m/44'/461'/0/0/1";
     const respRequest = signer.showKeyOnDevice(path, transport);
     await Zemu.sleep(2000);
@@ -111,11 +107,10 @@ describe("LEDGER TEST", function () {
 
     assert("addrByte" in resp);
     assert("addrString" in resp);
-    assert("compressed_pk" in resp);
+    assert("publicKey" in resp);
 
-    //expect(resp.compressed_pk.length).toEqual(PKLEN);
     assert.strictEqual(
-      resp.compressed_pk.toString("hex"),
+      resp.publicKey.toString("hex"),
       "04fc016f3d88dc7070cdd95b5754d32fd5290f850b7c2208fca0f715d35861de1841d9a342a487692a63810a6c906b443a18aa804d9d508d69facc5b06789a01b4",
     );
 
@@ -139,11 +134,10 @@ describe("LEDGER TEST", function () {
 
     assert("addrByte" in resp);
     assert("addrString" in resp);
-    assert("compressed_pk" in resp);
+    assert("publicKey" in resp);
 
-    //expect(resp.compressed_pk.length).toEqual(PKLEN);
     assert.strictEqual(
-      resp.compressed_pk.toString("hex"),
+      resp.publicKey.toString("hex"),
       "0466f2bdb19e90fd7c29e4bf63612eb98515e5163c97888042364ba777d818e88b765c649056ba4a62292ae4e2ccdabd71b845d8fa0991c140f664d2978ac0972a",
     );
 
@@ -187,11 +181,11 @@ describe("LEDGER TEST", function () {
   });
 
   it("#transactionSignRawWithDevice()", async function() {
-    this.timeout(60000);
+    this.timeout(10000);
 
     const path = "m/44'/461'/0/0/0";
     const message = Buffer.from(
-      "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040",
+      "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a0430009c41961a80040",
       "hex",
     );
 
@@ -200,7 +194,7 @@ describe("LEDGER TEST", function () {
     const responseRequest = signer.transactionSignRawWithDevice(message, path, transport);
     await Zemu.sleep(2000);
 
-    await sim.clickLeft();
+    await sim.clickBoth();
     await sim.clickRight();
     await sim.clickBoth();
 
@@ -221,13 +215,12 @@ describe("LEDGER TEST", function () {
 
     assert.deepStrictEqual(sigBuf, sigCompBuf);
 
-    const signatureOk = secp256k1.ecdsaVerify(signature, msgDigest, responsePk.compressed_pk);
+    const compressedPublicKey = secp256k1.publicKeyConvert(responsePk.publicKey, true)
+    const signatureOk = secp256k1.ecdsaVerify(signature, msgDigest, compressedPublicKey);
     assert(signatureOk);
   });
 
   it.skip("#transactionSignWithDevice() Testnet", async function() {
-    this.timeout(60000);
-
     const path = "m/44'/1'/0/0/0";
     const messageContent = {
       from: "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
@@ -269,37 +262,40 @@ describe("LEDGER TEST", function () {
 
     assert.deepStrictEqual(sigBuf, sigCompBuf);
 
-    const signatureOk = secp256k1.ecdsaVerify(signature, msgDigest, responsePk.compressed_pk);
+    const compressedPublicKey = secp256k1.publicKeyConvert(responsePk.publicKey, true)
+    const signatureOk = secp256k1.ecdsaVerify(signature, msgDigest, compressedPublicKey);
     assert(signatureOk);
 
     console.log(`compact   : ${responseSign.signature_compact.toString("base64")}`);
   });
 
-  it.skip("#transactionSignRawWithDevice() Fail", async function() {
-    this.timeout(60000);
+  it("#transactionSignRawWithDevice() Fail", async function() {
+    this.timeout(10000);
 
     const path = "m/44'/461'/0/0/0";
     let invalidMessage = Buffer.from(
-      "88315501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040" + "01",
+      "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a0430009c41961a80040" + "01",
       "hex",
     );
 
     const responseRequest = signer.transactionSignRawWithDevice(invalidMessage, path, transport);
-    await Zemu.sleep(2000);
 
-    /*await sim.clickLeft();
-    await sim.clickRight();
-    await sim.clickBoth();*/
 
-    const responseSign = await responseRequest;
+    try {
+      const responseSign = await responseRequest;
+    } catch(e) {
+      console.log(e)
+      assert.strictEqual(e.return_code, 0x6984);
+      assert.strictEqual(
+        e.error_message,
+        "[APDU_CODE_DATA_INVALID] data reversibly blocked (invalidated)"
+      );
 
-    // eslint-disable-next-line no-console
-    console.log(responseSign);
-    assert.strictEqual(responseSign.return_code, 0x6984);
-    assert.strictEqual(
-      responseSign.error_message,
-      "Data is invalid : Unexpected data type"
-    );
+      return
+    }
+
+    assert(false);
+
   });
 
 })
