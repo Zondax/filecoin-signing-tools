@@ -269,6 +269,7 @@ workflows:
           requires:
             - build
             - tests_rust
+            - tests_wasm
 
   release:
     jobs:
