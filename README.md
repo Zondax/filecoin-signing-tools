@@ -9,13 +9,13 @@ You can find more information in the [Documentation Site](https://zondax.github.
 - Rust Native Library
   - Secp256k1
   - Multisig (Work in progress)
-  - BLS (Work in progress)
+  - BLS
   - Hardware Wallet support (Ledger Nano S/X)
   - Filecoin transactions (CBOR <> JSON serialization)
 - WASM Library
   - Secp256k1
   - Multisig (Work in progress)
-  - BLS (Work in progress)
+  - BLS
   - Hardware Wallet support (Ledger Nano S/X)
   - Filecoin transactions (CBOR <> JSON serialization)
 - JSON RPC Server
@@ -27,6 +27,7 @@ You can find more information in the [Documentation Site](https://zondax.github.
     - retrieve nonce
     - submit signed transaction
     - retrieve tx status
+    
 - Examples
 
   | Caller          | Callee          | Status                           |                                  |
