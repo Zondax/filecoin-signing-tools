@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "%s\n", filecoin_signer_error_message(error));
     }
     else {
-        char *private_key = filecoin_signer_extended_key_private_key(extended_key);
+        char *private_key = filecoin_signer_extended_key_private_key(extended_key, error);
         assert([[NSString stringWithUTF8String:private_key] isEqualToString:@"f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a"]);
         filecoin_signer_string_free(private_key);
     }

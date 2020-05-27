@@ -15,6 +15,15 @@
 ********************************************************************************/
 //! Support library for Filecoin Ledger Nano S/X apps
 
+#![cfg_attr(
+    not(test),
+    deny(
+        clippy::option_unwrap_used,
+        clippy::option_expect_used,
+        clippy::result_unwrap_used,
+        clippy::result_expect_used,
+    )
+)]
 #![deny(warnings, trivial_casts, trivial_numeric_casts)]
 #![deny(unused_import_braces, unused_qualifications)]
 #![deny(missing_docs)]

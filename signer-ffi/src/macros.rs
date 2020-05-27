@@ -1,30 +1,42 @@
+// Errors start at 0x80 to avoid conflict with `filecoin_signer::error::Error`.
+
 #[cfg(feature = "with-jni")]
-macro_rules! create_str {
+macro_rules! create_string {
     ($etc:expr, $e:expr) => {
         $etc.0
             .new_string($e)
-            .expect("Couldn't create java string!")
-            .into_inner()
+            .map(|rslt| rslt.into_inner() as *mut _)
+            .map_err(|_| {
+                let code = ffi_support::ErrorCode::new(0x80);
+                ffi_support::ExternError::new_error(code, "Couldn't create JAVA string")
+            })
     };
 }
 #[cfg(not(feature = "with-jni"))]
-macro_rules! create_str {
+macro_rules! create_string {
     ($etc:expr, $e:expr) => {
-        std::ffi::CString::new($e).unwrap().into_raw()
+        std::ffi::CString::new($e)
+            .map(|rslt| rslt.into_raw())
+            .map_err(|_| {
+                let code = ffi_support::ErrorCode::new(0x81);
+                ffi_support::ExternError::new_error(code, "Couldn't create string")
+            })
     };
 }
 
 #[cfg(feature = "with-jni")]
-macro_rules! get_str {
+macro_rules! get_string {
     ($etc:expr, $e:expr) => {
-        ffi_support::FfiStr::from_cstr(&$etc.0.get_string($e).expect("Couldn't get java string"))
-            .as_str()
+        $etc.0.get_string($e).map_err(|_| {
+            let code = ffi_support::ErrorCode::new(0x82);
+            ffi_support::ExternError::new_error(code, "Couldn't retrieve JAVA string")
+        })
     };
 }
 #[cfg(not(feature = "with-jni"))]
-macro_rules! get_str {
+macro_rules! get_string {
     ($etc:expr, $e:expr) => {
-        $e.as_str()
+        Ok::<_, ffi_support::ExternError>($e)
     };
 }
 
@@ -46,13 +58,6 @@ macro_rules! str_arg_ty {
 #[cfg(not(feature = "with-jni"))]
 macro_rules! str_arg_ty { () => { ffi_support::FfiStr<'_> } }
 
-#[cfg(feature = "with-jni")]
-macro_rules! str_ret_ty {
-    () => {
-        jni::sys::jstring
-    };
-}
-#[cfg(not(feature = "with-jni"))]
 macro_rules! str_ret_ty { () => { *mut std::os::raw::c_char } }
 
 macro_rules! create_fn {
