@@ -13,7 +13,8 @@ pub enum SigTypes {
 }
 
 /// Unsigned message api structure
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct UnsignedMessageAPI {
     pub to: String,
@@ -33,7 +34,8 @@ pub struct UnsignedMessageAPI {
 }
 
 /// Signature api structure
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
 pub struct SignatureAPI {
     #[serde(rename = "type")]
     pub sig_type: u8,
@@ -42,7 +44,8 @@ pub struct SignatureAPI {
 }
 
 /// Signed message api structure
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
 pub struct SignedMessageAPI {
     pub message: UnsignedMessageAPI,
     pub signature: SignatureAPI,

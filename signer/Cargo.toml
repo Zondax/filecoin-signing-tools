@@ -30,6 +30,7 @@ sha2 = "0.8.1"
 log="0.4"
 env_logger = "0.7"
 
+arbitrary = { optional = true, features = ["derive"], version = "0.4" }
 ffi-support = { optional = true, version = "0.4" }
 
 # TODO: Update once crates are available
@@ -50,4 +51,6 @@ rand_xorshift = "0.2.0"
 rand = "0.7"
 
 [features]
+default = []
+with-arbitrary = ["arbitrary"]
 with-ffi-support = ["ffi-support"]

@@ -1,5 +1,5 @@
+use core::{convert::TryFrom, fmt};
 use secp256k1::util::SIGNATURE_SIZE;
-use std::convert::TryFrom;
 
 use crate::error::SignerError;
 
@@ -81,6 +81,12 @@ impl TryFrom<String> for Signature {
     }
 }
 
+impl fmt::Display for SignatureSECP256K1 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", hex::encode(&self.0[..]))
+    }
+}
+
 impl TryFrom<String> for SignatureSECP256K1 {
     type Error = SignerError;
 
@@ -105,6 +111,12 @@ impl TryFrom<Vec<u8>> for SignatureSECP256K1 {
         };
         sig.0.copy_from_slice(&v[..SIGNATURE_RECOVERY_SIZE]);
         Ok(sig)
+    }
+}
+
+impl fmt::Display for SignatureBLS {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", hex::encode(&self.0[..]))
     }
 }
 
