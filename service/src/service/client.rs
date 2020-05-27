@@ -1,12 +1,12 @@
 ////! Filecoin service RPC Client
 
+#[cfg(feature = "cache-nonce")]
 use crate::service::cache::{cache_get_nonce, cache_put_nonce};
 use crate::service::error::RemoteNode::{EmptyNonce, InvalidNonce, InvalidStatusRequest, JSONRPC};
 use crate::service::error::ServiceError;
 use abscissa_core::tracing::info;
 use jsonrpc_core::response::Output::{Failure, Success};
 use jsonrpc_core::{Id, MethodCall, Params, Response, Version};
-use serde_json::json;
 use serde_json::value::Value;
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -35,10 +35,12 @@ pub async fn make_rpc_call(url: &str, jwt: &str, m: &MethodCall) -> Result<Respo
 }
 
 pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceError> {
-    // FIXME: reactivate cache and make it configurable
-    // if let Some(nonce) = cache_get_nonce(addr) {
-    //     return Ok(nonce);
-    // }
+    #[cfg(feature = "cache-nonce")]
+    {
+        if let Ok(nonce) = cache_get_nonce(addr) {
+            return Ok(nonce);
+        }
+    }
 
     let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
 
@@ -58,7 +60,8 @@ pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceE
         _ => return Err(ServiceError::RemoteNode(InvalidNonce)),
     };
 
-    // cache_put_nonce(addr, nonce);
+    #[cfg(feature = "cache-nonce")]
+    cache_put_nonce(addr, nonce)?;
     Ok(nonce)
 }
 
