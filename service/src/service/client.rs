@@ -142,34 +142,28 @@ pub async fn get_balance(url: &str, jwt: &str, addr: &str) -> Result<Value, Serv
 pub async fn is_mainnet(url: &str, jwt: &str) -> Result<bool, ServiceError> {
     let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
 
-    let params = Params::Array(vec![
-        json!({"/": "bafy2bzacean3gqtnc6lepgaankwh6tmgoefvo2raj7fuhot4urzutrsarjdjo" }),
-    ]);
-
     // Prepare request
     let m = MethodCall {
         jsonrpc: Some(Version::V2),
-        method: "Filecoin.ChainGetMessage".to_owned(),
-        params,
+        method: "Filecoin.StateNetworkName".to_owned(),
+        params: Params::Array(vec![]),
         id: Id::Num(call_id),
     };
 
     let resp = make_rpc_call(url, jwt, &m).await?;
 
     // Handle response
-    let message = match resp {
+    let network = match resp {
         Response::Single(Success(s)) => s.result,
         Response::Single(Failure(f)) => return Err(ServiceError::RemoteNode(JSONRPC(f.error))),
         _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
     };
 
-    let from_field = message
-        .get("From")
-        .ok_or(InvalidStatusRequest)?
-        .as_str()
-        .ok_or(InvalidStatusRequest)?;
-
-    Ok(from_field.starts_with('f'))
+    if network == "testnet" {
+        Ok(false)
+    } else {
+        Ok(true)
+    }
 }
 
 #[cfg(test)]
