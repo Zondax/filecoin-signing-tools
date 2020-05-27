@@ -1,13 +1,16 @@
 use crate::error::SignerError;
-use crate::Signature;
+use crate::signature::Signature;
 use forest_address::{Address, Network};
 use forest_message::{Message, SignedMessage, UnsignedMessage};
-use hex::decode;
 use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use std::str::FromStr;
-use vm::{MethodNum, Serialized, TokenAmount};
+
+pub enum SigTypes {
+    SigTypeSecp256k1 = 0x01,
+    SigTypeBLS = 0x02,
+}
 
 /// Unsigned message api structure
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -24,7 +27,7 @@ pub struct UnsignedMessageAPI {
     #[serde(rename = "gaslimit")]
     #[serde(alias = "gasLimit")]
     #[serde(alias = "gas_limit")]
-    pub gas_limit: String,
+    pub gas_limit: u64,
     pub method: u64,
     pub params: String,
 }
@@ -33,7 +36,7 @@ pub struct UnsignedMessageAPI {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SignatureAPI {
     #[serde(rename = "type")]
-    pub sig_type: String,
+    pub sig_type: u8,
     #[serde(with = "serde_base64_vector")]
     pub data: Vec<u8>,
 }
@@ -53,6 +56,19 @@ pub enum MessageTxAPI {
     SignedMessageAPI(SignedMessageAPI),
 }
 
+impl MessageTxAPI {
+    pub fn get_message(&self) -> UnsignedMessageAPI {
+        match self {
+            MessageTxAPI::UnsignedMessageAPI(unsigned_message_api) => {
+                unsigned_message_api.to_owned()
+            }
+            MessageTxAPI::SignedMessageAPI(signed_message_api) => {
+                signed_message_api.message.to_owned()
+            }
+        }
+    }
+}
+
 /// Structure containing an `UnsignedMessage` or a `SignedMessage` from forest_address
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(untagged)]
@@ -61,7 +77,7 @@ pub enum MessageTx {
     SignedMessage(SignedMessage),
 }
 
-/// Message structure with newtork parameter
+/// Message structure with network parameter
 pub struct MessageTxNetwork {
     pub message_tx: MessageTx,
     pub testnet: bool,
@@ -69,9 +85,15 @@ pub struct MessageTxNetwork {
 
 impl From<&Signature> for SignatureAPI {
     fn from(sig: &Signature) -> SignatureAPI {
-        SignatureAPI {
-            sig_type: "secp256k1".to_string(),
-            data: sig.0.to_vec(),
+        match sig {
+            Signature::SignatureSECP256K1(sig_secp256k1) => SignatureAPI {
+                sig_type: SigTypes::SigTypeSecp256k1 as u8,
+                data: sig_secp256k1.0.to_vec(),
+            },
+            Signature::SignatureBLS(sig_bls) => SignatureAPI {
+                sig_type: SigTypes::SigTypeBLS as u8,
+                data: sig_bls.0.to_vec(),
+            },
         }
     }
 }
@@ -173,16 +195,16 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
         let from = Address::from_str(&message_api.from)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
         let value = BigUint::from_str(&message_api.value)?;
-        let gas_limit = BigUint::from_str(&message_api.gas_limit)?;
+        let gas_limit = message_api.gas_limit;
         let gas_price = BigUint::from_str(&message_api.gas_price)?;
-        let params = Serialized::new(decode(&message_api.params)?);
+        let params = forest_vm::Serialized::new(hex::decode(&message_api.params)?);
 
         let tmp = UnsignedMessage::builder()
             .to(to)
             .from(from)
             .sequence(message_api.nonce)
-            .value(TokenAmount(value))
-            .method_num(MethodNum::new(message_api.method))
+            .value(value)
+            .method_num(message_api.method)
             .params(params)
             .gas_limit(gas_limit)
             .gas_price(gas_price)
@@ -199,9 +221,9 @@ impl From<UnsignedMessage> for UnsignedMessageAPI {
             to: unsigned_message.to().to_string(),
             from: unsigned_message.from().to_string(),
             nonce: unsigned_message.sequence(),
-            value: unsigned_message.value().0.to_string(),
+            value: unsigned_message.value().to_string(),
             gas_price: unsigned_message.gas_price().to_string(),
-            gas_limit: unsigned_message.gas_limit().to_string(),
+            gas_limit: unsigned_message.gas_limit(),
             // FIXME: cannot extract method byte. Set always as 0
             method: 0,
             // FIXME: need a proper way to serialize parameters, for now
@@ -216,7 +238,7 @@ impl From<SignedMessage> for SignedMessageAPI {
         SignedMessageAPI {
             message: UnsignedMessageAPI::from(signed_message.message().clone()),
             signature: SignatureAPI {
-                sig_type: "secp256k1".to_string(),
+                sig_type: SigTypes::SigTypeSecp256k1 as u8,
                 data: signed_message.signature().bytes().to_vec(),
             },
         }
@@ -238,13 +260,13 @@ mod tests {
             "nonce": 1,
             "value": "100000",
             "gasprice": "2500",
-            "gaslimit": "25000",
+            "gaslimit": 25000,
             "method": 0,
             "params": ""
         }"#;
 
     const EXAMPLE_CBOR_DATA: &str =
-"885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040";
+        "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c41961a80040";
 
     #[test]
     fn json_to_cbor() {

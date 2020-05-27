@@ -1,4 +1,4 @@
-# Filecoin Signing Tools
+# Filecoin Signing Tools (FFI)
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![CircleCI](https://circleci.com/gh/Zondax/filecoin-rs.svg?style=shield&circle-token=51b2d5fe68c0eb73436dace6f47fa0a387169ef5)](https://circleci.com/gh/Zondax/filecoin-rs)
@@ -29,20 +29,69 @@ You can find more information in the [Documentation Site](https://zondax.github.
     - retrieve tx status
 - Examples
 
-  | From            | To              | Status                           |                          |
-  | --------------- | --------------- | -------------------------------- | ------------------------ |
-  | Node.js         | JSONRPC Service | Ready :heavy_check_mark:         | [Link](examples/jsonrpc) |
-  |                 |                 |                                  |                          |
-  | Browser         | WASM            | Ready :heavy_check_mark:         | [Link](examples/www)     |
-  | Browser         | WASM + Ledger   | Planned :hourglass_flowing_sand: | [Soon]()                 |
-  | Node.js / Mocha | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm)    |
-  |                 |                 |                                  |                          |
-  | Rust            | Rust + Ledger   | Planned :hourglass_flowing_sand: | [Soon]()                 |
-  | C/C++           | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                 |
-  | Java            | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                 |
-  | Kotlin          | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                 |
-  | Go              | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                 |
-  | Objective-C     | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                 |
-  | Swift           | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                 |
-  | React Native    | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                 |
-  | Flutter         | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                 |
+  | Caller          | Callee          | Status                           |                                  |
+  |-----------------|-----------------|----------------------------------|----------------------------------|
+  | Node.js         | JSONRPC Service | Ready :heavy_check_mark:         | [Link](examples/service_jsonrpc) |
+  |                 |                 |                                  |                                  |
+  | Browser         | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm_browser)    |
+  | Browser         | WASM + Ledger   | Ready :heavy_check_mark:         | [Link](examples/wasm_node)       |
+  | Node.js / Mocha | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm_node)       |
+  |                 |                 |                                  |                                  |
+  | Rust            | Rust + Ledger   | Ready :heavy_check_mark:         | [Link](examples/wasm_ledger)     |
+  | C               | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/c)           |
+  | C++             | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/c++)         |
+  | Java            | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/java)        |
+  | Kotlin          | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/kotlin)      |
+  | Go              | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/go)          |
+  | Objective-C     | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/objective-c) |
+  | Swift           | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/swift)       |
+  | Flutter         | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/flutter)     |
+  | React Native    | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
+
+## Running tests and examples
+
+> TIP: A good place to look for reproducible steps is the circleci configuration of this project
+
+### Installing dependencies
+
+```bash
+make deps
+```
+
+### Rust
+
+```bash
+cargo test -p filecoin-signer
+```
+
+### Service
+
+To run these tests, you need to set two environment variables first so tests can reach a Lotus node:
+
+|                  |          |
+|------------------|----------|
+| LOTUS_SECRET_URL | some_url |
+| LOTUS_SECRET_JWT | some_jwt |
+
+Then you can run:
+
+```bash
+cargo test -p filecoin-signer
+```
+
+### WASM
+
+Build WASM and link it locally so examples are linked to the local version:
+
+```bash
+make link_wasm
+```
+
+After this, you can run the following tests / examples:
+
+| Command                  | Description               |
+|--------------------------|---------------------------|
+| `make test_wasm_unit`    | Unit tests                |
+| `make test_wasm_node`    | Node integration tests    |
+| `make test_wasm_browser` | Browser integration tests |
+| `make test_wasm_ledger`  | Ledger integration tests  |

@@ -13,6 +13,9 @@ mod error;
 mod handlers;
 mod methods;
 
+#[cfg(test)]
+mod test_helper;
+
 fn jsonrpc_body() -> impl Filter<Extract = (Call,), Error = warp::Rejection> + Clone {
     // When accepting a body, we want a JSON body and to reject huge payloads)...
     const MAX_SIZE: u64 = 1024 * 16;

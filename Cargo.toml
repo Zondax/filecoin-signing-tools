@@ -1,11 +1,13 @@
 [workspace]
-
 members = [
     "service",
     "signer",
-    "signer-wasm"
+    "signer-ffi",
+    "signer-wasm",
+    "ledger"
 ]
 
 [profile.release]
 # Tell `rustc` to optimize for small code size.
 opt-level = "s"
+overflow-checks = true

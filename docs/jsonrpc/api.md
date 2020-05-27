@@ -40,6 +40,7 @@ Derive a child key from a mnemonic following a [BIP44 path](https://github.com/b
 Arguments :
 * **mnemonic**: a string containing the words;
 * **path**: a BIP44 path;
+* **password (optional)**: for encrypted seed;
 
 ```javascript
 const axios = require("axios");
@@ -141,7 +142,7 @@ const transaction = {
   nonce: 1,
   value: "100000",
   gas_price: "2500",
-  gas_limit: "25000",
+  gas_limit: 25000,
   method: 0,
   params: "",
 };
@@ -183,7 +184,7 @@ const JWT = "blablablablablabla";
 
 const params = [
   // cbor hexstring
-  "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c4430061a80040",
+  "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040",
   // testnet
   true];
 
@@ -230,7 +231,7 @@ const params = [
     nonce: 1,
     value: "100000",
     gas_price: "2500",
-    gas_limit: "25000",
+    gas_limit: 25000,
     method: 0,
     params: "",
   }
@@ -401,7 +402,7 @@ const params = [
       nonce: 2,
       value: "10000",
       gas_price: "2500",
-      gas_limit: "25000",
+      gas_limit: 25000,
       method: 0,
       params: "",
     },

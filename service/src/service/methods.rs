@@ -4,8 +4,8 @@ use crate::config::RemoteNodeSection;
 use crate::service::client;
 use crate::service::error::ServiceError;
 use filecoin_signer::api::{SignedMessageAPI, UnsignedMessageAPI};
-use filecoin_signer::utils::{from_hex_string, to_hex_string};
-use filecoin_signer::{CborBuffer, Mnemonic, PrivateKey, Signature};
+use filecoin_signer::signature::Signature;
+use filecoin_signer::{CborBuffer, PrivateKey};
 use jsonrpc_core::{MethodCall, Success, Version};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -32,6 +32,8 @@ pub struct GetNonceParamsAPI {
 pub struct KeyDeriveParamsAPI {
     pub mnemonic: String,
     pub path: String,
+    #[serde(default)]
+    pub password: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -44,7 +46,6 @@ pub struct KeyDeriveFromSeedParamsAPI {
 pub struct KeyDeriveResultAPI {
     pub private_hexstring: String,
     pub public_hexstring: String,
-    pub public_compressed_hexstring: String,
     pub address: String,
 }
 
@@ -83,12 +84,12 @@ pub async fn key_generate_mnemonic(
 pub async fn key_derive(c: MethodCall, _: RemoteNodeSection) -> Result<Success, ServiceError> {
     let params = c.params.parse::<KeyDeriveParamsAPI>()?;
 
-    let key_address = filecoin_signer::key_derive(Mnemonic(params.mnemonic), params.path)?;
+    let key_address =
+        filecoin_signer::key_derive(&params.mnemonic, &params.path, &params.password)?;
 
     let result = KeyDeriveResultAPI {
-        public_hexstring: to_hex_string(&key_address.public_key.0),
-        public_compressed_hexstring: to_hex_string(&key_address.public_key_compressed.0),
-        private_hexstring: to_hex_string(&key_address.private_key.0),
+        public_hexstring: hex::encode(&key_address.public_key.0[..]),
+        private_hexstring: hex::encode(&key_address.private_key.0),
         address: key_address.address,
     };
 
@@ -109,14 +110,13 @@ pub async fn key_derive_from_seed(
 ) -> Result<Success, ServiceError> {
     let params = c.params.parse::<KeyDeriveFromSeedParamsAPI>()?;
 
-    let seed = from_hex_string(params.seed.as_ref())?;
+    let seed = hex::decode(&params.seed)?;
 
-    let key_address = filecoin_signer::key_derive_from_seed(&seed, params.path)?;
+    let key_address = filecoin_signer::key_derive_from_seed(&seed, &params.path)?;
 
     let result = KeyDeriveResultAPI {
-        public_hexstring: to_hex_string(&key_address.public_key.0),
-        public_compressed_hexstring: to_hex_string(&key_address.public_key_compressed.0),
-        private_hexstring: to_hex_string(&key_address.private_key.0),
+        public_hexstring: hex::encode(&key_address.public_key.0[..]),
+        private_hexstring: hex::encode(&key_address.private_key.0),
         address: key_address.address,
     };
 
@@ -152,7 +152,7 @@ pub async fn transaction_parse(
     _: RemoteNodeSection,
 ) -> Result<Success, ServiceError> {
     let params = c.params.parse::<TransctionParseParamsAPI>()?;
-    let cbor_data = CborBuffer(from_hex_string(params.cbor_hex.as_ref()).unwrap());
+    let cbor_data = CborBuffer(hex::decode(&params.cbor_hex)?);
 
     let message_parsed = filecoin_signer::transaction_parse(&cbor_data, params.testnet)?;
 
@@ -193,7 +193,7 @@ pub async fn verify_signature(
     let params = c.params.parse::<VerifySignatureParamsAPI>()?;
 
     let signature = Signature::try_from(params.signature_hex)?;
-    let message = CborBuffer(from_hex_string(params.message_hex.as_ref()).unwrap());
+    let message = CborBuffer(hex::decode(&params.message_hex)?);
 
     let result = filecoin_signer::verify_signature(&signature, &message)?;
 
@@ -209,7 +209,6 @@ pub async fn verify_signature(
 pub async fn get_status(c: MethodCall, config: RemoteNodeSection) -> Result<Success, ServiceError> {
     let call_params = c.params.parse::<GetStatusParamsAPI>()?;
     let params = json!({"/": call_params.cid_message.to_string()});
-
     let result = client::get_status(&config.url, &config.jwt, params).await?;
 
     let so = Success {
@@ -256,34 +255,68 @@ pub async fn send_signed_tx(
     Ok(so)
 }
 
+pub async fn send_sign(c: MethodCall, config: RemoteNodeSection) -> Result<Success, ServiceError> {
+    let params = c.params.parse::<SignTransactionParamsAPI>()?;
+
+    let private_key = PrivateKey::try_from(params.prvkey_hex)?;
+
+    // signed message
+    let signed_message = filecoin_signer::transaction_sign(&params.transaction, &private_key)?;
+
+    // FIXME: hack to verify node network
+    let result = client::is_mainnet(&config.url, &config.jwt).await?;
+
+    if result {
+        // Is mainnet
+        if signed_message.message.from.starts_with('t') {
+            return Err(ServiceError::WrongNetwork);
+        }
+    } else {
+        // Not mainnet
+        if signed_message.message.from.starts_with('f') {
+            return Err(ServiceError::WrongNetwork);
+        }
+    }
+
+    let signed_message_value = serde_json::to_value(&signed_message)?;
+
+    // send to remote node
+    let result = client::send_signed_tx(&config.url, &config.jwt, signed_message_value).await?;
+
+    let so = Success {
+        jsonrpc: Some(Version::V2),
+        result,
+        id: c.id,
+    };
+
+    Ok(so)
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::config::RemoteNodeSection;
     use crate::service::methods::get_status;
+    use crate::service::test_helper::tests::get_remote_credentials;
     use jsonrpc_core::{Id, MethodCall, Params, Success, Version};
     use serde_json::json;
 
-    //const TEST_URL: &str = "http://86.192.13.13:1234/rpc/v0";
-    const TEST_URL: &str = "https://proxy.openworklabs.com/rpc/v0";
-    const JWT: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.xK1G26jlYnAEnGLJzN1RLywghc4p4cHI6ax_6YOv0aI";
-
     #[tokio::test]
     async fn example_get_status_transaction() {
-        let params_str = json!({ "cid_message": "bafy2bzacea2ob4bctlucgp2okbczqvk5ctx4jqjapslz57mbcmnnzyftgeqgu" });
+        let params_str = json!({ "cid_message": "bafy2bzacean3gqtnc6lepgaankwh6tmgoefvo2raj7fuhot4urzutrsarjdjo" });
         let params: Params =
             serde_json::from_str(&params_str.to_string()).expect("could not deserialize");
 
         let expected_response = Success {
             jsonrpc: Some(Version::V2),
             result: json!({
-                "To":"t1lv32q33y64xs64pnyn6om7ftirax5ikspkumwsa",
-                "From":"t3wjxuftije2evjmzo2yoy5ghfe2o42mavrpmwuzooghzcxdhqjdu7kn6dvkzf4ko37w7sfnnzdzstcjmeooea",
-                "Nonce":66867,
-                "Value":"5000000000000000",
+                "To":"t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+                "From":"t1hw4amnow4gsgk2ottjdpdverfwhaznyrslsmoni",
+                "Nonce":21131,
+                "Value":"50000000000000000000",
                 "GasPrice":"0",
-                "GasLimit":"1000",
+                "GasLimit": 10000,
                 "Method":0,
-                "Params":""
+                "Params":"",
+                "Version": 0
             }),
             id: Id::Num(123),
         };
@@ -295,17 +328,13 @@ mod tests {
             id: Id::Num(123),
         };
 
-        let config = RemoteNodeSection {
-            url: TEST_URL.to_string(),
-            jwt: JWT.to_string(),
-        };
-
+        let config = get_remote_credentials();
         let status = get_status(mc, config).await.unwrap();
 
         println!("{:?}", status);
         println!("{:?}", expected_response);
 
-        assert!(status == expected_response);
+        assert_eq!(status, expected_response);
     }
 
     #[tokio::test]
@@ -332,11 +361,7 @@ mod tests {
             id: Id::Num(0),
         };
 
-        let config = RemoteNodeSection {
-            url: TEST_URL.to_string(),
-            jwt: JWT.to_string(),
-        };
-
+        let config = get_remote_credentials();
         let status = get_status(mc, config).await;
 
         println!("{:?}", status);
@@ -367,11 +392,7 @@ mod tests {
             id: Id::Num(0),
         };
 
-        let config = RemoteNodeSection {
-            url: TEST_URL.to_string(),
-            jwt: JWT.to_string(),
-        };
-
+        let config = get_remote_credentials();
         let status = get_status(mc, config).await;
 
         println!("{:?}", status);

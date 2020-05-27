@@ -1,6 +1,4 @@
 use filecoin_signer::error::SignerError;
-use filecoin_signer::utils::HexDecodeError;
-use serde_json::error::Error;
 use thiserror::Error;
 
 /// RemoteNode Error
@@ -20,8 +18,8 @@ pub enum RemoteNode {
 /// Signer Error
 #[derive(Error, Debug)]
 pub enum ServiceError {
-    #[error("This is not yet implemented")]
-    NotImplemented,
+    #[error("The network information provided in the tx doesn't match the node network.")]
+    WrongNetwork,
     /// JSONRPC error
     #[error("JSONRPC | {0}")]
     JSONRPC(#[from] jsonrpc_core::types::Error),
@@ -37,10 +35,13 @@ pub enum ServiceError {
     /// Remote Node Request error
     #[error("Remote node | {0}")]
     RemoteNode(#[from] RemoteNode),
-    /// HexDecode Error
-    #[error("Hex decoding | {0}")]
-    HexDecode(#[from] HexDecodeError),
+    /// Hex Error
+    #[error("Hex decoding error | {0}")]
+    HexDecode(#[from] hex::FromHexError),
     /// Serde Json Error
     #[error("Serde JSON | {0}")]
-    Error(#[from] Error),
+    SerdeError(#[from] serde_json::error::Error),
+    /// Generic string error
+    #[error("Error | {0}")]
+    ErrorStr(String),
 }

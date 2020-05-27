@@ -1,39 +1,45 @@
 deps_wasm:
-	cargo install wasm-pack --version 0.8.1
-	cargo install cargo-watch
+	cargo install wasm-pack
 
 build_wasm:
 	rm -rf signer-wasm/pkg/
-	wasm-pack build --no-typescript --target nodejs signer-wasm/
+	wasm-pack build --no-typescript --target nodejs --out-dir pkg/nodejs  signer-wasm/
 	wasm-pack build --no-typescript --target browser --out-dir pkg/browser signer-wasm/
-	cp package-signer-wasm.json signer-wasm/pkg/package.json
+	cd signer-wasm && make build
 
 PACKAGE_NAME:="@zondax/filecoin-signer-wasm"
 
 clean_wasm:
 	rm -rf examples/wasm_node/node_modules || true
 	rm -rf examples/wasm_browser/node_modules || true
+	rm -rf examples/wasm_ledger/node_modules || true
 
 link_wasm: build_wasm
 	cd signer-wasm/pkg && yarn unlink  || true
 	cd examples/wasm_node && yarn unlink $(PACKAGE_NAME) || true
 	cd examples/wasm_browser && yarn unlink $(PACKAGE_NAME) || true
+	cd examples/wasm_ledger && yarn unlink $(PACKAGE_NAME) || true
 
 #	# Now use it in other places
 	cd signer-wasm/pkg && yarn link
 	cd examples/wasm_node && yarn link $(PACKAGE_NAME) && yarn install
 	cd examples/wasm_browser && yarn link $(PACKAGE_NAME)
+	cd examples/wasm_ledger && yarn link $(PACKAGE_NAME)
 
 test_wasm_unit: build_wasm
+	#wasm-pack test --chrome --firefox --headless ./signer-wasm
 	wasm-pack test --firefox --headless ./signer-wasm
 
 test_wasm_node: link_wasm
-	cd examples/wasm_node && yarn install && yarn run test
-
-test_wasm_browser: link_wasm
-	cd examples/wasm_browser && yarn install && yarn start
+	cd examples/wasm_node && yarn install && yarn test
 
 test_wasm: test_wasm_unit test_wasm_node
+
+test_ledger: link_wasm
+	cd examples/wasm_ledger && yarn install && yarn test:ledger
+
+demo_wasm_browser: link_wasm
+	cd examples/wasm_browser && yarn install && yarn certificate && yarn start
 
 deps_rust:
 	cargo install cargo-audit
@@ -73,3 +79,7 @@ docs_rust_edit:
 docs_build:
 	yarn install
 	yarn build
+
+tree:
+	cargo tree --manifest-path signer-wasm/Cargo.toml > .tree_signer_wasm
+	cargo tree --manifest-path signer/Cargo.toml > .tree_signer

@@ -23,6 +23,7 @@ jobs:
     steps:
       - checkout
       - restore-sccache-cache
+      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
       - run:
           name: rustfmt
           command: |
@@ -32,7 +33,7 @@ jobs:
           name: clippy
           command: |
             cargo clippy --version
-            cargo clippy --all-features
+            cargo clippy --all-features --all-targets
       - run:
           name: audit
           command: |
@@ -46,6 +47,7 @@ jobs:
     steps:
       - checkout
       - restore-sccache-cache
+      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
       - run:
           name: rust unit tests --all-features
           command: |
@@ -54,6 +56,41 @@ jobs:
             cargo test --lib --all-features
       # No need to save this in cache
 
+  tests_ffi:
+    docker:
+      - image: zondax/rust-ci:latest
+    steps:
+      - checkout
+      - restore-sccache-cache
+      - run:
+          name: External dependencies
+          command: |
+            sudo apt-get install -y clang default-jdk g++ gcc gnustep gnustep-devel gobjc golang libicu-dev libtinfo5 valgrind
+      - run:
+          name: Cbindgen
+          command: |
+            cd signer-ffi
+            rustup install nightly
+            rustup default nightly
+            cargo install cbindgen
+            cbindgen --config cbindgen.toml --crate filecoin-signer-ffi --lang c --output /tmp/filecoin_signer_ffi.h
+            cbindgen --config cbindgen.toml --crate filecoin-signer-ffi --lang c++ --output /tmp/filecoin_signer_ffi_cpp.h
+      - run:
+          name: Libraries
+          command: |
+            cd signer-ffi
+            cargo build
+            cp ../target/debug/libfilecoin_signer_ffi.so /tmp/libfilecoin_signer_ffi.so
+            cargo build --features with-jni
+            cp ../target/debug/libfilecoin_signer_ffi.so /tmp/libfilecoin_signer_ffi_java.so
+      - run: OUT_DIR=/tmp/c ./.circleci/test_c.sh
+      - run: OUT_DIR=/tmp/cpp ./.circleci/test_cpp.sh
+      - run: OUT_DIR=/tmp/go ./.circleci/test_go.sh
+      - run: OUT_DIR=/tmp/java ./.circleci/test_java.sh
+      - run: OUT_DIR=/tmp/kotlin ./.circleci/test_kotlin.sh
+      - run: OUT_DIR=/tmp/objective-c ./.circleci/test_objective-c.sh
+      - run: OUT_DIR=/tmp/swift ./.circleci/test_swift.sh
+
   tests_wasm:
     docker:
       - image: zondax/rust-ci:latest
@@ -61,13 +98,52 @@ jobs:
       - checkout
       - run: cargo --version
       - restore-sccache-cache
-      - run: sudo apt-get update && sudo apt-get install -y firefox-esr
+      - run: sudo apt-get update && sudo apt-get install -y firefox-esr libnss3
       - run: make deps_wasm
+      - save-sccache-cache
       # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-rs/issues/68
       - run: make test_wasm_unit
       - run: make test_wasm_node
-      #- run: make test_wasm_browser
       # No need to save this in cache
+
+  tests_ledger:
+    machine:
+      image: ubuntu-1604:201903-01
+    working_directory: ~/repo
+    environment:
+      BASH_ENV: "/opt/circleci/.nvm/nvm.sh"
+    steps:
+      - restore-sccache-cache
+      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev curl
+      - run:
+          name: Install rustup
+          command: |
+            curl https://sh.rustup.rs -o rustup.sh
+            chmod +x rustup.sh
+            ./rustup.sh -y
+            source $HOME/.cargo/env
+            rm rustup.sh
+      - checkout
+      - run: git submodule update --init --recursive
+      - run:
+          name: Install node + yarn
+          command: |
+            nvm install 13.12.0
+            nvm use 13.12.0
+            npm install -g yarn
+      - run:
+          name: Install deps wasm
+          command: |
+            source $HOME/.cargo/env
+            make deps_wasm
+      - run: docker pull zondax/builder-zemu
+      - run:
+          name: Run zemu tests
+          command: |
+            nvm use 13.12.0
+            source $HOME/.cargo/env
+            make test_ledger
+      - save-sccache-cache
 
   tests_service:
     docker:
@@ -78,7 +154,8 @@ jobs:
     steps:
       - checkout
       - restore-sccache-cache
-      - run: cargo build
+
+      - run: cargo build --manifest-path service/Cargo.toml
       - run:
           name: patch configuration file
           command: |
@@ -91,11 +168,11 @@ jobs:
           name: start service
           background: true
           command: |
-            cargo run -- start
+            cargo run --manifest-path service/Cargo.toml -- start
       - run:
           name: install node dependencies
           command: |
-            cd examples/jsonrpc
+            cd examples/service_jsonrpc
             yarn install
       - run: ls .circleci
       - run:
@@ -104,7 +181,7 @@ jobs:
       - run:
           name: run jsonrpc tests
           command: |
-            cd examples/jsonrpc
+            cd examples/service_jsonrpc
             yarn run test:unit
             yarn run test:integration
       # No need to save this in cache
@@ -175,10 +252,27 @@ workflows:
           <<: *no-tags
       - tests_rust:
           <<: *no-tags
+
+      - tests_ffi:
+          <<: *no-tags
+          requires:
+            - build
+            - tests_rust
       - tests_wasm:
           <<: *no-tags
+          requires:
+            - build
+            - tests_rust
       - tests_service:
           <<: *no-tags
+          requires:
+            - build
+            - tests_rust
+      - tests_ledger:
+          <<: *no-tags
+          requires:
+            - build
+            - tests_rust
 
   release:
     jobs:
@@ -186,9 +280,13 @@ workflows:
           <<: *only-release-tags
       - tests_rust:
           <<: *only-release-tags
+      - tests_ffi:
+          <<: *only-release-tags
       - tests_wasm:
           <<: *only-release-tags
       - tests_service:
+          <<: *only-release-tags
+      - tests_ledger:
           <<: *only-release-tags
 
 #      - rust_publish:
@@ -206,6 +304,7 @@ workflows:
             - tests_rust
             - tests_wasm
             - tests_service
+            - tests_ledger
 
       - vuepress_publish:
           <<: *only-release-tags
@@ -214,3 +313,4 @@ workflows:
             - tests_rust
             - tests_wasm
             - tests_service
+            - tests_ledger

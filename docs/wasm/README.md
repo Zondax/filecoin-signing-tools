@@ -1,25 +1,17 @@
 # Getting Started
 
-::: warning
+You will need to install [`@zondax/filecoin-signer`](https://www.npmjs.com/package/@zondax/filecoin-signer) npm package.
 
-The documentation is still being updated.
-
-We expect substantial improvements by the end of milestone 4.
-
-:::
-
-You will need to install [`@zondax/filecoin-signer-wasm`](https://www.npmjs.com/package/@zondax/filecoin-signer-wasm) npm package.
-
-This library is wasm library that can work both in node and browser.
+This library is an utility library for filecoin composed of a wasm api and an wrapper for hardware wallet (like ledger).
 
 To start using load the library :
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer-wasm');
+const signer = require('@zondax/filecoin-signer');
 // or for browser
-import * as signer_wasm from "@zondax/filecoin-signer-wasm";
+import * as signer from "@zondax/filecoin-signer";
 ```
 
 ::: warning
-In browser `mnemonic_generate` use the javascript `crypto` lib.
+In browser `generateMnemonic` use the javascript `crypto` lib.
 :::

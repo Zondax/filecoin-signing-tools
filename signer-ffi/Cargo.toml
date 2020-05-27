@@ -1,0 +1,20 @@
+[dependencies]
+ffi-support = "0.4"
+filecoin-signer = { features = ["with-ffi-support"], path = "../signer" }
+hex = "0.4"
+jni = { optional = true, version = "0.16" }
+
+[features]
+with-jni = ["jni"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[package]
+authors = ["Zondax <info@zondax.ch>"]
+description = "Exports filecoin-signer to several languages"
+edition = "2018"
+license = "Apache-2.0"
+name = "filecoin-signer-ffi"
+repository = "https://github.com/Zondax/filecoin-rs"
+version = "0.1.0"
