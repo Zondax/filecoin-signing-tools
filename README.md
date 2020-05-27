@@ -37,7 +37,7 @@ You can find more information in the [Documentation Site](https://zondax.github.
   | Browser         | WASM + Ledger   | Ready :heavy_check_mark:         | [Link](examples/wasm_node)       |
   | Node.js / Mocha | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm_node)       |
   |                 |                 |                                  |                                  |
-  | Rust            | Rust + Ledger   | Planned :hourglass_flowing_sand: | [Soon]()                         |
+  | Rust            | Rust + Ledger   | Ready :heavy_check_mark:         | [Link](examples/wasm_ledger)     |
   | C               | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/c)           |
   | C++             | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/c++)         |
   | Java            | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/java)        |
@@ -95,5 +95,3 @@ After this, you can run the following tests / examples:
 | `make test_wasm_node`    | Node integration tests    |
 | `make test_wasm_browser` | Browser integration tests |
 | `make test_wasm_ledger`  | Ledger integration tests  |
-
-We suggest exploring these tests as they are great examples of how to use this functionality in different environments.
