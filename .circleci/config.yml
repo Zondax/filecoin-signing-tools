@@ -210,26 +210,26 @@ jobs:
       - restore-sccache-cache
       # TODO: Enable cargo publish
 
-  vuepress_publish:
-    docker:
-      - image: circleci/node:lts
-    steps:
-      - checkout
-      - run: yarn
-      - run: yarn build
-      - add_ssh_keys:
-          fingerprints:
-            - "19:d8:07:01:0c:64:b4:8b:d1:44:45:39:87:1f:4d:a0"
-      - run:
-          name: Install and configure dependencies
-          command: |
-            yarn global add gh-pages@2.2.0
-            git config user.email "ci-build@zondax.ch"
-            git config user.name "ci-build"
-      - run:
-          name: Deploy docs to gh-pages branch
-          command: |
-            $(yarn global bin)/gh-pages --message "[skip ci] Updates" --dist docs/.vuepress/dist
+#  vuepress_publish:
+#    docker:
+#      - image: circleci/node:lts
+#    steps:
+#      - checkout
+#      - run: yarn
+#      - run: yarn build
+#      - add_ssh_keys:
+#          fingerprints:
+#            - "19:d8:07:01:0c:64:b4:8b:d1:44:45:39:87:1f:4d:a0"
+#      - run:
+#          name: Install and configure dependencies
+#          command: |
+#            yarn global add gh-pages@2.2.0
+#            git config user.email "ci-build@zondax.ch"
+#            git config user.name "ci-build"
+#      - run:
+#          name: Deploy docs to gh-pages branch
+#          command: |
+#            $(yarn global bin)/gh-pages --message "[skip ci] Updates" --dist docs/.vuepress/dist
 
 no-tags: &no-tags
   filters:
@@ -306,11 +306,11 @@ workflows:
             - tests_service
             - tests_ledger
 
-      - vuepress_publish:
-          <<: *only-release-tags
-          requires:
-            - build
-            - tests_rust
-            - tests_wasm
-            - tests_service
-            - tests_ledger
+#      - vuepress_publish:
+#          <<: *only-release-tags
+#          requires:
+#            - build
+#            - tests_rust
+#            - tests_wasm
+#            - tests_service
+#            - tests_ledger
