@@ -1,5 +1,6 @@
 deps_wasm:
-	cargo install wasm-pack
+	curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+#	cargo install wasm-pack
 
 build_wasm:
 	rm -rf signer-wasm/pkg/
