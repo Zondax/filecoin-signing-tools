@@ -805,4 +805,50 @@ mod tests {
 
         assert!(verify_aggregated_signature(&sig, &cbor_messages[..]).unwrap());
     }
+
+    #[test]
+    fn support_multisig() {
+        // now we create the message to send this with
+		/*msg := types.Message{
+			To:       builtin.InitActorAddr,
+			From:     sendAddr,
+			Method:   builtin.MethodsInit.Exec,
+			Params:   enc,
+			GasPrice: types.NewInt(1),
+			GasLimit: 1000000,
+			Value:    types.BigInt(filval),
+		}*/
+
+
+        const multisig_create: &str = r#"
+            {
+                "to": "t01001",
+                "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+                "nonce": 1,
+                "value": "100000",
+                "gasprice": "1",
+                "gaslimit": 1000000,
+                "method": 2,
+                "params": {
+                    "CodeCID": "fil/1/multisig",
+                    "ConstructorParams": {
+                        "Signers": ["t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba", "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"],
+                        "NumApprovalsThreshold": 1
+                    }
+                }
+            }"#;
+
+            let multisig_create_message_api = UnsignedMessageAPI {
+                to: "t01001".to_string(),
+                from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+                nonce: 1,
+                value: "100000".to_string(),
+                gas_price: "2500".to_string(),
+                gas_limit: 25000,
+                method: 2,
+                params: "{'CodeCID': 'fil/1/multisig'}".to_string(),
+            };
+
+            transaction_serialize(&multisig_create_message_api).unwrap();
+    }
 }
