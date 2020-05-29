@@ -12,7 +12,7 @@ gumdrop = "0.7"
 thiserror = "1.0"
 serde = { version = "1", features = ["serde_derive"] }
 serde_json = "1.0"
-filecoin-signer = {path = "../signer"}
+filecoin-signer = { path = "../signer" }
 forest_message = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f" }
 tokio = { version = "0.2", features = ["full", "time"] }
 reqwest = { version = "0.10.1", features = ["json", "gzip"] }

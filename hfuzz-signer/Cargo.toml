@@ -1,0 +1,25 @@
+[[bin]]
+name = "signature"
+path = "signature.rs"
+
+[[bin]]
+name = "signed-message"
+path = "signed-message.rs"
+
+[[bin]]
+name = "unsigned-message"
+path = "unsigned-message.rs"
+
+[dependencies]
+filecoin-signer = { features = ["with-arbitrary"], path = "../signer" }
+forest_address = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f" }
+forest_crypto = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f" }
+forest_message = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f" }
+honggfuzz = "0.5"
+
+[package]
+authors = ["Zondax <info@zondax.ch>"]
+edition = "2018"
+name = "hfuzz-signer"
+publish = false
+version = "0.0.0"
