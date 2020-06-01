@@ -1,0 +1,19 @@
+{
+  "name": "signer-js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bip32": "^2.0.5",
+    "bip39": "^3.0.2",
+    "cbor": "^5.0.2"
+  },
+  "devDependencies": {
+    "mocha": "^7.2.0"
+  }
+}

@@ -168,6 +168,7 @@ pub fn key_recover(private_key_js: JsValue, testnet: bool) -> Result<ExtendedKey
 pub fn transaction_serialize(unsigned_message: JsValue) -> Result<String, JsValue> {
     set_panic_hook();
 
+    // TODO: rename; can be unsigned or signed message (so maybe 'message')
     let s = transaction_serialize_raw(unsigned_message)?;
 
     Ok(hex::encode(&s))
