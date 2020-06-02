@@ -9,9 +9,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "base32-encode": "^1.1.1",
     "bip32": "^2.0.5",
     "bip39": "^3.0.2",
-    "cbor": "^5.0.2"
+    "blake2": "^4.0.1",
+    "cbor": "^5.0.2",
+    "secp256k1": "^4.0.1"
   },
   "devDependencies": {
     "mocha": "^7.2.0"

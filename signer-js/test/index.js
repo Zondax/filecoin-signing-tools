@@ -1,5 +1,6 @@
 const assert = require('assert');
 const bip32 = require('bip32');
+const bip39 = require('bip39');
 const filecoin_signer = require('../src');
 
 const EXAMPLE_MNEMONIC = "equip will roof matter pink blind book anxiety banner elbow sun young";
@@ -25,7 +26,59 @@ describe("keyDerive", function() {
     const expected_keys = MASTER_NODE.derivePath("m/44'/461'/0/0/1");
     assert.strictEqual(keypair.private_hexstring, expected_keys.privateKey.toString("hex"));
     assert.strictEqual(keypair.address, "f1rovwtiuo5ncslpmpjftzu5akswbgsgighjazxoi");
-  })
+  });
+
+  it("should derive key from mnemonic and return a testnet address", () => {
+      const keypair = filecoin_signer.keyDerive(EXAMPLE_MNEMONIC, "m/44'/1'/0/0/1", "");
+
+      console.log("Public Key Raw         :", keypair.public_raw);
+      console.log("Public Key             :", keypair.public_hexstring);
+      console.log("Private                :", keypair.private_hexstring);
+      console.log("Address                :", keypair.address);
+
+      const expected_keys = MASTER_NODE.derivePath("m/44'/1'/0/0/1");
+      assert.strictEqual(keypair.private_hexstring, expected_keys.privateKey.toString("hex"));
+      assert(keypair.address.startsWith('t'));
+  });
+
+  it('should fail because of missing password', () => {
+      assert.throws(() => {
+              filecoin_signer.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1")
+          },
+          /argument must be of type string or an instance of Buffer or ArrayBuffer. Received undefined/
+      );
+  });
+
+  it('should derive key with the password', () => {
+      const keypair = filecoin_signer.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "password");
+
+      console.log("Public Key Raw         :", keypair.public_raw);
+      console.log("Public Key             :", keypair.public_hexstring);
+      console.log("Private                :", keypair.private_hexstring);
+      console.log("Address                :", keypair.address);
+
+      const seed = bip39.mnemonicToSeedSync(EXAMPLE_MNEMONIC, "password");
+      const node = bip32.fromSeed(seed);
+
+      const expected_keys = node.derivePath("m/44'/461'/0/0/1");
+      assert.strictEqual(keypair.private_hexstring, expected_keys.privateKey.toString("hex"));
+  });
+
+  it('should not match the key with the different password', () => {
+      const keypair = filecoin_signer.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "password");
+
+      console.log("Public Key Raw         :", keypair.public_raw);
+      console.log("Public Key             :", keypair.public_hexstring);
+      console.log("Private                :", keypair.private_hexstring);
+      console.log("Address                :", keypair.address);
+
+      const seed = bip39.mnemonicToSeedSync(EXAMPLE_MNEMONIC, "lol");
+      const node = bip32.fromSeed(seed);
+
+      const expected_keys = node.derivePath("m/44'/461'/0/0/1");
+      assert.notEqual(keypair.private_hexstring, expected_keys.privateKey.toString("hex"));
+  });
+
 })
 
 describe("keyDeriveFromSeed", function() {

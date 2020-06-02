@@ -6,11 +6,11 @@ class ExtendedKey {
   }
 
   get public_raw() {
-    return this.publicKey.buffer
+    return new Uint8Array(this.publicKey)
   }
 
   get private_raw() {
-    return this.privateKey.buffer
+    return new Uint8Array(this.privateKey)
   }
 
   get public_hexstring() {
