@@ -23,7 +23,7 @@ use crate::{APDUAnswer, APDUCommand, APDUErrorCodes, APDUTransport, TransportErr
 use serde::{Deserialize, Serialize};
 
 use crate::params::*;
-use bip44::BIP44Path;
+use zx_bip44::BIP44Path;
 
 use crate::errors::LedgerError;
 use std::str;

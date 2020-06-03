@@ -19,7 +19,7 @@ use std::str::FromStr;
 
 use crate::extended_key::ExtendedSecretKey;
 use bip39::{Language, MnemonicType, Seed};
-use bip44::BIP44Path;
+use zx_bip44::BIP44Path;
 use bls_signatures::Serialize;
 use rayon::prelude::*;
 use secp256k1::util::{
