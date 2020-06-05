@@ -1,6 +1,27 @@
+const base32Encode = require('base32-encode');
+const secp256k1 = require('secp256k1');
+const { getPayloadSECP256K1, getChecksum } = require('./utils');
+
 class ExtendedKey {
-  constructor(privateKey, publicKey, address) {
-    this.publicKey = publicKey // Buffer
+  constructor(privateKey, testnet) {
+
+    const pubKey = secp256k1.publicKeyCreate(privateKey)
+
+    var uncompressedPublicKey = new Uint8Array(65);
+    secp256k1.publicKeyConvert(pubKey, false, uncompressedPublicKey);
+    uncompressedPublicKey = Buffer.from(uncompressedPublicKey);
+
+    const payload = getPayloadSECP256K1(uncompressedPublicKey);
+    const checksum = getChecksum(Buffer.concat([Buffer.from('01', 'hex'), payload]));
+
+    let prefix = "f1";
+    if (testnet) {
+      prefix = "t1";
+    }
+
+    const address = prefix + base32Encode(Buffer.concat([payload,checksum]), 'RFC4648', { padding: false }).toLowerCase();
+
+    this.publicKey = uncompressedPublicKey // Buffer
     this.privateKey = privateKey // Buffer
     this.address = address // String
   }

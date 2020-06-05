@@ -31,4 +31,9 @@ function getChecksum(payload) {
   return checksum;
 }
 
-module.exports = { getCID, getDigest, getPayloadSECP256K1, getChecksum }
+function getAccountFromPath(path) {
+  const account = path.split('/')[2].slice(0,-1);
+  return account;
+}
+
+module.exports = { getCID, getDigest, getPayloadSECP256K1, getChecksum, getAccountFromPath }

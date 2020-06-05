@@ -6,7 +6,7 @@ const blake2 = require('blake2');
 const secp256k1 = require('secp256k1');
 
 const ExtendedKey = require('./extendedkey');
-const { getDigest, getPayloadSECP256K1, getChecksum } = require('./utils');
+const { getDigest, getAccountFromPath } = require('./utils');
 
 function generateMnemonic() {
   // 256 so it generate 24 words
@@ -14,19 +14,18 @@ function generateMnemonic() {
 }
 
 function keyDeriveFromSeed(seed, path) {
+  if (typeof seed === 'string') { seed = Buffer.from(seed, 'hex'); }
+
   const masterKey = bip32.fromSeed(seed);
 
   const childKey = masterKey.derivePath(path);
-  var uncompressedPublicKey = new Uint8Array(65);
-  secp256k1.publicKeyConvert(childKey.publicKey, false, uncompressedPublicKey);
-  uncompressedPublicKey = Buffer.from(uncompressedPublicKey);
 
-  const payload = getPayloadSECP256K1(uncompressedPublicKey);
-  const checksum = getChecksum(Buffer.concat([Buffer.from('01', 'hex'), payload]));
+  let testnet = false;
+  if (getAccountFromPath(path) === '1') {
+    testnet = true;
+  }
 
-  const address = "f1" + base32Encode(Buffer.concat([payload,checksum]), 'RFC4648', { padding: false }).toLowerCase();
-
-  return new ExtendedKey(childKey.privateKey, uncompressedPublicKey, address);
+  return new ExtendedKey(childKey.privateKey, testnet);
 }
 
 function keyDerive(mnemonic, path, password) {
@@ -35,16 +34,9 @@ function keyDerive(mnemonic, path, password) {
 }
 
 function keyRecover(privateKey, testnet) {
-  var uncompressedPublicKey = new Uint8Array(65);
-  secp256k1.publicKeyCreate(privateKey, false, uncompressedPublicKey);
-  uncompressedPublicKey = Buffer.from(uncompressedPublicKey);
+  if (typeof privateKey === 'string') { privateKey = Buffer.from(privateKey, 'hex'); }
 
-  const payload = getPayloadSECP256K1(uncompressedPublicKey);
-  const checksum = getChecksum(Buffer.concat([Buffer.from('01', 'hex'), payload]));
-
-  const address = "f1" + base32.encode(Buffer.concat([payload,checksum]));
-
-  return new ExtendedKey(privateKey, uncompressedPublicKey, address);
+  return new ExtendedKey(privateKey, testnet);
 }
 
 function transactionSerialize(message) {
