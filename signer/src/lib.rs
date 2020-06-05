@@ -19,13 +19,13 @@ use std::str::FromStr;
 
 use crate::extended_key::ExtendedSecretKey;
 use bip39::{Language, MnemonicType, Seed};
-use zx_bip44::BIP44Path;
 use bls_signatures::Serialize;
 use rayon::prelude::*;
 use secp256k1::util::{
     COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
 };
 use secp256k1::{recover, sign, verify, Message, RecoveryId};
+use zx_bip44::BIP44Path;
 
 use crate::signature::{Signature, SignatureBLS, SignatureSECP256K1};
 
