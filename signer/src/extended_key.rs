@@ -123,9 +123,9 @@ impl ExtendedSecretKey {
 mod tests {
     use crate::extended_key::ExtendedSecretKey;
     use bip39::{Language, Mnemonic, Seed};
-    use bip44::BIP44Path;
     use hex::encode;
     use std::convert::TryFrom;
+    use zx_bip44::BIP44Path;
 
     const HARDENED_BIT: u32 = 1 << 31;
 
