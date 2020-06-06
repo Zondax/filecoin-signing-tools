@@ -43,7 +43,7 @@ forest_encoding = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8
 tiny-bip39 = "0.7.3"
 num_bigint_chainsafe = { package = "forest_bigint", git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f"}
 
-bip44 = { git = "https://github.com/Zondax/ledger-rs"}
+zx-bip44 = { git = "https://github.com/Zondax/blockchain-tools-rs" }
 
 
 [dev-dependencies]

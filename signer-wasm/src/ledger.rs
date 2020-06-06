@@ -6,7 +6,7 @@ use wasm_bindgen::prelude::*;
 
 use filecoin_signer_ledger::{APDUTransport, TransportWrapperTrait};
 
-use bip44::BIP44Path;
+use zx_bip44::BIP44Path;
 
 use crate::ledger_errors::ledger_error_to_javascript_error;
 use crate::utils::{address_to_object, bytes_to_buffer, signature_to_object, Buffer};
