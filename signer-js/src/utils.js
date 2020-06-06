@@ -1,6 +1,7 @@
 const blake2 = require("blake2");
 const base32Decode = require('base32-decode');
 const base32Encode = require('base32-encode');
+const assert = require('assert');
 
 
 const CID_PREFIX = Buffer.from([0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20]);
@@ -68,6 +69,20 @@ function trimBuffer(buf) {
   return buf.slice(indexStart-1);
 }
 
+function tryToPrivateKeyBuffer(privateKey) {
+  if (typeof privateKey === 'string') {
+    // We should have a padding!
+    if (privateKey.slice(-1) === '=') {
+      privateKey = Buffer.from(privateKey, 'base64');
+    } else {
+      assert(privateKey.length === 64);
+      privateKey = Buffer.from(privateKey, 'hex');
+    }
+  }
+
+  return privateKey;
+}
+
 module.exports = {
   getCID,
   getDigest,
@@ -76,5 +91,6 @@ module.exports = {
   getAccountFromPath,
   addressAsBytes,
   bytesToAddress,
-  trimBuffer
+  trimBuffer,
+  tryToPrivateKeyBuffer
 }

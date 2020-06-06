@@ -1,7 +1,9 @@
 const assert = require('assert');
 const bip32 = require('bip32');
 const bip39 = require('bip39');
+const secp256k1 = require('secp256k1');
 const filecoin_signer = require('../src');
+const { getDigest } = require('../src/utils');
 
 const EXAMPLE_MNEMONIC = "equip will roof matter pink blind book anxiety banner elbow sun young";
 const MASTER_KEY = "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5";
@@ -299,7 +301,25 @@ describe("transactionSignLotus", function() {
 
 describe("transactionSignRaw", function() {
   it("should sign transaction and return raw signature", function() {
-    assert(false)
+    const example_key = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+
+    const signature = filecoin_signer.transactionSignRaw(EXAMPLE_TRANSACTION, example_key.privateKey.toString("hex"));
+    console.log(signature)
+    let message_digest = getDigest(Buffer.from(EXAMPLE_CBOR_TX, 'hex'));
+
+    // Signature representation is R, S & V
+    console.log("Signature  :", signature.toString('hex'));
+    console.log("Digest     :", message_digest.toString('hex'));
+    console.log("Public key :", example_key.publicKey.toString('hex'));
+
+    assert.strictEqual(
+        true,
+        // Remove the V value from the signature (last byte)
+        secp256k1.ecdsaVerify(signature.slice(0, -1), message_digest, example_key.publicKey)
+    );
+
+    // Verify recovery id which is the last byte of the signature
+    assert.strictEqual(0x01, signature[64]);
   })
 })
 

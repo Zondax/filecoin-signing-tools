@@ -7,7 +7,7 @@ const secp256k1 = require('secp256k1');
 const assert = require('assert');
 
 const ExtendedKey = require('./extendedkey');
-const { getDigest, getAccountFromPath, addressAsBytes, bytesToAddress, trimBuffer } = require('./utils');
+const { getDigest, getAccountFromPath, addressAsBytes, bytesToAddress, trimBuffer, tryToPrivateKeyBuffer } = require('./utils');
 
 function generateMnemonic() {
   // 256 so it generate 24 words
@@ -35,15 +35,8 @@ function keyDerive(mnemonic, path, password) {
 }
 
 function keyRecover(privateKey, testnet) {
-  if (typeof privateKey === 'string') {
-    // We should have a padding!
-    if (privateKey.slice(-1) === '=') {
-      privateKey = Buffer.from(privateKey, 'base64');
-    } else {
-      assert(privateKey.length === 64);
-      privateKey = Buffer.from(privateKey, 'hex');
-    }
-  }
+  // verify format and convert to buffer if needed
+  privateKey = tryToPrivateKeyBuffer(privateKey);
 
   return new ExtendedKey(privateKey, testnet);
 }
@@ -102,20 +95,82 @@ function transactionParse(cborMessage, testnet) {
   return message;
 }
 
-function transactionSign(unsignedMessage, privateKey) {
+function transactionSignRaw(unsignedMessage, privateKey) {
+  if (typeof unsignedMessage === 'object') { unsignedMessage = transactionSerializeRaw(unsignedMessage); };
+  if (typeof unsignedMessage === 'string') { unsignedMessage = Buffer.from(unsignedMessage, 'hex'); };
 
+  // verify format and convert to buffer if needed
+  privateKey = tryToPrivateKeyBuffer(privateKey);
+
+  const messageDigest = getDigest(unsignedMessage);
+  const signature = secp256k1.ecdsaSign(messageDigest, privateKey);
+
+  let signatureRSV = Buffer.concat([signature.signature, Buffer.from([signature.recid])]);
+
+  return signatureRSV;
+}
+
+function transactionSign(unsignedMessage, privateKey) {
+  if (typeof unsignedMessage !== 'object') { throw new Error("'message' need to be an object. Cannot be under CBOR format.") };
+  const signature =  transactionSignRaw(unsignedMessage, privateKey);
+
+  let signedMessage = {};
+
+  signedMessage.message = unsignedMessage;
+
+  // FIXME: only support secp256k1
+  signedMessage.signature = {
+    data: signature.toString('base64'),
+    type: 1
+  }
+
+  return signedMessage;
 }
 
 function transactionSignLotus(unsignedMessage, privateKey) {
+  let signedMessage = transactionSign(unsignedMessage, privateKey);
 
+  let signedMessageJSON = JSON.stringify({
+    "Message": {
+      "From": signedMessage.message.from,
+      "GasLimit": signedMessage.message.gaslimit,
+      "GasPrice": signedMessage.message.gasprice,
+      "Method": signedMessage.message.method,
+      "Nonce": signedMessage.message.nonce,
+      "Params": signedMessage.message.params,
+      "To": signedMessage.message.to,
+      "Value": signedMessage.message.value
+    },
+    "Signature": {
+      "Data": signedMessage.signature.data,
+      "Type": signedMessage.signature.type
+    }
+  });
+
+  return signedMessageJSON;
 }
 
-function transactionSignRaw(unsignedMessage, privateKey) {
-
-}
-
+// TODO: new function 'verifySignature(signedMessage)'; Makes more sense ?
 function verifySignature(signature, message) {
 
+  if (typeof message === 'object') { message = transactionSerializeRaw(message); };
+  if (typeof message === 'string') { message = Buffer.from(message, 'hex'); };
+
+  if (typeof signature === 'string') {
+    // We should have a padding!
+    if (signature.slice(-1) === '=') {
+      signature = Buffer.from(signature, 'base64');
+    } else {
+      signature = Buffer.from(signature, 'hex');
+    }
+  }
+
+  const messageDigest = getDigest(message);
+
+  const publicKey = secp256k1.ecdsaRecover(signature.slice(0, -1), signature[64], messageDigest, false);
+  const result = secp256k1.ecdsaVerify(signature.slice(0, -1), messageDigest, publicKey)
+
+  return result;
 }
 
 module.exports = {
