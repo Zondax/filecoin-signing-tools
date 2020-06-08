@@ -17,6 +17,8 @@ const EXPECTED_ROOT_NODE = bip32.fromBase58(EXPECTED_SEED);
 const EXAMPLE_TRANSACTION_CBOR =
   "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a0430009c41961a80040";
 
+var status_cid;
+
 const EXAMPLE_TRANSACTION = {
   to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
   from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
@@ -322,50 +324,6 @@ test("verify_invalid_signature", async () => {
   expect(response.result).toEqual(false);
 });
 
-test("get_status", async () => {
-  let message_cid = "bafy2bzacean3gqtnc6lepgaankwh6tmgoefvo2raj7fuhot4urzutrsarjdjo";
-  const response = await callMethod(URL, "get_status", [message_cid], 1);
-  console.log(response);
-
-  // Do we have a results
-  expect(response).toHaveProperty("result");
-  expect(response.result).toEqual({
-    "From": "t1hw4amnow4gsgk2ottjdpdverfwhaznyrslsmoni",
-    "GasLimit": 10000,
-    "GasPrice": "0",
-    "Method": 0,
-    "Nonce": 21131,
-    "Params": "",
-    "To": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
-    "Value": "50000000000000000000",
-    "Version": 0,
-  });
-});
-
-test("get_status fail", async () => {
-  const message_cid = "bafy2bzaceaxm23epjsmh75yvzcecsrbavlmkcxnva66bkdebdcnyw3bjrc74u";
-  const response = await callMethod(URL, "get_status", [message_cid], 1);
-  console.log(response);
-
-  // Do we have a results
-  expect(response).toHaveProperty("error");
-});
-
-test("get_nonce", async () => {
-  const account = "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy";
-
-  const response = await callMethod(
-    URL,
-    "get_nonce",
-    [account],
-    1,
-  );
-
-  console.log(response);
-
-  expect(response.result).toBeGreaterThanOrEqual(0);
-});
-
 test("send_signed_tx", async () => {
   const path = "m/44'/1'/0/0/0";
   const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path], 1);
@@ -414,9 +372,52 @@ test("send_signed_tx", async () => {
 
   const response = await callMethod(URL, "send_signed_tx", [signedTxResponse.result], 1);
 
+  console.log(response.result['/']);
+  status_cid = response.result['/'];
+
+  expect(response).toHaveProperty("result");
+});
+
+
+test("get_status", async () => {
+  const response = await callMethod(URL, "get_status", [status_cid], 1);
   console.log(response);
 
   expect(response).toHaveProperty("result");
+
+  expect(response.result).toHaveProperty("From");
+  expect(response.result).toHaveProperty("GasLimit");
+  expect(response.result).toHaveProperty("GasPrice");
+  expect(response.result).toHaveProperty("Method");
+  expect(response.result).toHaveProperty("Nonce");
+  expect(response.result).toHaveProperty("Params");
+  expect(response.result).toHaveProperty("To");
+  expect(response.result).toHaveProperty("Value");
+  expect(response.result).toHaveProperty("Version");
+
+});
+
+test("get_status fail", async () => {
+  const message_cid = "bafy2bzaceaxm23epjsmh75yvzcecsrbavlmkcxnva66bkdebdcnyw3bjrc74u";
+  const response = await callMethod(URL, "get_status", [message_cid], 1);
+  console.log(response);
+
+  expect(response).toHaveProperty("error");
+});
+
+test("get_nonce", async () => {
+  const account = "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy";
+
+  const response = await callMethod(
+    URL,
+    "get_nonce",
+    [account],
+    1,
+  );
+
+  console.log(response);
+
+  expect(response.result).toBeGreaterThanOrEqual(0);
 });
 
 test("send_sign", async () => {

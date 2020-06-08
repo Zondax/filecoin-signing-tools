@@ -159,7 +159,7 @@ pub async fn is_mainnet(url: &str, jwt: &str) -> Result<bool, ServiceError> {
         _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
     };
 
-    if network == "testnet" {
+    if network == "testnet" || network == "interop" {
         Ok(false)
     } else {
         Ok(true)
@@ -202,33 +202,6 @@ mod tests {
         println!("{:?}", nonce);
 
         assert!(nonce.is_ok());
-    }
-
-    #[tokio::test]
-    async fn example_get_status_transaction() {
-        let params =
-            json!({ "/": "bafy2bzacean3gqtnc6lepgaankwh6tmgoefvo2raj7fuhot4urzutrsarjdjo" });
-
-        let expected_response = json!({
-            "To":"t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
-            "From":"t1hw4amnow4gsgk2ottjdpdverfwhaznyrslsmoni",
-            "Nonce":21131,
-            "Value":"50000000000000000000",
-            "GasPrice":"0",
-            "GasLimit":10000,
-            "Method":0,
-            "Params":"",
-            "Version": 0
-        });
-
-        let credentials = tests::get_remote_credentials();
-        let status = get_status(&credentials.url, &credentials.jwt, params)
-            .await
-            .unwrap();
-
-        println!("{:?}", status);
-
-        assert_eq!(status, expected_response);
     }
 
     #[tokio::test]
