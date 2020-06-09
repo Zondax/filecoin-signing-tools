@@ -75,10 +75,11 @@ function tryToPrivateKeyBuffer(privateKey) {
     if (privateKey.slice(-1) === '=') {
       privateKey = Buffer.from(privateKey, 'base64');
     } else {
-      assert(privateKey.length === 64);
       privateKey = Buffer.from(privateKey, 'hex');
     }
   }
+
+  assert(privateKey.length === 64);
 
   return privateKey;
 }

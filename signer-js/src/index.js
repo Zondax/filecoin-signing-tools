@@ -8,6 +8,7 @@ const assert = require('assert');
 
 const ExtendedKey = require('./extendedkey');
 const { getDigest, getAccountFromPath, addressAsBytes, bytesToAddress, trimBuffer, tryToPrivateKeyBuffer } = require('./utils');
+const { Types } = require('./constants');
 
 function generateMnemonic() {
   // 256 so it generate 24 words
@@ -121,7 +122,7 @@ function transactionSign(unsignedMessage, privateKey) {
   // FIXME: only support secp256k1
   signedMessage.signature = {
     data: signature.toString('base64'),
-    type: 1
+    type: Types.SECP256K1
   }
 
   return signedMessage;
