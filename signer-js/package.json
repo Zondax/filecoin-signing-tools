@@ -1,0 +1,29 @@
+{
+  "name": "signer-js",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha",
+    "lint": "eslint src/**"
+  },
+  "author": "Zondax <info@zondax.ch>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "base32-decode": "^1.0.0",
+    "base32-encode": "^1.1.1",
+    "bip32": "^2.0.5",
+    "bip39": "^3.0.2",
+    "blake2": "^4.0.1",
+    "borc": "^2.1.2",
+    "secp256k1": "^4.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.2.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.21.1",
+    "mocha": "^7.2.0"
+  },
+  "eslintConfig": {
+    "extends": "airbnb-base"
+  }
+}

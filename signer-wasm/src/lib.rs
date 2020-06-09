@@ -165,10 +165,10 @@ pub fn key_recover(private_key_js: JsValue, testnet: bool) -> Result<ExtendedKey
 }
 
 #[wasm_bindgen(js_name = transactionSerialize)]
-pub fn transaction_serialize(unsigned_message: JsValue) -> Result<String, JsValue> {
+pub fn transaction_serialize(message: JsValue) -> Result<String, JsValue> {
     set_panic_hook();
 
-    let s = transaction_serialize_raw(unsigned_message)?;
+    let s = transaction_serialize_raw(message)?;
 
     Ok(hex::encode(&s))
 }
@@ -177,6 +177,7 @@ pub fn transaction_serialize(unsigned_message: JsValue) -> Result<String, JsValu
 pub fn transaction_serialize_raw(unsigned_message: JsValue) -> Result<Vec<u8>, JsValue> {
     set_panic_hook();
 
+    // FIXME: Should be MessageTxAPI because it can be unsigned message or signed message
     let unsigned_message: UnsignedMessageAPI = unsigned_message
         .into_serde()
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
