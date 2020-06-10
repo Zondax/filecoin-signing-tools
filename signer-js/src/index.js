@@ -8,7 +8,7 @@ const assert = require('assert');
 
 const ExtendedKey = require('./extendedkey');
 const { getDigest, getAccountFromPath, addressAsBytes, bytesToAddress, trimBuffer, tryToPrivateKeyBuffer } = require('./utils');
-const { Types } = require('./constants');
+const { ProtocolIndicator } = require('./constants');
 
 function generateMnemonic() {
   // 256 so it generate 24 words
@@ -31,6 +31,8 @@ function keyDeriveFromSeed(seed, path) {
 }
 
 function keyDerive(mnemonic, path, password) {
+  if (password === undefined) { throw new Error("'password' argument must be of type string or an instance of Buffer or ArrayBuffer. Received undefined") }
+
   const seed = bip39.mnemonicToSeedSync(mnemonic, password);
   return keyDeriveFromSeed(seed, path);
 }
@@ -122,7 +124,7 @@ function transactionSign(unsignedMessage, privateKey) {
   // FIXME: only support secp256k1
   signedMessage.signature = {
     data: signature.toString('base64'),
-    type: Types.SECP256K1
+    type: ProtocolIndicator.SECP256K1
   }
 
   return signedMessage;

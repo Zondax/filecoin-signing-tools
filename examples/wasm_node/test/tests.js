@@ -353,7 +353,10 @@ const bls_tests_vectors_path = "../generated_test_cases.json";
 let rawBLSData = fs.readFileSync(bls_tests_vectors_path);
 let jsonBLSData = JSON.parse(rawBLSData);
 
-describe('BLS support', function () {
+let describeCall = describe;
+if (process.env.PURE_JS) { describeCall = describe.skip }
+
+describeCall('BLS support', function () {
 
     for (let i = 0; i < jsonBLSData.length; i += 1) {
         let tc = jsonBLSData[i];
@@ -381,51 +384,6 @@ describe('BLS support', function () {
 const tests_vectors_path = "../manual_testvectors.json";
 let rawData = fs.readFileSync(tests_vectors_path);
 let jsonData = JSON.parse(rawData);
-
-describe('Transaction Serialization / Deserialization', function () {
-    it('Valid cbor should be fine', function () {
-        assert.deepStrictEqual(EXAMPLE_TRANSACTION, filecoin_signer.transactionParse(EXAMPLE_CBOR_TX, true))
-    });
-
-    it('Valid cbor should be fine - missing is undefined converted to false', function () {
-        assert.deepStrictEqual(EXAMPLE_TRANSACTION_MAINNET, filecoin_signer.transactionParse(EXAMPLE_CBOR_TX, false));
-    });
-
-    it('Extra bytes should fail', function () {
-        let cbor_transaction_extra_bytes = EXAMPLE_CBOR_TX + "00";
-
-        assert.throws(
-            () => filecoin_signer.transactionParse(cbor_transaction_extra_bytes, false),
-            /CBOR error: 'trailing data at offset 62'/
-        );
-    });
-
-    it('Serialize Transaction', () => {
-        assert.strictEqual(EXAMPLE_CBOR_TX, filecoin_signer.transactionSerialize(EXAMPLE_TRANSACTION));
-    });
-
-    it('Serialize Transaction return buffer', () => {
-        let cbor_uint8_array = filecoin_signer.transactionSerializeRaw(EXAMPLE_TRANSACTION);
-        assert.strictEqual(EXAMPLE_CBOR_TX, Buffer.from(cbor_uint8_array).toString('hex'));
-    });
-
-    it('Serialize Transaction Fail (missing nonce)', () => {
-        let invalid_transaction = {
-            "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-            "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
-            "value": "100000",
-            "gasprice": "2500",
-            "gaslimit": 25000,
-            "method": 0,
-            "params": ""
-        };
-
-        assert.throws(
-            () => filecoin_signer.transactionSerialize(invalid_transaction),
-            /missing field `nonce`/
-        );
-    });
-});
 
 describe('Transaction Serialization - Parameterized', function () {
     for (let i = 0; i < jsonData.length; i += 1) {
