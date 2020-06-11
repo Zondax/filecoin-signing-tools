@@ -20,12 +20,11 @@
     "rust",
     "filecoin"
   ],
-  "dependencies": {
-    "bip39": "^3.0.2"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@zondax/filecoin-signer-wasm": "^0",
     "bip32": "^2.0.5",
+    "bip39": "^3.0.2",
     "blake2": "^4.0.0",
     "mocha": "^7.1.1",
     "secp256k1": "^4.0.0"
