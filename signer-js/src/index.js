@@ -48,7 +48,7 @@ function transactionSerializeRaw(message) {
   if (!'to' in message || typeof message.to !== 'string') { throw new Error("'to' is a required field and has to be a 'string'") };
   if (!'from' in message || typeof message.from !== 'string') { throw new Error("'from' is a required field and has to be a 'string'") };
   if (!'nonce' in message || typeof message.nonce !== 'number') { throw new Error("'nonce' is a required field and has to be a 'number'") };
-  if (!'value' in message || typeof message.value !== 'string') { throw new Error("'value' is a required field and has to be a 'string'") };
+  if (!'value' in message || typeof message.value !== 'string' || message.value === "" || message.value.includes("-")) { throw new Error("'value' is a required field and has to be a 'string' but not empty or negative") };
   if (!'gasprice' in message || typeof message.gasprice !== 'string') { throw new Error("'gasprice' is a required field and has to be a 'string'") };
   if (!'gaslimit' in message || typeof message.gaslimit !== 'number') { throw new Error("'gaslimit' is a required field and has to be a 'number'") };
   if (!'method' in message || typeof message.method !== 'number') { throw new Error("'method' is a required field and has to be a 'number'") };
@@ -89,6 +89,8 @@ function transactionParse(cborMessage, testnet) {
   message.to = bytesToAddress(decoded[1], testnet);
   message.from = bytesToAddress(decoded[2], testnet);
   message.nonce = decoded[3];
+  // FIXME: Value can be bigger and we need 'readBigUInt64BE'
+  if (decoded[4][0] === 0x01) { throw new Error("Value cant be negative"); };
   message.value = decoded[4].readUIntBE(0,decoded[4].length).toString(10);
   message.gasprice = decoded[5].readUIntBE(0,decoded[5].length).toString(10);
   message.gaslimit = decoded[6];

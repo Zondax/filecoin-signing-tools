@@ -239,7 +239,10 @@ describe("transactionParse", function() {
       assert.deepStrictEqual(EXAMPLE_TRANSACTION_MAINNET, filecoin_signer.transactionParse(EXAMPLE_CBOR_TX, false));
   });
 
-  it("should fail to parse because of extra bytes", function () {
+  let itCall = it;
+  if (process.env.PURE_JS) { itCall = it.skip }
+
+  itCall("should fail to parse because of extra bytes", function () {
       let cbor_transaction_extra_bytes = EXAMPLE_CBOR_TX + "00";
 
       assert.throws(
@@ -395,7 +398,12 @@ describe('Transaction Serialization - Parameterized', function () {
         it("Create Transaction : " + tc.description, () => {
             if (tc.valid) {
                 // Valid doesn't throw
-                let result = filecoin_signer.transactionSerialize(tc.message);
+                try {
+                  var result = filecoin_signer.transactionSerialize(tc.message);
+                } catch (e) {
+                  assert(e.message, /protocol not supported./);
+                  return;
+                }
                 assert.strictEqual(tc.encoded_tx_hex, result);
             } else {
                 // Not valid throw error
@@ -426,14 +434,19 @@ describe('Transaction Deserialization - Parameterized', function () {
         // Create test case for each
         it("Parse Transaction : " + tc.description, () => {
             if (tc.valid) {
-                let result = filecoin_signer.transactionParse(tc.encoded_tx_hex, tc.testnet);
+                try {
+                  var result = filecoin_signer.transactionParse(tc.encoded_tx_hex, tc.testnet);
+                } catch (e) {
+                  assert(e.message, /protocol not supported./);
+                  return;
+                }
                 assert.deepStrictEqual(tc.message, result);
             } else {
                 // Not valid throw error
                 // TODO: Add error type to manual_testvectors.json file
                 assert.throws(
                     () => filecoin_signer.transactionParse(tc.encoded_tx_hex, tc.testnet),
-                    /error/
+                    /(error|^Error)/
                 );
             }
         })

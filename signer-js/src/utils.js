@@ -2,7 +2,7 @@ const blake2 = require("blake2");
 const base32Decode = require('base32-decode');
 const base32Encode = require('base32-encode');
 const assert = require('assert');
-const { UnknownProtocolIndicator, InvalidPayloadLength } = require('./errors');
+const { UnknownProtocolIndicator, InvalidPayloadLength, ProtocolNotSupported } = require('./errors');
 const { ProtocolIndicator } = require('./constants');
 
 const CID_PREFIX = Buffer.from([0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20]);
@@ -48,19 +48,19 @@ function addressAsBytes(address) {
   switch (Number(protocolIndicator)) {
     case ProtocolIndicator.ID:
       //if (payload.length > 16) { throw new InvalidPayloadLength(); };
-      throw new Error("ID protocol not supported.");
+      throw new ProtocolNotSupported("ID");
       break;
     case ProtocolIndicator.SECP256K1:
-      payload = base32Decode(address.slice(2).toUpperCase(), 'RFC4648');
-      if (payload.length > 24) { throw new InvalidPayloadLength(); };
+      payload = base32Decode(address.slice(2).toUpperCase(), 'RFC4648').slice(0,-4);
+      if (payload.byteLength !== 20) { throw new InvalidPayloadLength(); };
       break;
     case ProtocolIndicator.ACTOR:
-      payload = base32Decode(address.slice(2).toUpperCase(), 'RFC4648');
-      if (payload.length > 36) { throw new InvalidPayloadLength(); };
+      payload = base32Decode(address.slice(2).toUpperCase(), 'RFC4648').slice(0,-4);
+      if (payload.byteLength !== 32) { throw new InvalidPayloadLength(); };
       break;
     case ProtocolIndicator.BLS:
       //if (payload.length > 52) { throw new InvalidPayloadLength(); };
-      throw new Error("BLS protocol not supported.");
+      throw new ProtocolNotSupported("BLS");
       break;
     default:
       throw new UnknownProtocolIndicator();
@@ -69,20 +69,38 @@ function addressAsBytes(address) {
   const protocolIndicatorByte = '0' + protocolIndicator;
 
   // TODO: check checksum!
-  return Buffer.concat([Buffer.from(protocolIndicatorByte,'hex'),Buffer.from(payload.slice(0,-4))]);
+  return Buffer.concat([Buffer.from(protocolIndicatorByte,'hex'),Buffer.from(payload)]);
 }
 
 function bytesToAddress(payload, testnet) {
-  const checksum = getChecksum(payload);
+  const protocolIndicator = payload[0];
 
-  const protocol = payload[0];
+  switch (Number(protocolIndicator)) {
+    case ProtocolIndicator.ID:
+      //if (payload.length > 16) { throw new InvalidPayloadLength(); };
+      throw new ProtocolNotSupported("ID");
+      break;
+    case ProtocolIndicator.SECP256K1:
+      if (payload.slice(1).length !== 20) { throw new InvalidPayloadLength(); };
+      break;
+    case ProtocolIndicator.ACTOR:
+      if (payload.slice(1).length !== 32) { throw new InvalidPayloadLength(); };
+      break;
+    case ProtocolIndicator.BLS:
+      throw new ProtocolNotSupported("BLS");
+      break;
+    default:
+      throw new UnknownProtocolIndicator();
+  }
+
+  const checksum = getChecksum(payload);
 
   let prefix = "f";
   if (testnet) {
     prefix = "t";
   }
 
-  prefix = prefix + protocol;
+  prefix = prefix + protocolIndicator;
 
   const address = prefix + base32Encode(Buffer.concat([payload.slice(1),checksum]), 'RFC4648', { padding: false }).toLowerCase();
 

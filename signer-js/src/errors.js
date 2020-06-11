@@ -13,4 +13,12 @@ class InvalidPayloadLength extends Error {
   }
 }
 
-module.exports = { UnknownProtocolIndicator, InvalidPayloadLength };
+class ProtocolNotSupported extends Error {
+  constructor(protocolName, ...args) {
+    super(...args);
+    this.message = protocolName + " protocol not supported.";
+  }
+}
+
+
+module.exports = { UnknownProtocolIndicator, InvalidPayloadLength, ProtocolNotSupported };
