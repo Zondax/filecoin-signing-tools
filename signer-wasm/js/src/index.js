@@ -1,6 +1,6 @@
 const bip39 = require('bip39');
 const bip32 = require('bip32');
-const cbor = require('borc');
+const cbor = require('ipld-dag-cbor').util;
 const base32Encode = require('base32-encode');
 const blake2 = require('blake2');
 const secp256k1 = require('secp256k1');
@@ -68,7 +68,7 @@ function transactionSerializeRaw(message) {
 
   let message_to_encode = [0, to, from, message.nonce, value, gasprice, message.gaslimit, message.method, Buffer.from("")];
 
-  return cbor.encode(message_to_encode);
+  return cbor.serialize(message_to_encode);
 }
 
 function transactionSerialize(message) {
@@ -79,7 +79,7 @@ function transactionSerialize(message) {
 function transactionParse(cborMessage, testnet) {
   // FIXME: Check buffer size and extra bytes
   // https://github.com/dignifiedquire/borc/issues/47
-  const decoded = cbor.decodeFirst(cborMessage);
+  const decoded = cbor.deserialize(Buffer.from(cborMessage, 'hex'));
 
   if (decoded[0] !== 0) { throw new Error("Unsupported version") };
   if (decoded.length < 9) { throw new Error("The cbor is missing some fields... please verify you 9 fields.") };

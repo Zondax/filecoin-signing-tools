@@ -231,23 +231,29 @@ describe("transactionSerializeRaw", function() {
 })
 
 describe("transactionParse", function() {
-  it("should pase transaction (testnet)", function() {
+  it("should parse transaction (testnet)", function() {
     assert.deepStrictEqual(EXAMPLE_TRANSACTION, filecoin_signer.transactionParse(EXAMPLE_CBOR_TX, true))
   });
 
-  it("should serialize transaction (mainnet)", function () {
+  it("should parse transaction (mainnet)", function () {
       assert.deepStrictEqual(EXAMPLE_TRANSACTION_MAINNET, filecoin_signer.transactionParse(EXAMPLE_CBOR_TX, false));
   });
 
-  let itCall = it;
-  if (process.env.PURE_JS) { itCall = it.skip }
-
-  itCall("should fail to parse because of extra bytes", function () {
+  it.skip("should fail to parse because of extra bytes", function () {
       let cbor_transaction_extra_bytes = EXAMPLE_CBOR_TX + "00";
 
       assert.throws(
           () => filecoin_signer.transactionParse(cbor_transaction_extra_bytes, false),
           /CBOR error: 'trailing data at offset 62'/
+      );
+  });
+
+  it("should fail to parse because of extra bytes (non null)", function () {
+      let cbor_transaction_extra_bytes = EXAMPLE_CBOR_TX + "39";
+
+      assert.throws(
+          () => filecoin_signer.transactionParse(cbor_transaction_extra_bytes, false),
+          /(CBOR error: 'trailing data at offset 62'|Failed to parse)/
       );
   });
 })
