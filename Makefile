@@ -9,10 +9,11 @@ build_wasm:
 	rm -rf signer-wasm/pkg/
 	wasm-pack build --no-typescript --target nodejs --out-dir pkg/nodejs  signer-wasm/
 	wasm-pack build --no-typescript --target browser --out-dir pkg/browser signer-wasm/
+	# For the pure js we need the node_modules folder when using `yarn link`
+	cd signer-wasm/js && yarn install
 	cd signer-wasm && make build
 
-PACKAGE_NAME_WASM:="@zondax/filecoin-signer-wasm"
-PACKAGE_NAME_JS:="@zondax/filecoin-signer-js"
+PACKAGE_NAME:="@zondax/filecoin-signer"
 
 clean_wasm:
 	rm -rf examples/wasm_node/node_modules || true
@@ -21,27 +22,22 @@ clean_wasm:
 
 link_wasm: build_wasm
 	cd signer-wasm/pkg && yarn unlink  || true
-	cd examples/wasm_node && yarn unlink $(PACKAGE_NAME_WASM) || true
-	cd examples/wasm_browser && yarn unlink $(PACKAGE_NAME_WASM) || true
-	cd examples/wasm_ledger && yarn unlink $(PACKAGE_NAME_WASM) || true
+	cd examples/wasm_node && yarn unlink $(PACKAGE_NAME) || true
+	cd examples/wasm_browser && yarn unlink $(PACKAGE_NAME) || true
+	cd examples/wasm_ledger && yarn unlink $(PACKAGE_NAME) || true
 
 #	# Now use it in other places
 	cd signer-wasm/pkg && yarn link
-	cd examples/wasm_node && yarn link $(PACKAGE_NAME_WASM) && yarn install
-	cd examples/wasm_browser && yarn link $(PACKAGE_NAME_WASM)
-	cd examples/wasm_ledger && yarn link $(PACKAGE_NAME_WASM)
-
-link_js:
-	cd signer-js && yarn unlink  || true
-	cd signer-js && yarn link
-	cd examples/wasm_node && yarn link $(PACKAGE_NAME_JS)
+	cd examples/wasm_node && yarn link $(PACKAGE_NAME) && yarn install
+	cd examples/wasm_browser && yarn link $(PACKAGE_NAME)
+	cd examples/wasm_ledger && yarn link $(PACKAGE_NAME)
 
 test_wasm_unit: build_wasm
 	#wasm-pack test --chrome --firefox --headless ./signer-wasm
 	wasm-pack test --firefox --headless ./signer-wasm
 
 # Rename because now we also test pure js lib
-test_wasm_node: link_wasm link_js
+test_wasm_node: link_wasm
 	cd examples/wasm_node && yarn test
 	cd examples/wasm_node && yarn test:js
 

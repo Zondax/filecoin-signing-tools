@@ -20,9 +20,10 @@
     "rust",
     "filecoin"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "@zondax/filecoin-signer": "../../signer-wasm/pkg/"
+  },
   "devDependencies": {
-    "@zondax/filecoin-signer-wasm": "^0",
     "bip32": "^2.0.5",
     "bip39": "^3.0.2",
     "blake2": "^4.0.0",

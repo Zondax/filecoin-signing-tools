@@ -1,12 +1,12 @@
 // Test twice for wasm verion and pure js version
 if (process.env.PURE_JS) {
-  var filecoin_signer = require('@zondax/filecoin-signer-js');
+  var filecoin_signer = require('@zondax/filecoin-signer/js');
 } else {
-  var filecoin_signer = require('@zondax/filecoin-signer-wasm');
+  var filecoin_signer = require('@zondax/filecoin-signer');
 }
 
-const bip32 = require('bip32');
 const bip39 = require('bip39');
+const bip32 = require('bip32');
 const getDigest = require('./utils').getDigest;
 const secp256k1 = require('secp256k1');
 const fs = require('fs');
