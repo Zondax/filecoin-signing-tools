@@ -7,6 +7,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
+    "test:js": "env PURE_JS=True mocha",
     "test:spec": "mocha test/test.spec.js"
   },
   "repository": {
@@ -20,11 +21,11 @@
     "filecoin"
   ],
   "dependencies": {
-    "bip39": "^3.0.2"
+    "@zondax/filecoin-signer": "../../signer-wasm/pkg/"
   },
   "devDependencies": {
-    "@zondax/filecoin-signer-wasm": "^0",
     "bip32": "^2.0.5",
+    "bip39": "^3.0.2",
     "blake2": "^4.0.0",
     "mocha": "^7.1.1",
     "secp256k1": "^4.0.0"

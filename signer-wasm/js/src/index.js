@@ -1,6 +1,6 @@
 const bip39 = require('bip39');
 const bip32 = require('bip32');
-const cbor = require('borc');
+const cbor = require('ipld-dag-cbor').util;
 const base32Encode = require('base32-encode');
 const blake2 = require('blake2');
 const secp256k1 = require('secp256k1');
@@ -8,7 +8,7 @@ const assert = require('assert');
 
 const ExtendedKey = require('./extendedkey');
 const { getDigest, getAccountFromPath, addressAsBytes, bytesToAddress, trimBuffer, tryToPrivateKeyBuffer } = require('./utils');
-const { Types } = require('./constants');
+const { ProtocolIndicator } = require('./constants');
 
 function generateMnemonic() {
   // 256 so it generate 24 words
@@ -31,6 +31,8 @@ function keyDeriveFromSeed(seed, path) {
 }
 
 function keyDerive(mnemonic, path, password) {
+  if (password === undefined) { throw new Error("'password' argument must be of type string or an instance of Buffer or ArrayBuffer. Received undefined") }
+
   const seed = bip39.mnemonicToSeedSync(mnemonic, password);
   return keyDeriveFromSeed(seed, path);
 }
@@ -46,7 +48,7 @@ function transactionSerializeRaw(message) {
   if (!'to' in message || typeof message.to !== 'string') { throw new Error("'to' is a required field and has to be a 'string'") };
   if (!'from' in message || typeof message.from !== 'string') { throw new Error("'from' is a required field and has to be a 'string'") };
   if (!'nonce' in message || typeof message.nonce !== 'number') { throw new Error("'nonce' is a required field and has to be a 'number'") };
-  if (!'value' in message || typeof message.value !== 'string') { throw new Error("'value' is a required field and has to be a 'string'") };
+  if (!'value' in message || typeof message.value !== 'string' || message.value === "" || message.value.includes("-")) { throw new Error("'value' is a required field and has to be a 'string' but not empty or negative") };
   if (!'gasprice' in message || typeof message.gasprice !== 'string') { throw new Error("'gasprice' is a required field and has to be a 'string'") };
   if (!'gaslimit' in message || typeof message.gaslimit !== 'number') { throw new Error("'gaslimit' is a required field and has to be a 'number'") };
   if (!'method' in message || typeof message.method !== 'number') { throw new Error("'method' is a required field and has to be a 'number'") };
@@ -66,7 +68,7 @@ function transactionSerializeRaw(message) {
 
   let message_to_encode = [0, to, from, message.nonce, value, gasprice, message.gaslimit, message.method, Buffer.from("")];
 
-  return cbor.encode(message_to_encode);
+  return cbor.serialize(message_to_encode);
 }
 
 function transactionSerialize(message) {
@@ -77,7 +79,7 @@ function transactionSerialize(message) {
 function transactionParse(cborMessage, testnet) {
   // FIXME: Check buffer size and extra bytes
   // https://github.com/dignifiedquire/borc/issues/47
-  const decoded = cbor.decodeFirst(cborMessage);
+  const decoded = cbor.deserialize(Buffer.from(cborMessage, 'hex'));
 
   if (decoded[0] !== 0) { throw new Error("Unsupported version") };
   if (decoded.length < 9) { throw new Error("The cbor is missing some fields... please verify you 9 fields.") };
@@ -87,6 +89,8 @@ function transactionParse(cborMessage, testnet) {
   message.to = bytesToAddress(decoded[1], testnet);
   message.from = bytesToAddress(decoded[2], testnet);
   message.nonce = decoded[3];
+  // FIXME: Value can be bigger and we need 'readBigUInt64BE'
+  if (decoded[4][0] === 0x01) { throw new Error("Value cant be negative"); };
   message.value = decoded[4].readUIntBE(0,decoded[4].length).toString(10);
   message.gasprice = decoded[5].readUIntBE(0,decoded[5].length).toString(10);
   message.gaslimit = decoded[6];
@@ -122,7 +126,7 @@ function transactionSign(unsignedMessage, privateKey) {
   // FIXME: only support secp256k1
   signedMessage.signature = {
     data: signature.toString('base64'),
-    type: Types.SECP256K1
+    type: ProtocolIndicator.SECP256K1
   }
 
   return signedMessage;

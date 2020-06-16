@@ -9,9 +9,11 @@ build_wasm:
 	rm -rf signer-wasm/pkg/
 	wasm-pack build --no-typescript --target nodejs --out-dir pkg/nodejs  signer-wasm/
 	wasm-pack build --no-typescript --target browser --out-dir pkg/browser signer-wasm/
+	# For the pure js we need the node_modules folder when using `yarn link`
+	cd signer-wasm/js && yarn install
 	cd signer-wasm && make build
 
-PACKAGE_NAME:="@zondax/filecoin-signer-wasm"
+PACKAGE_NAME:="@zondax/filecoin-signer"
 
 clean_wasm:
 	rm -rf examples/wasm_node/node_modules || true
@@ -34,8 +36,10 @@ test_wasm_unit: build_wasm
 	#wasm-pack test --chrome --firefox --headless ./signer-wasm
 	wasm-pack test --firefox --headless ./signer-wasm
 
+# Rename because now we also test pure js lib
 test_wasm_node: link_wasm
-	cd examples/wasm_node && yarn install && yarn test
+	cd examples/wasm_node && yarn test
+	cd examples/wasm_node && yarn test:js
 
 test_wasm: test_wasm_unit test_wasm_node
 
@@ -90,4 +94,3 @@ tree:
 
 fuzz_signer:
 	cargo hfuzz run hfuzz-signer-zondax
-
