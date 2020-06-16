@@ -26,6 +26,7 @@ pub fn cache_put_nonce(addr: &str, nonce: u64) -> Result<(), ServiceError> {
     Ok(())
 }
 
+#[cfg(test)]
 pub fn cache_len() -> Result<usize, ServiceError> {
     let cache = NONCE_CACHE
         .lock()

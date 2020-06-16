@@ -296,7 +296,7 @@ pub async fn send_sign(c: MethodCall, config: RemoteNodeSection) -> Result<Succe
 mod tests {
     use crate::service::methods::get_status;
     use crate::service::test_helper::tests::get_remote_credentials;
-    use jsonrpc_core::{Id, MethodCall, Params, Success, Version};
+    use jsonrpc_core::{Id, MethodCall, Params, Version};
     use serde_json::json;
 
     #[tokio::test]

@@ -39,7 +39,7 @@ create_fn!(filecoin_signer_key_derive|Java_ch_zondax_FilecoinSigner_keyDerive: (
 ffi_support::define_string_destructor!(filecoin_signer_string_free);
 
 #[cfg(feature = "with-jni")]
-fn get_string_ref<'a>(s: &'a std::ffi::CStr) -> &'a str {
+fn get_string_ref(s: &std::ffi::CStr) -> &str {
     ffi_support::FfiStr::from_cstr(s).as_str()
 }
 #[cfg(not(feature = "with-jni"))]
