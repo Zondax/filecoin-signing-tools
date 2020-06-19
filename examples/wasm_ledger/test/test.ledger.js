@@ -20,12 +20,14 @@ describe("LEDGER TEST", function () {
   var sim,
       transport;
 
-  beforeEach(async function() {
+  before(async function() {
     // runs before tests start
     await catchExit();
     await Zemu.checkAndPullImage();
     await Zemu.stopAllEmuContainers();
+  })
 
+  beforeEach(async function() {
     const DEMO_APP_PATH = Resolve("bin/app.elf");
     sim = new Zemu(DEMO_APP_PATH);
     const APP_SEED = "equip will roof matter pink blind book anxiety banner elbow sun young";
