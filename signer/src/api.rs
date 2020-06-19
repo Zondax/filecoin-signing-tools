@@ -1,7 +1,11 @@
 use crate::error::SignerError;
 use crate::signature::Signature;
 use forest_address::{Address, Network};
+use forest_cid::{Codec, multihash::Identity, Cid};
 use forest_message::{Message, SignedMessage, UnsignedMessage};
+use actor::multisig::ConstructorParams;
+use actor::{Serialized, MULTISIG_ACTOR_CODE_ID};
+use actor::init::ExecParams;
 use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
@@ -10,6 +14,30 @@ use std::str::FromStr;
 pub enum SigTypes {
     SigTypeSecp256k1 = 0x01,
     SigTypeBLS = 0x02,
+}
+
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ConstructorParamsMultisig {
+    pub signers: Vec<String>,
+    pub num_approvals_threshold: i64,
+}
+
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct MessageParamsMultisig {
+    pub code_cid: String,
+    pub constructor_params: ConstructorParamsMultisig,
+}
+
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
+#[serde(untagged)]
+pub enum MessageParams {
+    MessageParamsMultisig(MessageParamsMultisig),
+    MessageParamsEmpty(String),
 }
 
 /// Unsigned message api structure
@@ -30,8 +58,18 @@ pub struct UnsignedMessageAPI {
     #[serde(alias = "gas_limit")]
     pub gas_limit: u64,
     pub method: u64,
-    pub params: String,
+    pub params: MessageParams,
 }
+
+/*where D: serde::Deserializer<'de>
+{
+    let params = String::deserialize(d)?;
+
+    match params {
+
+    }
+}*/
+
 
 /// Signature api structure
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
@@ -200,7 +238,36 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
         let value = BigUint::from_str(&message_api.value)?;
         let gas_limit = message_api.gas_limit;
         let gas_price = BigUint::from_str(&message_api.gas_price)?;
-        let params = forest_vm::Serialized::new(hex::decode(&message_api.params)?);
+        //let execParams = actor::init::ExecParams::from(message_api.params);
+        //let params = forest_vm::Serialized::new(message_api.params.clone().into_bytes());
+        //let params = forest_vm::Serialized::new(Vec::new());
+
+        // FIXME: use trait instead of a match ?
+        let params = match message_api.params.clone() {
+            MessageParams::MessageParamsEmpty(_) => forest_vm::Serialized::new(Vec::new()),
+            MessageParams::MessageParamsMultisig(multisig_params) => {
+                //let cid = Cid::new_v1(Codec::Raw, Identity::digest(multisig_params.code_cid.as_bytes()));
+                let signers = multisig_params.constructor_params.signers
+                    .into_iter()
+                    .map(|address_string| {
+                        Address::from_str(&address_string)
+                           .map_err(|err| SignerError::GenericString(err.to_string()))
+                           .unwrap()
+                    })
+                    .collect::<Vec<Address>>();
+                let constructor_multisig_params = ConstructorParams {
+                    signers,
+                    num_approvals_threshold: multisig_params.constructor_params.num_approvals_threshold,
+                    // FIXME: What is default ? Optional ? 
+                    unlock_duration: 0,
+                };
+                let exec_params = ExecParams {
+                    code_cid: MULTISIG_ACTOR_CODE_ID.clone(),
+                    constructor_params: forest_vm::Serialized::serialize::<ConstructorParams>(constructor_multisig_params).unwrap(),
+                };
+                forest_vm::Serialized::serialize::<ExecParams>(exec_params).unwrap()
+            }
+        };
 
         let tmp = UnsignedMessage::builder()
             .to(to)
@@ -231,7 +298,7 @@ impl From<UnsignedMessage> for UnsignedMessageAPI {
             method: 0,
             // FIXME: need a proper way to serialize parameters, for now
             // only method=0 is supported for keep empty
-            params: "".to_owned(),
+            params: MessageParams::MessageParamsEmpty("".to_string())
         }
     }
 }

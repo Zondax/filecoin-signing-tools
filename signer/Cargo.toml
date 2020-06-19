@@ -38,6 +38,9 @@ forest_vm = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e
 forest_message = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f" }
 forest_address = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f" }
 forest_encoding = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f" }
+actor = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f" }
+forest_cid = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f" }
+
 
 # TODO: Maybe we can replace these with something leaner
 tiny-bip39 = "0.7.3"

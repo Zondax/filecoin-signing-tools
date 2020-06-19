@@ -28,6 +28,7 @@ use secp256k1::{recover, sign, verify, Message, RecoveryId};
 use zx_bip44::BIP44Path;
 
 use crate::signature::{Signature, SignatureBLS, SignatureSECP256K1};
+use forest_cid::Cid;
 
 pub mod api;
 pub mod error;
@@ -430,7 +431,7 @@ pub fn verify_aggregated_signature(
 
 #[cfg(test)]
 mod tests {
-    use crate::api::{MessageTxAPI, UnsignedMessageAPI};
+    use crate::api::{MessageTxAPI, UnsignedMessageAPI, ConstructorParamsMultisig, MessageParamsMultisig, MessageParams};
     use crate::signature::{Signature, SignatureBLS};
     use crate::{
         key_derive, key_derive_from_seed, key_generate_mnemonic, key_recover, transaction_parse,
@@ -730,7 +731,7 @@ mod tests {
             gas_price: "2500".to_string(),
             gas_limit: 25000,
             method: 0,
-            params: "".to_string(),
+            params: MessageParams::MessageParamsEmpty("".to_string())
         };
 
         let raw_sig = transaction_sign_bls_raw(&message, &bls_key).unwrap();
@@ -774,7 +775,7 @@ mod tests {
                     gas_price: "2500".to_string(),
                     gas_limit: 25000,
                     method: 0,
-                    params: "".to_string(),
+                    params: MessageParams::MessageParamsEmpty("".to_string())
                 }
             })
             .collect();
@@ -838,6 +839,16 @@ mod tests {
                 }
             }"#;
 
+            let constructor_params_multisig = ConstructorParamsMultisig {
+                signers: vec!["t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(), "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string()],
+                num_approvals_threshold: 1,
+            };
+
+            let message_params_multisig = MessageParamsMultisig {
+                code_cid: "fil/1/multisig".to_string(),
+                constructor_params: constructor_params_multisig,
+            };
+
             let multisig_create_message_api = UnsignedMessageAPI {
                 to: "t01001".to_string(),
                 from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
@@ -845,10 +856,14 @@ mod tests {
                 value: "100000".to_string(),
                 gas_price: "2500".to_string(),
                 gas_limit: 25000,
-                method: 2,
-                params: "{'CodeCID': 'fil/1/multisig'}".to_string(),
+                method: 1,
+                params: MessageParams::MessageParamsMultisig(message_params_multisig)
             };
 
-            transaction_serialize(&multisig_create_message_api).unwrap();
+            let result = transaction_serialize(&multisig_create_message_api).unwrap();
+
+            println!("{}", hex::encode(&result));
+
+            assert!(false);
     }
 }
