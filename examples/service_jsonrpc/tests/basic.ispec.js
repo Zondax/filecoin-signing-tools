@@ -376,7 +376,7 @@ test("send_signed_tx", async () => {
 
   const response = await callMethod(URL, "send_signed_tx", [signedTxResponse.result], 1);
 
-  console.log(response.result['/']);
+  console.log(response);
   status_cid = response.result['/'];
 
   expect(response).toHaveProperty("result");
