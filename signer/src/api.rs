@@ -1,11 +1,11 @@
 use crate::error::SignerError;
 use crate::signature::Signature;
-use forest_address::{Address, Network};
-use forest_cid::{Codec, multihash::Identity, Cid};
-use forest_message::{Message, SignedMessage, UnsignedMessage};
+use actor::init::ExecParams;
 use actor::multisig::ConstructorParams;
 use actor::{Serialized, MULTISIG_ACTOR_CODE_ID};
-use actor::init::ExecParams;
+use forest_address::{Address, Network};
+use forest_cid::{multihash::Identity, Cid, Codec};
+use forest_message::{Message, SignedMessage, UnsignedMessage};
 use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
@@ -69,7 +69,6 @@ pub struct UnsignedMessageAPI {
 
     }
 }*/
-
 
 /// Signature api structure
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
@@ -247,23 +246,30 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
             MessageParams::MessageParamsEmpty(_) => forest_vm::Serialized::new(Vec::new()),
             MessageParams::MessageParamsMultisig(multisig_params) => {
                 //let cid = Cid::new_v1(Codec::Raw, Identity::digest(multisig_params.code_cid.as_bytes()));
-                let signers = multisig_params.constructor_params.signers
+                let signers = multisig_params
+                    .constructor_params
+                    .signers
                     .into_iter()
                     .map(|address_string| {
                         Address::from_str(&address_string)
-                           .map_err(|err| SignerError::GenericString(err.to_string()))
-                           .unwrap()
+                            .map_err(|err| SignerError::GenericString(err.to_string()))
+                            .unwrap()
                     })
                     .collect::<Vec<Address>>();
                 let constructor_multisig_params = ConstructorParams {
                     signers,
-                    num_approvals_threshold: multisig_params.constructor_params.num_approvals_threshold,
-                    // FIXME: What is default ? Optional ? 
+                    num_approvals_threshold: multisig_params
+                        .constructor_params
+                        .num_approvals_threshold,
+                    // FIXME: What is default ? Optional ?
                     unlock_duration: 0,
                 };
                 let exec_params = ExecParams {
                     code_cid: MULTISIG_ACTOR_CODE_ID.clone(),
-                    constructor_params: forest_vm::Serialized::serialize::<ConstructorParams>(constructor_multisig_params).unwrap(),
+                    constructor_params: forest_vm::Serialized::serialize::<ConstructorParams>(
+                        constructor_multisig_params,
+                    )
+                    .unwrap(),
                 };
                 forest_vm::Serialized::serialize::<ExecParams>(exec_params).unwrap()
             }
@@ -298,7 +304,7 @@ impl From<UnsignedMessage> for UnsignedMessageAPI {
             method: 0,
             // FIXME: need a proper way to serialize parameters, for now
             // only method=0 is supported for keep empty
-            params: MessageParams::MessageParamsEmpty("".to_string())
+            params: MessageParams::MessageParamsEmpty("".to_string()),
         }
     }
 }
