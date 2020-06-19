@@ -339,7 +339,7 @@ test("send_signed_tx", async () => {
   console.log("Nonce: ", nonce);
   console.log("Nonce: ", !isNaN(nonce));
 
-  if isNaN(nonce) {
+  if (isNaN(nonce)) {
     nonce = 1
   }
 
