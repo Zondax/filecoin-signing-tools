@@ -10,10 +10,13 @@
 
 use crate::api::{
     MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI, UnsignedMessageAPI,
+    ConstructorParamsMultisig, MessageParams, MessageParamsMultisig, ProposeParamsMultisig, TxnIDParamsMultisig
 };
 use crate::error::SignerError;
 use forest_address::{Address, Network};
 use forest_encoding::{from_slice, to_vec};
+use actor::INIT_ACTOR_ADDR;
+use actor::multisig::Method;
 use std::convert::TryFrom;
 use std::str::FromStr;
 
@@ -429,6 +432,162 @@ pub fn verify_aggregated_signature(
     Ok(bls_signatures::verify(&sig, &hashes, pks.as_slice()))
 }
 
+/// Utilitary function to create a create multisig message. Return an unsigned message.
+///
+/// # Arguments
+///
+/// * `sender_address` - A string address
+/// * `addresses` - List of string addresses of the multisig
+/// * `value` - Value to send on the multisig
+/// * `required` - Number of required signatures required
+///
+pub fn create_multisig(
+    sender_address: String,
+    addresses: Vec<String>,
+    value: String,
+    required: i64
+) -> Result<UnsignedMessageAPI, SignerError> {
+    let constructor_params_multisig = ConstructorParamsMultisig {
+        signers: addresses,
+        num_approvals_threshold: required,
+        unlock_duration: -1,
+    };
+
+    let message_params_multisig = MessageParamsMultisig {
+        code_cid: "fil/1/multisig".to_string(),
+        constructor_params: constructor_params_multisig,
+    };
+
+    let multisig_create_message_api = UnsignedMessageAPI {
+        to: INIT_ACTOR_ADDR.to_string(),
+        from: sender_address,
+        // FIXME: how do we get nonce ?
+        nonce: 1,
+        value: value,
+        // https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L46
+        gas_price: "1".to_string(),
+        // used the same value as https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L78
+        gas_limit: 1000000,
+        method: Method::Constructor as u64,
+        params: MessageParams::MessageParamsMultisig(message_params_multisig),
+    };
+
+    Ok(multisig_create_message_api)
+}
+
+/// Utilitary function to create a proposal multisig message. Return an unsigned message.
+///
+/// # Arguments
+///
+/// * `multisig_address` - A string address
+/// * `to_address` - A string address
+/// * `from_address` - A string address
+/// * `amount` - Amount of the transaction
+///
+pub fn proposal_multisig_message(
+    multisig_address: String,
+    to_address: String,
+    from_address: String,
+    amount: String
+) -> Result<UnsignedMessageAPI, SignerError> {
+    let propose_params_multisig = ProposeParamsMultisig {
+        to: to_address,
+        value: amount,
+        method: 0,
+        params: "".to_string(),
+    };
+
+    let multisig_propose_message_api = UnsignedMessageAPI {
+        to: multisig_address,
+        from: from_address,
+        // FIXME: how do we get nonce ?
+        nonce: 1,
+        value: "0".to_string(),
+        // https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L46
+        gas_price: "1".to_string(),
+        // used the same value as https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L78
+        gas_limit: 1000000,
+        method: Method::Propose as u64,
+        params: MessageParams::ProposeParamsMultisig(propose_params_multisig),
+    };
+
+    Ok(multisig_propose_message_api)
+}
+
+fn approve_or_cancel_multisig_message(
+    method: u64,
+    multisig_address: String,
+    message_id: i64,
+    _proposer_address: String,
+    _to_address: String,
+    _amount: String,
+    from_address: String,
+) -> Result<UnsignedMessageAPI, SignerError> {
+
+    // FIXME: missing hash proposal field
+    let params = TxnIDParamsMultisig {
+        txn_id: message_id
+    };
+
+    let multisig_unsigned_message_api = UnsignedMessageAPI {
+        to: multisig_address,
+        from: from_address,
+        // FIXME: how do we get nonce ?
+        nonce: 1,
+        value: "0".to_string(),
+        gas_price: "1".to_string(),
+        gas_limit: 1000000,
+        method: method,
+        params: MessageParams::TxnIDParamsMultisig(params),
+    };
+
+    Ok(multisig_unsigned_message_api)
+}
+
+/// Utilitary function to create an approve multisig message. Return an unsigned message.
+///
+/// # Arguments
+///
+/// * `multisig_address` - A string address
+/// * `message_id` - message id
+/// * `proposer_address` - A string address
+/// * `to_address` - A string address
+/// * `amount` - Amount of the transaction
+/// * `from_address` - A string address
+///
+pub fn approve_multisig_message(
+    multisig_address: String,
+    message_id: i64,
+    proposer_address: String,
+    to_address: String,
+    amount: String,
+    from_address: String,
+) -> Result<UnsignedMessageAPI, SignerError> {
+    approve_or_cancel_multisig_message(Method::Approve as u64, multisig_address, message_id, proposer_address, to_address, amount, from_address)
+}
+
+/// Utilitary function to create a cancel multisig message. Return an unsigned message.
+///
+/// # Arguments
+///
+/// * `multisig_address` - A string address
+/// * `message_id` - message id
+/// * `proposer_address` - A string address
+/// * `to_address` - A string address
+/// * `amount` - Amount of the transaction
+/// * `from_address` - A string address
+///
+pub fn cancel_multisig_message(
+    multisig_address: String,
+    message_id: i64,
+    proposer_address: String,
+    to_address: String,
+    amount: String,
+    from_address: String,
+) -> Result<UnsignedMessageAPI, SignerError> {
+    approve_or_cancel_multisig_message(Method::Cancel as u64, multisig_address, message_id, proposer_address, to_address, amount, from_address)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::api::{
@@ -439,7 +598,8 @@ mod tests {
     use crate::{
         key_derive, key_derive_from_seed, key_generate_mnemonic, key_recover, transaction_parse,
         transaction_serialize, transaction_sign_bls_raw, transaction_sign_raw,
-        verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic, PrivateKey,
+        verify_aggregated_signature, verify_signature, create_multisig, proposal_multisig_message,
+        approve_multisig_message, cancel_multisig_message, CborBuffer, Mnemonic, PrivateKey,
     };
     use bip39::{Language, Seed};
     use forest_encoding::to_vec;
@@ -811,61 +971,146 @@ mod tests {
     }
 
     #[test]
-    fn support_multisig() {
-        // now we create the message to send this with
-        /*msg := types.Message{
-            To:       builtin.InitActorAddr,
-            From:     sendAddr,
-            Method:   builtin.MethodsInit.Exec,
-            Params:   enc,
-            GasPrice: types.NewInt(1),
-            GasLimit: 1000000,
-            Value:    types.BigInt(filval),
-        }*/
-
-        const multisig_create: &str = r#"
+    fn support_multisig_create() {
+        let multisig_create = serde_json::json!(
             {
-                "to": "t01001",
+                "to": "t01",
                 "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
                 "nonce": 1,
-                "value": "100000",
+                "value": "1000",
+                "gasprice": "1",
+                "gaslimit": 1000000,
+                "method": 1,
+                "params": {
+                    "code_cid": "fil/1/multisig",
+                    "constructor_params": {
+                        "signers": ["t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba", "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"],
+                        "num_approvals_threshold": 1
+                    }
+                }
+            });
+
+        let multisig_create_message_api = create_multisig(
+            "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+            vec!["t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),"t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string()],
+            "1000".to_string(),
+            1,
+        ).unwrap();
+
+        let multisig_create_message_expected : UnsignedMessageAPI = serde_json::from_value(multisig_create).unwrap();
+
+        assert_eq!(serde_json::to_string(&multisig_create_message_expected).unwrap(), serde_json::to_string(&multisig_create_message_api).unwrap());
+
+        let result = transaction_serialize(&multisig_create_message_api).unwrap();
+
+        println!("{}", hex::encode(&result));
+
+        assert!(false);
+    }
+
+    #[test]
+    fn support_multisig_propose_message() {
+        let multisig_proposal = serde_json::json!(
+            {
+                "to": "t01",
+                "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+                "nonce": 1,
+                "value": "0",
                 "gasprice": "1",
                 "gaslimit": 1000000,
                 "method": 2,
                 "params": {
-                    "CodeCID": "fil/1/multisig",
-                    "ConstructorParams": {
-                        "Signers": ["t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba", "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"],
-                        "NumApprovalsThreshold": 1
-                    }
+                    "to": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+                    "value": "1000",
+                    "method": 0,
+                    "params": "",
                 }
-            }"#;
+            });
 
-        let constructor_params_multisig = ConstructorParamsMultisig {
-            signers: vec![
-                "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
-                "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
-            ],
-            num_approvals_threshold: 1,
-        };
+        let multisig_proposal_message_api = proposal_multisig_message(
+            "t01".to_string(),
+            "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
+            "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+            "1000".to_string(),
+        ).unwrap();
 
-        let message_params_multisig = MessageParamsMultisig {
-            code_cid: "fil/1/multisig".to_string(),
-            constructor_params: constructor_params_multisig,
-        };
+        let multisig_proposal_message_expected : UnsignedMessageAPI = serde_json::from_value(multisig_proposal).unwrap();
 
-        let multisig_create_message_api = UnsignedMessageAPI {
-            to: "t01001".to_string(),
-            from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
-            nonce: 1,
-            value: "100000".to_string(),
-            gas_price: "2500".to_string(),
-            gas_limit: 25000,
-            method: 1,
-            params: MessageParams::MessageParamsMultisig(message_params_multisig),
-        };
+        assert_eq!(serde_json::to_string(&multisig_proposal_message_expected).unwrap(), serde_json::to_string(&multisig_proposal_message_api).unwrap());
 
-        let result = transaction_serialize(&multisig_create_message_api).unwrap();
+        let result = transaction_serialize(&multisig_proposal_message_api).unwrap();
+
+        println!("{}", hex::encode(&result));
+
+        assert!(false);
+    }
+
+    #[test]
+    fn support_multisig_approve_message() {
+        let multisig_approval = serde_json::json!(
+            {
+                "to": "t01",
+                "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+                "nonce": 1,
+                "value": "0",
+                "gasprice": "1",
+                "gaslimit": 1000000,
+                "method": 2,
+                "params": {
+                    "txn_id": 1234
+                }
+            });
+
+        let multisig_approval_message_api = approve_multisig_message(
+            "t01".to_string(),
+            1234,
+            "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+            "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
+            "1000".to_string(),
+            "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+        ).unwrap();
+
+        let multisig_approval_message_expected : UnsignedMessageAPI = serde_json::from_value(multisig_approval).unwrap();
+
+        assert_eq!(serde_json::to_string(&multisig_approval_message_expected).unwrap(), serde_json::to_string(&multisig_approval_message_api).unwrap());
+
+        let result = transaction_serialize(&multisig_approval_message_api).unwrap();
+
+        println!("{}", hex::encode(&result));
+
+        assert!(false);
+    }
+
+    #[test]
+    fn support_multisig_cancel_message() {
+        let multisig_cancel = serde_json::json!(
+            {
+                "to": "t01",
+                "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+                "nonce": 1,
+                "value": "0",
+                "gasprice": "1",
+                "gaslimit": 1000000,
+                "method": 2,
+                "params": {
+                    "txn_id": 1234
+                }
+            });
+
+        let multisig_cancel_message_api = cancel_multisig_message(
+            "t01".to_string(),
+            1234,
+            "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+            "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
+            "1000".to_string(),
+            "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+        ).unwrap();
+
+        let multisig_cancel_message_expected : UnsignedMessageAPI = serde_json::from_value(multisig_cancel).unwrap();
+
+        assert_eq!(serde_json::to_string(&multisig_cancel_message_expected).unwrap(), serde_json::to_string(&multisig_cancel_message_api).unwrap());
+
+        let result = transaction_serialize(&multisig_cancel_message_api).unwrap();
 
         println!("{}", hex::encode(&result));
 

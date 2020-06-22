@@ -1,7 +1,7 @@
 use crate::error::SignerError;
 use crate::signature::Signature;
 use actor::init::ExecParams;
-use actor::multisig::ConstructorParams;
+use actor::multisig::{ConstructorParams, ProposeParams, TxnIDParams, TxnID};
 use actor::{Serialized, MULTISIG_ACTOR_CODE_ID};
 use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
@@ -10,6 +10,7 @@ use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use std::str::FromStr;
+
 
 pub enum SigTypes {
     SigTypeSecp256k1 = 0x01,
@@ -22,6 +23,9 @@ pub enum SigTypes {
 pub struct ConstructorParamsMultisig {
     pub signers: Vec<String>,
     pub num_approvals_threshold: i64,
+    #[serde(skip)]
+    // FIXME: only skip if -1
+    pub unlock_duration: i64,
 }
 
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
@@ -34,10 +38,33 @@ pub struct MessageParamsMultisig {
 
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ProposeParamsMultisig {
+    pub to: String,
+    pub value: String,
+    // FIXME: only support method 0
+    pub method: u64,
+    // FIXME: extend to other more complex transaction
+    pub params: String,
+}
+
+/// Propose method call parameters
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct TxnIDParamsMultisig {
+    pub txn_id: i64,
+}
+
+
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
 #[serde(untagged)]
 pub enum MessageParams {
     MessageParamsMultisig(MessageParamsMultisig),
     MessageParamsEmpty(String),
+    ProposeParamsMultisig(ProposeParamsMultisig),
+    TxnIDParamsMultisig(TxnIDParamsMultisig),
 }
 
 /// Unsigned message api structure
@@ -60,15 +87,6 @@ pub struct UnsignedMessageAPI {
     pub method: u64,
     pub params: MessageParams,
 }
-
-/*where D: serde::Deserializer<'de>
-{
-    let params = String::deserialize(d)?;
-
-    match params {
-
-    }
-}*/
 
 /// Signature api structure
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
@@ -245,7 +263,6 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
         let params = match message_api.params.clone() {
             MessageParams::MessageParamsEmpty(_) => forest_vm::Serialized::new(Vec::new()),
             MessageParams::MessageParamsMultisig(multisig_params) => {
-                //let cid = Cid::new_v1(Codec::Raw, Identity::digest(multisig_params.code_cid.as_bytes()));
                 let signers = multisig_params
                     .constructor_params
                     .signers
@@ -272,6 +289,21 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
                     .unwrap(),
                 };
                 forest_vm::Serialized::serialize::<ExecParams>(exec_params).unwrap()
+            },
+            MessageParams::ProposeParamsMultisig(multisig_proposal_params) => {
+                let params = ProposeParams {
+                    to: Address::from_str(&multisig_proposal_params.to).unwrap(),
+                    value: BigUint::from_str(&multisig_proposal_params.value)?,
+                    method: multisig_proposal_params.method,
+                    params: forest_vm::Serialized::new(Vec::new()),
+                };
+                forest_vm::Serialized::serialize::<ProposeParams>(params).unwrap()
+            },
+            MessageParams::TxnIDParamsMultisig(multisig_txn_id_params) => {
+                let params = TxnIDParams {
+                    id: TxnID(multisig_txn_id_params.txn_id)
+                };
+                forest_vm::Serialized::serialize::<TxnIDParams>(params).unwrap()
             }
         };
 
