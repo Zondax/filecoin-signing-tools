@@ -1,7 +1,7 @@
 use crate::error::SignerError;
 use crate::signature::Signature;
 use actor::init::ExecParams;
-use actor::multisig::{ConstructorParams, ProposeParams, TxnIDParams, TxnID};
+use actor::multisig::{ConstructorParams, ProposeParams, TxnID, TxnIDParams};
 use actor::{Serialized, MULTISIG_ACTOR_CODE_ID};
 use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
@@ -10,7 +10,6 @@ use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use std::str::FromStr;
-
 
 pub enum SigTypes {
     SigTypeSecp256k1 = 0x01,
@@ -55,7 +54,6 @@ pub struct ProposeParamsMultisig {
 pub struct TxnIDParamsMultisig {
     pub txn_id: i64,
 }
-
 
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
@@ -289,7 +287,7 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
                     .unwrap(),
                 };
                 forest_vm::Serialized::serialize::<ExecParams>(exec_params).unwrap()
-            },
+            }
             MessageParams::ProposeParamsMultisig(multisig_proposal_params) => {
                 let params = ProposeParams {
                     to: Address::from_str(&multisig_proposal_params.to).unwrap(),
@@ -298,10 +296,10 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
                     params: forest_vm::Serialized::new(Vec::new()),
                 };
                 forest_vm::Serialized::serialize::<ProposeParams>(params).unwrap()
-            },
+            }
             MessageParams::TxnIDParamsMultisig(multisig_txn_id_params) => {
                 let params = TxnIDParams {
-                    id: TxnID(multisig_txn_id_params.txn_id)
+                    id: TxnID(multisig_txn_id_params.txn_id),
                 };
                 forest_vm::Serialized::serialize::<TxnIDParams>(params).unwrap()
             }
