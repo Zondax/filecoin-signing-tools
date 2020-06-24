@@ -53,7 +53,6 @@ jobs:
           command: |
             rustc --version
             cargo --version
-            openssl version
             cargo test --lib --all-features
       # No need to save this in cache
 
