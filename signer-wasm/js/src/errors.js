@@ -1,9 +1,8 @@
-
 class UnknownProtocolIndicator extends Error {
-    constructor(...args) {
-      super(...args);
-      this.message = "Unknown protocol indicator byte.";
-    }
+  constructor(...args) {
+    super(...args);
+    this.message = "Unknown protocol indicator byte.";
+  }
 }
 
 class InvalidPayloadLength extends Error {
@@ -16,9 +15,12 @@ class InvalidPayloadLength extends Error {
 class ProtocolNotSupported extends Error {
   constructor(protocolName, ...args) {
     super(...args);
-    this.message = protocolName + " protocol not supported.";
+    this.message = `${protocolName} protocol not supported.`;
   }
 }
 
-
-module.exports = { UnknownProtocolIndicator, InvalidPayloadLength, ProtocolNotSupported };
+module.exports = {
+  UnknownProtocolIndicator,
+  InvalidPayloadLength,
+  ProtocolNotSupported,
+};
