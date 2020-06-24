@@ -25,6 +25,7 @@ it("get testing keys", async function() {
 
   console.log(`pubkey : ${child.publicKey.toString("hex")}`);
   console.log(`privkey : ${child.privateKey.toString("hex")}`);
+  console.log(`privkey (base64) : ${child.privateKey.toString("base64")}`);
 
   const pk2 = secp256k1.publicKeyCreate(child.privateKey);
   console.log(`pubkey2: ${Buffer.from(pk2).toString("hex")}`);

@@ -339,6 +339,10 @@ test("send_signed_tx", async () => {
   console.log("Nonce: ", nonce);
   console.log("Nonce: ", !isNaN(nonce));
 
+  if (isNaN(nonce)) {
+    nonce = 1
+  }
+
   expect(!isNaN(nonce)).toBeTruthy();
 
   const transaction = {
@@ -372,7 +376,7 @@ test("send_signed_tx", async () => {
 
   const response = await callMethod(URL, "send_signed_tx", [signedTxResponse.result], 1);
 
-  console.log(response.result['/']);
+  console.log(response);
   status_cid = response.result['/'];
 
   expect(response).toHaveProperty("result");
