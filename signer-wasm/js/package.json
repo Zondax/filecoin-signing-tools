@@ -12,7 +12,7 @@
     "base32-encode": "^1.1.1",
     "bip32": "^2.0.5",
     "bip39": "^3.0.2",
-    "@nomadic-labs/blake2-js": "^1.0.6",
+    "blakejs": "^1.1.0",
     "ipld-dag-cbor": "^0.15.3",
     "secp256k1": "^4.0.1"
   },

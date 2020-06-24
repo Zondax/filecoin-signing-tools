@@ -236,20 +236,10 @@ workflows:
           <<: *no-tags
       - tests_ffi:
           <<: *no-tags
-          requires:
-            - build
-            - tests_rust
       - tests_service:
           <<: *no-tags
-          requires:
-            - build
-            - tests_rust
       - tests_ledger:
           <<: *no-tags
-          requires:
-            - build
-            - tests_rust
-            - tests_wasm
 
   release:
     jobs:
