@@ -1,5 +1,5 @@
 const secp256k1 = require('secp256k1');
-const blake2 = require('blake2');
+const blake = require('blakejs');
 const utils = require('./utils');
 var assert = require('assert');
 
@@ -20,11 +20,6 @@ describe("Test for utils.js", function() {
         // digest = blake2-256( cid )
         const calculatedCid = utils.getCID(message);
         assert.strictEqual(calculatedCid.toString("hex"), expectedCid.toString("hex"));
-
-        const hasher = blake2.createHash("blake2b", { digestLength: 32 });
-        hasher.update(calculatedCid);
-        const msgDigest = hasher.digest();
-        console.log(msgDigest.toString("hex"));
 
         //
         // // Check signature is valid
