@@ -14,8 +14,7 @@ use crate::api::{
     UnsignedMessageAPI,
 };
 use crate::error::SignerError;
-use actor::multisig::Method;
-use actor::INIT_ACTOR_ADDR;
+use extras::{Method, INIT_ACTOR_ADDR};
 use forest_address::{Address, Network};
 use forest_encoding::{from_slice, to_vec};
 use std::convert::TryFrom;
@@ -129,7 +128,7 @@ pub fn key_derive(mnemonic: &str, path: &str, password: &str) -> Result<Extended
 
     let esk = master.derive_bip44(&bip44_path)?;
 
-    let mut address = Address::new_secp256k1(&esk.public_key().to_vec());
+    let mut address = Address::new_secp256k1(&esk.public_key().to_vec())?;
 
     address.set_network(Network::Mainnet);
     if bip44_path.is_testnet() {
@@ -157,7 +156,7 @@ pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, Sign
 
     let esk = master.derive_bip44(&bip44_path)?;
 
-    let mut address = Address::new_secp256k1(&esk.public_key().to_vec());
+    let mut address = Address::new_secp256k1(&esk.public_key().to_vec())?;
 
     address.set_network(Network::Mainnet);
     if bip44_path.is_testnet() {
@@ -181,7 +180,7 @@ pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, Sign
 pub fn key_recover(private_key: &PrivateKey, testnet: bool) -> Result<ExtendedKey, SignerError> {
     let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
     let public_key = secp256k1::PublicKey::from_secret_key(&secret_key);
-    let mut address = Address::new_secp256k1(&public_key.serialize());
+    let mut address = Address::new_secp256k1(&public_key.serialize())?;
 
     if testnet {
         address.set_network(Network::Testnet);
@@ -336,7 +335,7 @@ fn verify_secp256k1_signature(
     let blob_to_sign = Message::parse_slice(&message_digest)?;
 
     let public_key = recover(&blob_to_sign, &signature_rs, &recovery_id)?;
-    let mut from = Address::new_secp256k1(&public_key.serialize().to_vec());
+    let mut from = Address::new_secp256k1(&public_key.serialize().to_vec())?;
     from.set_network(network);
 
     let tx_from = match tx {
@@ -525,7 +524,7 @@ fn approve_or_cancel_multisig_message(
     from_address: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     // FIXME: missing hash proposal field
-    let params = TxnIDParamsMultisig { txn_id: message_id };
+    let params = TxnIDParamsMultisig { txn_id: message_id, proposal_hash: [0;32] };
 
     let multisig_unsigned_message_api = UnsignedMessageAPI {
         to: multisig_address,

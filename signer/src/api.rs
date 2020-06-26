@@ -1,8 +1,9 @@
 use crate::error::SignerError;
 use crate::signature::Signature;
-use actor::init::ExecParams;
-use actor::multisig::{ConstructorParams, ProposeParams, TxnID, TxnIDParams};
-use actor::{Serialized, MULTISIG_ACTOR_CODE_ID};
+//use actor::init::ExecParams;
+//use actor::multisig::{ConstructorParams, ProposeParams, TxnID, TxnIDParams, ProposalHash};
+//use actor::{Serialized, MULTISIG_ACTOR_CODE_ID};
+use extras::{ExecParams, ConstructorParams, ProposeParams, TxnID, TxnIDParams};
 use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
 use forest_message::{Message, SignedMessage, UnsignedMessage};
@@ -10,6 +11,8 @@ use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use std::str::FromStr;
+use forest_encoding::{tuple::*, Cbor};
+
 
 pub enum SigTypes {
     SigTypeSecp256k1 = 0x01,
@@ -17,7 +20,7 @@ pub enum SigTypes {
 }
 
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
-#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize_tuple, Deserialize_tuple)]
 #[serde(deny_unknown_fields)]
 pub struct ConstructorParamsMultisig {
     pub signers: Vec<String>,
@@ -28,15 +31,16 @@ pub struct ConstructorParamsMultisig {
 }
 
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
-#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize_tuple, Deserialize_tuple)]
 #[serde(deny_unknown_fields)]
 pub struct MessageParamsMultisig {
+    // TODO : convert to Cid
     pub code_cid: String,
     pub constructor_params: ConstructorParamsMultisig,
 }
 
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
-#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize_tuple, Deserialize_tuple)]
 #[serde(deny_unknown_fields)]
 pub struct ProposeParamsMultisig {
     pub to: String,
@@ -49,10 +53,11 @@ pub struct ProposeParamsMultisig {
 
 /// Propose method call parameters
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
-#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize_tuple, Deserialize_tuple)]
 #[serde(deny_unknown_fields)]
 pub struct TxnIDParamsMultisig {
     pub txn_id: i64,
+    pub proposal_hash: [u8; 32],
 }
 
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
@@ -280,7 +285,7 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
                     unlock_duration: 0,
                 };
                 let exec_params = ExecParams {
-                    code_cid: MULTISIG_ACTOR_CODE_ID.clone(),
+                    code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),
                     constructor_params: forest_vm::Serialized::serialize::<ConstructorParams>(
                         constructor_multisig_params,
                     )
@@ -300,6 +305,7 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
             MessageParams::TxnIDParamsMultisig(multisig_txn_id_params) => {
                 let params = TxnIDParams {
                     id: TxnID(multisig_txn_id_params.txn_id),
+                    proposal_hash: multisig_txn_id_params.proposal_hash,
                 };
                 forest_vm::Serialized::serialize::<TxnIDParams>(params).unwrap()
             }
