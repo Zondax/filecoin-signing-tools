@@ -524,7 +524,10 @@ fn approve_or_cancel_multisig_message(
     from_address: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     // FIXME: missing hash proposal field
-    let params = TxnIDParamsMultisig { txn_id: message_id, proposal_hash: [0;32] };
+    let params = TxnIDParamsMultisig {
+        txn_id: message_id,
+        proposal_hash: [0; 32],
+    };
 
     let multisig_unsigned_message_api = UnsignedMessageAPI {
         to: multisig_address,
