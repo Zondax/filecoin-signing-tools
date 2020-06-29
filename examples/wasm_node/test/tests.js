@@ -356,6 +356,55 @@ describe("verifySignature", function() {
   })
 })
 
+describe("createMultisig", function() {
+  it("should return a create multisig transaction", function() {
+    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+
+    let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
+    let sender_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+
+    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1);
+
+    console.log(create_multisig_transaction);
+
+    assert.strictEqual(false, true);
+  });
+
+  it("should return a serialized version of the create multisig transaction", function() {
+    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+
+    let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
+    let sender_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+
+    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1);
+
+    console.log(create_multisig_transaction);
+
+    let serialized_create_multisig_transaction = filecoin_signer.transactionSerialize(create_multisig_transaction);
+
+    console.log(serialized_create_multisig_transaction);
+
+    assert.strictEqual(false, true);
+  });
+
+  it("should return a signature of the create multisig transaction", function() {
+    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+
+    let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
+    let sender_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+
+    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1);
+
+    console.log(create_multisig_transaction);
+
+    let signature = filecoin_signer.transactionSignRaw(create_multisig_transaction, child.privateKey.toString("hex"));
+
+    console.log(signature);
+
+    assert.strictEqual(false, true);
+  });
+})
+
 /* ------------------------------------------------------------------------------------------------- */
 
 const bls_tests_vectors_path = "../generated_test_cases.json";
