@@ -50,6 +50,17 @@ pub struct ProposeParams {
     pub params: Serialized,
 }
 
+/// Proposal hash data
+#[derive(Clone, PartialEq, Debug, Serialize_tuple, Deserialize_tuple)]
+pub struct ProposalHashData {
+    pub requester: Address,
+    pub to: Address,
+    #[serde(with = "biguint_ser")]
+    pub value: TokenAmount,
+    pub method: u64,
+    pub params: Serialized,
+}
+
 /// Propose method call parameters
 #[derive(Serialize_tuple, Deserialize_tuple)]
 pub struct TxnIDParams {

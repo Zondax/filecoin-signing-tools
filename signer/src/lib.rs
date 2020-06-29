@@ -11,7 +11,7 @@
 use crate::api::{
     ConstructorParamsMultisig, MessageParams, MessageParamsMultisig, MessageTx, MessageTxAPI,
     MessageTxNetwork, ProposeParamsMultisig, SignatureAPI, SignedMessageAPI, TxnIDParamsMultisig,
-    UnsignedMessageAPI,
+    UnsignedMessageAPI, PropoposalHashDataParamsMultisig,
 };
 use crate::error::SignerError;
 use extras::{Method, INIT_ACTOR_ADDR};
@@ -518,15 +518,21 @@ fn approve_or_cancel_multisig_message(
     method: u64,
     multisig_address: String,
     message_id: i64,
-    _proposer_address: String,
-    _to_address: String,
-    _amount: String,
+    proposer_address: String,
+    to_address: String,
+    amount: String,
     from_address: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     // FIXME: missing hash proposal field
     let params = TxnIDParamsMultisig {
         txn_id: message_id,
-        proposal_hash: [0; 32],
+        proposal_hash_data: PropoposalHashDataParamsMultisig {
+            requester: proposer_address,
+            to: to_address,
+            value: amount,
+            method: 0,
+            params: "".to_string(),
+        },
     };
 
     let multisig_unsigned_message_api = UnsignedMessageAPI {
@@ -1029,7 +1035,10 @@ mod tests {
 
         println!("{}", hex::encode(&result));
 
-        assert!(false);
+        assert_eq!(
+            hex::encode(&result),
+            "890042000155011eaf1c8a4bbfeeb0870b1745b1f57503470b711601430003e84200011a000f424001584982d82a53000155000e66696c2f312f6d756c74697369675830838255011eaf1c8a4bbfeeb0870b1745b1f57503470b71165501dfe49184d46adc8f89d44638beb45f78fcad25900100"
+        );
     }
 
     #[test]
@@ -1071,7 +1080,10 @@ mod tests {
 
         println!("{}", hex::encode(&result));
 
-        assert!(false);
+        assert_eq!(
+            hex::encode(&result),
+            "890042000155011eaf1c8a4bbfeeb0870b1745b1f57503470b711601404200011a000f424002581d845501dfe49184d46adc8f89d44638beb45f78fcad2590430003e80040"
+        );
     }
 
     #[test]
@@ -1084,9 +1096,16 @@ mod tests {
             "value": "0",
             "gasprice": "1",
             "gaslimit": 1000000,
-            "method": 2,
+            "method": 3,
             "params": {
-                "txn_id": 1234
+                "txn_id": 1234,
+                "proposal_hash_data": {
+                    "requester": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+                    "to": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+                    "value": "1000",
+                    "method": 0,
+                    "params": "",
+                }
             }
         });
 
@@ -1112,7 +1131,10 @@ mod tests {
 
         println!("{}", hex::encode(&result));
 
-        assert!(false);
+        assert_eq!(
+            hex::encode(&result),
+            "890042000155011eaf1c8a4bbfeeb0870b1745b1f57503470b711601404200011a000f4240035845821904d2982018f818ac18f218651829187218f00918ae18aa181d189b186118cf18cd18861870182b1830189318c1189c183018491860184f181918db188c18b3187818f3"
+        );
     }
 
     #[test]
@@ -1125,9 +1147,16 @@ mod tests {
             "value": "0",
             "gasprice": "1",
             "gaslimit": 1000000,
-            "method": 2,
+            "method": 4,
             "params": {
-                "txn_id": 1234
+                "txn_id": 1234,
+                "proposal_hash_data": {
+                    "requester": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+                    "to": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+                    "value": "1000",
+                    "method": 0,
+                    "params": "",
+                }
             }
         });
 
@@ -1153,6 +1182,9 @@ mod tests {
 
         println!("{}", hex::encode(&result));
 
-        assert!(false);
+        assert_eq!(
+            hex::encode(&result),
+            "890042000155011eaf1c8a4bbfeeb0870b1745b1f57503470b711601404200011a000f4240045845821904d2982018f818ac18f218651829187218f00918ae18aa181d189b186118cf18cd18861870182b1830189318c1189c183018491860184f181918db188c18b3187818f3"
+        );
     }
 }

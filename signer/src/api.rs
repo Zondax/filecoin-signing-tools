@@ -1,12 +1,9 @@
 use crate::error::SignerError;
 use crate::signature::Signature;
-//use actor::init::ExecParams;
-//use actor::multisig::{ConstructorParams, ProposeParams, TxnID, TxnIDParams, ProposalHash};
-//use actor::{Serialized, MULTISIG_ACTOR_CODE_ID};
-use extras::{ConstructorParams, ExecParams, ProposeParams, TxnID, TxnIDParams};
+use extras::{ConstructorParams, ExecParams, ProposeParams, TxnID, TxnIDParams, ProposalHashData};
 use forest_address::{Address, Network};
+use forest_encoding::blake2b_256;
 use forest_cid::{multihash::Identity, Cid, Codec};
-use forest_encoding::{tuple::*, Cbor};
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
@@ -19,7 +16,7 @@ pub enum SigTypes {
 }
 
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
-#[derive(Debug, Clone, PartialEq, Serialize_tuple, Deserialize_tuple)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct ConstructorParamsMultisig {
     pub signers: Vec<String>,
@@ -30,7 +27,7 @@ pub struct ConstructorParamsMultisig {
 }
 
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
-#[derive(Debug, Clone, PartialEq, Serialize_tuple, Deserialize_tuple)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct MessageParamsMultisig {
     // TODO : convert to Cid
@@ -39,7 +36,7 @@ pub struct MessageParamsMultisig {
 }
 
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
-#[derive(Debug, Clone, PartialEq, Serialize_tuple, Deserialize_tuple)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct ProposeParamsMultisig {
     pub to: String,
@@ -50,13 +47,26 @@ pub struct ProposeParamsMultisig {
     pub params: String,
 }
 
-/// Propose method call parameters
+/// Proposal data
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
-#[derive(Debug, Clone, PartialEq, Serialize_tuple, Deserialize_tuple)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct PropoposalHashDataParamsMultisig {
+    pub requester: String,
+    pub to: String,
+    pub value: String,
+    pub method: u64,
+    // Only suport method 0 and params ""
+    pub params: String,
+}
+
+/// Data to approve
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct TxnIDParamsMultisig {
     pub txn_id: i64,
-    pub proposal_hash: [u8; 32],
+    pub proposal_hash_data: PropoposalHashDataParamsMultisig,
 }
 
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
@@ -302,9 +312,21 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
                 forest_vm::Serialized::serialize::<ProposeParams>(params).unwrap()
             }
             MessageParams::TxnIDParamsMultisig(multisig_txn_id_params) => {
+                let proposal_data = ProposalHashData {
+                    requester: Address::from_str(&multisig_txn_id_params.proposal_hash_data.requester).unwrap(),
+                    to: Address::from_str(&multisig_txn_id_params.proposal_hash_data.to).unwrap(),
+                    value: BigUint::from_str(&multisig_txn_id_params.proposal_hash_data.value)?,
+                    method: multisig_txn_id_params.proposal_hash_data.method,
+                    params: forest_vm::Serialized::new(Vec::new()),
+                };
+
+                let serialized_porposal_data = forest_vm::Serialized::serialize::<ProposalHashData>(proposal_data).unwrap();
+
+                let proposal_hash = blake2b_256(&serialized_porposal_data);
+
                 let params = TxnIDParams {
                     id: TxnID(multisig_txn_id_params.txn_id),
-                    proposal_hash: multisig_txn_id_params.proposal_hash,
+                    proposal_hash,
                 };
                 forest_vm::Serialized::serialize::<TxnIDParams>(params).unwrap()
             }
