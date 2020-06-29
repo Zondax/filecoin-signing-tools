@@ -10,8 +10,8 @@
 
 use crate::api::{
     ConstructorParamsMultisig, MessageParams, MessageParamsMultisig, MessageTx, MessageTxAPI,
-    MessageTxNetwork, ProposeParamsMultisig, SignatureAPI, SignedMessageAPI, TxnIDParamsMultisig,
-    UnsignedMessageAPI, PropoposalHashDataParamsMultisig,
+    MessageTxNetwork, PropoposalHashDataParamsMultisig, ProposeParamsMultisig, SignatureAPI,
+    SignedMessageAPI, TxnIDParamsMultisig, UnsignedMessageAPI,
 };
 use crate::error::SignerError;
 use extras::{Method, INIT_ACTOR_ADDR};

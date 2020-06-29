@@ -1,9 +1,9 @@
 use crate::error::SignerError;
 use crate::signature::Signature;
-use extras::{ConstructorParams, ExecParams, ProposeParams, TxnID, TxnIDParams, ProposalHashData};
+use extras::{ConstructorParams, ExecParams, ProposalHashData, ProposeParams, TxnID, TxnIDParams};
 use forest_address::{Address, Network};
-use forest_encoding::blake2b_256;
 use forest_cid::{multihash::Identity, Cid, Codec};
+use forest_encoding::blake2b_256;
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
@@ -313,14 +313,18 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
             }
             MessageParams::TxnIDParamsMultisig(multisig_txn_id_params) => {
                 let proposal_data = ProposalHashData {
-                    requester: Address::from_str(&multisig_txn_id_params.proposal_hash_data.requester).unwrap(),
+                    requester: Address::from_str(
+                        &multisig_txn_id_params.proposal_hash_data.requester,
+                    )
+                    .unwrap(),
                     to: Address::from_str(&multisig_txn_id_params.proposal_hash_data.to).unwrap(),
                     value: BigUint::from_str(&multisig_txn_id_params.proposal_hash_data.value)?,
                     method: multisig_txn_id_params.proposal_hash_data.method,
                     params: forest_vm::Serialized::new(Vec::new()),
                 };
 
-                let serialized_porposal_data = forest_vm::Serialized::serialize::<ProposalHashData>(proposal_data).unwrap();
+                let serialized_porposal_data =
+                    forest_vm::Serialized::serialize::<ProposalHashData>(proposal_data).unwrap();
 
                 let proposal_hash = blake2b_256(&serialized_porposal_data);
 
