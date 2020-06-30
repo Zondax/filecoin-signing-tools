@@ -405,6 +405,159 @@ describe("createMultisig", function() {
   });
 })
 
+describe("proposeMultisig", function() {
+  it("should return a propose multisig transaction", function() {
+    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+
+    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+
+    let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01", to_address, from_address, "1000");
+
+    console.log(propose_multisig_transaction);
+
+    assert.strictEqual(false, true);
+  });
+
+  it("should return a serialized version of the propose multisig transaction", function() {
+    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+
+    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+
+    let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01", to_address, from_address, "1000");
+
+    console.log(propose_multisig_transaction);
+
+    let serialized_propose_multisig_transaction = filecoin_signer.transactionSerialize(propose_multisig_transaction);
+
+    console.log(serialized_propose_multisig_transaction);
+
+    assert.strictEqual(false, true);
+  });
+
+  it("should return a signature of the create multisig transaction", function() {
+    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+
+    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+
+    let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01", to_address, from_address, "1000");
+
+    console.log(propose_multisig_transaction);
+
+    let signature = filecoin_signer.transactionSignRaw(propose_multisig_transaction, child.privateKey.toString("hex"));
+
+    console.log(signature);
+
+    assert.strictEqual(false, true);
+  });
+})
+
+describe("approveMultisig", function() {
+  it("should return an approval multisig transaction", function() {
+    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+
+    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+
+    let approve_multisig_transaction = filecoin_signer.approveMultisig("t01", 1234, proposer_address, to_address, "1000", to_address);
+
+    console.log(approve_multisig_transaction);
+
+    assert.strictEqual(false, true);
+  });
+
+  it("should return a serialized version of the approval multisig transaction", function() {
+    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+
+    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+
+    let approve_multisig_transaction = filecoin_signer.approveMultisig("t01", 1234, proposer_address, to_address, "1000", to_address);
+
+    console.log(approve_multisig_transaction);
+
+    let serialized_approve_multisig_transaction = filecoin_signer.transactionSerialize(approve_multisig_transaction);
+
+    console.log(serialized_approve_multisig_transaction);
+
+    assert.strictEqual(false, true);
+  });
+
+  it("should return a signature of the approve multisig transaction", function() {
+    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+
+    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+
+    let approve_multisig_transaction = filecoin_signer.approveMultisig("t01", 1234, proposer_address, to_address, "1000", to_address);
+
+    console.log(approve_multisig_transaction);
+
+    let signature = filecoin_signer.transactionSignRaw(approve_multisig_transaction, child.privateKey.toString("hex"));
+
+    console.log(signature);
+
+    assert.strictEqual(false, true);
+  });
+})
+
+describe("cancelMultisig", function() {
+  it("should return a cancel multisig transaction", function() {
+    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+
+    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+
+    let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01", 1234, proposer_address, to_address, "1000", to_address);
+
+    console.log(cancel_multisig_transaction);
+
+    assert.strictEqual(false, true);
+  });
+
+  it("should return a serialized version of the cancel multisig transaction", function() {
+    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+
+    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+
+    let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01", 1234, proposer_address, to_address, "1000", to_address);
+
+    console.log(cancel_multisig_transaction);
+
+    let serialized_cancel_multisig_transaction = filecoin_signer.transactionSerialize(cancel_multisig_transaction);
+
+    console.log(serialized_cancel_multisig_transaction);
+
+    assert.strictEqual(false, true);
+  });
+
+  it("should return a signature of the cancel multisig transaction", function() {
+    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+
+    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+
+    let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01", 1234, proposer_address, to_address, "1000", to_address);
+
+    console.log(cancel_multisig_transaction);
+
+    let signature = filecoin_signer.transactionSignRaw(cancel_multisig_transaction, child.privateKey.toString("hex"));
+
+    console.log(signature);
+
+    assert.strictEqual(false, true);
+  });
+})
+
 /* ------------------------------------------------------------------------------------------------- */
 
 const bls_tests_vectors_path = "../generated_test_cases.json";
