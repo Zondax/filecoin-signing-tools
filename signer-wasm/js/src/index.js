@@ -2,6 +2,7 @@ const bip39 = require("bip39");
 const bip32 = require("bip32");
 const cbor = require("ipld-dag-cbor").util;
 const secp256k1 = require("secp256k1");
+const bignum = require("bignum");
 
 const ExtendedKey = require("./extendedkey");
 const {
@@ -9,7 +10,6 @@ const {
   getAccountFromPath,
   addressAsBytes,
   bytesToAddress,
-  trimBuffer,
   tryToPrivateKeyBuffer,
 } = require("./utils");
 const { ProtocolIndicator } = require("./constants");
@@ -87,15 +87,13 @@ function transactionSerializeRaw(message) {
   const to = addressAsBytes(message.to);
   const from = addressAsBytes(message.from);
 
-  const valueBigInt = BigInt(message.value);
-  const valueBuffer = Buffer.allocUnsafe(8);
-  valueBuffer.writeBigUInt64BE(valueBigInt, 0, 8);
-  const value = trimBuffer(valueBuffer);
+  const valueBigInt = new bignum(message.value);
+  const valueBuffer = valueBigInt.toBuffer();
+  const value = Buffer.concat([Buffer.from('00', 'hex'), valueBuffer]);
 
-  const gaspriceBigInt = BigInt(message.gasprice);
-  const gaspriceBuffer = Buffer.allocUnsafe(8);
-  gaspriceBuffer.writeBigUInt64BE(gaspriceBigInt, 0, 8);
-  const gasprice = trimBuffer(gaspriceBuffer);
+  const gaspriceBigInt = new bignum(message.gasprice);
+  const gaspriceBuffer = gaspriceBigInt.toBuffer();
+  const gasprice = Buffer.concat([Buffer.from('00', 'hex'), gaspriceBuffer]);
 
   const message_to_encode = [
     0,
@@ -136,12 +134,11 @@ function transactionParse(cborMessage, testnet) {
   message.to = bytesToAddress(decoded[1], testnet);
   message.from = bytesToAddress(decoded[2], testnet);
   message.nonce = decoded[3];
-  // FIXME: Value can be bigger and we need 'readBigUInt64BE'
   if (decoded[4][0] === 0x01) {
     throw new Error("Value cant be negative");
   }
-  message.value = decoded[4].readUIntBE(0, decoded[4].length).toString(10);
-  message.gasprice = decoded[5].readUIntBE(0, decoded[5].length).toString(10);
+  message.value = bignum.fromBuffer(decoded[4]).toString(10);
+  message.gasprice = bignum.fromBuffer(decoded[5]).toString(10);
   message.gaslimit = decoded[6];
   message.method = decoded[7];
   message.params = decoded[8].toString();

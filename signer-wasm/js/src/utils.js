@@ -127,16 +127,6 @@ function bytesToAddress(payload, testnet) {
   );
 }
 
-function trimBuffer(buf) {
-  let indexStart = 0;
-  for (let i = 0; i < buf.length; i += 1) {
-    if (buf[i] === 0x00) {
-      indexStart += 1;
-    }
-  }
-  return buf.slice(indexStart - 1);
-}
-
 function tryToPrivateKeyBuffer(privateKey) {
   if (typeof privateKey === "string") {
     // We should have a padding!
@@ -160,6 +150,5 @@ module.exports = {
   getAccountFromPath,
   addressAsBytes,
   bytesToAddress,
-  trimBuffer,
   tryToPrivateKeyBuffer,
 };
