@@ -16,7 +16,7 @@ const CID_PREFIX = Buffer.from([0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20]);
 function getCID(message) {
   const blakeCtx = blake.blake2bInit(32);
   blake.blake2bUpdate(blakeCtx, message);
-  const hash = blake.blake2bFinal(blakeCtx);
+  const hash = Buffer.from(blake.blake2bFinal(blakeCtx));
   return Buffer.concat([CID_PREFIX, hash]);
 }
 
@@ -25,20 +25,20 @@ function getDigest(message) {
 
   const blakeCtx = blake.blake2bInit(32);
   blake.blake2bUpdate(blakeCtx, getCID(message));
-  return blake.blake2bFinal(blakeCtx);
+  return Buffer.from(blake.blake2bFinal(blakeCtx));
 }
 
 function getPayloadSECP256K1(uncompressedPublicKey) {
   // blake2b-160
   const blakeCtx = blake.blake2bInit(20);
   blake.blake2bUpdate(blakeCtx, uncompressedPublicKey);
-  return blake.blake2bFinal(blakeCtx);
+  return Buffer.from(blake.blake2bFinal(blakeCtx));
 }
 
 function getChecksum(payload) {
   const blakeCtx = blake.blake2bInit(4);
   blake.blake2bUpdate(blakeCtx, payload);
-  return blake.blake2bFinal(blakeCtx);
+  return Buffer.from(blake.blake2bFinal(blakeCtx));
 }
 
 function getAccountFromPath(path) {

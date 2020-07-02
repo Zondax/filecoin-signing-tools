@@ -2,7 +2,7 @@ const bip39 = require("bip39");
 const bip32 = require("bip32");
 const cbor = require("ipld-dag-cbor").util;
 const secp256k1 = require("secp256k1");
-const bignum = require("bignum");
+const BN = require('bn.js');
 
 const ExtendedKey = require("./extendedkey");
 const {
@@ -50,7 +50,7 @@ function keyDerive(mnemonic, path, password) {
 function keyRecover(privateKey, testnet) {
   // verify format and convert to buffer if needed
   privateKey = tryToPrivateKeyBuffer(privateKey);
-
+  console.log(privateKey)
   return new ExtendedKey(privateKey, testnet);
 }
 
@@ -87,12 +87,12 @@ function transactionSerializeRaw(message) {
   const to = addressAsBytes(message.to);
   const from = addressAsBytes(message.from);
 
-  const valueBigInt = new bignum(message.value);
-  const valueBuffer = valueBigInt.toBuffer();
+  const valueBigInt = new BN(message.value, 10);
+  const valueBuffer = valueBigInt.toArrayLike(Buffer, 'be', valueBigInt.byteLength());
   const value = Buffer.concat([Buffer.from('00', 'hex'), valueBuffer]);
 
-  const gaspriceBigInt = new bignum(message.gasprice);
-  const gaspriceBuffer = gaspriceBigInt.toBuffer();
+  const gaspriceBigInt = new BN(message.gasprice, 10);
+  const gaspriceBuffer = gaspriceBigInt.toArrayLike(Buffer, 'be', gaspriceBigInt.byteLength());
   const gasprice = Buffer.concat([Buffer.from('00', 'hex'), gaspriceBuffer]);
 
   const message_to_encode = [
@@ -137,8 +137,8 @@ function transactionParse(cborMessage, testnet) {
   if (decoded[4][0] === 0x01) {
     throw new Error("Value cant be negative");
   }
-  message.value = bignum.fromBuffer(decoded[4]).toString(10);
-  message.gasprice = bignum.fromBuffer(decoded[5]).toString(10);
+  message.value = new BN(decoded[4].toString('hex'), 16).toString(10);
+  message.gasprice = new BN(decoded[5].toString('hex'), 16).toString(10);
   message.gaslimit = decoded[6];
   message.method = decoded[7];
   message.params = decoded[8].toString();
@@ -160,7 +160,7 @@ function transactionSignRaw(unsignedMessage, privateKey) {
   const messageDigest = getDigest(unsignedMessage);
   const signature = secp256k1.ecdsaSign(messageDigest, privateKey);
 
-  return Buffer.concat([signature.signature, Buffer.from([signature.recid])]);
+  return Buffer.concat([Buffer.from(signature.signature), Buffer.from([signature.recid])]);
 }
 
 function transactionSign(unsignedMessage, privateKey) {
