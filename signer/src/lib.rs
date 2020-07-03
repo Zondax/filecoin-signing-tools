@@ -616,9 +616,7 @@ pub fn cancel_multisig_message(
 ///
 /// * `params` - Parameters to serialize
 
-pub fn serialize_params(
-    params: MessageParams
-) -> Result<CborBuffer, SignerError> {
+pub fn serialize_params(params: MessageParams) -> Result<CborBuffer, SignerError> {
     let serialized_params = params.serialize()?;
     let message_cbor = CborBuffer(serialized_params.bytes().to_vec());
     Ok(message_cbor)

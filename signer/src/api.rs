@@ -30,7 +30,9 @@ pub struct ConstructorParamsMultisig {
 impl TryFrom<ConstructorParamsMultisig> for ConstructorParams {
     type Error = SignerError;
 
-    fn try_from(constructor_params: ConstructorParamsMultisig) -> Result<ConstructorParams, Self::Error> {
+    fn try_from(
+        constructor_params: ConstructorParamsMultisig,
+    ) -> Result<ConstructorParams, Self::Error> {
         let signers = constructor_params
             .signers
             .into_iter()
@@ -43,12 +45,10 @@ impl TryFrom<ConstructorParamsMultisig> for ConstructorParams {
 
         Ok(ConstructorParams {
             signers,
-            num_approvals_threshold: constructor_params
-                .num_approvals_threshold,
+            num_approvals_threshold: constructor_params.num_approvals_threshold,
             // FIXME: What is default ? Optional ?
             unlock_duration: 0,
         })
-
     }
 }
 
@@ -64,7 +64,8 @@ impl TryFrom<MessageParamsMultisig> for ExecParams {
     type Error = SignerError;
 
     fn try_from(exec_constructor: MessageParamsMultisig) -> Result<ExecParams, Self::Error> {
-        let constructor_multisig_params = ConstructorParams::try_from(exec_constructor.constructor_params)?;
+        let constructor_multisig_params =
+            ConstructorParams::try_from(exec_constructor.constructor_params)?;
 
         Ok(ExecParams {
             code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),
@@ -119,10 +120,7 @@ impl TryFrom<PropoposalHashDataParamsMultisig> for ProposalHashData {
 
     fn try_from(params: PropoposalHashDataParamsMultisig) -> Result<ProposalHashData, Self::Error> {
         Ok(ProposalHashData {
-            requester: Address::from_str(
-                &params.requester,
-            )
-            .unwrap(),
+            requester: Address::from_str(&params.requester).unwrap(),
             to: Address::from_str(&params.to).unwrap(),
             value: BigUint::from_str(&params.value)?,
             method: params.method,
@@ -156,7 +154,6 @@ impl TryFrom<TxnIDParamsMultisig> for TxnIDParams {
         })
     }
 }
-
 
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
