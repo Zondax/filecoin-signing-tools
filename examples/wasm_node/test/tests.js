@@ -358,14 +358,19 @@ describe("verifySignature", function() {
 
 describe("createMultisig", function() {
   it("should return a create multisig transaction", function() {
-    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+    let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
+    let privateKey = child.privateKey.toString('hex');
 
-    let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
-    let sender_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
+
+    console.log(recoveredKey.address)
+
+    let addresses = [recoveredKey.address,"t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
+    let sender_address = recoveredKey.address;
 
     let expected = {
       to: 't01',
-      from: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
+      from: recoveredKey.address,
       nonce: 1,
       value: '1000',
       gasprice: '1',
@@ -373,7 +378,7 @@ describe("createMultisig", function() {
       method: 1,
       params: {
         code_cid: 'fil/1/multisig',
-        constructor_params: { signers: ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"], num_approvals_threshold: 1 }
+        constructor_params: { signers: addresses, num_approvals_threshold: 1 }
       }
     };
 
@@ -385,12 +390,17 @@ describe("createMultisig", function() {
   });
 
   it("should return a serialized version of the create multisig transaction", function() {
-    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+    let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
+    let privateKey = child.privateKey.toString('hex');
 
-    let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
-    let sender_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
-    let expected = "89004200015501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62801430003e84200011a000f424001584982d82a53000155000e66696c2f312f6d756c7469736967583083825501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160100";
+    console.log(recoveredKey.address)
+
+    let addresses = [recoveredKey.address,"t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
+    let sender_address = recoveredKey.address;
+
+    let expected = "89004200015501dfe49184d46adc8f89d44638beb45f78fcad259001430003e84200011a000f424001584982d82a53000155000e66696c2f312f6d756c7469736967583083825501dfe49184d46adc8f89d44638beb45f78fcad259055011eaf1c8a4bbfeeb0870b1745b1f57503470b71160100";
 
     let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1);
 
@@ -402,31 +412,36 @@ describe("createMultisig", function() {
   });
 
   it("should return a signature of the create multisig transaction", function() {
-    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+    let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
+    let privateKey = child.privateKey.toString('hex');
 
-    let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
-    let sender_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
+
+    console.log(recoveredKey.address)
+
+    let addresses = [recoveredKey.address,"t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
+    let sender_address = recoveredKey.address;
 
     let expected = {
       "Message":{
-        "From":"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        "From":recoveredKey.address,
         "GasLimit":1000000,
         "GasPrice":"1",
         "Method":1,
         "Nonce":1,
-        "Params":"gtgqUwABVQAOZmlsLzEvbXVsdGlzaWdYMIOCVQH9HQ9N/Nfpmvy5moMmt9xFnTLGKFUBHq8ciku/7rCHCxdFsfV1A0cLcRYBAA==",
+        "Params":"gtgqUwABVQAOZmlsLzEvbXVsdGlzaWdYMIOCVQHf5JGE1Grcj4nURji+tF94/K0lkFUBHq8ciku/7rCHCxdFsfV1A0cLcRYBAA==",
         "To":"t01",
         "Value":"1000"
       },
       "Signature":{
-        "Data":"n9MRQeK3wKK5aOMrxi2E3WmkQGFt4p2zKVoSVQKn/gZD0pC12snEm6EFiRGfh6JYnaZrEOry3XSx6EMEoys4SwE=",
+        "Data":"HAZjoEpEXcHG+XIsyY3Pr7SZfew2WF216cEuhJykwCV6ZYZFGwte9dHsWnqVWOnKw1byyB9p5HF9NASIVCTrZAA=",
         "Type":1
       }
     }
 
     let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1);
 
-    let signature = filecoin_signer.transactionSignLotus(create_multisig_transaction, child.privateKey.toString("hex"));
+    let signature = filecoin_signer.transactionSignLotus(create_multisig_transaction, privateKey);
 
     console.log(signature);
 
@@ -436,21 +451,26 @@ describe("createMultisig", function() {
 
 describe("proposeMultisig", function() {
   it("should return a propose multisig transaction", function() {
-    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+    let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
+    let privateKey = child.privateKey.toString('hex');
 
-    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
-    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
+
+    console.log(recoveredKey.address)
+
+    let to_address = recoveredKey.address;
+    let from_address = recoveredKey.address;
 
     let expected = {
       to: 't01004',
-      from: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
+      from: recoveredKey.address,
       nonce: 1,
       value: '0',
       gasprice: '1',
       gaslimit: 1000000,
       method: 2,
       params: {
-        to: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
+        to: recoveredKey.address,
         value: '1000',
         method: 0,
         params: ''
@@ -465,12 +485,17 @@ describe("proposeMultisig", function() {
   });
 
   it("should return a serialized version of the propose multisig transaction", function() {
-    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+    let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
+    let privateKey = child.privateKey.toString('hex');
 
-    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
-    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
-    let expected = "89004300ec075501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62801404200011a000f424002581d845501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c628430003e80040";
+    console.log(recoveredKey.address)
+
+    let to_address = recoveredKey.address;
+    let from_address = recoveredKey.address;
+
+    let expected = "89004300ec075501dfe49184d46adc8f89d44638beb45f78fcad259001404200011a000f424002581d845501dfe49184d46adc8f89d44638beb45f78fcad2590430003e80040";
 
     let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01004", to_address, from_address, "1000");
 
@@ -482,31 +507,36 @@ describe("proposeMultisig", function() {
   });
 
   it("should return a signature of the create multisig transaction", function() {
-    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+    let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
+    let privateKey = child.privateKey.toString('hex');
 
-    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
-    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
+
+    console.log(recoveredKey.address)
+
+    let to_address = recoveredKey.address;
+    let from_address = recoveredKey.address;
 
     let expected = {
       "Message":{
-        "From":"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        "From":recoveredKey.address,
         "GasLimit":1000000,
         "GasPrice":"1",
         "Method":2,
         "Nonce":1,
-        "Params":"hFUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihDAAPoAEA=",
+        "Params":"hFUB3+SRhNRq3I+J1EY4vrRfePytJZBDAAPoAEA=",
         "To":"t01004",
         "Value":"0"
       },
       "Signature":{
-        "Data":"EaTVkLuiERGxbkHxLrIRzv1gUBMBvtVc7Lr0JkNjQCoKKchU+5GCRMS/mj3WHGssIaPmEIJD54/9vVEX+gTxngA=",
+        "Data":"37c2Z5y/YPxfV+M00m8pLc517ojcwHm3+MXvOGuR8HpKdZkJHqq4G1DcQcgwYM4FHIKmyLwz9UMyjw1s5+0dQAA=",
         "Type":1
       }
     }
 
     let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01004", to_address, from_address, "1000");
 
-    let signature = filecoin_signer.transactionSignLotus(propose_multisig_transaction, child.privateKey.toString("hex"));
+    let signature = filecoin_signer.transactionSignLotus(propose_multisig_transaction, privateKey);
 
     console.log(signature);
 
@@ -516,15 +546,20 @@ describe("proposeMultisig", function() {
 
 describe("approveMultisig", function() {
   it("should return an approval multisig transaction", function() {
-    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+    let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
+    let privateKey = child.privateKey.toString('hex');
 
-    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
-    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
-    let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
+
+    console.log(recoveredKey.address)
+
+    let to_address = recoveredKey.address;
+    let from_address = recoveredKey.address;
+    let proposer_address = recoveredKey.address;
 
     let expected = {
       to: 't01004',
-      from: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
+      from: recoveredKey.address,
       nonce: 1,
       value: '0',
       gasprice: '1',
@@ -533,8 +568,8 @@ describe("approveMultisig", function() {
       params: {
         txn_id: 1234,
         proposal_hash_data: {
-          requester: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
-          to: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
+          requester: recoveredKey.address,
+          to: recoveredKey.address,
           value: '1000',
           method: 0,
           params: ''
@@ -550,13 +585,18 @@ describe("approveMultisig", function() {
   });
 
   it("should return a serialized version of the approval multisig transaction", function() {
-    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+    let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
+    let privateKey = child.privateKey.toString('hex');
 
-    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
-    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
-    let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
-    let expected = "89004300ec075501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62801404200011a000f4240035844821904d29820188c183218651855185418cc18d418cb182218ed187318a1186a0c184618e20e188118b6181d182b18ac188818e51834186818c718da18fc18391832181f";
+    console.log(recoveredKey.address)
+
+    let to_address = recoveredKey.address;
+    let from_address = recoveredKey.address;
+    let proposer_address = recoveredKey.address;
+
+    let expected = "89004300ec075501dfe49184d46adc8f89d44638beb45f78fcad259001404200011a000f4240035842821904d2982018fa18b418c218e2187218e30f18d118de188b18ed183618c31896183718c118be1894181e1618dd189218ed18ae0f185418b606187c18ff184218ff";
 
     let approve_multisig_transaction = filecoin_signer.approveMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address);
 
@@ -568,32 +608,37 @@ describe("approveMultisig", function() {
   });
 
   it("should return a signature of the approve multisig transaction", function() {
-    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+    let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
+    let privateKey = child.privateKey.toString('hex');
 
-    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
-    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
-    let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
+
+    console.log(recoveredKey.address)
+
+    let to_address = recoveredKey.address;
+    let from_address = recoveredKey.address;
+    let proposer_address = recoveredKey.address;
 
     let expected = {
       "Message":{
-        "From":"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        "From":recoveredKey.address,
         "GasLimit":1000000,
         "GasPrice":"1",
         "Method":3,
         "Nonce":1,
-        "Params":"ghkE0pggGIwYMhhlGFUYVBjMGNQYyxgiGO0YcxihGGoMGEYY4g4YgRi2GB0YKxisGIgY5Rg0GGgYxxjaGPwYORgyGB8=",
+        "Params":"ghkE0pggGPoYtBjCGOIYchjjDxjRGN4YixjtGDYYwxiWGDcYwRi+GJQYHhYY3RiSGO0Yrg8YVBi2Bhh8GP8YQhj/",
         "To":"t01004",
         "Value":"0"
       },
       "Signature":{
-        "Data":"HjkNJ4fFeIdoyEPTlHxLpVs71+R//LkmZnDOFdkqspd+cxtpSnx5J3l4/o+rmHgoyNoSkqrZhPOLYo50bJEK1gA=",
+        "Data":"hzMYi8BuNUKOl06+NSFncCSRgcQU6S3GBZWqcCmY2W9/xser6C0ahvf/vTN4/PPSHnDYoSnYj8J53gX9v7xwzgA=",
         "Type":1
       }
     }
 
     let approve_multisig_transaction = filecoin_signer.approveMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address);
 
-    let signature = filecoin_signer.transactionSignLotus(approve_multisig_transaction, child.privateKey.toString("hex"));
+    let signature = filecoin_signer.transactionSignLotus(approve_multisig_transaction, privateKey);
 
     console.log(signature);
 
@@ -603,15 +648,20 @@ describe("approveMultisig", function() {
 
 describe("cancelMultisig", function() {
   it("should return a cancel multisig transaction", function() {
-    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+    let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
+    let privateKey = child.privateKey.toString('hex');
 
-    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
-    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
-    let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
+
+    console.log(recoveredKey.address)
+
+    let to_address = recoveredKey.address;
+    let from_address = recoveredKey.address;
+    let proposer_address = recoveredKey.address;
 
     let expected = {
       to: 't01004',
-      from: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
+      from: recoveredKey.address,
       nonce: 1,
       value: '0',
       gasprice: '1',
@@ -620,8 +670,8 @@ describe("cancelMultisig", function() {
       params: {
         txn_id: 1234,
         proposal_hash_data: {
-          requester: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
-          to: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
+          requester: recoveredKey.address,
+          to: recoveredKey.address,
           value: '1000',
           method: 0,
           params: ''
@@ -637,13 +687,18 @@ describe("cancelMultisig", function() {
   });
 
   it("should return a serialized version of the cancel multisig transaction", function() {
-    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+    let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
+    let privateKey = child.privateKey.toString('hex');
 
-    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
-    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
-    let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
-    let expected = "89004300ec075501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62801404200011a000f4240045844821904d29820188c183218651855185418cc18d418cb182218ed187318a1186a0c184618e20e188118b6181d182b18ac188818e51834186818c718da18fc18391832181f";
+    console.log(recoveredKey.address)
+
+    let to_address = recoveredKey.address;
+    let from_address = recoveredKey.address;
+    let proposer_address = recoveredKey.address;
+
+    let expected = "89004300ec075501dfe49184d46adc8f89d44638beb45f78fcad259001404200011a000f4240045842821904d2982018fa18b418c218e2187218e30f18d118de188b18ed183618c31896183718c118be1894181e1618dd189218ed18ae0f185418b606187c18ff184218ff";
 
     let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address);
 
@@ -655,32 +710,37 @@ describe("cancelMultisig", function() {
   });
 
   it("should return a signature of the cancel multisig transaction", function() {
-    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+    let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
+    let privateKey = child.privateKey.toString('hex');
 
-    let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
-    let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
-    let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
+
+    console.log(recoveredKey.address)
+
+    let to_address = recoveredKey.address;
+    let from_address = recoveredKey.address;
+    let proposer_address = recoveredKey.address;
 
     let expected = {
       "Message":{
-        "From":"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        "From":recoveredKey.address,
         "GasLimit":1000000,
         "GasPrice":"1",
         "Method":4,
         "Nonce":1,
-        "Params":"ghkE0pggGIwYMhhlGFUYVBjMGNQYyxgiGO0YcxihGGoMGEYY4g4YgRi2GB0YKxisGIgY5Rg0GGgYxxjaGPwYORgyGB8=",
+        "Params":"ghkE0pggGPoYtBjCGOIYchjjDxjRGN4YixjtGDYYwxiWGDcYwRi+GJQYHhYY3RiSGO0Yrg8YVBi2Bhh8GP8YQhj/",
         "To":"t01004",
         "Value":"0"
       },
       "Signature":{
-        "Data":"JrhI6lAlW8FWpQCPtZYsePU/Y9qJxAa7bh199n9kHrMVncwCPUpbodvVBSeGifDaM9W6PWVxJ2SGEfeySg72vAE=",
+        "Data":"OvYpbMy6yp7CWuvB3NbEU2chFkVBGeRSV41WD8UP2ZscQSZTaLvrquer1uXjtsIRCNfRhnsXe/db2lh7+P7eAgA=",
         "Type":1
       }
     }
 
     let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address);
 
-    let signature = filecoin_signer.transactionSignLotus(cancel_multisig_transaction, child.privateKey.toString("hex"));
+    let signature = filecoin_signer.transactionSignLotus(cancel_multisig_transaction, privateKey);
 
     console.log(signature);
 
