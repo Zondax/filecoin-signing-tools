@@ -5,6 +5,7 @@ use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
 use forest_encoding::blake2b_256;
 use forest_message::{Message, SignedMessage, UnsignedMessage};
+use forest_vm::Serialized;
 use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
@@ -26,13 +27,53 @@ pub struct ConstructorParamsMultisig {
     pub unlock_duration: i64,
 }
 
+impl TryFrom<ConstructorParamsMultisig> for ConstructorParams {
+    type Error = SignerError;
+
+    fn try_from(constructor_params: ConstructorParamsMultisig) -> Result<ConstructorParams, Self::Error> {
+        let signers = constructor_params
+            .signers
+            .into_iter()
+            .map(|address_string| {
+                Address::from_str(&address_string)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))
+                    .unwrap()
+            })
+            .collect::<Vec<Address>>();
+
+        Ok(ConstructorParams {
+            signers,
+            num_approvals_threshold: constructor_params
+                .num_approvals_threshold,
+            // FIXME: What is default ? Optional ?
+            unlock_duration: 0,
+        })
+
+    }
+}
+
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct MessageParamsMultisig {
-    // TODO : convert to Cid
     pub code_cid: String,
     pub constructor_params: ConstructorParamsMultisig,
+}
+
+impl TryFrom<MessageParamsMultisig> for ExecParams {
+    type Error = SignerError;
+
+    fn try_from(exec_constructor: MessageParamsMultisig) -> Result<ExecParams, Self::Error> {
+        let constructor_multisig_params = ConstructorParams::try_from(exec_constructor.constructor_params)?;
+
+        Ok(ExecParams {
+            code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),
+            constructor_params: forest_vm::Serialized::serialize::<ConstructorParams>(
+                constructor_multisig_params,
+            )
+            .unwrap(),
+        })
+    }
 }
 
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
@@ -45,6 +86,19 @@ pub struct ProposeParamsMultisig {
     pub method: u64,
     // FIXME: extend to other more complex transaction
     pub params: String,
+}
+
+impl TryFrom<ProposeParamsMultisig> for ProposeParams {
+    type Error = SignerError;
+
+    fn try_from(propose_params: ProposeParamsMultisig) -> Result<ProposeParams, Self::Error> {
+        Ok(ProposeParams {
+            to: Address::from_str(&propose_params.to).unwrap(),
+            value: BigUint::from_str(&propose_params.value)?,
+            method: propose_params.method,
+            params: forest_vm::Serialized::new(Vec::new()),
+        })
+    }
 }
 
 /// Proposal data
@@ -60,6 +114,23 @@ pub struct PropoposalHashDataParamsMultisig {
     pub params: String,
 }
 
+impl TryFrom<PropoposalHashDataParamsMultisig> for ProposalHashData {
+    type Error = SignerError;
+
+    fn try_from(params: PropoposalHashDataParamsMultisig) -> Result<ProposalHashData, Self::Error> {
+        Ok(ProposalHashData {
+            requester: Address::from_str(
+                &params.requester,
+            )
+            .unwrap(),
+            to: Address::from_str(&params.to).unwrap(),
+            value: BigUint::from_str(&params.value)?,
+            method: params.method,
+            params: forest_vm::Serialized::new(Vec::new()),
+        })
+    }
+}
+
 /// Data to approve
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -69,6 +140,24 @@ pub struct TxnIDParamsMultisig {
     pub proposal_hash_data: PropoposalHashDataParamsMultisig,
 }
 
+impl TryFrom<TxnIDParamsMultisig> for TxnIDParams {
+    type Error = SignerError;
+
+    fn try_from(params: TxnIDParamsMultisig) -> Result<TxnIDParams, Self::Error> {
+        let proposal_data = ProposalHashData::try_from(params.proposal_hash_data)?;
+        let serialized_porposal_data =
+            forest_vm::Serialized::serialize::<ProposalHashData>(proposal_data).unwrap();
+
+        let proposal_hash = blake2b_256(&serialized_porposal_data);
+
+        Ok(TxnIDParams {
+            id: TxnID(params.txn_id),
+            proposal_hash,
+        })
+    }
+}
+
+
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
 #[serde(untagged)]
@@ -77,6 +166,31 @@ pub enum MessageParams {
     MessageParamsEmpty(String),
     ProposeParamsMultisig(ProposeParamsMultisig),
     TxnIDParamsMultisig(TxnIDParamsMultisig),
+}
+
+impl MessageParams {
+    pub fn serialize(self) -> Result<Serialized, SignerError> {
+        let params_serialized = match self {
+            MessageParams::MessageParamsEmpty(_) => forest_vm::Serialized::new(Vec::new()),
+            MessageParams::MessageParamsMultisig(multisig_params) => {
+                let params = ExecParams::try_from(multisig_params)?;
+
+                forest_vm::Serialized::serialize::<ExecParams>(params).unwrap()
+            }
+            MessageParams::ProposeParamsMultisig(multisig_proposal_params) => {
+                let params = ProposeParams::try_from(multisig_proposal_params)?;
+
+                forest_vm::Serialized::serialize::<ProposeParams>(params).unwrap()
+            }
+            MessageParams::TxnIDParamsMultisig(multisig_txn_id_params) => {
+                let params = TxnIDParams::try_from(multisig_txn_id_params)?;
+
+                forest_vm::Serialized::serialize::<TxnIDParams>(params).unwrap()
+            }
+        };
+
+        Ok(params_serialized)
+    }
 }
 
 /// Unsigned message api structure
@@ -267,71 +381,23 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
         let value = BigUint::from_str(&message_api.value)?;
         let gas_limit = message_api.gas_limit;
         let gas_price = BigUint::from_str(&message_api.gas_price)?;
-        //let execParams = actor::init::ExecParams::from(message_api.params);
-        //let params = forest_vm::Serialized::new(message_api.params.clone().into_bytes());
-        //let params = forest_vm::Serialized::new(Vec::new());
 
         // FIXME: use trait instead of a match ?
         let params = match message_api.params.clone() {
             MessageParams::MessageParamsEmpty(_) => forest_vm::Serialized::new(Vec::new()),
             MessageParams::MessageParamsMultisig(multisig_params) => {
-                let signers = multisig_params
-                    .constructor_params
-                    .signers
-                    .into_iter()
-                    .map(|address_string| {
-                        Address::from_str(&address_string)
-                            .map_err(|err| SignerError::GenericString(err.to_string()))
-                            .unwrap()
-                    })
-                    .collect::<Vec<Address>>();
-                let constructor_multisig_params = ConstructorParams {
-                    signers,
-                    num_approvals_threshold: multisig_params
-                        .constructor_params
-                        .num_approvals_threshold,
-                    // FIXME: What is default ? Optional ?
-                    unlock_duration: 0,
-                };
-                let exec_params = ExecParams {
-                    code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),
-                    constructor_params: forest_vm::Serialized::serialize::<ConstructorParams>(
-                        constructor_multisig_params,
-                    )
-                    .unwrap(),
-                };
-                forest_vm::Serialized::serialize::<ExecParams>(exec_params).unwrap()
+                let params = ExecParams::try_from(multisig_params)?;
+
+                forest_vm::Serialized::serialize::<ExecParams>(params).unwrap()
             }
             MessageParams::ProposeParamsMultisig(multisig_proposal_params) => {
-                let params = ProposeParams {
-                    to: Address::from_str(&multisig_proposal_params.to).unwrap(),
-                    value: BigUint::from_str(&multisig_proposal_params.value)?,
-                    method: multisig_proposal_params.method,
-                    params: forest_vm::Serialized::new(Vec::new()),
-                };
+                let params = ProposeParams::try_from(multisig_proposal_params)?;
+
                 forest_vm::Serialized::serialize::<ProposeParams>(params).unwrap()
             }
             MessageParams::TxnIDParamsMultisig(multisig_txn_id_params) => {
-                let proposal_data = ProposalHashData {
-                    requester: Address::from_str(
-                        &multisig_txn_id_params.proposal_hash_data.requester,
-                    )
-                    .unwrap(),
-                    to: Address::from_str(&multisig_txn_id_params.proposal_hash_data.to).unwrap(),
-                    value: BigUint::from_str(&multisig_txn_id_params.proposal_hash_data.value)?,
-                    method: multisig_txn_id_params.proposal_hash_data.method,
-                    params: forest_vm::Serialized::new(Vec::new()),
-                };
+                let params = TxnIDParams::try_from(multisig_txn_id_params)?;
 
-                let serialized_porposal_data =
-                    forest_vm::Serialized::serialize::<ProposalHashData>(proposal_data).unwrap();
-
-                let proposal_hash = blake2b_256(&serialized_porposal_data);
-
-                let params = TxnIDParams {
-                    id: TxnID(multisig_txn_id_params.txn_id),
-                    proposal_hash,
-                };
                 forest_vm::Serialized::serialize::<TxnIDParams>(params).unwrap()
             }
         };

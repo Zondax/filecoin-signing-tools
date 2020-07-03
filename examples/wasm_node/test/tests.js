@@ -363,11 +363,25 @@ describe("createMultisig", function() {
     let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
     let sender_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 
+    let expected = {
+      to: 't01',
+      from: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
+      nonce: 1,
+      value: '1000',
+      gasprice: '1',
+      gaslimit: 1000000,
+      method: 1,
+      params: {
+        code_cid: 'fil/1/multisig',
+        constructor_params: { signers: ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"], num_approvals_threshold: 1 }
+      }
+    };
+
     let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1);
 
     console.log(create_multisig_transaction);
 
-    assert.strictEqual(false, true);
+    assert.deepStrictEqual(expected, create_multisig_transaction);
   });
 
   it("should return a serialized version of the create multisig transaction", function() {
@@ -376,15 +390,15 @@ describe("createMultisig", function() {
     let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
     let sender_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 
-    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1);
+    let expected = "89004200015501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62801430003e84200011a000f424001584982d82a53000155000e66696c2f312f6d756c7469736967583083825501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160100";
 
-    console.log(create_multisig_transaction);
+    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1);
 
     let serialized_create_multisig_transaction = filecoin_signer.transactionSerialize(create_multisig_transaction);
 
     console.log(serialized_create_multisig_transaction);
 
-    assert.strictEqual(false, true);
+    assert.strictEqual(expected, serialized_create_multisig_transaction);
   });
 
   it("should return a signature of the create multisig transaction", function() {
@@ -393,15 +407,30 @@ describe("createMultisig", function() {
     let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
     let sender_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 
+    let expected = {
+      "Message":{
+        "From":"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        "GasLimit":1000000,
+        "GasPrice":"1",
+        "Method":1,
+        "Nonce":1,
+        "Params":"gtgqUwABVQAOZmlsLzEvbXVsdGlzaWdYMIOCVQH9HQ9N/Nfpmvy5moMmt9xFnTLGKFUBHq8ciku/7rCHCxdFsfV1A0cLcRYBAA==",
+        "To":"t01",
+        "Value":"1000"
+      },
+      "Signature":{
+        "Data":"n9MRQeK3wKK5aOMrxi2E3WmkQGFt4p2zKVoSVQKn/gZD0pC12snEm6EFiRGfh6JYnaZrEOry3XSx6EMEoys4SwE=",
+        "Type":1
+      }
+    }
+
     let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1);
 
-    console.log(create_multisig_transaction);
-
-    let signature = filecoin_signer.transactionSignRaw(create_multisig_transaction, child.privateKey.toString("hex"));
+    let signature = filecoin_signer.transactionSignLotus(create_multisig_transaction, child.privateKey.toString("hex"));
 
     console.log(signature);
 
-    assert.strictEqual(false, true);
+    assert.strictEqual(JSON.stringify(expected), signature);
   });
 })
 
@@ -412,11 +441,27 @@ describe("proposeMultisig", function() {
     let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
     let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 
-    let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01", to_address, from_address, "1000");
+    let expected = {
+      to: 't01004',
+      from: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
+      nonce: 1,
+      value: '0',
+      gasprice: '1',
+      gaslimit: 1000000,
+      method: 2,
+      params: {
+        to: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
+        value: '1000',
+        method: 0,
+        params: ''
+      }
+    }
+
+    let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01004", to_address, from_address, "1000");
 
     console.log(propose_multisig_transaction);
 
-    assert.strictEqual(false, true);
+    assert.deepStrictEqual(expected, propose_multisig_transaction);
   });
 
   it("should return a serialized version of the propose multisig transaction", function() {
@@ -425,15 +470,15 @@ describe("proposeMultisig", function() {
     let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
     let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 
-    let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01", to_address, from_address, "1000");
+    let expected = "89004300ec075501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62801404200011a000f424002581d845501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c628430003e80040";
 
-    console.log(propose_multisig_transaction);
+    let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01004", to_address, from_address, "1000");
 
     let serialized_propose_multisig_transaction = filecoin_signer.transactionSerialize(propose_multisig_transaction);
 
     console.log(serialized_propose_multisig_transaction);
 
-    assert.strictEqual(false, true);
+    assert.strictEqual(expected, serialized_propose_multisig_transaction);
   });
 
   it("should return a signature of the create multisig transaction", function() {
@@ -442,15 +487,30 @@ describe("proposeMultisig", function() {
     let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
     let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 
-    let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01", to_address, from_address, "1000");
+    let expected = {
+      "Message":{
+        "From":"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        "GasLimit":1000000,
+        "GasPrice":"1",
+        "Method":2,
+        "Nonce":1,
+        "Params":"hFUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihDAAPoAEA=",
+        "To":"t01004",
+        "Value":"0"
+      },
+      "Signature":{
+        "Data":"EaTVkLuiERGxbkHxLrIRzv1gUBMBvtVc7Lr0JkNjQCoKKchU+5GCRMS/mj3WHGssIaPmEIJD54/9vVEX+gTxngA=",
+        "Type":1
+      }
+    }
 
-    console.log(propose_multisig_transaction);
+    let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01004", to_address, from_address, "1000");
 
-    let signature = filecoin_signer.transactionSignRaw(propose_multisig_transaction, child.privateKey.toString("hex"));
+    let signature = filecoin_signer.transactionSignLotus(propose_multisig_transaction, child.privateKey.toString("hex"));
 
     console.log(signature);
 
-    assert.strictEqual(false, true);
+    assert.strictEqual(JSON.stringify(expected), signature);
   });
 })
 
@@ -462,11 +522,31 @@ describe("approveMultisig", function() {
     let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
     let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 
-    let approve_multisig_transaction = filecoin_signer.approveMultisig("t01", 1234, proposer_address, to_address, "1000", to_address);
+    let expected = {
+      to: 't01004',
+      from: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
+      nonce: 1,
+      value: '0',
+      gasprice: '1',
+      gaslimit: 1000000,
+      method: 3,
+      params: {
+        txn_id: 1234,
+        proposal_hash_data: {
+          requester: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
+          to: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
+          value: '1000',
+          method: 0,
+          params: ''
+        }
+      }
+    }
+
+    let approve_multisig_transaction = filecoin_signer.approveMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address);
 
     console.log(approve_multisig_transaction);
 
-    assert.strictEqual(false, true);
+    assert.deepStrictEqual(expected, approve_multisig_transaction);
   });
 
   it("should return a serialized version of the approval multisig transaction", function() {
@@ -476,15 +556,15 @@ describe("approveMultisig", function() {
     let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
     let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 
-    let approve_multisig_transaction = filecoin_signer.approveMultisig("t01", 1234, proposer_address, to_address, "1000", to_address);
+    let expected = "89004300ec075501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62801404200011a000f4240035844821904d29820188c183218651855185418cc18d418cb182218ed187318a1186a0c184618e20e188118b6181d182b18ac188818e51834186818c718da18fc18391832181f";
 
-    console.log(approve_multisig_transaction);
+    let approve_multisig_transaction = filecoin_signer.approveMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address);
 
     let serialized_approve_multisig_transaction = filecoin_signer.transactionSerialize(approve_multisig_transaction);
 
     console.log(serialized_approve_multisig_transaction);
 
-    assert.strictEqual(false, true);
+    assert.strictEqual(expected, serialized_approve_multisig_transaction);
   });
 
   it("should return a signature of the approve multisig transaction", function() {
@@ -494,15 +574,30 @@ describe("approveMultisig", function() {
     let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
     let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 
-    let approve_multisig_transaction = filecoin_signer.approveMultisig("t01", 1234, proposer_address, to_address, "1000", to_address);
+    let expected = {
+      "Message":{
+        "From":"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        "GasLimit":1000000,
+        "GasPrice":"1",
+        "Method":3,
+        "Nonce":1,
+        "Params":"ghkE0pggGIwYMhhlGFUYVBjMGNQYyxgiGO0YcxihGGoMGEYY4g4YgRi2GB0YKxisGIgY5Rg0GGgYxxjaGPwYORgyGB8=",
+        "To":"t01004",
+        "Value":"0"
+      },
+      "Signature":{
+        "Data":"HjkNJ4fFeIdoyEPTlHxLpVs71+R//LkmZnDOFdkqspd+cxtpSnx5J3l4/o+rmHgoyNoSkqrZhPOLYo50bJEK1gA=",
+        "Type":1
+      }
+    }
 
-    console.log(approve_multisig_transaction);
+    let approve_multisig_transaction = filecoin_signer.approveMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address);
 
-    let signature = filecoin_signer.transactionSignRaw(approve_multisig_transaction, child.privateKey.toString("hex"));
+    let signature = filecoin_signer.transactionSignLotus(approve_multisig_transaction, child.privateKey.toString("hex"));
 
     console.log(signature);
 
-    assert.strictEqual(false, true);
+    assert.strictEqual(JSON.stringify(expected), signature);
   });
 })
 
@@ -514,11 +609,31 @@ describe("cancelMultisig", function() {
     let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
     let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 
-    let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01", 1234, proposer_address, to_address, "1000", to_address);
+    let expected = {
+      to: 't01004',
+      from: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
+      nonce: 1,
+      value: '0',
+      gasprice: '1',
+      gaslimit: 1000000,
+      method: 4,
+      params: {
+        txn_id: 1234,
+        proposal_hash_data: {
+          requester: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
+          to: 't17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy',
+          value: '1000',
+          method: 0,
+          params: ''
+        }
+      }
+    }
+
+    let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address);
 
     console.log(cancel_multisig_transaction);
 
-    assert.strictEqual(false, true);
+    assert.deepStrictEqual(expected, cancel_multisig_transaction);
   });
 
   it("should return a serialized version of the cancel multisig transaction", function() {
@@ -528,15 +643,15 @@ describe("cancelMultisig", function() {
     let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
     let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 
-    let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01", 1234, proposer_address, to_address, "1000", to_address);
+    let expected = "89004300ec075501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62801404200011a000f4240045844821904d29820188c183218651855185418cc18d418cb182218ed187318a1186a0c184618e20e188118b6181d182b18ac188818e51834186818c718da18fc18391832181f";
 
-    console.log(cancel_multisig_transaction);
+    let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address);
 
     let serialized_cancel_multisig_transaction = filecoin_signer.transactionSerialize(cancel_multisig_transaction);
 
     console.log(serialized_cancel_multisig_transaction);
 
-    assert.strictEqual(false, true);
+    assert.strictEqual(expected, serialized_cancel_multisig_transaction);
   });
 
   it("should return a signature of the cancel multisig transaction", function() {
@@ -546,15 +661,30 @@ describe("cancelMultisig", function() {
     let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
     let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 
-    let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01", 1234, proposer_address, to_address, "1000", to_address);
+    let expected = {
+      "Message":{
+        "From":"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        "GasLimit":1000000,
+        "GasPrice":"1",
+        "Method":4,
+        "Nonce":1,
+        "Params":"ghkE0pggGIwYMhhlGFUYVBjMGNQYyxgiGO0YcxihGGoMGEYY4g4YgRi2GB0YKxisGIgY5Rg0GGgYxxjaGPwYORgyGB8=",
+        "To":"t01004",
+        "Value":"0"
+      },
+      "Signature":{
+        "Data":"JrhI6lAlW8FWpQCPtZYsePU/Y9qJxAa7bh199n9kHrMVncwCPUpbodvVBSeGifDaM9W6PWVxJ2SGEfeySg72vAE=",
+        "Type":1
+      }
+    }
 
-    console.log(cancel_multisig_transaction);
+    let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address);
 
-    let signature = filecoin_signer.transactionSignRaw(cancel_multisig_transaction, child.privateKey.toString("hex"));
+    let signature = filecoin_signer.transactionSignLotus(cancel_multisig_transaction, child.privateKey.toString("hex"));
 
     console.log(signature);
 
-    assert.strictEqual(false, true);
+    assert.strictEqual(JSON.stringify(expected), signature);
   });
 })
 

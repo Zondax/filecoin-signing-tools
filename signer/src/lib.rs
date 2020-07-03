@@ -610,6 +610,20 @@ pub fn cancel_multisig_message(
     )
 }
 
+/// Utilitary function to serialize parameters of a message. Return a CBOR hexstring.
+///
+/// # Arguments
+///
+/// * `params` - Parameters to serialize
+
+pub fn serialize_params(
+    params: MessageParams
+) -> Result<CborBuffer, SignerError> {
+    let serialized_params = params.serialize()?;
+    let message_cbor = CborBuffer(serialized_params.bytes().to_vec());
+    Ok(message_cbor)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::api::{
