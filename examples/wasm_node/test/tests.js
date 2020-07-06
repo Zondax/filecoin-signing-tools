@@ -356,7 +356,10 @@ describe("verifySignature", function() {
   })
 })
 
-describe("createMultisig", function() {
+let describeCall = describe;
+if (process.env.PURE_JS) { describeCall = describe.skip }
+
+describeCall("createMultisig", function() {
   it("should return a create multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
     let privateKey = child.privateKey.toString('hex');
@@ -449,7 +452,7 @@ describe("createMultisig", function() {
   });
 })
 
-describe("proposeMultisig", function() {
+describeCall("proposeMultisig", function() {
   it("should return a propose multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
     let privateKey = child.privateKey.toString('hex');
@@ -544,7 +547,7 @@ describe("proposeMultisig", function() {
   });
 })
 
-describe("approveMultisig", function() {
+describeCall("approveMultisig", function() {
   it("should return an approval multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
     let privateKey = child.privateKey.toString('hex');
@@ -646,7 +649,7 @@ describe("approveMultisig", function() {
   });
 })
 
-describe("cancelMultisig", function() {
+describeCall("cancelMultisig", function() {
   it("should return a cancel multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
     let privateKey = child.privateKey.toString('hex');
@@ -753,9 +756,6 @@ describe("cancelMultisig", function() {
 const bls_tests_vectors_path = "../generated_test_cases.json";
 let rawBLSData = fs.readFileSync(bls_tests_vectors_path);
 let jsonBLSData = JSON.parse(rawBLSData);
-
-let describeCall = describe;
-if (process.env.PURE_JS) { describeCall = describe.skip }
 
 describeCall('BLS support', function () {
 
