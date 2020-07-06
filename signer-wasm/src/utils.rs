@@ -17,8 +17,9 @@ extern "C" {
     fn from(buffer_array: &[u8]) -> Buffer;
 }
 
-pub fn convert_to_lotus_signed_message(signed_message: SignedMessageAPI) -> String {
-    let params = serialize_params(signed_message.message.params).unwrap();
+pub fn convert_to_lotus_signed_message(signed_message: SignedMessageAPI) -> Result<String, JsValue> {
+    let params = serialize_params(signed_message.message.params)
+        .map_err(|err| JsValue::from(err.to_string()))?;
 
     let signed_message_lotus = json!({
         "Message": {
@@ -37,7 +38,7 @@ pub fn convert_to_lotus_signed_message(signed_message: SignedMessageAPI) -> Stri
         }
     });
 
-    signed_message_lotus.to_string()
+    Ok(signed_message_lotus.to_string())
 }
 
 /// Convert an address answer into a javascript object with proper buffer field

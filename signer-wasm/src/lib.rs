@@ -245,7 +245,7 @@ pub fn transaction_sign_lotus(
         filecoin_signer::transaction_sign(&unsigned_message, &private_key_bytes)
             .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
 
-    let signed_message_lotus = utils::convert_to_lotus_signed_message(signed_message);
+    let signed_message_lotus = utils::convert_to_lotus_signed_message(signed_message)?;
 
     Ok(signed_message_lotus)
 }
@@ -292,6 +292,15 @@ pub fn verify_signature(signature_js: JsValue, message_js: JsValue) -> Result<bo
         .map_err(|e| JsValue::from_str(format!("Error verifying signature: {}", e).as_str()))
 }
 
+fn signer_value_to_string(address_value: JsValue) -> Result<String, JsValue> {
+    let address = address_value.as_string();
+
+    match address {
+        Some(address) => Ok(address),
+        None => Err(JsValue::from_str("Not able to parse address")),
+    }
+}
+
 #[wasm_bindgen(js_name = createMultisig)]
 pub fn create_multisig(
     sender_address: String,
@@ -301,13 +310,17 @@ pub fn create_multisig(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let addresses_strings = addresses
+    let addresses_strings_tmp : Result<Vec<String>, _> = addresses
         .into_iter()
-        .map(|address_value| {
-            // FIXME: properly verify here
-            address_value.as_string().unwrap()
-        })
-        .collect::<Vec<String>>();
+        .map(|address_value| signer_value_to_string(address_value))
+        .collect();
+
+    let addresses_strings = match addresses_strings_tmp {
+        Ok(addresses_strings) => addresses_strings,
+        Err(_) => {
+            return Err(JsValue::from_str("Error while parsing addresses"));
+        }
+    };
 
     let multisig_transaction =
         filecoin_signer::create_multisig(sender_address, addresses_strings, value, required as i64)
