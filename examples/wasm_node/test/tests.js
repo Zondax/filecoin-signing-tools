@@ -752,7 +752,7 @@ describeCall("cancelMultisig", function() {
 })
 
 describeCall('SerializeParams', function () {
-  it('serliaze parameters to cbor data', function () {
+  it('serialize parameters to cbor data', function () {
     let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
 
     let params = {
