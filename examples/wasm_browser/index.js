@@ -1,4 +1,4 @@
-import * as wasm from "@zondax/filecoin-signer-wasm";
+import * as wasm from "@zondax/filecoin-signer/js";
 import TransportU2F from "@ledgerhq/hw-transport-u2f";
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 

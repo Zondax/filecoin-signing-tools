@@ -2,6 +2,7 @@ const bip39 = require("bip39");
 const bip32 = require("bip32");
 const cbor = require("ipld-dag-cbor").util;
 const secp256k1 = require("secp256k1");
+const BN = require('bn.js');
 
 const ExtendedKey = require("./extendedkey");
 const {
@@ -9,7 +10,6 @@ const {
   getAccountFromPath,
   addressAsBytes,
   bytesToAddress,
-  trimBuffer,
   tryToPrivateKeyBuffer,
 } = require("./utils");
 const { ProtocolIndicator } = require("./constants");
@@ -50,7 +50,7 @@ function keyDerive(mnemonic, path, password) {
 function keyRecover(privateKey, testnet) {
   // verify format and convert to buffer if needed
   privateKey = tryToPrivateKeyBuffer(privateKey);
-
+  console.log(privateKey)
   return new ExtendedKey(privateKey, testnet);
 }
 
@@ -87,15 +87,13 @@ function transactionSerializeRaw(message) {
   const to = addressAsBytes(message.to);
   const from = addressAsBytes(message.from);
 
-  const valueBigInt = BigInt(message.value);
-  const valueBuffer = Buffer.allocUnsafe(8);
-  valueBuffer.writeBigUInt64BE(valueBigInt, 0, 8);
-  const value = trimBuffer(valueBuffer);
+  const valueBigInt = new BN(message.value, 10);
+  const valueBuffer = valueBigInt.toArrayLike(Buffer, 'be', valueBigInt.byteLength());
+  const value = Buffer.concat([Buffer.from('00', 'hex'), valueBuffer]);
 
-  const gaspriceBigInt = BigInt(message.gasprice);
-  const gaspriceBuffer = Buffer.allocUnsafe(8);
-  gaspriceBuffer.writeBigUInt64BE(gaspriceBigInt, 0, 8);
-  const gasprice = trimBuffer(gaspriceBuffer);
+  const gaspriceBigInt = new BN(message.gasprice, 10);
+  const gaspriceBuffer = gaspriceBigInt.toArrayLike(Buffer, 'be', gaspriceBigInt.byteLength());
+  const gasprice = Buffer.concat([Buffer.from('00', 'hex'), gaspriceBuffer]);
 
   const message_to_encode = [
     0,
@@ -136,12 +134,11 @@ function transactionParse(cborMessage, testnet) {
   message.to = bytesToAddress(decoded[1], testnet);
   message.from = bytesToAddress(decoded[2], testnet);
   message.nonce = decoded[3];
-  // FIXME: Value can be bigger and we need 'readBigUInt64BE'
   if (decoded[4][0] === 0x01) {
     throw new Error("Value cant be negative");
   }
-  message.value = decoded[4].readUIntBE(0, decoded[4].length).toString(10);
-  message.gasprice = decoded[5].readUIntBE(0, decoded[5].length).toString(10);
+  message.value = new BN(decoded[4].toString('hex'), 16).toString(10);
+  message.gasprice = new BN(decoded[5].toString('hex'), 16).toString(10);
   message.gaslimit = decoded[6];
   message.method = decoded[7];
   message.params = decoded[8].toString();
@@ -163,7 +160,7 @@ function transactionSignRaw(unsignedMessage, privateKey) {
   const messageDigest = getDigest(unsignedMessage);
   const signature = secp256k1.ecdsaSign(messageDigest, privateKey);
 
-  return Buffer.concat([signature.signature, Buffer.from([signature.recid])]);
+  return Buffer.concat([Buffer.from(signature.signature), Buffer.from([signature.recid])]);
 }
 
 function transactionSign(unsignedMessage, privateKey) {
