@@ -323,11 +323,16 @@ pub fn create_multisig(
         }
     };
 
-    let multisig_transaction =
-        filecoin_signer::create_multisig(sender_address, addresses_strings, value, required as i64, nonce as u64)
-            .map_err(|e| {
-                JsValue::from_str(format!("Error creating multisig transaction: {}", e).as_str())
-            })?;
+    let multisig_transaction = filecoin_signer::create_multisig(
+        sender_address,
+        addresses_strings,
+        value,
+        required as i64,
+        nonce as u64,
+    )
+    .map_err(|e| {
+        JsValue::from_str(format!("Error creating multisig transaction: {}", e).as_str())
+    })?;
 
     let multisig_transaction_js = JsValue::from_serde(&multisig_transaction)
         .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
