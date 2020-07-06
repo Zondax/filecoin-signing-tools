@@ -76,6 +76,12 @@ impl TryFrom<MessageParamsMultisig> for ExecParams {
             forest_vm::Serialized::serialize::<ConstructorParams>(constructor_multisig_params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
+        if exec_constructor.code_cid != "fil/1/multisig" {
+            return Err(SignerError::GenericString(
+                "Only support `fil/1/multisig` code for now.",
+            ));
+        }
+
         Ok(ExecParams {
             code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),
             constructor_params: serialized_constructor_multisig_params,

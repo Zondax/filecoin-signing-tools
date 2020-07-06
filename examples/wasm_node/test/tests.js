@@ -751,6 +751,26 @@ describeCall("cancelMultisig", function() {
   });
 })
 
+describeCall('SerializeParams', function () {
+  it('serliaze parameters to cbor data', function () {
+    let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
+
+    let params = {
+        code_cid: 'fil/1/multisig',
+        constructor_params: { signers: addresses, num_approvals_threshold: 1 }
+    }
+
+    let serialized_params = filecoin_signer.serializeParams(params);
+
+    console.log(Buffer.from(serialized_params).toString('hex'));
+
+    assert.strictEqual(
+      "82d82a53000155000e66696c2f312f6d756c7469736967583083825501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160100",
+      Buffer.from(serialized_params).toString('hex')
+    )
+  })
+})
+
 /* ------------------------------------------------------------------------------------------------- */
 
 const bls_tests_vectors_path = "../generated_test_cases.json";
