@@ -245,7 +245,7 @@ pub fn transaction_sign_lotus(
         filecoin_signer::transaction_sign(&unsigned_message, &private_key_bytes)
             .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
 
-    let signed_message_lotus = utils::convert_to_lotus_signed_message(signed_message);
+    let signed_message_lotus = utils::convert_to_lotus_signed_message(signed_message)?;
 
     Ok(signed_message_lotus)
 }
@@ -290,6 +290,143 @@ pub fn verify_signature(signature_js: JsValue, message_js: JsValue) -> Result<bo
 
     filecoin_signer::verify_signature(&sig, &CborBuffer(message_bytes))
         .map_err(|e| JsValue::from_str(format!("Error verifying signature: {}", e).as_str()))
+}
+
+fn signer_value_to_string(address_value: JsValue) -> Result<String, JsValue> {
+    let address = address_value.as_string();
+
+    match address {
+        Some(address) => Ok(address),
+        None => Err(JsValue::from_str("Not able to parse address")),
+    }
+}
+
+#[wasm_bindgen(js_name = createMultisig)]
+pub fn create_multisig(
+    sender_address: String,
+    addresses: Vec<JsValue>,
+    value: String,
+    required: i32,
+    nonce: u32,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let addresses_strings_tmp: Result<Vec<String>, _> = addresses
+        .into_iter()
+        .map(|address_value| signer_value_to_string(address_value))
+        .collect();
+
+    let addresses_strings = match addresses_strings_tmp {
+        Ok(addresses_strings) => addresses_strings,
+        Err(_) => {
+            return Err(JsValue::from_str("Error while parsing addresses"));
+        }
+    };
+
+    let multisig_transaction = filecoin_signer::create_multisig(
+        sender_address,
+        addresses_strings,
+        value,
+        required as i64,
+        nonce as u64,
+    )
+    .map_err(|e| {
+        JsValue::from_str(format!("Error creating multisig transaction: {}", e).as_str())
+    })?;
+
+    let multisig_transaction_js = JsValue::from_serde(&multisig_transaction)
+        .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(multisig_transaction_js)
+}
+
+#[wasm_bindgen(js_name = proposeMultisig)]
+pub fn propose_multisig(
+    multisig_address: String,
+    to_address: String,
+    from_address: String,
+    amount: String,
+    nonce: u32,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let multisig_transaction = filecoin_signer::proposal_multisig_message(
+        multisig_address,
+        to_address,
+        from_address,
+        amount,
+        nonce as u64,
+    )
+    .map_err(|e| {
+        JsValue::from_str(format!("Error porposing multisig transaction: {}", e).as_str())
+    })?;
+
+    let multisig_transaction_js = JsValue::from_serde(&multisig_transaction)
+        .map_err(|e| JsValue::from(format!("Error porposing transaction: {}", e)))?;
+
+    Ok(multisig_transaction_js)
+}
+
+#[wasm_bindgen(js_name = approveMultisig)]
+pub fn approve_multisig(
+    multisig_address: String,
+    message_id: i32,
+    proposer_address: String,
+    to_address: String,
+    amount: String,
+    from_address: String,
+    nonce: u32,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let multisig_transaction = filecoin_signer::approve_multisig_message(
+        multisig_address,
+        message_id as i64,
+        proposer_address,
+        to_address,
+        amount,
+        from_address,
+        nonce as u64,
+    )
+    .map_err(|e| {
+        JsValue::from_str(format!("Error approving multisig transaction: {}", e).as_str())
+    })?;
+
+    let multisig_transaction_js = JsValue::from_serde(&multisig_transaction)
+        .map_err(|e| JsValue::from(format!("Error approving transaction: {}", e)))?;
+
+    Ok(multisig_transaction_js)
+}
+
+#[wasm_bindgen(js_name = cancelMultisig)]
+pub fn cancel_multisig(
+    multisig_address: String,
+    message_id: i32,
+    proposer_address: String,
+    to_address: String,
+    amount: String,
+    from_address: String,
+    nonce: u32,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let multisig_transaction = filecoin_signer::cancel_multisig_message(
+        multisig_address,
+        message_id as i64,
+        proposer_address,
+        to_address,
+        amount,
+        from_address,
+        nonce as u64,
+    )
+    .map_err(|e| {
+        JsValue::from_str(format!("Error canceling multisig transaction: {}", e).as_str())
+    })?;
+
+    let multisig_transaction_js = JsValue::from_serde(&multisig_transaction)
+        .map_err(|e| JsValue::from(format!("Error canceling transaction: {}", e)))?;
+
+    Ok(multisig_transaction_js)
 }
 
 #[cfg(target_arch = "wasm32")]

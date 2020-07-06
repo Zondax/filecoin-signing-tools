@@ -6,6 +6,7 @@ members = [
     "signer-wasm",
     "ledger",
     "hfuzz-signer",
+    "extras",
 ]
 
 [profile.release]

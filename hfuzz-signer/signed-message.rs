@@ -25,8 +25,7 @@ fn main() {
                 return;
             };
 
-            let signed_message = if let Ok(r) = SignedMessage::new(&unsigned_message, &DummySigner)
-            {
+            let signed_message = if let Ok(r) = SignedMessage::new(unsigned_message, &DummySigner) {
                 r
             } else {
                 return;

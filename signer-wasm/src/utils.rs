@@ -1,4 +1,5 @@
 use filecoin_signer::api::SignedMessageAPI;
+use filecoin_signer::serialize_params;
 use serde_json::json;
 use wasm_bindgen::prelude::*;
 #[cfg(target_arch = "wasm32")]
@@ -16,7 +17,12 @@ extern "C" {
     fn from(buffer_array: &[u8]) -> Buffer;
 }
 
-pub fn convert_to_lotus_signed_message(signed_message: SignedMessageAPI) -> String {
+pub fn convert_to_lotus_signed_message(
+    signed_message: SignedMessageAPI,
+) -> Result<String, JsValue> {
+    let params = serialize_params(signed_message.message.params)
+        .map_err(|err| JsValue::from(err.to_string()))?;
+
     let signed_message_lotus = json!({
         "Message": {
             "To": signed_message.message.to,
@@ -26,7 +32,7 @@ pub fn convert_to_lotus_signed_message(signed_message: SignedMessageAPI) -> Stri
             "GasPrice": signed_message.message.gas_price,
             "GasLimit":signed_message.message.gas_limit,
             "Method": signed_message.message.method,
-            "Params": signed_message.message.params,
+            "Params": base64::encode(params),
         },
         "Signature": {
             "Type": signed_message.signature.sig_type,
@@ -34,7 +40,7 @@ pub fn convert_to_lotus_signed_message(signed_message: SignedMessageAPI) -> Stri
         }
     });
 
-    signed_message_lotus.to_string()
+    Ok(signed_message_lotus.to_string())
 }
 
 /// Convert an address answer into a javascript object with proper buffer field

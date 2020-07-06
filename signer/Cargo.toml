@@ -27,24 +27,27 @@ zeroize = { version = "1.1", default-features = false, features = ["zeroize_deri
 sha2 = "0.8.1"
 
 # logging
-log="0.4"
+log = "0.4"
 env_logger = "0.7"
 
 arbitrary = { optional = true, features = ["derive"], version = "0.4" }
 ffi-support = { optional = true, version = "0.4" }
 
 # TODO: Update once crates are available
-forest_vm = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f" }
-forest_message = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f" }
-forest_address = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f" }
-forest_encoding = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f" }
+forest_vm = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig" }
+forest_message = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig" }
+forest_address = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig" }
+forest_encoding = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig" }
+#actor = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig" }
+forest_cid = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig" }
 
 # TODO: Maybe we can replace these with something leaner
 tiny-bip39 = "0.7.3"
-num_bigint_chainsafe = { package = "forest_bigint", git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f"}
+num_bigint_chainsafe = { package = "forest_bigint", git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig"}
 
 zx-bip44 = { git = "https://github.com/Zondax/blockchain-tools-rs" }
 
+extras = { path = "../extras"}
 
 [dev-dependencies]
 rand_xorshift = "0.2.0"
