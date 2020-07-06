@@ -33,15 +33,20 @@ impl TryFrom<ConstructorParamsMultisig> for ConstructorParams {
     fn try_from(
         constructor_params: ConstructorParamsMultisig,
     ) -> Result<ConstructorParams, Self::Error> {
-        let signers = constructor_params
+        let signers_tmp: Result<Vec<Address>, _> = constructor_params
             .signers
             .into_iter()
-            .map(|address_string| {
-                Address::from_str(&address_string)
-                    .map_err(|err| SignerError::GenericString(err.to_string()))
-                    .unwrap()
-            })
-            .collect::<Vec<Address>>();
+            .map(|address_string| Address::from_str(&address_string))
+            .collect();
+
+        let signers = match signers_tmp {
+            Ok(signers) => signers,
+            Err(_) => {
+                return Err(SignerError::GenericString(
+                    "Failed to parse one of the signer addresses".to_string(),
+                ));
+            }
+        };
 
         Ok(ConstructorParams {
             signers,
@@ -67,12 +72,14 @@ impl TryFrom<MessageParamsMultisig> for ExecParams {
         let constructor_multisig_params =
             ConstructorParams::try_from(exec_constructor.constructor_params)?;
 
+        let serialized_constructor_multisig_params =
+            forest_vm::Serialized::serialize::<ConstructorParams>(constructor_multisig_params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))
+                .unwrap();
+
         Ok(ExecParams {
             code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),
-            constructor_params: forest_vm::Serialized::serialize::<ConstructorParams>(
-                constructor_multisig_params,
-            )
-            .unwrap(),
+            constructor_params: serialized_constructor_multisig_params,
         })
     }
 }
@@ -94,7 +101,7 @@ impl TryFrom<ProposeParamsMultisig> for ProposeParams {
 
     fn try_from(propose_params: ProposeParamsMultisig) -> Result<ProposeParams, Self::Error> {
         Ok(ProposeParams {
-            to: Address::from_str(&propose_params.to).unwrap(),
+            to: Address::from_str(&propose_params.to)?,
             value: BigUint::from_str(&propose_params.value)?,
             method: propose_params.method,
             params: forest_vm::Serialized::new(Vec::new()),
@@ -120,8 +127,8 @@ impl TryFrom<PropoposalHashDataParamsMultisig> for ProposalHashData {
 
     fn try_from(params: PropoposalHashDataParamsMultisig) -> Result<ProposalHashData, Self::Error> {
         Ok(ProposalHashData {
-            requester: Address::from_str(&params.requester).unwrap(),
-            to: Address::from_str(&params.to).unwrap(),
+            requester: Address::from_str(&params.requester)?,
+            to: Address::from_str(&params.to)?,
             value: BigUint::from_str(&params.value)?,
             method: params.method,
             params: forest_vm::Serialized::new(Vec::new()),
@@ -144,8 +151,8 @@ impl TryFrom<TxnIDParamsMultisig> for TxnIDParams {
     fn try_from(params: TxnIDParamsMultisig) -> Result<TxnIDParams, Self::Error> {
         let proposal_data = ProposalHashData::try_from(params.proposal_hash_data)?;
         let serialized_porposal_data =
-            forest_vm::Serialized::serialize::<ProposalHashData>(proposal_data).unwrap();
-
+            forest_vm::Serialized::serialize::<ProposalHashData>(proposal_data)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?;
         let proposal_hash = blake2b_256(&serialized_porposal_data);
 
         Ok(TxnIDParams {
@@ -172,17 +179,20 @@ impl MessageParams {
             MessageParams::MessageParamsMultisig(multisig_params) => {
                 let params = ExecParams::try_from(multisig_params)?;
 
-                forest_vm::Serialized::serialize::<ExecParams>(params).unwrap()
+                forest_vm::Serialized::serialize::<ExecParams>(params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
             MessageParams::ProposeParamsMultisig(multisig_proposal_params) => {
                 let params = ProposeParams::try_from(multisig_proposal_params)?;
 
-                forest_vm::Serialized::serialize::<ProposeParams>(params).unwrap()
+                forest_vm::Serialized::serialize::<ProposeParams>(params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
             MessageParams::TxnIDParamsMultisig(multisig_txn_id_params) => {
                 let params = TxnIDParams::try_from(multisig_txn_id_params)?;
 
-                forest_vm::Serialized::serialize::<TxnIDParams>(params).unwrap()
+                forest_vm::Serialized::serialize::<TxnIDParams>(params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
         };
 
@@ -385,17 +395,20 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
             MessageParams::MessageParamsMultisig(multisig_params) => {
                 let params = ExecParams::try_from(multisig_params)?;
 
-                forest_vm::Serialized::serialize::<ExecParams>(params).unwrap()
+                forest_vm::Serialized::serialize::<ExecParams>(params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
             MessageParams::ProposeParamsMultisig(multisig_proposal_params) => {
                 let params = ProposeParams::try_from(multisig_proposal_params)?;
 
-                forest_vm::Serialized::serialize::<ProposeParams>(params).unwrap()
+                forest_vm::Serialized::serialize::<ProposeParams>(params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
             MessageParams::TxnIDParamsMultisig(multisig_txn_id_params) => {
                 let params = TxnIDParams::try_from(multisig_txn_id_params)?;
 
-                forest_vm::Serialized::serialize::<TxnIDParams>(params).unwrap()
+                forest_vm::Serialized::serialize::<TxnIDParams>(params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
         };
 
