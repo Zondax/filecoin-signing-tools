@@ -8,7 +8,7 @@
     )
 )]
 
-use filecoin_signer::api::UnsignedMessageAPI;
+use filecoin_signer::api::{MessageParams, UnsignedMessageAPI};
 use filecoin_signer::signature::Signature;
 use filecoin_signer::{CborBuffer, PrivateKey};
 use std::convert::TryFrom;
@@ -427,6 +427,20 @@ pub fn cancel_multisig(
         .map_err(|e| JsValue::from(format!("Error canceling transaction: {}", e)))?;
 
     Ok(multisig_transaction_js)
+}
+
+#[wasm_bindgen(js_name = serializeParams)]
+pub fn serialize_params(params_value: JsValue) -> Result<Vec<u8>, JsValue> {
+    set_panic_hook();
+
+    let params: MessageParams = params_value
+        .into_serde()
+        .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
+
+    let params_cbor = filecoin_signer::serialize_params(params)
+        .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
+
+    Ok(params_cbor.as_ref().to_vec())
 }
 
 #[cfg(target_arch = "wasm32")]

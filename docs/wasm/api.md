@@ -379,3 +379,27 @@ let approve_multisig_transaction = filecoin_signer.cancelMultisig("t01", 1234, p
 
 console.log(approve_multisig_transaction);
 ```
+
+## serializeParams
+
+Serialize parameters into cbor data.
+
+Arguments :
+* **params**: params object;
+
+```javascript
+const signer_wasm = require('@zondax/filecoin-signer');
+// or for browser
+// import * as signer_wasm from "@zondax/filecoin-signer";
+
+let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
+
+let params = {
+    code_cid: 'fil/1/multisig',
+    constructor_params: { signers: addresses, num_approvals_threshold: 1 }
+}
+
+let serialized_params = filecoin_signer.serializeParams(params);
+
+console.log(serialized_params);
+```
