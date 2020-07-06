@@ -439,12 +439,14 @@ pub fn verify_aggregated_signature(
 /// * `addresses` - List of string addresses of the multisig
 /// * `value` - Value to send on the multisig
 /// * `required` - Number of required signatures required
+/// * `nonce` - Nonce of the message
 ///
 pub fn create_multisig(
     sender_address: String,
     addresses: Vec<String>,
     value: String,
     required: i64,
+    nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     let constructor_params_multisig = ConstructorParamsMultisig {
         signers: addresses,
@@ -460,8 +462,7 @@ pub fn create_multisig(
     let multisig_create_message_api = UnsignedMessageAPI {
         to: INIT_ACTOR_ADDR.to_string(),
         from: sender_address,
-        // FIXME: how do we get nonce ?
-        nonce: 1,
+        nonce,
         value,
         // https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L46
         gas_price: "1".to_string(),
@@ -482,12 +483,14 @@ pub fn create_multisig(
 /// * `to_address` - A string address
 /// * `from_address` - A string address
 /// * `amount` - Amount of the transaction
+/// * `nonce` - Nonce of the message
 ///
 pub fn proposal_multisig_message(
     multisig_address: String,
     to_address: String,
     from_address: String,
     amount: String,
+    nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     let propose_params_multisig = ProposeParamsMultisig {
         to: to_address,
@@ -499,8 +502,7 @@ pub fn proposal_multisig_message(
     let multisig_propose_message_api = UnsignedMessageAPI {
         to: multisig_address,
         from: from_address,
-        // FIXME: how do we get nonce ?
-        nonce: 1,
+        nonce,
         value: "0".to_string(),
         // https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L46
         gas_price: "1".to_string(),
@@ -521,6 +523,7 @@ fn approve_or_cancel_multisig_message(
     to_address: String,
     amount: String,
     from_address: String,
+    nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     // FIXME: missing hash proposal field
     let params = TxnIDParamsMultisig {
@@ -537,8 +540,7 @@ fn approve_or_cancel_multisig_message(
     let multisig_unsigned_message_api = UnsignedMessageAPI {
         to: multisig_address,
         from: from_address,
-        // FIXME: how do we get nonce ?
-        nonce: 1,
+        nonce,
         value: "0".to_string(),
         gas_price: "1".to_string(),
         gas_limit: 1000000,
@@ -559,6 +561,7 @@ fn approve_or_cancel_multisig_message(
 /// * `to_address` - A string address
 /// * `amount` - Amount of the transaction
 /// * `from_address` - A string address
+/// * `nonce` - Nonce of the message
 ///
 pub fn approve_multisig_message(
     multisig_address: String,
@@ -567,6 +570,7 @@ pub fn approve_multisig_message(
     to_address: String,
     amount: String,
     from_address: String,
+    nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     approve_or_cancel_multisig_message(
         Method::Approve as u64,
@@ -576,6 +580,7 @@ pub fn approve_multisig_message(
         to_address,
         amount,
         from_address,
+        nonce,
     )
 }
 
@@ -589,6 +594,7 @@ pub fn approve_multisig_message(
 /// * `to_address` - A string address
 /// * `amount` - Amount of the transaction
 /// * `from_address` - A string address
+/// * `nonce` - Nonce of the message
 ///
 pub fn cancel_multisig_message(
     multisig_address: String,
@@ -597,6 +603,7 @@ pub fn cancel_multisig_message(
     to_address: String,
     amount: String,
     from_address: String,
+    nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     approve_or_cancel_multisig_message(
         Method::Cancel as u64,
@@ -606,6 +613,7 @@ pub fn cancel_multisig_message(
         to_address,
         amount,
         from_address,
+        nonce,
     )
 }
 
@@ -1031,6 +1039,7 @@ mod tests {
             ],
             "1000".to_string(),
             1,
+            1,
         )
         .unwrap();
 
@@ -1076,6 +1085,7 @@ mod tests {
             "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
             "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
             "1000".to_string(),
+            1,
         )
         .unwrap();
 
@@ -1127,6 +1137,7 @@ mod tests {
             "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
             "1000".to_string(),
             "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+            1,
         )
         .unwrap();
 
@@ -1178,6 +1189,7 @@ mod tests {
             "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
             "1000".to_string(),
             "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+            1,
         )
         .unwrap();
 

@@ -385,7 +385,7 @@ describeCall("createMultisig", function() {
       }
     };
 
-    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1);
+    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1, 1);
 
     console.log(create_multisig_transaction);
 
@@ -405,7 +405,7 @@ describeCall("createMultisig", function() {
 
     let expected = "89004200015501dfe49184d46adc8f89d44638beb45f78fcad259001430003e84200011a000f424001584982d82a53000155000e66696c2f312f6d756c7469736967583083825501dfe49184d46adc8f89d44638beb45f78fcad259055011eaf1c8a4bbfeeb0870b1745b1f57503470b71160100";
 
-    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1);
+    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1, 1);
 
     let serialized_create_multisig_transaction = filecoin_signer.transactionSerialize(create_multisig_transaction);
 
@@ -442,7 +442,7 @@ describeCall("createMultisig", function() {
       }
     }
 
-    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1);
+    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1, 1);
 
     let signature = filecoin_signer.transactionSignLotus(create_multisig_transaction, privateKey);
 
@@ -480,7 +480,7 @@ describeCall("proposeMultisig", function() {
       }
     }
 
-    let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01004", to_address, from_address, "1000");
+    let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01004", to_address, from_address, "1000", 1);
 
     console.log(propose_multisig_transaction);
 
@@ -500,7 +500,7 @@ describeCall("proposeMultisig", function() {
 
     let expected = "89004300ec075501dfe49184d46adc8f89d44638beb45f78fcad259001404200011a000f424002581d845501dfe49184d46adc8f89d44638beb45f78fcad2590430003e80040";
 
-    let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01004", to_address, from_address, "1000");
+    let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01004", to_address, from_address, "1000", 1);
 
     let serialized_propose_multisig_transaction = filecoin_signer.transactionSerialize(propose_multisig_transaction);
 
@@ -537,7 +537,7 @@ describeCall("proposeMultisig", function() {
       }
     }
 
-    let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01004", to_address, from_address, "1000");
+    let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01004", to_address, from_address, "1000", 1);
 
     let signature = filecoin_signer.transactionSignLotus(propose_multisig_transaction, privateKey);
 
@@ -580,7 +580,7 @@ describeCall("approveMultisig", function() {
       }
     }
 
-    let approve_multisig_transaction = filecoin_signer.approveMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address);
+    let approve_multisig_transaction = filecoin_signer.approveMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address, 1);
 
     console.log(approve_multisig_transaction);
 
@@ -601,7 +601,7 @@ describeCall("approveMultisig", function() {
 
     let expected = "89004300ec075501dfe49184d46adc8f89d44638beb45f78fcad259001404200011a000f4240035842821904d2982018fa18b418c218e2187218e30f18d118de188b18ed183618c31896183718c118be1894181e1618dd189218ed18ae0f185418b606187c18ff184218ff";
 
-    let approve_multisig_transaction = filecoin_signer.approveMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address);
+    let approve_multisig_transaction = filecoin_signer.approveMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address, 1);
 
     let serialized_approve_multisig_transaction = filecoin_signer.transactionSerialize(approve_multisig_transaction);
 
@@ -639,7 +639,7 @@ describeCall("approveMultisig", function() {
       }
     }
 
-    let approve_multisig_transaction = filecoin_signer.approveMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address);
+    let approve_multisig_transaction = filecoin_signer.approveMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address, 1);
 
     let signature = filecoin_signer.transactionSignLotus(approve_multisig_transaction, privateKey);
 
@@ -682,7 +682,7 @@ describeCall("cancelMultisig", function() {
       }
     }
 
-    let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address);
+    let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address, 1);
 
     console.log(cancel_multisig_transaction);
 
@@ -703,7 +703,7 @@ describeCall("cancelMultisig", function() {
 
     let expected = "89004300ec075501dfe49184d46adc8f89d44638beb45f78fcad259001404200011a000f4240045842821904d2982018fa18b418c218e2187218e30f18d118de188b18ed183618c31896183718c118be1894181e1618dd189218ed18ae0f185418b606187c18ff184218ff";
 
-    let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address);
+    let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address, 1);
 
     let serialized_cancel_multisig_transaction = filecoin_signer.transactionSerialize(cancel_multisig_transaction);
 
@@ -741,7 +741,7 @@ describeCall("cancelMultisig", function() {
       }
     }
 
-    let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address);
+    let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address, 1);
 
     let signature = filecoin_signer.transactionSignLotus(cancel_multisig_transaction, privateKey);
 
