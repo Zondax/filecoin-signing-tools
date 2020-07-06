@@ -12,9 +12,9 @@ path = "unsigned-message.rs"
 
 [dependencies]
 filecoin-signer = { features = ["with-arbitrary"], path = "../signer" }
-forest_address = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f" }
-forest_crypto = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f" }
-forest_message = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f" }
+forest_address = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig" }
+forest_crypto = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig" }
+forest_message = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig" }
 honggfuzz = "0.5"
 
 [package]

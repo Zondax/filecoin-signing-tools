@@ -11,7 +11,6 @@
 use filecoin_signer::api::UnsignedMessageAPI;
 use filecoin_signer::signature::Signature;
 use filecoin_signer::{CborBuffer, PrivateKey};
-use js_sys::JsString;
 use std::convert::TryFrom;
 use wasm_bindgen::prelude::*;
 
