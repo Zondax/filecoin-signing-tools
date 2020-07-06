@@ -74,8 +74,7 @@ impl TryFrom<MessageParamsMultisig> for ExecParams {
 
         let serialized_constructor_multisig_params =
             forest_vm::Serialized::serialize::<ConstructorParams>(constructor_multisig_params)
-                .map_err(|err| SignerError::GenericString(err.to_string()))
-                .unwrap();
+                .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
         Ok(ExecParams {
             code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),

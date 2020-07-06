@@ -31,7 +31,6 @@ use secp256k1::{recover, sign, verify, Message, RecoveryId};
 use zx_bip44::BIP44Path;
 
 use crate::signature::{Signature, SignatureBLS, SignatureSECP256K1};
-use forest_cid::Cid;
 
 pub mod api;
 pub mod error;
@@ -463,7 +462,7 @@ pub fn create_multisig(
         from: sender_address,
         // FIXME: how do we get nonce ?
         nonce: 1,
-        value: value,
+        value,
         // https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L46
         gas_price: "1".to_string(),
         // used the same value as https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L78
@@ -543,7 +542,7 @@ fn approve_or_cancel_multisig_message(
         value: "0".to_string(),
         gas_price: "1".to_string(),
         gas_limit: 1000000,
-        method: method,
+        method,
         params: MessageParams::TxnIDParamsMultisig(params),
     };
 
