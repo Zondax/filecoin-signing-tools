@@ -17,7 +17,9 @@ extern "C" {
     fn from(buffer_array: &[u8]) -> Buffer;
 }
 
-pub fn convert_to_lotus_signed_message(signed_message: SignedMessageAPI) -> Result<String, JsValue> {
+pub fn convert_to_lotus_signed_message(
+    signed_message: SignedMessageAPI,
+) -> Result<String, JsValue> {
     let params = serialize_params(signed_message.message.params)
         .map_err(|err| JsValue::from(err.to_string()))?;
 

@@ -310,7 +310,7 @@ pub fn create_multisig(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let addresses_strings_tmp : Result<Vec<String>, _> = addresses
+    let addresses_strings_tmp: Result<Vec<String>, _> = addresses
         .into_iter()
         .map(|address_value| signer_value_to_string(address_value))
         .collect();
