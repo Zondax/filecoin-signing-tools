@@ -3,8 +3,10 @@ members = [
     "service",
     "signer",
     "signer-ffi",
-    "signer-wasm",
-    "ledger"
+    "signer-npm",
+    "ledger",
+    "hfuzz-signer",
+    "extras",
 ]
 
 [profile.release]

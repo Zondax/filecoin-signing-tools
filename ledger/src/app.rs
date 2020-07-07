@@ -23,7 +23,7 @@ use crate::{APDUAnswer, APDUCommand, APDUErrorCodes, APDUTransport, TransportErr
 use serde::{Deserialize, Serialize};
 
 use crate::params::*;
-use bip44::BIP44Path;
+use zx_bip44::BIP44Path;
 
 use crate::errors::LedgerError;
 use std::str;
@@ -132,7 +132,7 @@ impl FilecoinApp {
             data: Vec::new(),
         };
 
-        let response = self.apdu_transport.exchange(command).await?;
+        let response = self.apdu_transport.exchange(&command).await?;
         if response.retcode != APDUErrorCodes::NoError as u16 {
             return Err(LedgerError::InvalidVersion);
         }
@@ -168,7 +168,7 @@ impl FilecoinApp {
             data: serialized_path,
         };
 
-        match self.apdu_transport.exchange(command).await {
+        match self.apdu_transport.exchange(&command).await {
             Ok(response) => {
                 if response.retcode != APDUErrorCodes::NoError as u16 {
                     println!("WARNING: retcode={:X?}", response.retcode);
@@ -220,7 +220,7 @@ impl FilecoinApp {
         let packet_count = chunks.len() as u8;
         let mut response: APDUAnswer;
 
-        let _command = APDUCommand {
+        let command = APDUCommand {
             cla: CLA,
             ins: INS_SIGN_SECP256K1,
             p1: PayloadType::Init as u8,
@@ -228,7 +228,7 @@ impl FilecoinApp {
             data: bip44path,
         };
 
-        response = self.apdu_transport.exchange(_command).await?;
+        response = self.apdu_transport.exchange(&command).await?;
 
         // Send message chunks
         for (packet_idx, chunk) in chunks.enumerate() {
@@ -237,7 +237,7 @@ impl FilecoinApp {
                 p1 = PayloadType::Last as u8
             }
 
-            let _command = APDUCommand {
+            let command = APDUCommand {
                 cla: CLA,
                 ins: INS_SIGN_SECP256K1,
                 p1,
@@ -245,7 +245,7 @@ impl FilecoinApp {
                 data: chunk.to_vec(),
             };
 
-            response = self.apdu_transport.exchange(_command).await?;
+            response = self.apdu_transport.exchange(&command).await?;
         }
 
         if response.data.is_empty() && response.retcode == APDUErrorCodes::NoError as u16 {
@@ -283,7 +283,7 @@ impl FilecoinApp {
             data: Vec::new(),
         };
 
-        let response = self.apdu_transport.exchange(command).await?;
+        let response = self.apdu_transport.exchange(&command).await?;
         if response.retcode != APDUErrorCodes::NoError as u16 {
             return Err(LedgerError::TransportError(
                 TransportError::APDUExchangeError,
@@ -335,7 +335,7 @@ impl FilecoinApp {
             data: Vec::new(),
         };
 
-        let response = self.apdu_transport.exchange(command).await?;
+        let response = self.apdu_transport.exchange(&command).await?;
         if response.retcode != APDUErrorCodes::NoError as u16 {
             return Err(LedgerError::TransportError(
                 TransportError::APDUExchangeError,

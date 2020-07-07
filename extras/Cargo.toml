@@ -1,0 +1,18 @@
+[package]
+name = "extras"
+version = "0.1.0"
+authors = ["Zondax <info@zondax.ch>"]
+edition = "2018"
+license = "Apache-2.0"
+repository = "https://github.com/Zondax/filecoin-signing-tools"
+description ="Temporary lib used for compatibility with wasm"
+
+[dependencies]
+forest_vm = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig"  }
+forest_address = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig"  }
+forest_encoding = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig"  }
+forest_cid = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig"  }
+num_bigint = { package = "forest_bigint" , git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig"  }
+clock = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig"  }
+serde = { version = "1.0", features = ["derive"] }
+lazy_static = "1.4.0"

@@ -1,5 +1,5 @@
 {
-  "name": "example-filecoin-browser",
+  "name": "@zondax/example-filecoin-wasm-browser",
   "author": "Zondax GmbH",
   "license": "Apache-2.0",
   "version": "1.0.0",
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Zondax/filecoin-rs"
+    "url": "git+https://github.com/Zondax/filecoin-signing-tools"
   },
   "keywords": [
     "webassembly",
@@ -21,9 +21,8 @@
     "filecoin"
   ],
   "dependencies": {
-    "@ledgerhq/hw-transport-u2f": "^5.15.0",
-    "@ledgerhq/hw-transport-webusb": "^5.15.0",
-    "@zondax/filecoin-signer-wasm": "^0"
+    "@ledgerhq/hw-transport-webusb": "^5.19.0",
+    "@zondax/filecoin-signing-tools": "^0"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^5.1.1",

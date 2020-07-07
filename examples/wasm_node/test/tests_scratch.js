@@ -3,7 +3,6 @@ const bip32 = require('bip32');
 const bip39 = require('bip39');
 const secp256k1 = require('secp256k1');
 const assert = require('assert');
-const blake2 = require('blake2');
 const utils = require('./utils');
 
 it("hex to base64", function() {
@@ -25,6 +24,7 @@ it("get testing keys", async function() {
 
   console.log(`pubkey : ${child.publicKey.toString("hex")}`);
   console.log(`privkey : ${child.privateKey.toString("hex")}`);
+  console.log(`privkey (base64) : ${child.privateKey.toString("base64")}`);
 
   const pk2 = secp256k1.publicKeyCreate(child.privateKey);
   console.log(`pubkey2: ${Buffer.from(pk2).toString("hex")}`);

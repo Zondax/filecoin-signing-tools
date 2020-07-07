@@ -1,7 +1,11 @@
 use crate::error::SignerError;
 use crate::signature::Signature;
+use extras::{ConstructorParams, ExecParams, ProposalHashData, ProposeParams, TxnID, TxnIDParams};
 use forest_address::{Address, Network};
+use forest_cid::{multihash::Identity, Cid, Codec};
+use forest_encoding::blake2b_256;
 use forest_message::{Message, SignedMessage, UnsignedMessage};
+use forest_vm::Serialized;
 use num_bigint_chainsafe::BigUint;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
@@ -12,8 +16,198 @@ pub enum SigTypes {
     SigTypeBLS = 0x02,
 }
 
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ConstructorParamsMultisig {
+    pub signers: Vec<String>,
+    pub num_approvals_threshold: i64,
+    #[serde(skip)]
+    // FIXME: only skip if -1
+    pub unlock_duration: i64,
+}
+
+impl TryFrom<ConstructorParamsMultisig> for ConstructorParams {
+    type Error = SignerError;
+
+    fn try_from(
+        constructor_params: ConstructorParamsMultisig,
+    ) -> Result<ConstructorParams, Self::Error> {
+        let signers_tmp: Result<Vec<Address>, _> = constructor_params
+            .signers
+            .into_iter()
+            .map(|address_string| Address::from_str(&address_string))
+            .collect();
+
+        let signers = match signers_tmp {
+            Ok(signers) => signers,
+            Err(_) => {
+                return Err(SignerError::GenericString(
+                    "Failed to parse one of the signer addresses".to_string(),
+                ));
+            }
+        };
+
+        Ok(ConstructorParams {
+            signers,
+            num_approvals_threshold: constructor_params.num_approvals_threshold,
+            // FIXME: What is default ? Optional ?
+            unlock_duration: 0,
+        })
+    }
+}
+
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct MessageParamsMultisig {
+    pub code_cid: String,
+    pub constructor_params: ConstructorParamsMultisig,
+}
+
+impl TryFrom<MessageParamsMultisig> for ExecParams {
+    type Error = SignerError;
+
+    fn try_from(exec_constructor: MessageParamsMultisig) -> Result<ExecParams, Self::Error> {
+        let constructor_multisig_params =
+            ConstructorParams::try_from(exec_constructor.constructor_params)?;
+
+        let serialized_constructor_multisig_params =
+            forest_vm::Serialized::serialize::<ConstructorParams>(constructor_multisig_params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
+        if exec_constructor.code_cid != "fil/1/multisig".to_string() {
+            return Err(SignerError::GenericString(
+                "Only support `fil/1/multisig` code for now.".to_string(),
+            ));
+        }
+
+        Ok(ExecParams {
+            code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),
+            constructor_params: serialized_constructor_multisig_params,
+        })
+    }
+}
+
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ProposeParamsMultisig {
+    pub to: String,
+    pub value: String,
+    // FIXME: only support method 0
+    pub method: u64,
+    // FIXME: extend to other more complex transaction
+    pub params: String,
+}
+
+impl TryFrom<ProposeParamsMultisig> for ProposeParams {
+    type Error = SignerError;
+
+    fn try_from(propose_params: ProposeParamsMultisig) -> Result<ProposeParams, Self::Error> {
+        Ok(ProposeParams {
+            to: Address::from_str(&propose_params.to)?,
+            value: BigUint::from_str(&propose_params.value)?,
+            method: propose_params.method,
+            params: forest_vm::Serialized::new(Vec::new()),
+        })
+    }
+}
+
+/// Proposal data
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct PropoposalHashDataParamsMultisig {
+    pub requester: String,
+    pub to: String,
+    pub value: String,
+    pub method: u64,
+    // Only suport method 0 and params ""
+    pub params: String,
+}
+
+impl TryFrom<PropoposalHashDataParamsMultisig> for ProposalHashData {
+    type Error = SignerError;
+
+    fn try_from(params: PropoposalHashDataParamsMultisig) -> Result<ProposalHashData, Self::Error> {
+        Ok(ProposalHashData {
+            requester: Address::from_str(&params.requester)?,
+            to: Address::from_str(&params.to)?,
+            value: BigUint::from_str(&params.value)?,
+            method: params.method,
+            params: forest_vm::Serialized::new(Vec::new()),
+        })
+    }
+}
+
+/// Data to approve
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct TxnIDParamsMultisig {
+    pub txn_id: i64,
+    pub proposal_hash_data: PropoposalHashDataParamsMultisig,
+}
+
+impl TryFrom<TxnIDParamsMultisig> for TxnIDParams {
+    type Error = SignerError;
+
+    fn try_from(params: TxnIDParamsMultisig) -> Result<TxnIDParams, Self::Error> {
+        let proposal_data = ProposalHashData::try_from(params.proposal_hash_data)?;
+        let serialized_porposal_data =
+            forest_vm::Serialized::serialize::<ProposalHashData>(proposal_data)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?;
+        let proposal_hash = blake2b_256(&serialized_porposal_data);
+
+        Ok(TxnIDParams {
+            id: TxnID(params.txn_id),
+            proposal_hash,
+        })
+    }
+}
+
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
+#[serde(untagged)]
+pub enum MessageParams {
+    MessageParamsMultisig(MessageParamsMultisig),
+    MessageParamsEmpty(String),
+    ProposeParamsMultisig(ProposeParamsMultisig),
+    TxnIDParamsMultisig(TxnIDParamsMultisig),
+}
+
+impl MessageParams {
+    pub fn serialize(self) -> Result<Serialized, SignerError> {
+        let params_serialized = match self {
+            MessageParams::MessageParamsEmpty(_) => forest_vm::Serialized::new(Vec::new()),
+            MessageParams::MessageParamsMultisig(multisig_params) => {
+                let params = ExecParams::try_from(multisig_params)?;
+
+                forest_vm::Serialized::serialize::<ExecParams>(params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
+            }
+            MessageParams::ProposeParamsMultisig(multisig_proposal_params) => {
+                let params = ProposeParams::try_from(multisig_proposal_params)?;
+
+                forest_vm::Serialized::serialize::<ProposeParams>(params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
+            }
+            MessageParams::TxnIDParamsMultisig(multisig_txn_id_params) => {
+                let params = TxnIDParams::try_from(multisig_txn_id_params)?;
+
+                forest_vm::Serialized::serialize::<TxnIDParams>(params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
+            }
+        };
+
+        Ok(params_serialized)
+    }
+}
+
 /// Unsigned message api structure
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct UnsignedMessageAPI {
     pub to: String,
@@ -29,11 +223,12 @@ pub struct UnsignedMessageAPI {
     #[serde(alias = "gas_limit")]
     pub gas_limit: u64,
     pub method: u64,
-    pub params: String,
+    pub params: MessageParams,
 }
 
 /// Signature api structure
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
 pub struct SignatureAPI {
     #[serde(rename = "type")]
     pub sig_type: u8,
@@ -42,7 +237,8 @@ pub struct SignatureAPI {
 }
 
 /// Signed message api structure
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
 pub struct SignedMessageAPI {
     pub message: UnsignedMessageAPI,
     pub signature: SignatureAPI,
@@ -197,7 +393,29 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
         let value = BigUint::from_str(&message_api.value)?;
         let gas_limit = message_api.gas_limit;
         let gas_price = BigUint::from_str(&message_api.gas_price)?;
-        let params = forest_vm::Serialized::new(hex::decode(&message_api.params)?);
+
+        // FIXME: use trait instead of a match ?
+        let params = match message_api.params.clone() {
+            MessageParams::MessageParamsEmpty(_) => forest_vm::Serialized::new(Vec::new()),
+            MessageParams::MessageParamsMultisig(multisig_params) => {
+                let params = ExecParams::try_from(multisig_params)?;
+
+                forest_vm::Serialized::serialize::<ExecParams>(params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
+            }
+            MessageParams::ProposeParamsMultisig(multisig_proposal_params) => {
+                let params = ProposeParams::try_from(multisig_proposal_params)?;
+
+                forest_vm::Serialized::serialize::<ProposeParams>(params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
+            }
+            MessageParams::TxnIDParamsMultisig(multisig_txn_id_params) => {
+                let params = TxnIDParams::try_from(multisig_txn_id_params)?;
+
+                forest_vm::Serialized::serialize::<TxnIDParams>(params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
+            }
+        };
 
         let tmp = UnsignedMessage::builder()
             .to(to)
@@ -228,7 +446,7 @@ impl From<UnsignedMessage> for UnsignedMessageAPI {
             method: 0,
             // FIXME: need a proper way to serialize parameters, for now
             // only method=0 is supported for keep empty
-            params: "".to_owned(),
+            params: MessageParams::MessageParamsEmpty("".to_string()),
         }
     }
 }

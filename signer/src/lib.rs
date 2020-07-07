@@ -9,9 +9,12 @@
 )]
 
 use crate::api::{
-    MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI, UnsignedMessageAPI,
+    ConstructorParamsMultisig, MessageParams, MessageParamsMultisig, MessageTx, MessageTxAPI,
+    MessageTxNetwork, PropoposalHashDataParamsMultisig, ProposeParamsMultisig, SignatureAPI,
+    SignedMessageAPI, TxnIDParamsMultisig, UnsignedMessageAPI,
 };
 use crate::error::SignerError;
+use extras::{Method, INIT_ACTOR_ADDR};
 use forest_address::{Address, Network};
 use forest_encoding::{from_slice, to_vec};
 use std::convert::TryFrom;
@@ -19,13 +22,13 @@ use std::str::FromStr;
 
 use crate::extended_key::ExtendedSecretKey;
 use bip39::{Language, MnemonicType, Seed};
-use bip44::BIP44Path;
 use bls_signatures::Serialize;
 use rayon::prelude::*;
 use secp256k1::util::{
     COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
 };
 use secp256k1::{recover, sign, verify, Message, RecoveryId};
+use zx_bip44::BIP44Path;
 
 use crate::signature::{Signature, SignatureBLS, SignatureSECP256K1};
 
@@ -65,7 +68,7 @@ pub struct ExtendedKey {
     pub address: String,
 }
 
-#[cfg(feature = "ffi-support")]
+#[cfg(feature = "with-ffi-support")]
 ffi_support::implement_into_ffi_by_pointer!(ExtendedKey);
 
 impl TryFrom<String> for PrivateKey {
@@ -124,7 +127,7 @@ pub fn key_derive(mnemonic: &str, path: &str, password: &str) -> Result<Extended
 
     let esk = master.derive_bip44(&bip44_path)?;
 
-    let mut address = Address::new_secp256k1(&esk.public_key().to_vec());
+    let mut address = Address::new_secp256k1(&esk.public_key().to_vec())?;
 
     address.set_network(Network::Mainnet);
     if bip44_path.is_testnet() {
@@ -152,7 +155,7 @@ pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, Sign
 
     let esk = master.derive_bip44(&bip44_path)?;
 
-    let mut address = Address::new_secp256k1(&esk.public_key().to_vec());
+    let mut address = Address::new_secp256k1(&esk.public_key().to_vec())?;
 
     address.set_network(Network::Mainnet);
     if bip44_path.is_testnet() {
@@ -176,7 +179,7 @@ pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, Sign
 pub fn key_recover(private_key: &PrivateKey, testnet: bool) -> Result<ExtendedKey, SignerError> {
     let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
     let public_key = secp256k1::PublicKey::from_secret_key(&secret_key);
-    let mut address = Address::new_secp256k1(&public_key.serialize());
+    let mut address = Address::new_secp256k1(&public_key.serialize())?;
 
     if testnet {
         address.set_network(Network::Testnet);
@@ -331,7 +334,7 @@ fn verify_secp256k1_signature(
     let blob_to_sign = Message::parse_slice(&message_digest)?;
 
     let public_key = recover(&blob_to_sign, &signature_rs, &recovery_id)?;
-    let mut from = Address::new_secp256k1(&public_key.serialize().to_vec());
+    let mut from = Address::new_secp256k1(&public_key.serialize().to_vec())?;
     from.set_network(network);
 
     let tx_from = match tx {
@@ -428,13 +431,215 @@ pub fn verify_aggregated_signature(
     Ok(bls_signatures::verify(&sig, &hashes, pks.as_slice()))
 }
 
+/// Utilitary function to create a create multisig message. Return an unsigned message.
+///
+/// # Arguments
+///
+/// * `sender_address` - A string address
+/// * `addresses` - List of string addresses of the multisig
+/// * `value` - Value to send on the multisig
+/// * `required` - Number of required signatures required
+/// * `nonce` - Nonce of the message
+///
+pub fn create_multisig(
+    sender_address: String,
+    addresses: Vec<String>,
+    value: String,
+    required: i64,
+    nonce: u64,
+) -> Result<UnsignedMessageAPI, SignerError> {
+    let constructor_params_multisig = ConstructorParamsMultisig {
+        signers: addresses,
+        num_approvals_threshold: required,
+        unlock_duration: -1,
+    };
+
+    let message_params_multisig = MessageParamsMultisig {
+        code_cid: "fil/1/multisig".to_string(),
+        constructor_params: constructor_params_multisig,
+    };
+
+    let multisig_create_message_api = UnsignedMessageAPI {
+        to: INIT_ACTOR_ADDR.to_string(),
+        from: sender_address,
+        nonce,
+        value,
+        // https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L46
+        gas_price: "1".to_string(),
+        // used the same value as https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L78
+        gas_limit: 1000000,
+        method: Method::Constructor as u64,
+        params: MessageParams::MessageParamsMultisig(message_params_multisig),
+    };
+
+    Ok(multisig_create_message_api)
+}
+
+/// Utilitary function to create a proposal multisig message. Return an unsigned message.
+///
+/// # Arguments
+///
+/// * `multisig_address` - A string address
+/// * `to_address` - A string address
+/// * `from_address` - A string address
+/// * `amount` - Amount of the transaction
+/// * `nonce` - Nonce of the message
+///
+pub fn proposal_multisig_message(
+    multisig_address: String,
+    to_address: String,
+    from_address: String,
+    amount: String,
+    nonce: u64,
+) -> Result<UnsignedMessageAPI, SignerError> {
+    let propose_params_multisig = ProposeParamsMultisig {
+        to: to_address,
+        value: amount,
+        method: 0,
+        params: "".to_string(),
+    };
+
+    let multisig_propose_message_api = UnsignedMessageAPI {
+        to: multisig_address,
+        from: from_address,
+        nonce,
+        value: "0".to_string(),
+        // https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L46
+        gas_price: "1".to_string(),
+        // used the same value as https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L78
+        gas_limit: 1000000,
+        method: Method::Propose as u64,
+        params: MessageParams::ProposeParamsMultisig(propose_params_multisig),
+    };
+
+    Ok(multisig_propose_message_api)
+}
+
+fn approve_or_cancel_multisig_message(
+    method: u64,
+    multisig_address: String,
+    message_id: i64,
+    proposer_address: String,
+    to_address: String,
+    amount: String,
+    from_address: String,
+    nonce: u64,
+) -> Result<UnsignedMessageAPI, SignerError> {
+    // FIXME: missing hash proposal field
+    let params = TxnIDParamsMultisig {
+        txn_id: message_id,
+        proposal_hash_data: PropoposalHashDataParamsMultisig {
+            requester: proposer_address,
+            to: to_address,
+            value: amount,
+            method: 0,
+            params: "".to_string(),
+        },
+    };
+
+    let multisig_unsigned_message_api = UnsignedMessageAPI {
+        to: multisig_address,
+        from: from_address,
+        nonce,
+        value: "0".to_string(),
+        gas_price: "1".to_string(),
+        gas_limit: 1000000,
+        method,
+        params: MessageParams::TxnIDParamsMultisig(params),
+    };
+
+    Ok(multisig_unsigned_message_api)
+}
+
+/// Utilitary function to create an approve multisig message. Return an unsigned message.
+///
+/// # Arguments
+///
+/// * `multisig_address` - A string address
+/// * `message_id` - message id
+/// * `proposer_address` - A string address
+/// * `to_address` - A string address
+/// * `amount` - Amount of the transaction
+/// * `from_address` - A string address
+/// * `nonce` - Nonce of the message
+///
+pub fn approve_multisig_message(
+    multisig_address: String,
+    message_id: i64,
+    proposer_address: String,
+    to_address: String,
+    amount: String,
+    from_address: String,
+    nonce: u64,
+) -> Result<UnsignedMessageAPI, SignerError> {
+    approve_or_cancel_multisig_message(
+        Method::Approve as u64,
+        multisig_address,
+        message_id,
+        proposer_address,
+        to_address,
+        amount,
+        from_address,
+        nonce,
+    )
+}
+
+/// Utilitary function to create a cancel multisig message. Return an unsigned message.
+///
+/// # Arguments
+///
+/// * `multisig_address` - A string address
+/// * `message_id` - message id
+/// * `proposer_address` - A string address
+/// * `to_address` - A string address
+/// * `amount` - Amount of the transaction
+/// * `from_address` - A string address
+/// * `nonce` - Nonce of the message
+///
+pub fn cancel_multisig_message(
+    multisig_address: String,
+    message_id: i64,
+    proposer_address: String,
+    to_address: String,
+    amount: String,
+    from_address: String,
+    nonce: u64,
+) -> Result<UnsignedMessageAPI, SignerError> {
+    approve_or_cancel_multisig_message(
+        Method::Cancel as u64,
+        multisig_address,
+        message_id,
+        proposer_address,
+        to_address,
+        amount,
+        from_address,
+        nonce,
+    )
+}
+
+/// Utilitary function to serialize parameters of a message. Return a CBOR hexstring.
+///
+/// # Arguments
+///
+/// * `params` - Parameters to serialize
+
+pub fn serialize_params(params: MessageParams) -> Result<CborBuffer, SignerError> {
+    let serialized_params = params.serialize()?;
+    let message_cbor = CborBuffer(serialized_params.bytes().to_vec());
+    Ok(message_cbor)
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::api::{MessageTxAPI, UnsignedMessageAPI};
+    use crate::api::{
+        ConstructorParamsMultisig, MessageParams, MessageParamsMultisig, MessageTxAPI,
+        UnsignedMessageAPI,
+    };
     use crate::signature::{Signature, SignatureBLS};
     use crate::{
-        key_derive, key_derive_from_seed, key_generate_mnemonic, key_recover, transaction_parse,
-        transaction_serialize, transaction_sign_bls_raw, transaction_sign_raw,
+        approve_multisig_message, cancel_multisig_message, create_multisig, key_derive,
+        key_derive_from_seed, key_generate_mnemonic, key_recover, proposal_multisig_message,
+        transaction_parse, transaction_serialize, transaction_sign_bls_raw, transaction_sign_raw,
         verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic, PrivateKey,
     };
     use bip39::{Language, Seed};
@@ -730,7 +935,7 @@ mod tests {
             gas_price: "2500".to_string(),
             gas_limit: 25000,
             method: 0,
-            params: "".to_string(),
+            params: MessageParams::MessageParamsEmpty("".to_string()),
         };
 
         let raw_sig = transaction_sign_bls_raw(&message, &bls_key).unwrap();
@@ -774,7 +979,7 @@ mod tests {
                     gas_price: "2500".to_string(),
                     gas_limit: 25000,
                     method: 0,
-                    params: "".to_string(),
+                    params: MessageParams::MessageParamsEmpty("".to_string()),
                 }
             })
             .collect();
@@ -804,5 +1009,205 @@ mod tests {
         let sig = SignatureBLS::try_from(aggregated_signature.as_bytes()).expect("FIX ME");
 
         assert!(verify_aggregated_signature(&sig, &cbor_messages[..]).unwrap());
+    }
+
+    #[test]
+    fn support_multisig_create() {
+        let multisig_create = serde_json::json!(
+        {
+            "to": "t01",
+            "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+            "nonce": 1,
+            "value": "1000",
+            "gasprice": "1",
+            "gaslimit": 1000000,
+            "method": 1,
+            "params": {
+                "code_cid": "fil/1/multisig",
+                "constructor_params": {
+                    "signers": ["t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba", "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"],
+                    "num_approvals_threshold": 1
+                }
+            }
+        });
+
+        let multisig_create_message_api = create_multisig(
+            "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+            vec![
+                "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+                "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
+            ],
+            "1000".to_string(),
+            1,
+            1,
+        )
+        .unwrap();
+
+        let multisig_create_message_expected: UnsignedMessageAPI =
+            serde_json::from_value(multisig_create).unwrap();
+
+        assert_eq!(
+            serde_json::to_string(&multisig_create_message_expected).unwrap(),
+            serde_json::to_string(&multisig_create_message_api).unwrap()
+        );
+
+        let result = transaction_serialize(&multisig_create_message_api).unwrap();
+
+        println!("{}", hex::encode(&result));
+
+        assert_eq!(
+            hex::encode(&result),
+            "890042000155011eaf1c8a4bbfeeb0870b1745b1f57503470b711601430003e84200011a000f424001584982d82a53000155000e66696c2f312f6d756c74697369675830838255011eaf1c8a4bbfeeb0870b1745b1f57503470b71165501dfe49184d46adc8f89d44638beb45f78fcad25900100"
+        );
+    }
+
+    #[test]
+    fn support_multisig_propose_message() {
+        let multisig_proposal = serde_json::json!(
+        {
+            "to": "t01",
+            "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+            "nonce": 1,
+            "value": "0",
+            "gasprice": "1",
+            "gaslimit": 1000000,
+            "method": 2,
+            "params": {
+                "to": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+                "value": "1000",
+                "method": 0,
+                "params": "",
+            }
+        });
+
+        let multisig_proposal_message_api = proposal_multisig_message(
+            "t01".to_string(),
+            "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
+            "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+            "1000".to_string(),
+            1,
+        )
+        .unwrap();
+
+        let multisig_proposal_message_expected: UnsignedMessageAPI =
+            serde_json::from_value(multisig_proposal).unwrap();
+
+        assert_eq!(
+            serde_json::to_string(&multisig_proposal_message_expected).unwrap(),
+            serde_json::to_string(&multisig_proposal_message_api).unwrap()
+        );
+
+        let result = transaction_serialize(&multisig_proposal_message_api).unwrap();
+
+        println!("{}", hex::encode(&result));
+
+        assert_eq!(
+            hex::encode(&result),
+            "890042000155011eaf1c8a4bbfeeb0870b1745b1f57503470b711601404200011a000f424002581d845501dfe49184d46adc8f89d44638beb45f78fcad2590430003e80040"
+        );
+    }
+
+    #[test]
+    fn support_multisig_approve_message() {
+        let multisig_approval = serde_json::json!(
+        {
+            "to": "t01",
+            "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+            "nonce": 1,
+            "value": "0",
+            "gasprice": "1",
+            "gaslimit": 1000000,
+            "method": 3,
+            "params": {
+                "txn_id": 1234,
+                "proposal_hash_data": {
+                    "requester": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+                    "to": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+                    "value": "1000",
+                    "method": 0,
+                    "params": "",
+                }
+            }
+        });
+
+        let multisig_approval_message_api = approve_multisig_message(
+            "t01".to_string(),
+            1234,
+            "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+            "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
+            "1000".to_string(),
+            "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+            1,
+        )
+        .unwrap();
+
+        let multisig_approval_message_expected: UnsignedMessageAPI =
+            serde_json::from_value(multisig_approval).unwrap();
+
+        assert_eq!(
+            serde_json::to_string(&multisig_approval_message_expected).unwrap(),
+            serde_json::to_string(&multisig_approval_message_api).unwrap()
+        );
+
+        let result = transaction_serialize(&multisig_approval_message_api).unwrap();
+
+        println!("{}", hex::encode(&result));
+
+        assert_eq!(
+            hex::encode(&result),
+            "890042000155011eaf1c8a4bbfeeb0870b1745b1f57503470b711601404200011a000f4240035845821904d2982018f818ac18f218651829187218f00918ae18aa181d189b186118cf18cd18861870182b1830189318c1189c183018491860184f181918db188c18b3187818f3"
+        );
+    }
+
+    #[test]
+    fn support_multisig_cancel_message() {
+        let multisig_cancel = serde_json::json!(
+        {
+            "to": "t01",
+            "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+            "nonce": 1,
+            "value": "0",
+            "gasprice": "1",
+            "gaslimit": 1000000,
+            "method": 4,
+            "params": {
+                "txn_id": 1234,
+                "proposal_hash_data": {
+                    "requester": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+                    "to": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+                    "value": "1000",
+                    "method": 0,
+                    "params": "",
+                }
+            }
+        });
+
+        let multisig_cancel_message_api = cancel_multisig_message(
+            "t01".to_string(),
+            1234,
+            "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+            "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
+            "1000".to_string(),
+            "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+            1,
+        )
+        .unwrap();
+
+        let multisig_cancel_message_expected: UnsignedMessageAPI =
+            serde_json::from_value(multisig_cancel).unwrap();
+
+        assert_eq!(
+            serde_json::to_string(&multisig_cancel_message_expected).unwrap(),
+            serde_json::to_string(&multisig_cancel_message_api).unwrap()
+        );
+
+        let result = transaction_serialize(&multisig_cancel_message_api).unwrap();
+
+        println!("{}", hex::encode(&result));
+
+        assert_eq!(
+            hex::encode(&result),
+            "890042000155011eaf1c8a4bbfeeb0870b1745b1f57503470b711601404200011a000f4240045845821904d2982018f818ac18f218651829187218f00918ae18aa181d189b186118cf18cd18861870182b1830189318c1189c183018491860184f181918db188c18b3187818f3"
+        );
     }
 }

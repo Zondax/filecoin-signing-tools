@@ -1,5 +1,4 @@
-import * as wasm from "@zondax/filecoin-signer-wasm";
-import TransportU2F from "@ledgerhq/hw-transport-u2f";
+import * as wasm from "@zondax/filecoin-signing-tools/js";
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 
 function log(text) {
@@ -10,7 +9,7 @@ async function example_ledger() {
   log("\n...Trying to connect to ledger...\n");
   let transport;
   try {
-     transport = await TransportU2F.create(10000);
+     transport = await TransportWebUSB.create(10000);
      // We need this scramble key
      // TODO: move this to the Rust implementation for the specific coin (not ledger-rs)
      transport.setScrambleKey("FIL");

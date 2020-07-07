@@ -4,17 +4,17 @@
   "description": "Signing Service JSONRPC - Tests and examples",
   "main": "./src/index.js",
   "dependencies": {
-    "@babel/runtime": "^7.9.2",
+    "@babel/runtime": "^7.10.4",
     "axios": "^0.19.2",
     "bip39": "^3.0.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.9.0",
-    "@babel/plugin-transform-runtime": "^7.9.0",
-    "@babel/preset-env": "^7.9.0",
+    "@babel/core": "^7.10.4",
+    "@babel/plugin-transform-runtime": "^7.10.4",
+    "@babel/preset-env": "^7.10.4",
     "bip32": "^2.0.5",
-    "blake2": "^4.0.0",
-    "eslint": "^6.8.0",
+    "blakejs": "^1.1.0",
+    "eslint": "^7.4.0",
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-import": "^2.20.2",

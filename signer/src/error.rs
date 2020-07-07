@@ -31,7 +31,7 @@ pub enum SignerError {
     BLS(#[from] bls_signatures::Error),
     /// Invalid BIP44Path
     #[error("Invalid BIP44 path : `{0}`")]
-    InvalidBIP44Path(#[from] bip44::errors::BIP44PathError),
+    InvalidBIP44Path(#[from] zx_bip44::errors::BIP44PathError),
     /// BLS error
     #[error("Couldn't convert from slice")]
     TryFromSlice(#[from] TryFromSliceError),

@@ -1,12 +1,12 @@
 ////! Filecoin service RPC Client
 
+#[cfg(feature = "cache-nonce")]
 use crate::service::cache::{cache_get_nonce, cache_put_nonce};
 use crate::service::error::RemoteNode::{EmptyNonce, InvalidNonce, InvalidStatusRequest, JSONRPC};
 use crate::service::error::ServiceError;
 use abscissa_core::tracing::info;
 use jsonrpc_core::response::Output::{Failure, Success};
 use jsonrpc_core::{Id, MethodCall, Params, Response, Version};
-use serde_json::json;
 use serde_json::value::Value;
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -35,10 +35,12 @@ pub async fn make_rpc_call(url: &str, jwt: &str, m: &MethodCall) -> Result<Respo
 }
 
 pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceError> {
-    // FIXME: reactivate cache and make it configurable
-    // if let Some(nonce) = cache_get_nonce(addr) {
-    //     return Ok(nonce);
-    // }
+    #[cfg(feature = "cache-nonce")]
+    {
+        if let Ok(nonce) = cache_get_nonce(addr) {
+            return Ok(nonce);
+        }
+    }
 
     let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
 
@@ -58,7 +60,8 @@ pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceE
         _ => return Err(ServiceError::RemoteNode(InvalidNonce)),
     };
 
-    // cache_put_nonce(addr, nonce);
+    #[cfg(feature = "cache-nonce")]
+    cache_put_nonce(addr, nonce)?;
     Ok(nonce)
 }
 
@@ -159,7 +162,7 @@ pub async fn is_mainnet(url: &str, jwt: &str) -> Result<bool, ServiceError> {
         _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
     };
 
-    if network == "testnet" {
+    if network == "testnet" || network == "interop" {
         Ok(false)
     } else {
         Ok(true)
@@ -194,7 +197,7 @@ mod tests {
 
     #[tokio::test]
     async fn example_something_else_and_retrieve_nonce() {
-        let addr = "t02";
+        let addr = "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba";
 
         let credentials = tests::get_remote_credentials();
         let nonce = get_nonce(&credentials.url, &credentials.jwt, &addr).await;
@@ -202,33 +205,6 @@ mod tests {
         println!("{:?}", nonce);
 
         assert!(nonce.is_ok());
-    }
-
-    #[tokio::test]
-    async fn example_get_status_transaction() {
-        let params =
-            json!({ "/": "bafy2bzacean3gqtnc6lepgaankwh6tmgoefvo2raj7fuhot4urzutrsarjdjo" });
-
-        let expected_response = json!({
-            "To":"t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
-            "From":"t1hw4amnow4gsgk2ottjdpdverfwhaznyrslsmoni",
-            "Nonce":21131,
-            "Value":"50000000000000000000",
-            "GasPrice":"0",
-            "GasLimit":10000,
-            "Method":0,
-            "Params":"",
-            "Version": 0
-        });
-
-        let credentials = tests::get_remote_credentials();
-        let status = get_status(&credentials.url, &credentials.jwt, params)
-            .await
-            .unwrap();
-
-        println!("{:?}", status);
-
-        assert_eq!(status, expected_response);
     }
 
     #[tokio::test]

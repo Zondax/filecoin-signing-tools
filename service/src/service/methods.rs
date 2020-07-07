@@ -296,46 +296,8 @@ pub async fn send_sign(c: MethodCall, config: RemoteNodeSection) -> Result<Succe
 mod tests {
     use crate::service::methods::get_status;
     use crate::service::test_helper::tests::get_remote_credentials;
-    use jsonrpc_core::{Id, MethodCall, Params, Success, Version};
+    use jsonrpc_core::{Id, MethodCall, Params, Version};
     use serde_json::json;
-
-    #[tokio::test]
-    async fn example_get_status_transaction() {
-        let params_str = json!({ "cid_message": "bafy2bzacean3gqtnc6lepgaankwh6tmgoefvo2raj7fuhot4urzutrsarjdjo" });
-        let params: Params =
-            serde_json::from_str(&params_str.to_string()).expect("could not deserialize");
-
-        let expected_response = Success {
-            jsonrpc: Some(Version::V2),
-            result: json!({
-                "To":"t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
-                "From":"t1hw4amnow4gsgk2ottjdpdverfwhaznyrslsmoni",
-                "Nonce":21131,
-                "Value":"50000000000000000000",
-                "GasPrice":"0",
-                "GasLimit": 10000,
-                "Method":0,
-                "Params":"",
-                "Version": 0
-            }),
-            id: Id::Num(123),
-        };
-
-        let mc = MethodCall {
-            jsonrpc: Some(Version::V2),
-            method: "get_status".to_string(),
-            params,
-            id: Id::Num(123),
-        };
-
-        let config = get_remote_credentials();
-        let status = get_status(mc, config).await.unwrap();
-
-        println!("{:?}", status);
-        println!("{:?}", expected_response);
-
-        assert_eq!(status, expected_response);
-    }
 
     #[tokio::test]
     async fn example_get_status_transaction_fail() {

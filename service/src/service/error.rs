@@ -42,6 +42,7 @@ pub enum ServiceError {
     #[error("Serde JSON | {0}")]
     SerdeError(#[from] serde_json::error::Error),
     /// Generic string error
+    #[cfg(feature = "cache-nonce")]
     #[error("Error | {0}")]
     ErrorStr(String),
 }

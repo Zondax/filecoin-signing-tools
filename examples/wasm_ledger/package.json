@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Zondax/filecoin-rs"
+    "url": "git+https://github.com/Zondax/filecoin-signing-tools"
   },
   "keywords": [
     "webassembly",
@@ -37,7 +37,7 @@
     "babel-eslint": "^10.1.0",
     "babel-jest": "^25.2.6",
     "bip32": "^2.0.5",
-    "blake2": "^4.0.0",
+    "blakejs": "^1.1.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-config-prettier": "^6.10.1",

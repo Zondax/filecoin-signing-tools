@@ -1,0 +1,8 @@
+# filecoin-service - Example configuration file# https://documenter.getpostman.com/view/4872192/SWLh5mUd?version=latest
+
+[remote_node]
+url = "https://node.glif.io/01/rpc/v0"
+jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.lpxvu43hHQ9hoESitfJyZtoU2P6rhHFQbRvZiCxJ17c"
+
+[service]
+address = "127.0.0.1:3030"

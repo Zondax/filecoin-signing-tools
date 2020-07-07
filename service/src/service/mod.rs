@@ -7,6 +7,7 @@ use std::process;
 
 use warp::Filter;
 
+#[cfg(feature = "cache-nonce")]
 mod cache;
 mod client;
 mod error;

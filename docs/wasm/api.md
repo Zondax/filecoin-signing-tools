@@ -277,3 +277,129 @@ const result = signer_wasm.verifySignature(signatureRSV, cbor_transaction);
 // true
 console.log(result);
 ```
+
+## createMultisig
+
+Return a create multisig transaction.
+
+Arguments :
+* **Sender address**: the one in the `From` field;
+* **Addresses**: the list of addresses taking part in the multisig contract;
+* **Amount**: amount to start the multisig with;
+* **Required signatures**: minimal number of signatures required;
+
+```javascript
+const signer_wasm = require('@zondax/filecoin-signer');
+// or for browser
+// import * as signer_wasm from "@zondax/filecoin-signer";
+
+
+let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
+let sender_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+
+let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1);
+
+console.log(create_multisig_transaction);
+```
+
+## proposeMultisig
+
+Return a proposal multisig transaction.
+
+Arguments :
+* **ID address**: tthe id address;
+* **To address**: address to which the funds are being moved from the multisig;
+* **From address**: the one in the `From` field;
+* **Amount**: amount to start the multisig with;
+
+```javascript
+const signer_wasm = require('@zondax/filecoin-signer');
+// or for browser
+// import * as signer_wasm from "@zondax/filecoin-signer";
+
+
+let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+
+let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01", to_address, from_address, "1000");
+
+console.log(propose_multisig_transaction);
+```
+
+## approveMultisig
+
+Return an approval multisig transaction.
+
+Arguments :
+* **ID address**: the id address;
+* **TxnID**: the idea of the proposal transaction;
+* **Proposer address**: address of the proposer;
+* **To address**: address to which the funds are being moved from the multisig;
+* **Amount**: amount to start the multisig with;
+* **From address**: the one in the `From` field;
+
+```javascript
+const signer_wasm = require('@zondax/filecoin-signer');
+// or for browser
+// import * as signer_wasm from "@zondax/filecoin-signer";
+
+
+let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+
+let approve_multisig_transaction = filecoin_signer.approveMultisig("t01", 1234, proposer_address, to_address, "1000", from_address);
+
+console.log(approve_multisig_transaction);
+```
+
+## cancelMultisig
+
+Return a cancel multisig transaction.
+
+Arguments :
+* **ID address**: the id address;
+* **TxnID**: the idea of the proposal transaction;
+* **Proposer address**: address of the proposer;
+* **To address**: address to which the funds are being moved from the multisig;
+* **Amount**: amount to start the multisig with;
+* **From address**: the one in the `From` field;
+
+```javascript
+const signer_wasm = require('@zondax/filecoin-signer');
+// or for browser
+// import * as signer_wasm from "@zondax/filecoin-signer";
+
+
+let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
+
+let approve_multisig_transaction = filecoin_signer.cancelMultisig("t01", 1234, proposer_address, to_address, "1000", from_address);
+
+console.log(approve_multisig_transaction);
+```
+
+## serializeParams
+
+Serialize parameters into cbor data.
+
+Arguments :
+* **params**: params object;
+
+```javascript
+const signer_wasm = require('@zondax/filecoin-signer');
+// or for browser
+// import * as signer_wasm from "@zondax/filecoin-signer";
+
+let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
+
+let params = {
+    code_cid: 'fil/1/multisig',
+    constructor_params: { signers: addresses, num_approvals_threshold: 1 }
+}
+
+let serialized_params = filecoin_signer.serializeParams(params);
+
+console.log(serialized_params);
+```

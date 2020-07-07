@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Zondax <info@zondax.ch>"]
 edition = "2018"
 license = "Apache-2.0"
-repository = "https://github.com/Zondax/filecoin-rs"
+repository = "https://github.com/Zondax/filecoin-signing-tools"
 description =""
 
 [lib]
@@ -45,7 +45,7 @@ filecoin-signer = { path = "../signer" }
 # ledger app
 filecoin-signer-ledger = { path = "../ledger" }
 
-bip44 = { git = "https://github.com/Zondax/ledger-rs" }
+zx-bip44 = { git = "https://github.com/Zondax/blockchain-tools-rs" }
 
 [dependencies.wasm-bindgen]
 version = "^0.2"
