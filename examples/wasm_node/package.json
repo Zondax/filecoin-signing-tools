@@ -1,5 +1,5 @@
 {
-  "name": "example-filecoin-wasm",
+  "name": "@zondax/example-filecoin-wasm-node",
   "author": "Zondax GmbH",
   "license": "Apache-2.0",
   "version": "1.0.0",

@@ -3,7 +3,7 @@ members = [
     "service",
     "signer",
     "signer-ffi",
-    "signer-wasm",
+    "signer-npm",
     "ledger",
     "hfuzz-signer",
     "extras",

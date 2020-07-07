@@ -99,7 +99,7 @@ jobs:
       - run: cargo --version
       - restore-sccache-cache
       - run: sudo apt-get update && sudo apt-get install -y firefox-esr libnss3
-      - run: make deps_wasm
+      - run: make deps_npm
       # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-signing-tools/issues/68
       - run: make test_wasm_unit
       - run: make test_wasm_node
@@ -135,7 +135,7 @@ jobs:
           name: Install deps wasm
           command: |
             source $HOME/.cargo/env
-            make deps_wasm
+            make deps_npm
       - run: docker pull zondax/builder-zemu
       - run:
           name: Run zemu tests
@@ -192,12 +192,12 @@ jobs:
     steps:
       - checkout
       - restore-sccache-cache
-      - run: make deps_wasm
-      - run: make build_wasm
+      - run: make deps_npm
+      - run: make build_npm
       - run:
           name: Update tag
           command: |
-            cd /home/circleci/project/signer-wasm/pkg
+            cd /home/circleci/project/signer-npm/pkg
             echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > .npmrc
             npm --no-git-tag-version version $CIRCLE_TAG
             npm publish

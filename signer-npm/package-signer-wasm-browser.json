@@ -1,5 +1,5 @@
 {
-  "name": "filecoin-signer-wasm",
+  "name": "@zondax/filecoin-signing-tools",
   "collaborators": [
     "Zondax <info@zondax.ch>"
   ],
