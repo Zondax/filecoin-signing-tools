@@ -21,7 +21,7 @@
     "filecoin"
   ],
   "dependencies": {
-    "@zondax/filecoin-signer": "../../signer-wasm/pkg/"
+    "@zondax/filecoin-signer": "../../signer-npm/pkg/"
   },
   "devDependencies": {
     "bip32": "^2.0.5",
