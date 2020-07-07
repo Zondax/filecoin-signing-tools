@@ -1,5 +1,5 @@
 {
-  "name": "example-filecoin-wasm",
+  "name": "@zondax/example-filecoin-wasm-node",
   "author": "Zondax GmbH",
   "license": "Apache-2.0",
   "version": "1.0.0",
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Zondax/filecoin-rs"
+    "url": "git+https://github.com/Zondax/filecoin-signing-tools"
   },
   "keywords": [
     "webassembly",
@@ -21,7 +21,7 @@
     "filecoin"
   ],
   "dependencies": {
-    "@zondax/filecoin-signer": "../../signer-wasm/pkg/"
+    "@zondax/filecoin-signer": "../../signer-npm/pkg/"
   },
   "devDependencies": {
     "bip32": "^2.0.5",

@@ -1,4 +1,4 @@
-const signer = require('@zondax/filecoin-signer');
+const signer = require('@zondax/filecoin-signing-tools');
 const assert = require('assert');
 const secp256k1 = require('secp256k1/elliptic');
 const getDigest = require('./utils').getDigest;
