@@ -1,5 +1,5 @@
 module.exports = {
-    base: '/filecoin-rs/',
+    base: '/filecoin-signing-tools/',
     title: 'Filecoin Signing Tools',
     description: 'Services and Libraries ',
 

@@ -13,7 +13,7 @@ build_wasm:
 	cd signer-wasm/js && yarn install
 	cd signer-wasm && make build
 
-PACKAGE_NAME:="@zondax/filecoin-signer"
+PACKAGE_NAME:="@zondax/filecoin-signing-tools"
 
 clean_wasm:
 	rm -rf examples/wasm_node/node_modules || true
