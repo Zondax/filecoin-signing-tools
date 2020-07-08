@@ -14,7 +14,7 @@ use crate::api::{
     SignedMessageAPI, TxnIDParamsMultisig, UnsignedMessageAPI,
 };
 use crate::error::SignerError;
-use extras::{Method, INIT_ACTOR_ADDR};
+use extras::{MethodMultisig, MethodInit, INIT_ACTOR_ADDR};
 use forest_address::{Address, Network};
 use forest_encoding::{from_slice, to_vec};
 use std::convert::TryFrom;
@@ -468,7 +468,7 @@ pub fn create_multisig(
         gas_price: "1".to_string(),
         // used the same value as https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L78
         gas_limit: 1000000,
-        method: Method::Constructor as u64,
+        method: MethodInit::Exec as u64,
         params: MessageParams::MessageParamsMultisig(message_params_multisig),
     };
 
@@ -508,7 +508,7 @@ pub fn proposal_multisig_message(
         gas_price: "1".to_string(),
         // used the same value as https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L78
         gas_limit: 1000000,
-        method: Method::Propose as u64,
+        method: MethodMultisig::Propose as u64,
         params: MessageParams::ProposeParamsMultisig(propose_params_multisig),
     };
 
@@ -573,7 +573,7 @@ pub fn approve_multisig_message(
     nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     approve_or_cancel_multisig_message(
-        Method::Approve as u64,
+        MethodMultisig::Approve as u64,
         multisig_address,
         message_id,
         proposer_address,
@@ -606,7 +606,7 @@ pub fn cancel_multisig_message(
     nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     approve_or_cancel_multisig_message(
-        Method::Cancel as u64,
+        MethodMultisig::Cancel as u64,
         multisig_address,
         message_id,
         proposer_address,
@@ -1021,7 +1021,7 @@ mod tests {
             "value": "1000",
             "gasprice": "1",
             "gaslimit": 1000000,
-            "method": 1,
+            "method": 2,
             "params": {
                 "code_cid": "fil/1/multisig",
                 "constructor_params": {
