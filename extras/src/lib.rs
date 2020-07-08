@@ -116,8 +116,6 @@ pub enum MethodInit {
     Exec = 2,
 }
 
-
-
 lazy_static! {
     pub static ref SYSTEM_ACTOR_ADDR: Address         = Address::new_id(0);
     pub static ref INIT_ACTOR_ADDR: Address           = Address::new_id(1);
