@@ -14,7 +14,7 @@ use crate::api::{
     SignedMessageAPI, TxnIDParamsMultisig, UnsignedMessageAPI,
 };
 use crate::error::SignerError;
-use extras::{MethodMultisig, MethodInit, INIT_ACTOR_ADDR};
+use extras::{MethodInit, MethodMultisig, INIT_ACTOR_ADDR};
 use forest_address::{Address, Network};
 use forest_encoding::{from_slice, to_vec};
 use std::convert::TryFrom;
