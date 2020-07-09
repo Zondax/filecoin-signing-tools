@@ -20,7 +20,9 @@ pub enum SigTypes {
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct ConstructorParamsMultisig {
+    #[serde(alias = "Signers")]
     pub signers: Vec<String>,
+    #[serde(alias = "NumApprovalsThreshold")]
     pub num_approvals_threshold: i64,
     #[serde(skip)]
     // FIXME: only skip if -1
@@ -61,7 +63,9 @@ impl TryFrom<ConstructorParamsMultisig> for ConstructorParams {
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct MessageParamsMultisig {
+    #[serde(alias = "CodeCid")]
     pub code_cid: String,
+    #[serde(alias = "ConstructorParams")]
     pub constructor_params: ConstructorParamsMultisig,
 }
 
@@ -93,11 +97,15 @@ impl TryFrom<MessageParamsMultisig> for ExecParams {
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct ProposeParamsMultisig {
+    #[serde(alias = "To")]
     pub to: String,
+    #[serde(alias = "Value")]
     pub value: String,
     // FIXME: only support method 0
+    #[serde(alias = "Method")]
     pub method: u64,
     // FIXME: extend to other more complex transaction
+    #[serde(alias = "Params")]
     pub params: String,
 }
 
@@ -119,11 +127,16 @@ impl TryFrom<ProposeParamsMultisig> for ProposeParams {
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct PropoposalHashDataParamsMultisig {
+    #[serde(alias = "Requester")]
     pub requester: String,
+    #[serde(alias = "To")]
     pub to: String,
+    #[serde(alias = "Value")]
     pub value: String,
+    #[serde(alias = "Method")]
     pub method: u64,
     // Only suport method 0 and params ""
+    #[serde(alias = "Params")]
     pub params: String,
 }
 
@@ -146,7 +159,9 @@ impl TryFrom<PropoposalHashDataParamsMultisig> for ProposalHashData {
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct TxnIDParamsMultisig {
+    #[serde(alias = "TxnID")]
     pub txn_id: i64,
+    #[serde(alias = "ProposalHashData")]
     pub proposal_hash_data: PropoposalHashDataParamsMultisig,
 }
 
