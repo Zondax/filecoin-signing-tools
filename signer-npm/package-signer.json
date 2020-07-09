@@ -3,7 +3,8 @@
   "collaborators": [
     "Zondax <info@zondax.ch>"
   ],
-  "description": "",
+  "keywords": ["filecoin", "zondax", "cryptography"],
+  "description": "Filecoin Signing Tools",
   "version": "0.2.0",
   "license": "Apache-2.0",
   "repository": {
@@ -11,6 +12,7 @@
     "url": "https://github.com/Zondax/filecoin-signing-tools"
   },
   "files": [
+    "README.md",
     "nodejs/*",
     "browser/*",
     "js/*"
