@@ -1,5 +1,8 @@
 NPM_PACKAGE_NAME:="@zondax/filecoin-signing-tools"
 
+build: deps build_npm
+
+
 deps_npm:
 	curl -o /tmp/tmp.sh https://rustwasm.github.io/wasm-pack/installer/init.sh
 	chmod +x /tmp/tmp.sh
@@ -14,6 +17,7 @@ build_npm:
 	# For the pure js we need the node_modules folder when using `yarn link`
 	cd signer-npm/js && yarn install
 	cd signer-npm && make build
+	cp signer-npm/README.md signer-npm/pkg/README.md
 
 clean_npm:
 	rm -rf examples/wasm_node/node_modules || true

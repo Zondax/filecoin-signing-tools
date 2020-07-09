@@ -378,7 +378,7 @@ describeCall("createMultisig", function() {
       value: '1000',
       gasprice: '1',
       gaslimit: 1000000,
-      method: 1,
+      method: 2,
       params: {
         code_cid: 'fil/1/multisig',
         constructor_params: { signers: addresses, num_approvals_threshold: 1 }
@@ -403,7 +403,7 @@ describeCall("createMultisig", function() {
     let addresses = [recoveredKey.address,"t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
     let sender_address = recoveredKey.address;
 
-    let expected = "89004200015501dfe49184d46adc8f89d44638beb45f78fcad259001430003e84200011a000f424001584982d82a53000155000e66696c2f312f6d756c7469736967583083825501dfe49184d46adc8f89d44638beb45f78fcad259055011eaf1c8a4bbfeeb0870b1745b1f57503470b71160100";
+    let expected = "89004200015501dfe49184d46adc8f89d44638beb45f78fcad259001430003e84200011a000f424002584982d82a53000155000e66696c2f312f6d756c7469736967583083825501dfe49184d46adc8f89d44638beb45f78fcad259055011eaf1c8a4bbfeeb0870b1745b1f57503470b71160100";
 
     let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1, 1);
 
@@ -430,14 +430,14 @@ describeCall("createMultisig", function() {
         "From":recoveredKey.address,
         "GasLimit":1000000,
         "GasPrice":"1",
-        "Method":1,
+        "Method":2,
         "Nonce":1,
         "Params":"gtgqUwABVQAOZmlsLzEvbXVsdGlzaWdYMIOCVQHf5JGE1Grcj4nURji+tF94/K0lkFUBHq8ciku/7rCHCxdFsfV1A0cLcRYBAA==",
         "To":"t01",
         "Value":"1000"
       },
       "Signature":{
-        "Data":"HAZjoEpEXcHG+XIsyY3Pr7SZfew2WF216cEuhJykwCV6ZYZFGwte9dHsWnqVWOnKw1byyB9p5HF9NASIVCTrZAA=",
+        "Data":"rbYdA0Naa4nocXLbsvQ4yk9ZHr5KdBR5NcNrHCrZ3kYYRcpPDLdNUQBHYKyy4C9mmSlIYxAAA/Bm8tVyzUnEjgE=",
         "Type":1
       }
     }

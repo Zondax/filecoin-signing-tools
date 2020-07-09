@@ -97,17 +97,23 @@ pub struct ChangeNumApprovalsThresholdParams {
 
 /// Multisig actor methods available
 #[repr(u64)]
-pub enum Method {
-    Constructor = METHOD_CONSTRUCTOR,
+pub enum MethodMultisig {
+    Constructor = 1,
     Propose = 2,
     Approve = 3,
     Cancel = 4,
-    // TODO verify on finished spec this not needed
-    // ClearCompleted = 5,
-    AddSigner = 6,
-    RemoveSigner = 7,
-    SwapSigner = 8,
-    ChangeNumApprovalsThreshold = 9,
+    AddSigner = 5,
+    RemoveSigner = 6,
+    SwapSigner = 7,
+    ChangeNumApprovalsThreshold = 8,
+}
+
+/// Methods init
+/// https://github.com/filecoin-project/specs-actors/blob/master/actors/builtin/methods.go#L21
+#[repr(u64)]
+pub enum MethodInit {
+    Constructor = 1,
+    Exec = 2,
 }
 
 lazy_static! {
