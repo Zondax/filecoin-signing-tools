@@ -1,19 +1,17 @@
-# Filecoin Wasm ES modules
+# Filecoin Signing Tools Examples (WASM / JS) 
 
-Example of ES module using wasm.
+## Prerequisites
 
-Also run test (without framework) in ES modules.
+You may want to run `make link_npm` in he root directory to link the local implementation to the tests.
 
-## NOTES
+## Run tests
 
-Don't forget to link with the library for development :
+WASM backend
 ```
-yarn link fcwasmsigner
+yarn test
 ```
 
-
-### Run tests
-
+Pure JS backend
 ```
-yarn test:integration
+yarn test:js
 ```
