@@ -7,6 +7,7 @@ const {
   UnknownProtocolIndicator,
   InvalidPayloadLength,
   ProtocolNotSupported,
+  InvalidChecksumAddress,
 } = require("./errors");
 
 const { ProtocolIndicator } = require("./constants");
@@ -46,33 +47,35 @@ function getAccountFromPath(path) {
 }
 
 function addressAsBytes(address) {
-  let payload;
+  let address_decoded,
+    payload,
+    checksum;
   const protocolIndicator = address[1];
 
   switch (Number(protocolIndicator)) {
     case ProtocolIndicator.ID:
-      // if (payload.length > 16) { throw new InvalidPayloadLength(); };
       throw new ProtocolNotSupported("ID");
     case ProtocolIndicator.SECP256K1:
-      payload = base32Decode(address.slice(2).toUpperCase(), "RFC4648").slice(
-        0,
-        -4
-      );
+      address_decoded = base32Decode(address.slice(2).toUpperCase(), "RFC4648");
+
+      payload = address_decoded.slice(0, -4);;
+      checksum = Buffer.from(address_decoded.slice(-4));
+
       if (payload.byteLength !== 20) {
         throw new InvalidPayloadLength();
       }
       break;
     case ProtocolIndicator.ACTOR:
-      payload = base32Decode(address.slice(2).toUpperCase(), "RFC4648").slice(
-        0,
-        -4
-      );
+      address_decoded = base32Decode(address.slice(2).toUpperCase(), "RFC4648");
+
+      payload = address_decoded.slice(0, -4);;
+      checksum = Buffer.from(address_decoded.slice(-4));
+
       if (payload.byteLength !== 32) {
         throw new InvalidPayloadLength();
       }
       break;
     case ProtocolIndicator.BLS:
-      // if (payload.length > 52) { throw new InvalidPayloadLength(); };
       throw new ProtocolNotSupported("BLS");
     default:
       throw new UnknownProtocolIndicator();
@@ -81,10 +84,18 @@ function addressAsBytes(address) {
   const protocolIndicatorByte = `0${protocolIndicator}`;
 
   // TODO: check checksum!
-  return Buffer.concat([
+  const bytes_address = Buffer.concat([
     Buffer.from(protocolIndicatorByte, "hex"),
     Buffer.from(payload),
   ]);
+
+  if (getChecksum(bytes_address).toString('hex') !== checksum.toString('hex')) {
+    console.log(getChecksum(bytes_address))
+    console.log(checksum)
+    throw new InvalidChecksumAddress();
+  };
+
+  return bytes_address;
 }
 
 function bytesToAddress(payload, testnet) {

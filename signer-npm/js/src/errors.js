@@ -19,8 +19,16 @@ class ProtocolNotSupported extends Error {
   }
 }
 
+class InvalidChecksumAddress extends Error {
+  constructor(...args) {
+    super(...args);
+    this.message = `Invalid address (checksum not matching the payload).`;
+  }
+}
+
 module.exports = {
   UnknownProtocolIndicator,
   InvalidPayloadLength,
   ProtocolNotSupported,
+  InvalidChecksumAddress
 };
