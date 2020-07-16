@@ -1,6 +1,5 @@
-use filecoin_signer_ledger::errors::LedgerError;
-use filecoin_signer_ledger::TransportError;
 use serde::{Deserialize, Serialize};
+use filecoin_signer_ledger::LedgerAppError;
 
 /// FilecoinApp Error message
 #[derive(Deserialize, Serialize)]
@@ -11,21 +10,11 @@ pub struct Error {
     pub error_message: String,
 }
 
-pub fn ledger_error_to_javascript_error(err: LedgerError) -> Error {
+pub fn ledger_error_to_javascript_error(err: LedgerAppError) -> Error {
     match err {
-        LedgerError::TransportError(err) => transport_error_to_javascript_error(err),
-        _ => Error {
-            return_code: 0x6f00,
-            error_message: err.to_string(),
-        },
-    }
-}
-
-fn transport_error_to_javascript_error(err: TransportError) -> Error {
-    match err {
-        TransportError::APDU(retcode, error_message) => Error {
-            return_code: retcode,
-            error_message: error_message.to_string(),
+        LedgerAppError::AppSpecific(err, message) => Error {
+            return_code: err,
+            error_message: message,
         },
         _ => Error {
             return_code: 0x6f00,
