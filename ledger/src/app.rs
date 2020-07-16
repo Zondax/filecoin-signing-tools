@@ -25,9 +25,9 @@ use serde::{Deserialize, Serialize};
 use crate::params::*;
 use zx_bip44::BIP44Path;
 
-use std::str;
-use ledger_zondax_generic::LedgerAppError;
 use ledger_transport::errors::TransportError;
+use ledger_zondax_generic::LedgerAppError;
+use std::str;
 
 /// Filecoin App
 pub struct FilecoinApp {
@@ -206,7 +206,11 @@ impl FilecoinApp {
     }
 
     /// Sign a transaction
-    pub async fn sign(&self, path: &BIP44Path, message: &[u8]) -> Result<Signature, LedgerAppError> {
+    pub async fn sign(
+        &self,
+        path: &BIP44Path,
+        message: &[u8],
+    ) -> Result<Signature, LedgerAppError> {
         let bip44path = path.serialize();
         let chunks = message.chunks(USER_MESSAGE_CHUNK_SIZE);
 

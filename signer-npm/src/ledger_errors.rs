@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use filecoin_signer_ledger::LedgerAppError;
+use serde::{Deserialize, Serialize};
 
 /// FilecoinApp Error message
 #[derive(Deserialize, Serialize)]
