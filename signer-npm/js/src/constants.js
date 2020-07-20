@@ -1,3 +1,5 @@
+// from https://github.com/Zondax/filecoin-signing-tools/
+
 const ProtocolIndicator = {
   ID: 0,
   SECP256K1: 1,

@@ -1,15 +1,8 @@
+// from https://github.com/Zondax/filecoin-signing-tools/
+
 const blake = require("blakejs");
-const base32Decode = require("base32-decode");
-const base32Encode = require("base32-encode");
-
+const address = require('@openworklabs/filecoin-address')
 const assert = require("assert");
-const {
-  UnknownProtocolIndicator,
-  InvalidPayloadLength,
-  ProtocolNotSupported,
-} = require("./errors");
-
-const { ProtocolIndicator } = require("./constants");
 
 const CID_PREFIX = Buffer.from([0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20]);
 
@@ -35,96 +28,16 @@ function getPayloadSECP256K1(uncompressedPublicKey) {
   return Buffer.from(blake.blake2bFinal(blakeCtx));
 }
 
-function getChecksum(payload) {
-  const blakeCtx = blake.blake2bInit(4);
-  blake.blake2bUpdate(blakeCtx, payload);
-  return Buffer.from(blake.blake2bFinal(blakeCtx));
-}
-
 function getAccountFromPath(path) {
   return path.split("/")[2].slice(0, -1);
 }
 
-function addressAsBytes(address) {
-  let payload;
-  const protocolIndicator = address[1];
-
-  switch (Number(protocolIndicator)) {
-    case ProtocolIndicator.ID:
-      // if (payload.length > 16) { throw new InvalidPayloadLength(); };
-      throw new ProtocolNotSupported("ID");
-    case ProtocolIndicator.SECP256K1:
-      payload = base32Decode(address.slice(2).toUpperCase(), "RFC4648").slice(
-        0,
-        -4
-      );
-      if (payload.byteLength !== 20) {
-        throw new InvalidPayloadLength();
-      }
-      break;
-    case ProtocolIndicator.ACTOR:
-      payload = base32Decode(address.slice(2).toUpperCase(), "RFC4648").slice(
-        0,
-        -4
-      );
-      if (payload.byteLength !== 32) {
-        throw new InvalidPayloadLength();
-      }
-      break;
-    case ProtocolIndicator.BLS:
-      // if (payload.length > 52) { throw new InvalidPayloadLength(); };
-      throw new ProtocolNotSupported("BLS");
-    default:
-      throw new UnknownProtocolIndicator();
-  }
-
-  const protocolIndicatorByte = `0${protocolIndicator}`;
-
-  // TODO: check checksum!
-  return Buffer.concat([
-    Buffer.from(protocolIndicatorByte, "hex"),
-    Buffer.from(payload),
-  ]);
+function addressAsBytes(addressStr) {
+  return Buffer.from((address.newFromString(addressStr)).str, "binary")
 }
 
 function bytesToAddress(payload, testnet) {
-  const protocolIndicator = payload[0];
-
-  switch (Number(protocolIndicator)) {
-    case ProtocolIndicator.ID:
-      // if (payload.length > 16) { throw new InvalidPayloadLength(); };
-      throw new ProtocolNotSupported("ID");
-    case ProtocolIndicator.SECP256K1:
-      if (payload.slice(1).length !== 20) {
-        throw new InvalidPayloadLength();
-      }
-      break;
-    case ProtocolIndicator.ACTOR:
-      if (payload.slice(1).length !== 32) {
-        throw new InvalidPayloadLength();
-      }
-      break;
-    case ProtocolIndicator.BLS:
-      throw new ProtocolNotSupported("BLS");
-    default:
-      throw new UnknownProtocolIndicator();
-  }
-
-  const checksum = getChecksum(payload);
-
-  let prefix = "f";
-  if (testnet) {
-    prefix = "t";
-  }
-
-  prefix += protocolIndicator;
-
-  return (
-    prefix +
-    base32Encode(Buffer.concat([payload.slice(1), checksum]), "RFC4648", {
-      padding: false,
-    }).toLowerCase()
-  );
+  return address.encode(testnet ? 't' : 'f', new address.Address(payload))
 }
 
 function tryToPrivateKeyBuffer(privateKey) {
@@ -145,10 +58,9 @@ function tryToPrivateKeyBuffer(privateKey) {
 module.exports = {
   getCID,
   getDigest,
-  getPayloadSECP256K1,
-  getChecksum,
   getAccountFromPath,
   addressAsBytes,
   bytesToAddress,
   tryToPrivateKeyBuffer,
+  getPayloadSECP256K1,
 };

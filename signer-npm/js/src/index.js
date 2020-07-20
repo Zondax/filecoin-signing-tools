@@ -1,3 +1,5 @@
+// from https://github.com/Zondax/filecoin-signing-tools/
+
 const bip39 = require("bip39");
 const bip32 = require("bip32");
 const cbor = require("ipld-dag-cbor").util;
@@ -86,6 +88,7 @@ function transactionSerializeRaw(message) {
 
   const to = addressAsBytes(message.to);
   const from = addressAsBytes(message.from);
+  console.log([to, from])
 
   const valueBigInt = new BN(message.value, 10);
   const valueBuffer = valueBigInt.toArrayLike(Buffer, 'be', valueBigInt.byteLength());
@@ -93,7 +96,12 @@ function transactionSerializeRaw(message) {
 
   const gaspriceBigInt = new BN(message.gasprice, 10);
   const gaspriceBuffer = gaspriceBigInt.toArrayLike(Buffer, 'be', gaspriceBigInt.byteLength());
-  const gasprice = Buffer.concat([Buffer.from('00', 'hex'), gaspriceBuffer]);
+  let gasprice = Buffer.concat([Buffer.from('00', 'hex'), gaspriceBuffer]);
+
+  console.log("gas price", gasprice)
+  if (message.gasprice == "0") {
+    gasprice = Buffer.from("")
+  }
 
   const message_to_encode = [
     0,
@@ -104,7 +112,7 @@ function transactionSerializeRaw(message) {
     gasprice,
     message.gaslimit,
     message.method,
-    Buffer.from(""),
+    Buffer.from(message.params),
   ];
 
   return cbor.serialize(message_to_encode);
@@ -194,7 +202,7 @@ function transactionSignLotus(unsignedMessage, privateKey) {
       GasPrice: signedMessage.message.gasprice,
       Method: signedMessage.message.method,
       Nonce: signedMessage.message.nonce,
-      Params: signedMessage.message.params,
+      Params: Buffer.from(signedMessage.message.params, "hex").toString("base64"),
       To: signedMessage.message.to,
       Value: signedMessage.message.value,
     },
@@ -250,4 +258,6 @@ module.exports = {
   transactionSignLotus,
   transactionSignRaw,
   verifySignature,
+  addressAsBytes,
+  bytesToAddress,
 };
