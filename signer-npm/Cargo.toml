@@ -14,14 +14,14 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
-tiny-bip39 = "0.7"
-thiserror = "1.0"
-serde_json = "1.0"
+tiny-bip39 = "0.7.3"
+thiserror = "1.0.20"
+serde_json = "1.0.56"
 libsecp256k1 = "0.3.5"
-hex = "0.4"
-base64 = "0.12.0"
-js-sys = "0.3.37"
-wasm-bindgen-futures = "0.4.10"
+hex = "0.4.2"
+base64 = "0.12.3"
+js-sys = "0.3.42"
+wasm-bindgen-futures = "0.4.15"
 serde = { version = "1.0", features = ["derive"] }
 
 getrandom = { version = "0.1.14", features = ["wasm-bindgen"]}
@@ -48,8 +48,8 @@ filecoin-signer-ledger = { path = "../ledger" }
 zx-bip44 = { git = "https://github.com/Zondax/blockchain-tools-rs" }
 
 [dependencies.wasm-bindgen]
-version = "^0.2"
+version = "^0.2.65"
 features = ["serde-serialize"]
 
 [dev-dependencies]
-wasm-bindgen-test = "0.2"
+wasm-bindgen-test = "0.3.15"

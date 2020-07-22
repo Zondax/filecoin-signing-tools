@@ -438,7 +438,7 @@ pub fn serialize_params(params_value: JsValue) -> Result<Vec<u8>, JsValue> {
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
     let params_cbor = filecoin_signer::serialize_params(params)
-        .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
+        .map_err(|e| JsValue::from(format!("Error serializing parameters: {}", e)))?;
 
     Ok(params_cbor.as_ref().to_vec())
 }

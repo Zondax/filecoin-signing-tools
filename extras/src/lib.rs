@@ -98,7 +98,7 @@ pub struct ChangeNumApprovalsThresholdParams {
 /// Multisig actor methods available
 #[repr(u64)]
 pub enum MethodMultisig {
-    Constructor = 1,
+    Constructor = METHOD_CONSTRUCTOR,
     Propose = 2,
     Approve = 3,
     Cancel = 4,

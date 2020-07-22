@@ -31,13 +31,11 @@
 
 mod params;
 
-/// Ledger related errors
-pub mod errors;
-
-pub use ledger_transport::errors::TransportError;
 #[cfg(target_arch = "wasm32")]
 pub use ledger_transport::TransportWrapperTrait;
 pub use ledger_transport::{APDUAnswer, APDUCommand, APDUErrorCodes, APDUTransport};
+/// Ledger related errors
+pub use ledger_zondax_generic::LedgerAppError;
 
 /// Filecoin app
 pub mod app;

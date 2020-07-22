@@ -1,8 +1,8 @@
 // Test twice for wasm verion and pure js version
 if (process.env.PURE_JS) {
-  var filecoin_signer = require('@zondax/filecoin-signer/js');
+  var filecoin_signer = require('@zondax/filecoin-signing-tools/js');
 } else {
-  var filecoin_signer = require('@zondax/filecoin-signer');
+  var filecoin_signer = require('@zondax/filecoin-signing-tools');
 }
 
 const bip39 = require('bip39');
@@ -766,6 +766,72 @@ describeCall('SerializeParams', function () {
 
     assert.strictEqual(
       "82d82a53000155000e66696c2f312f6d756c7469736967583083825501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160100",
+      Buffer.from(serialized_params).toString('hex')
+    )
+  })
+
+  it('serialize parameters to cbor data test with PascalCase', function () {
+    let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
+
+    let params = {
+        CodeCid: 'fil/1/multisig',
+        ConstructorParams: { Signers: addresses, NumApprovalsThreshold: 1 }
+    }
+
+    let serialized_params = filecoin_signer.serializeParams(params);
+
+    console.log(Buffer.from(serialized_params).toString('hex'));
+
+    assert.strictEqual(
+      "82d82a53000155000e66696c2f312f6d756c7469736967583083825501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160100",
+      Buffer.from(serialized_params).toString('hex')
+    )
+  })
+
+  it('serialize parameters to cbor data test with PascalCase (2)', function () {
+    let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
+
+    let params = {
+        To: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        Value: "1000",
+        Method: 0,
+        Params: ""
+    }
+
+    let serialized_params = filecoin_signer.serializeParams(params);
+
+    console.log(Buffer.from(serialized_params).toString('hex'));
+
+    assert.strictEqual(
+      "845501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c628430003e80040",
+      Buffer.from(serialized_params).toString('hex')
+    )
+  })
+
+  it('serialize parameters to cbor data test with PascalCase (3)', function () {
+
+    let swap_params = {
+        From: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        To: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+    }
+
+    let serialized_swap_params = filecoin_signer.serializeParams(swap_params);
+
+    console.log(Buffer.from(serialized_swap_params).toString('hex'))
+
+    let params = {
+        To: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        Value: "0",
+        Method: 7,
+        Params: Buffer.from(serialized_swap_params).toString('hex')
+    }
+
+    let serialized_params = filecoin_signer.serializeParams(params);
+
+    console.log(Buffer.from(serialized_params).toString('hex'));
+
+    assert.strictEqual(
+      "845501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6284007582d825501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b7116",
       Buffer.from(serialized_params).toString('hex')
     )
   })
