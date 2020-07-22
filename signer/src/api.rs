@@ -292,7 +292,7 @@ impl MessageParams {
             MessageParams::MessageParamsSerialized(params_string) => {
                 let params_bytes = hex::decode(&params_string)?;
                 forest_vm::Serialized::new(params_bytes)
-            },
+            }
             MessageParams::MessageParamsMultisig(multisig_params) => {
                 let params = ExecParams::try_from(multisig_params)?;
 
