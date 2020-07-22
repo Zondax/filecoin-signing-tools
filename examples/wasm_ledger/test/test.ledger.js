@@ -15,7 +15,7 @@ const catchExit = async () => {
 
 
 describe("LEDGER TEST", function () {
-  this.timeout(5000);
+  this.timeout(20000);
 
   var sim,
       transport;
@@ -183,7 +183,7 @@ describe("LEDGER TEST", function () {
   });
 
   it("#transactionSignRawWithDevice()", async function() {
-    this.timeout(10000);
+    this.timeout(20000);
 
     const path = "m/44'/461'/0/0/0";
     const message = Buffer.from(
@@ -272,7 +272,7 @@ describe("LEDGER TEST", function () {
   });
 
   it.skip("#transactionSignRawWithDevice() Fail", async function() {
-    this.timeout(10000);
+    this.timeout(20000);
 
     const path = "m/44'/461'/0/0/0";
     let invalidMessage = Buffer.from(
