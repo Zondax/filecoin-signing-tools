@@ -271,7 +271,7 @@ describe("LEDGER TEST", function () {
     console.log(`compact   : ${responseSign.signature_compact.toString("base64")}`);
   });
 
-  it("#transactionSignRawWithDevice() Fail", async function() {
+  it.skip("#transactionSignRawWithDevice() Fail", async function() {
     this.timeout(10000);
 
     const path = "m/44'/461'/0/0/0";
