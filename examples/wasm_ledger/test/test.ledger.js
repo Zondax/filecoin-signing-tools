@@ -194,7 +194,8 @@ describe("LEDGER TEST", function () {
     const responsePk = await signer.keyRetrieveFromDevice(path, transport);
     console.log(responsePk)
     const responseRequest = signer.transactionSignRawWithDevice(message, path, transport);
-    await Zemu.sleep(2000);
+    // Wait until we are not in the main menu
+    await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot());
 
     await sim.clickBoth();
     await sim.clickRight();
@@ -238,7 +239,8 @@ describe("LEDGER TEST", function () {
     const responsePk = await signer.keyRetrieveFromDevice(path, transport);
     console.log(responsePk)
     const responseRequest = signer.transactionSignWithDevice(messageContent, path, transport);
-    await Zemu.sleep(2000);
+    // Wait until we are not in the main menu
+    await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot());
 
     await sim.clickLeft();
     await sim.clickRight();
@@ -281,7 +283,8 @@ describe("LEDGER TEST", function () {
     );
 
     const responseRequest = signer.transactionSignRawWithDevice(invalidMessage, path, transport);
-
+    // Wait until we are not in the main menu
+    await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot());
 
     try {
       const responseSign = await responseRequest;
