@@ -935,7 +935,7 @@ mod tests {
             gas_price: "2500".to_string(),
             gas_limit: 25000,
             method: 0,
-            params: MessageParams::MessageParamsEmpty("".to_string()),
+            params: MessageParams::MessageParamsSerialized("".to_string()),
         };
 
         let raw_sig = transaction_sign_bls_raw(&message, &bls_key).unwrap();
@@ -979,7 +979,7 @@ mod tests {
                     gas_price: "2500".to_string(),
                     gas_limit: 25000,
                     method: 0,
-                    params: MessageParams::MessageParamsEmpty("".to_string()),
+                    params: MessageParams::MessageParamsSerialized("".to_string()),
                 }
             })
             .collect();
