@@ -276,8 +276,8 @@ impl TryFrom<ChangeNumApprovalsThresholdMultisigParams> for ChangeNumApprovalsTh
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
 #[serde(untagged)]
 pub enum MessageParams {
+    MessageParamsSerialized(String),
     MessageParamsMultisig(MessageParamsMultisig),
-    MessageParamsEmpty(String),
     ProposeParamsMultisig(ProposeParamsMultisig),
     TxnIDParamsMultisig(TxnIDParamsMultisig),
     AddSignerMultisigParams(AddSignerMultisigParams),
@@ -289,7 +289,10 @@ pub enum MessageParams {
 impl MessageParams {
     pub fn serialize(self) -> Result<Serialized, SignerError> {
         let params_serialized = match self {
-            MessageParams::MessageParamsEmpty(_) => forest_vm::Serialized::new(Vec::new()),
+            MessageParams::MessageParamsSerialized(params_string) => {
+                let params_bytes = hex::decode(&params_string)?;
+                forest_vm::Serialized::new(params_bytes)
+            },
             MessageParams::MessageParamsMultisig(multisig_params) => {
                 let params = ExecParams::try_from(multisig_params)?;
 
@@ -552,6 +555,8 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
 
 impl From<UnsignedMessage> for UnsignedMessageAPI {
     fn from(unsigned_message: UnsignedMessage) -> UnsignedMessageAPI {
+        let params_hex_string = hex::encode(unsigned_message.params().bytes());
+
         UnsignedMessageAPI {
             to: unsigned_message.to().to_string(),
             from: unsigned_message.from().to_string(),
@@ -560,10 +565,10 @@ impl From<UnsignedMessage> for UnsignedMessageAPI {
             gas_price: unsigned_message.gas_price().to_string(),
             gas_limit: unsigned_message.gas_limit(),
             // FIXME: cannot extract method byte. Set always as 0
-            method: 0,
+            method: unsigned_message.method_num(),
             // FIXME: need a proper way to serialize parameters, for now
             // only method=0 is supported for keep empty
-            params: MessageParams::MessageParamsEmpty("".to_string()),
+            params: MessageParams::MessageParamsSerialized(params_hex_string),
         }
     }
 }

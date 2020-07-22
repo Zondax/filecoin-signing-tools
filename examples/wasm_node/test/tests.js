@@ -221,6 +221,46 @@ describe("transactionSerialize", function() {
   it("should serialize transaction", function() {
     assert.strictEqual(EXAMPLE_CBOR_TX, filecoin_signer.transactionSerialize(EXAMPLE_TRANSACTION));
   });
+
+  let itCall = describe;
+  if (process.env.PURE_JS) { itCall = it.skip }
+  itCall("should serialize transaction with serialize params", function() {
+    let swap_params = {
+        From: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        To: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+    }
+
+    let serialized_swap_params = filecoin_signer.serializeParams(swap_params);
+
+    console.log(Buffer.from(serialized_swap_params).toString('hex'))
+
+    let params = {
+        To: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        Value: "0",
+        Method: 7,
+        Params: Buffer.from(serialized_swap_params).toString('hex')
+    }
+
+    let serialized_params = filecoin_signer.serializeParams(params);
+
+    let transaction = {
+        to: "t01002",
+        from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+        nonce: 1,
+        value: "100000",
+        gasprice: "2500",
+        gaslimit: 25000,
+        method: 7,
+        params: Buffer.from(serialized_params).toString('hex')
+    };
+
+    console.log(filecoin_signer.transactionSerialize(transaction));
+
+    assert.strictEqual(
+      "845501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6284007582d825501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b7116",
+      Buffer.from(serialized_params).toString('hex')
+    )
+  });
 })
 
 describe("transactionSerializeRaw", function() {
