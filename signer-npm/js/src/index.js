@@ -88,7 +88,7 @@ function transactionSerializeRaw(message) {
 
   const to = addressAsBytes(message.to);
   const from = addressAsBytes(message.from);
-  console.log([to, from])
+  // console.log([to, from])
 
   const valueBigInt = new BN(message.value, 10);
   const valueBuffer = valueBigInt.toArrayLike(Buffer, 'be', valueBigInt.byteLength());
@@ -98,7 +98,7 @@ function transactionSerializeRaw(message) {
   const gaspriceBuffer = gaspriceBigInt.toArrayLike(Buffer, 'be', gaspriceBigInt.byteLength());
   let gasprice = Buffer.concat([Buffer.from('00', 'hex'), gaspriceBuffer]);
 
-  console.log("gas price", gasprice)
+  // console.log("gas price", gasprice)
   if (message.gasprice == "0") {
     gasprice = Buffer.from("")
   }
