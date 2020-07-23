@@ -279,12 +279,12 @@ describe("transactionParse", function() {
       assert.deepStrictEqual(EXAMPLE_TRANSACTION_MAINNET, filecoin_signer.transactionParse(EXAMPLE_CBOR_TX, false));
   });
 
-  it.skip("should fail to parse because of extra bytes", function () {
+  it("should fail to parse because of extra bytes", function () {
       let cbor_transaction_extra_bytes = EXAMPLE_CBOR_TX + "00";
 
       assert.throws(
           () => filecoin_signer.transactionParse(cbor_transaction_extra_bytes, false),
-          /CBOR error: 'trailing data at offset 62'/
+          /(CBOR error: 'trailing data at offset 62'|Extraneous CBOR data found beyond initial top-level object)/
       );
   });
 
