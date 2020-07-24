@@ -948,7 +948,7 @@ describe('Transaction Serialization - Parameterized', function () {
                 try {
                   var result = filecoin_signer.transactionSerialize(tc.message);
                 } catch (e) {
-                  assert(e.message, /protocol not supported./);
+                  assert.match(e.message, /protocol not supported./);
                   return;
                 }
                 assert.strictEqual(tc.encoded_tx_hex, result);
@@ -984,7 +984,7 @@ describe('Transaction Deserialization - Parameterized', function () {
                 try {
                   var result = filecoin_signer.transactionParse(tc.encoded_tx_hex, tc.testnet);
                 } catch (e) {
-                  assert(e.message, /protocol not supported./);
+                  assert.match(e.message, /protocol not supported./);
                   return;
                 }
                 assert.deepStrictEqual(tc.message, result);
