@@ -15,7 +15,7 @@ const catchExit = async () => {
 
 
 describe("LEDGER TEST", function () {
-  this.timeout(5000);
+  this.timeout(40000);
 
   var sim,
       transport;
@@ -183,7 +183,7 @@ describe("LEDGER TEST", function () {
   });
 
   it("#transactionSignRawWithDevice()", async function() {
-    this.timeout(10000);
+    this.timeout(40000);
 
     const path = "m/44'/461'/0/0/0";
     const message = Buffer.from(
@@ -194,7 +194,8 @@ describe("LEDGER TEST", function () {
     const responsePk = await signer.keyRetrieveFromDevice(path, transport);
     console.log(responsePk)
     const responseRequest = signer.transactionSignRawWithDevice(message, path, transport);
-    await Zemu.sleep(2000);
+    // Wait until we are not in the main menu
+    await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot());
 
     await sim.clickBoth();
     await sim.clickRight();
@@ -238,7 +239,8 @@ describe("LEDGER TEST", function () {
     const responsePk = await signer.keyRetrieveFromDevice(path, transport);
     console.log(responsePk)
     const responseRequest = signer.transactionSignWithDevice(messageContent, path, transport);
-    await Zemu.sleep(2000);
+    // Wait until we are not in the main menu
+    await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot());
 
     await sim.clickLeft();
     await sim.clickRight();
@@ -271,8 +273,8 @@ describe("LEDGER TEST", function () {
     console.log(`compact   : ${responseSign.signature_compact.toString("base64")}`);
   });
 
-  it("#transactionSignRawWithDevice() Fail", async function() {
-    this.timeout(10000);
+  it.skip("#transactionSignRawWithDevice() Fail", async function() {
+    this.timeout(40000);
 
     const path = "m/44'/461'/0/0/0";
     let invalidMessage = Buffer.from(
@@ -281,7 +283,8 @@ describe("LEDGER TEST", function () {
     );
 
     const responseRequest = signer.transactionSignRawWithDevice(invalidMessage, path, transport);
-
+    // Wait until we are not in the main menu
+    await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot());
 
     try {
       const responseSign = await responseRequest;

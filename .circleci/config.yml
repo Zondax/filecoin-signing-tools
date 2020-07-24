@@ -125,22 +125,23 @@ jobs:
             rm rustup.sh
       - checkout
       - run: git submodule update --init --recursive
+      - run: docker pull zondax/builder-zemu
       - run:
           name: Install node + yarn
           command: |
-            nvm install 13.12.0
-            nvm use 13.12.0
+            nvm install 14.4.0
+            nvm use 14.4.0
             npm install -g yarn
       - run:
           name: Install deps wasm
           command: |
             source $HOME/.cargo/env
+            nvm use 14.4.0
             make deps_npm
-      - run: docker pull zondax/builder-zemu
       - run:
           name: Run zemu tests
           command: |
-            nvm use 13.12.0
+            nvm use 14.4.0
             source $HOME/.cargo/env
             make test_ledger
       - save-sccache-cache
@@ -202,7 +203,6 @@ jobs:
             npm --no-git-tag-version version $CIRCLE_TAG
             npm publish
 
-
   rust_publish:
     docker:
       - image: zondax/rust-ci:latest
@@ -219,7 +219,7 @@ no-tags: &no-tags
 only-release-tags: &only-release-tags
   filters:
     tags:
-      only: /^v[0-9]+(\.[0-9]+)*/
+      only: /^v[0-9]+(\.[0-9]+)*(-[a-z]+)?$/
     branches:
       ignore: /.*/
 
