@@ -71,7 +71,7 @@ function addressAsBytes(address) {
       payload = address_decoded.slice(0, -4);;
       checksum = Buffer.from(address_decoded.slice(-4));
 
-      if (payload.byteLength !== 32) {
+      if (payload.byteLength !== 20) {
         throw new InvalidPayloadLength();
       }
       break;
@@ -111,7 +111,7 @@ function bytesToAddress(payload, testnet) {
       }
       break;
     case ProtocolIndicator.ACTOR:
-      if (payload.slice(1).length !== 32) {
+      if (payload.slice(1).length !== 20) {
         throw new InvalidPayloadLength();
       }
       break;
