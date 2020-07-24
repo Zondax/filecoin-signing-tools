@@ -1,6 +1,6 @@
+const base32Encode = require("base32-encode");
 const secp256k1 = require("secp256k1");
-const Address = require('@openworklabs/filecoin-address');
-const { getPayloadSECP256K1 } = require('./utils')
+const { getPayloadSECP256K1, getChecksum } = require("./utils");
 
 class ExtendedKey {
   constructor(privateKey, testnet) {
@@ -10,11 +10,25 @@ class ExtendedKey {
     secp256k1.publicKeyConvert(pubKey, false, uncompressedPublicKey);
     uncompressedPublicKey = Buffer.from(uncompressedPublicKey);
 
-    const address = Address.newAddress(1, getPayloadSECP256K1(uncompressedPublicKey))
+    const payload = getPayloadSECP256K1(uncompressedPublicKey);
+    const checksum = getChecksum(
+      Buffer.concat([Buffer.from("01", "hex"), payload])
+    );
+
+    let prefix = "f1";
+    if (testnet) {
+      prefix = "t1";
+    }
+
+    const address =
+      prefix +
+      base32Encode(Buffer.concat([payload, checksum]), "RFC4648", {
+        padding: false,
+      }).toLowerCase();
 
     this.publicKey = uncompressedPublicKey; // Buffer
     this.privateKey = privateKey; // Buffer
-    this.address = Address.encode(testnet ? 't' : 'f', address); // String
+    this.address = address; // String
   }
 
   get public_raw() {

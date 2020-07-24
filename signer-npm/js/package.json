@@ -8,7 +8,6 @@
   "author": "Zondax <info@zondax.ch>",
   "license": "Apache-2.0",
   "dependencies": {
-    "@openworklabs/filecoin-address": "0.0.10",
     "base32-decode": "^1.0.0",
     "base32-encode": "^1.1.1",
     "bip32": "^2.0.5",
@@ -16,6 +15,7 @@
     "blakejs": "^1.1.0",
     "bn.js": "^5.1.2",
     "ipld-dag-cbor": "^0.15.3",
+    "leb128": "0.0.5",
     "secp256k1": "^4.0.1"
   },
   "devDependencies": {
