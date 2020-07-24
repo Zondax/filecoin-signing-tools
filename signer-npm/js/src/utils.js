@@ -1,5 +1,3 @@
-// from https://github.com/Zondax/filecoin-signing-tools/
-
 const blake = require("blakejs");
 const address = require('@openworklabs/filecoin-address')
 const assert = require("assert");

@@ -1,5 +1,3 @@
-// from https://github.com/Zondax/filecoin-signing-tools/
-
 const secp256k1 = require("secp256k1");
 const Address = require('@openworklabs/filecoin-address');
 const { getPayloadSECP256K1 } = require('./utils')
