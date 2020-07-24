@@ -8,6 +8,7 @@
   "author": "Zondax <info@zondax.ch>",
   "license": "Apache-2.0",
   "dependencies": {
+    "@openworklabs/filecoin-address": "0.0.10",
     "base32-decode": "^1.0.0",
     "base32-encode": "^1.1.1",
     "bip32": "^2.0.5",

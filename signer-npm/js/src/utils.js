@@ -1,6 +1,7 @@
 const blake = require("blakejs");
-const address = require('@openworklabs/filecoin-address')
+const address = require("@openworklabs/filecoin-address")
 const assert = require("assert");
+const { InvalidPayloadLength, UnknownProtocolIndicator } = require("./errors")
 
 const CID_PREFIX = Buffer.from([0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20]);
 
@@ -35,7 +36,17 @@ function addressAsBytes(addressStr) {
 }
 
 function bytesToAddress(payload, testnet) {
-  return address.encode(testnet ? 't' : 'f', new address.Address(payload))
+  let addr = new address.Address(payload)
+  if ((addr.protocol() == 2 || addr.protocol() == 1) && addr.payload().length != 20) {
+    throw new InvalidPayloadLength()
+  }
+  if (addr.protocol() == 3 && addr.payload().length != 46) {
+    throw new InvalidPayloadLength()
+  }
+  if (payload[0] > 3) {
+    throw new UnknownProtocolIndicator()
+  }
+  return address.encode(testnet ? 't' : 'f', addr)
 }
 
 function tryToPrivateKeyBuffer(privateKey) {
