@@ -8,11 +8,12 @@ repository = "https://github.com/Zondax/filecoin-signing-tools"
 description ="Temporary lib used for compatibility with wasm"
 
 [dependencies]
-forest_vm = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig"  }
-forest_address = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig"  }
-forest_encoding = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig"  }
-forest_cid = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig"  }
-num_bigint = { package = "forest_bigint" , git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig"  }
-clock = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig"  }
+forest_vm = "0.2.0"
+forest_message = "0.3.0"
+forest_address = "0.2.0"
+forest_encoding = "0.1.1"
+forest_cid = "0.1.0"
+num_bigint = { package = "forest_bigint", version = "0.1.0"}
+clock = { git = "https://github.com/chainsafe/forest", branch="master" }
 serde = { version = "1.0", features = ["derive"] }
 lazy_static = "1.4.0"
