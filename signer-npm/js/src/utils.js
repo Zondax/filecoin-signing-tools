@@ -58,7 +58,7 @@ function addressAsBytes(address) {
     case ProtocolIndicator.SECP256K1:
       address_decoded = base32Decode(address.slice(2).toUpperCase(), "RFC4648");
 
-      payload = address_decoded.slice(0, -4);;
+      payload = address_decoded.slice(0, -4);
       checksum = Buffer.from(address_decoded.slice(-4));
 
       if (payload.byteLength !== 20) {
@@ -83,15 +83,12 @@ function addressAsBytes(address) {
 
   const protocolIndicatorByte = `0${protocolIndicator}`;
 
-  // TODO: check checksum!
   const bytes_address = Buffer.concat([
     Buffer.from(protocolIndicatorByte, "hex"),
     Buffer.from(payload),
   ]);
 
   if (getChecksum(bytes_address).toString('hex') !== checksum.toString('hex')) {
-    console.log(getChecksum(bytes_address))
-    console.log(checksum)
     throw new InvalidChecksumAddress();
   };
 
