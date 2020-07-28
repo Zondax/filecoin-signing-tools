@@ -1,10 +1,13 @@
-import * as wasm from "@zondax/filecoin-signing-tools/js";
-import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
+//import * as wasm from "@zondax/filecoin-signing-tools/js";
+import * as wasm from "../../signer-npm/pkg/browser/filecoin_signer_wasm.js";
+//import * as wasm from "../../signer-npm/pkg/browser/filecoin_signer_wasm_bg.js";
+//import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 
 function log(text) {
   document.getElementById("output").innerHTML += text + "\n";
 }
 
+/*
 async function example_ledger() {
   log("\n...Trying to connect to ledger...\n");
   let transport;
@@ -27,6 +30,7 @@ async function example_ledger() {
   }
   log(`version = ${JSON.stringify(version, 0, 4)}`);
 }
+*/
 
 /////////////////////////////////
 // Generate Mnemonic
@@ -71,9 +75,13 @@ const unsigned_tx = {
   "value": "100000",
   "gasprice": "2500",
   "gaslimit": 25000,
-  "method": 0,
+  "method": 4,
   "params": ""
 };
+
+console.log("About to call wasm.transactionSignLotus():")
+wasm.transactionSignLotus(unsigned_tx,key.private_hexstring);
+console.log("Done calling wasm.transactionSignLotus()")
 
 log(`unsigned_tx = ${JSON.stringify(unsigned_tx, 0, 4)}`);
 
@@ -82,4 +90,3 @@ let signed_tx = wasm.transactionSign(unsigned_tx, key.private_hexstring);
 log("\n...sign...\n");
 log(`signed_tx = ${JSON.stringify(signed_tx, 0, 4)}`);
 
-example_ledger();

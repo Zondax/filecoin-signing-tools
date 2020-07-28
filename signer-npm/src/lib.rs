@@ -429,6 +429,32 @@ pub fn cancel_multisig(
     Ok(multisig_transaction_js)
 }
 
+#[wasm_bindgen(js_name = createPymtChan)]
+pub fn create_pymtchan(
+    from_address: String,
+    to_address: String,
+    amount: String,
+    nonce: u32,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let pch_transaction = filecoin_signer::create_pymtchan(
+        &from_address,
+        &to_address,
+        amount,
+        nonce as u64,
+    )
+    .map_err(|e| {
+        JsValue::from_str(format!("Error creating payment channel: {}", e).as_str())
+    })?;
+
+    let pch_transaction_js = JsValue::from_serde(&pch_transaction)
+        .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(pch_transaction_js)
+}
+
+
 #[wasm_bindgen(js_name = serializeParams)]
 pub fn serialize_params(params_value: JsValue) -> Result<Vec<u8>, JsValue> {
     set_panic_hook();
@@ -484,4 +510,6 @@ mod tests_wasm {
 
         println!("{:?}", signed_tx);
     }
+
+
 }
