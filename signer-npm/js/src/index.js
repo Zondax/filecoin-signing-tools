@@ -95,7 +95,7 @@ function transactionSerializeRaw(message) {
   const gaspriceBuffer = gaspriceBigInt.toArrayLike(Buffer, 'be', gaspriceBigInt.byteLength());
   let gasprice = Buffer.concat([Buffer.from('00', 'hex'), gaspriceBuffer]);
 
-  if (message.gasprice == "0") {
+  if (message.gasprice === "0") {
     gasprice = Buffer.from("")
   }
 
