@@ -3,6 +3,7 @@ use crate::signature::Signature;
 use extras::{
     AddSignerParams, ChangeNumApprovalsThresholdParams, ConstructorParams, ExecParams,
     ProposalHashData, ProposeParams, RemoveSignerParams, SwapSignerParams, TxnID, TxnIDParams,
+    PymtChanCreateParams
 };
 use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
@@ -272,6 +273,63 @@ impl TryFrom<ChangeNumApprovalsThresholdMultisigParams> for ChangeNumApprovalsTh
     }
 }
 
+/// Payment channel create params
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct PaymentChannelCreateParams {
+    #[serde(alias = "From")]
+    pub from: String,
+    #[serde(alias = "To")]
+    pub to: String,
+}
+
+impl TryFrom<PaymentChannelCreateParams> for PymtChanCreateParams {
+    type Error = SignerError;
+
+    fn try_from(params: PaymentChannelCreateParams) -> Result<PymtChanCreateParams, Self::Error> {
+        Ok(PymtChanCreateParams {
+            from: Address::from_str(&params.from)?,
+            to: Address::from_str(&params.to)?,
+        })
+    }
+}
+
+/// Message params for payment channel create
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct MessageParamsPaymentChannelCreate {
+    #[serde(alias = "CodeCid")]
+    pub code_cid: String,
+    #[serde(alias = "ConstructorParams")]
+    pub pch_constructor_params: PaymentChannelCreateParams,
+}
+
+impl TryFrom<MessageParamsPaymentChannelCreate> for ExecParams {
+    type Error = SignerError;
+
+    fn try_from(exec_constructor: MessageParamsPaymentChannelCreate) -> Result<ExecParams, Self::Error> {
+        let pch_constructor_params =
+            PymtChanCreateParams::try_from(exec_constructor.pch_constructor_params)?;
+
+        let serialized_pch_constructor_params =
+            forest_vm::Serialized::serialize::<PymtChanCreateParams>(pch_constructor_params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
+        if exec_constructor.code_cid != "fil/1/paymentchannel".to_string() {
+            return Err(SignerError::GenericString(
+                "Only support `fil/1/paymentchannel` code for now.".to_string(),
+            ));
+        }
+
+        Ok(ExecParams {
+            code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/paymentchannel")),
+            constructor_params: serialized_pch_constructor_params,
+        })
+    }
+}
+
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
 #[serde(untagged)]
@@ -284,6 +342,8 @@ pub enum MessageParams {
     RemoveSignerMultisigParams(RemoveSignerMultisigParams),
     SwapSignerMultisigParams(SwapSignerMultisigParams),
     ChangeNumApprovalsThresholdMultisigParams(ChangeNumApprovalsThresholdMultisigParams),
+    PaymentChannelCreateParams(PaymentChannelCreateParams),
+    MessageParamsPaymentChannelCreate(MessageParamsPaymentChannelCreate),
 }
 
 impl MessageParams {
@@ -337,6 +397,18 @@ impl MessageParams {
                 )?;
 
                 forest_vm::Serialized::serialize::<ChangeNumApprovalsThresholdParams>(params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
+            }
+            MessageParams::PaymentChannelCreateParams(pymtchan_create_params) => {
+                let params = PymtChanCreateParams::try_from(pymtchan_create_params)?;
+
+                forest_vm::Serialized::serialize::<PymtChanCreateParams>(params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
+            }
+            MessageParams::MessageParamsPaymentChannelCreate(pch_params) => {
+                let params = ExecParams::try_from(pch_params)?;
+
+                forest_vm::Serialized::serialize::<ExecParams>(params)
                     .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
         };

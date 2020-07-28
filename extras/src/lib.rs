@@ -111,6 +111,7 @@ pub enum MethodMultisig {
 /// Methods init
 /// https://github.com/filecoin-project/specs-actors/blob/master/actors/builtin/methods.go#L21
 #[repr(u64)]
+#[derive(Serialize,Deserialize)]
 pub enum MethodInit {
     Constructor = 1,
     Exec = 2,
@@ -127,4 +128,11 @@ lazy_static! {
 
     // Distinguished AccountActor that is the destination of all burnt funds.
     pub static ref BURNT_FUNDS_ACTOR_ADDR: Address    = Address::new_id(99);
+}
+
+// Payment channel create params
+#[derive(Serialize_tuple, Deserialize_tuple)]
+pub struct PymtChanCreateParams {
+    pub from: Address,
+    pub to: Address,
 }

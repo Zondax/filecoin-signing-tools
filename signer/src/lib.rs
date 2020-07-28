@@ -11,7 +11,8 @@
 use crate::api::{
     ConstructorParamsMultisig, MessageParams, MessageParamsMultisig, MessageTx, MessageTxAPI,
     MessageTxNetwork, PropoposalHashDataParamsMultisig, ProposeParamsMultisig, SignatureAPI,
-    SignedMessageAPI, TxnIDParamsMultisig, UnsignedMessageAPI,
+    SignedMessageAPI, TxnIDParamsMultisig, UnsignedMessageAPI, PaymentChannelCreateParams,
+    MessageParamsPaymentChannelCreate,
 };
 use crate::error::SignerError;
 use extras::{MethodInit, MethodMultisig, INIT_ACTOR_ADDR};
@@ -629,11 +630,52 @@ pub fn serialize_params(params: MessageParams) -> Result<CborBuffer, SignerError
     Ok(message_cbor)
 }
 
+/// Utility function to create a payment channel creation message.  Returns unsigned message.
+/// 
+/// # Arguments
+///
+/// * `from_address` - A string address
+/// * `to_address` - List of string addresses of the multisig
+/// * `value` - Amount to put in the payment channel initially
+/// * `nonce` - Nonce of the message; should be from_address's MpoolGetNonce() value
+///
+pub fn create_pymtchan(
+    from_address: &str,
+    to_address: &str,
+    value: String,
+    nonce: u64,
+) -> Result<UnsignedMessageAPI, SignerError> {
+    let create_payment_channel_params = PaymentChannelCreateParams { 
+        from: from_address.to_owned(),
+        to: to_address.to_owned(),
+    };
+
+    let message_params_create_pymtchan = MessageParamsPaymentChannelCreate {
+        code_cid: "fil/1/paymentchannel".to_string(),
+        pch_constructor_params: create_payment_channel_params,
+    };
+
+    let pch_create_message_api = UnsignedMessageAPI {
+        to: "t01".to_owned(),            // INIT_ACTOR_ADDR
+        from: from_address.to_owned(),
+        nonce,
+        value,
+        // Next two based on https://github.com/filecoin-project/lotus/blob/fe4efa0e0ee045d38f63f4955d01cbf3e36bc41f/paychmgr/simple.go#L40
+        gas_price: "0".to_string(),
+        gas_limit: 1000000,
+        method: MethodInit::Exec as u64,
+        params: MessageParams::MessageParamsPaymentChannelCreate(message_params_create_pymtchan),
+    };
+
+    Ok(pch_create_message_api)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::api::{
-        ConstructorParamsMultisig, MessageParams, MessageParamsMultisig, MessageTxAPI,
-        UnsignedMessageAPI,
+        ConstructorParamsMultisig, MessageParams, MessageParamsMultisig, 
+        MessageParamsPaymentChannelCreate, MessageTxAPI, UnsignedMessageAPI, 
+        PaymentChannelCreateParams
     };
     use crate::signature::{Signature, SignatureBLS};
     use crate::{
@@ -641,6 +683,7 @@ mod tests {
         key_derive_from_seed, key_generate_mnemonic, key_recover, proposal_multisig_message,
         transaction_parse, transaction_serialize, transaction_sign_bls_raw, transaction_sign_raw,
         verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic, PrivateKey,
+        create_pymtchan, transaction_sign
     };
     use bip39::{Language, Seed};
     use forest_encoding::to_vec;
@@ -651,6 +694,7 @@ mod tests {
     use rand::SeedableRng;
     use rand_xorshift::XorShiftRng;
     use rayon::prelude::*;
+    use regex::Regex;
 
     const BLS_PUBKEY: &str = "ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc07904";
     // FIXME! Might be invalid
@@ -1010,6 +1054,218 @@ mod tests {
 
         assert!(verify_aggregated_signature(&sig, &cbor_messages[..]).unwrap());
     }
+
+    // ----------------------------------------
+    //    PaychCreate test vector + test
+    // ----------------------------------------
+    // const PYMT_CHAN_EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
+    //     {
+    //         "to": builtin.InitActorAddr,
+    //         "from": "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq",
+    //         "nonce": 1,
+    //         "value": "1",
+    //         "gasprice": "0",
+    //         "gaslimit": 1000000,
+    //         "method": builtin.MethodsInit.Exec,
+    //         "params": "(see below)"
+    //     }"#;
+	// where the p.ch. payments are going to address 
+	//   t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy
+    //
+    // 
+    // How does simple.go:createPaych() create the Params field?
+    //
+    // 1. First serialize to/from into 'params':
+    //
+    //  82                         # array(2)
+    //    58 31                    # bytes(49) == From address
+    //        (03)93079CCF450C7205B0A8EC64A16E62F59F61275909B14E91A684D4ACC6F321B4EC41F4543313C205AE60019FEC9C304E # (t3)smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye4(43liejq)
+    //  55                         # bytes(21) == To address
+    //    (01)254547C33806DB4C9E8009B8EBD9C4D2E5F20182 # (t1)evcupqzya3nuzhuabg4oxwoe2ls7eamc(u3uw4cy)
+    //
+    // 2. Next, the Code CID and the 'params' struct serialized above together
+    // into 'enc' which will become Params field in the message::
+    //  82                         # array(2)
+    //    D8 2A                    # tag(42)
+    //      58 19                  # bytes(25) == PaymentChannelActorCodeID
+    //        000155001466696C2F312F7061796D656E746368616E6E656C
+    //    58 4A                    # bytes(74) == 'params' above
+    //        8258310393079CCF450C7205B0A8EC64A16E62F59F61275909B14E91A684D4ACC6F321B4EC41F4543313C205AE60019FEC9C304E5501254547C33806DB4C9E8009B8EBD9C4D2E5F20182
+    //
+    // 3. Full message as seen by MpoolPush():
+    //
+    //  82                         # array(2)
+    //    89                       # array(9)
+    //      00                     # unsigned(0) == Version
+    //      42                     # bytes(2)
+    //        0001                 # == To: builtin.InitActorAddr (1)
+    //      58 31                  # bytes(49) == From: (t3)smdzzt2fbrzalmfi5
+    //        0393079CCF450C7205B0 #              rskc3tc6wpwcj2zbgyu5engqtkk
+    //        A8EC64A16E62F59F6127 #              zrxteg2oyqpukqzrhqqfvzqadh7m
+    //        5909B14E91A684D4ACC6 #              tqye4(43liejq) 
+    //        F321B4EC41F4543313C205AE60019FEC9C304E
+    //      01                     # unsigned(1) ==> Nonce: 1
+    //      42                     # bytes(2)
+    //        0001                 # ==> Amt: 1
+    //      40                     # bytes(0)
+    //                             # ==> Gas price: 0 (==empty buffer)
+    //      1A 000F4240            # unsigned(1000000) ==> Gas limit: 1000000
+    //      02                     # unsigned(2): ==> Method: builtin.
+    //                             #                 MethodsInit.Exec (2)
+    //      58 6A                  # bytes(106) ==> Params: 'enc' above
+    //        82D82A5819000155001466696C2F312F7061796D656E746368616E6E656C584A8258310393079CCF450C7205B0A8EC64A16E62F59F61275909B14E91A684D4ACC6F321B4EC41F4543313C205AE60019FEC9C304E5501254547C33806DB4C9E8009B8EBD9C4D2E5F20182 
+    //      58 61                  # bytes(97) ==> Signature
+    //        02836BEF21C8075AD92BE49C2A47C08A2236036B1879301D81B71D285A49E6DE91816FC5C41918F292FD691A5BE23C0E9409C4C62570624356501B785D793950F17BB36E5DA58FE9468E5604D3041B9D13333B8FB1D8A817EFF7FC70A18D676D2C
+    #[test]
+    fn payment_channel_creation_bls_signing() {
+        let from_key = "f27896e1f501a0a368dc630355f5aed286ab8b5d63b38b75429c17541a44a450";
+        let from_address = "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq";
+        let bls_key = PrivateKey::try_from(from_key.to_string()).unwrap();
+        let from_pkey = "93079ccf450c7205b0a8ec64a16e62f59f61275909b14e91a684d4acc6f321b4ec41f4543313c205ae60019fec9c304e";
+
+        let to_key = "f945c98b4ebade1084c583316556fd27ec0ac855a1857e758e71bb59791e030d";
+        let to_address = "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy";
+
+        let pch_create = serde_json::json!(
+        {
+            "to": "t01",           // INIT_ACTOR_ADDR
+            "from": "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq",
+            "nonce": 1,
+            "value": "1",
+            "gasprice": "0",
+            "gaslimit": 1000000,
+            "method": 2,           // extras::MethodInit::Exec
+            "params": {
+                "code_cid": "fil/1/paymentchannel",
+                "pch_constructor_params": {
+                    "to": "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy", 
+                    "from": "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq",
+                },
+            }
+        });
+
+        let pch_create_message_api = create_pymtchan(
+            "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq",
+            "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy",
+            "1".to_string(),
+            1,
+        )
+        .unwrap();
+
+        let pch_create_message_expected: UnsignedMessageAPI =
+            serde_json::from_value(pch_create).unwrap();
+
+        assert_eq!(
+            serde_json::to_string(&pch_create_message_expected).unwrap(),
+            serde_json::to_string(&pch_create_message_api).unwrap()
+        );
+
+        // First check transaction_serialize() in creating an unsigned message
+        let result = transaction_serialize(&pch_create_message_api).unwrap();
+
+        assert_eq!(
+            hex::encode(&result),
+            "890042000158310393079ccf450c7205b0a8ec64a16e62f59f61275909b14e91a684d4acc6f321b4ec41f4543313c205ae60019fec9c304e01420001401a000f424002586a82d82a5819000155001466696c2f312f7061796d656e746368616e6e656c584a8258310393079ccf450c7205b0a8ec64a16e62f59f61275909b14e91a684d4acc6f321b4ec41f4543313c205ae60019fec9c304e5501254547c33806db4c9e8009b8ebd9c4d2e5f20182",
+            "Correct unsigned message should match"
+        );
+
+        // Now check that we can generate a correct signature
+        let raw_sig = transaction_sign_bls_raw(&pch_create_message_api, &bls_key).unwrap();
+        let sig = bls_signatures::Signature::from_bytes(&raw_sig.0).expect("FIX ME");
+
+        let bls_pkey =
+            bls_signatures::PublicKey::from_bytes(&hex::decode(from_pkey).unwrap()).unwrap();
+
+        assert!(bls_pkey.verify(sig, &result));
+    }
+
+    // This example reverses the to/from addresses compared with
+    // previous test.
+    const PYMTCHAN_EXAMPLE_UNSIGNED_MSG: &str = r#"
+        {
+            "to": "t01",
+            "from": "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy",
+            "nonce": 1,
+            "value": "1",
+            "gasprice": "0",
+            "gaslimit": 1000000,
+            "method": 2,
+            "params": {
+                "code_cid": "fil/1/paymentchannel",
+                "pch_constructor_params": {
+                    "to": "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq", 
+                    "from": "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy"
+                }
+            }
+        }"#;
+    //
+    // Here are the bytes of the final signed message:
+    // (see previous example for detailed field labeling)
+    //
+    // 82                                   # array(2)
+    const PYMTCHAN_EXAMPLE_UNSIGNED_MSG_CBOR : &str = r#"
+       89                                   # array(9)
+          00                                # unsigned(0) 'Version
+          42                                # bytes(2)    'To
+             0001                           # 
+          55                                # bytes(21)   'From
+             01254547C33806DB4C9E8009B8EBD9C4D2E5F20182
+          01                                # unsigned(1) 'Nonce
+          42                                # bytes(2)    'Amount
+             0001                           # 
+          40                                # bytes(0)    'Gas price
+                                            # ""
+          1A 000F4240                       # unsigned(1000000) 'Gas limit
+          02                                # unsigned(2)       'Method
+          58 6A                             # bytes(106)        'Params
+             82D82A5819000155001466696C2F312F7061796D656E746368616E6E656C584A825501254547C33806DB4C9E8009B8EBD9C4D2E5F2018258310393079CCF450C7205B0A8EC64A16E62F59F61275909B14E91A684D4ACC6F321B4EC41F4543313C205AE60019FEC9C304E 
+    "#;
+    //   58 42                                # bytes(66)   'Signature
+    //      01D2C3D56B58CAD05781E8107A90DF55B6715DEE12FEEB268CF697FF24BC9ABF5777C7EE2A939F4FD9E8EEB40FB5DE396B73A03DC019699593A87E299E9927F37F01 
+    #[test]
+    fn payment_channel_creation_secp256k1_signing() {
+        let from_key = "f945c98b4ebade1084c583316556fd27ec0ac855a1857e758e71bb59791e030d";
+        let from_pkey = "254547c33806db4c9e8009b8ebd9c4d2e5f20182";
+        let privkey = PrivateKey::try_from(from_key.to_string()).unwrap();
+
+        let pch_create_message_unsigned = serde_json::json!(
+            PYMTCHAN_EXAMPLE_UNSIGNED_MSG);
+        let pch_create_message_api : UnsignedMessageAPI = 
+            serde_json::from_str(PYMTCHAN_EXAMPLE_UNSIGNED_MSG)
+            .expect("Could not serialize unsigned message");
+ 
+        let signed_message_result = transaction_sign(&pch_create_message_api, &privkey).unwrap();
+        // TODO:  how do I check the signature of a transaction_sign() result
+
+        // Check the raw bytes match the test vector cbor
+        let cbor_result_unsigned_msg = 
+            transaction_serialize(&signed_message_result.message).unwrap();
+        let mut expected_unsigned_message_cbor_string : String = 
+            PYMTCHAN_EXAMPLE_UNSIGNED_MSG_CBOR.to_string();
+        let mut new_expected_unsigned_message_cbor_string = String::from("");
+        let re = Regex::new(r"(?P<comment>#.*)").unwrap();
+        for l in expected_unsigned_message_cbor_string.lines() {
+            let l = re.replace_all(l, "");
+            new_expected_unsigned_message_cbor_string.push_str(&l);
+        }
+        expected_unsigned_message_cbor_string = new_expected_unsigned_message_cbor_string;
+        &expected_unsigned_message_cbor_string.retain(|c| !c.is_whitespace());
+        
+        assert_eq!(
+            hex::encode(&cbor_result_unsigned_msg),
+            expected_unsigned_message_cbor_string.to_ascii_lowercase(),
+            "Correct unsigned message should match"
+        );
+
+    }
+
+// TODO:
+// create a voucher:  node/impl/paychVoucherCreate
+// check if a voucher is valid:  paychmgr/paych.go
+// check if a voucher is spendable:  paychmgr/paych.go
+// add a voucher to the channel:  paychmgr/paych.go
+// submit a voucher to the channel:  node/impl/PaychVoucherSubmit
+// close a payment channel (includes settle logic):  node/impl/PaychClose
 
     #[test]
     fn support_multisig_create() {
