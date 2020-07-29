@@ -666,12 +666,13 @@ mod tests {
         ConstructorParamsMultisig, MessageParams, MessageParamsMultisig, MessageTxAPI,
         UnsignedMessageAPI,
     };
+    use forest_encoding::blake2b_256;
     use crate::signature::{Signature, SignatureBLS};
     use crate::{
         approve_multisig_message, cancel_multisig_message, create_multisig, key_derive,
         key_derive_from_seed, key_generate_mnemonic, key_recover, proposal_multisig_message,
         transaction_parse, transaction_serialize, transaction_sign_bls_raw, transaction_sign_raw,
-        verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic, PrivateKey,
+        verify_aggregated_signature, verify_signature, serialize_params, CborBuffer, Mnemonic, PrivateKey,
     };
     use bip39::{Language, Seed};
     use forest_encoding::to_vec;
@@ -1044,6 +1045,22 @@ mod tests {
 
     #[test]
     fn support_multisig_create() {
+        let constructor_params = serde_json::json!({
+            "signers": ["t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba", "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"],
+            "num_approvals_threshold": 1
+        });
+        
+        let constructor_params_expected: MessageParams =
+            serde_json::from_value(constructor_params).unwrap();
+                        
+        let exec_params = serde_json::json!({
+            "code_cid": "fil/1/multisig",
+            "constructor_params": base64::encode(serialize_params(constructor_params_expected).unwrap()),
+        });
+            
+        let exec_params_expected: MessageParams =
+            serde_json::from_value(exec_params).unwrap();
+        
         let multisig_create = serde_json::json!(
         {
             "to": "t01",
@@ -1053,13 +1070,7 @@ mod tests {
             "gasprice": "1",
             "gaslimit": 1000000,
             "method": 2,
-            "params": {
-                "code_cid": "fil/1/multisig",
-                "constructor_params": {
-                    "signers": ["t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba", "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"],
-                    "num_approvals_threshold": 1
-                }
-            }
+            "params": base64::encode(serialize_params(exec_params_expected).unwrap()),
         });
 
         let multisig_create_message_api = create_multisig(
@@ -1094,6 +1105,16 @@ mod tests {
 
     #[test]
     fn support_multisig_propose_message() {
+        let proposal_params = serde_json::json!({
+            "to": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+            "value": "1000",
+            "method": 0,
+            "params": "",
+        });
+        
+        let proposal_params_expected: MessageParams =
+            serde_json::from_value(proposal_params).unwrap();
+        
         let multisig_proposal = serde_json::json!(
         {
             "to": "t01",
@@ -1103,12 +1124,7 @@ mod tests {
             "gasprice": "1",
             "gaslimit": 1000000,
             "method": 2,
-            "params": {
-                "to": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
-                "value": "1000",
-                "method": 0,
-                "params": "",
-            }
+            "params": base64::encode(serialize_params(proposal_params_expected).unwrap())
         });
 
         let multisig_proposal_message_api = proposal_multisig_message(
@@ -1140,6 +1156,27 @@ mod tests {
 
     #[test]
     fn support_multisig_approve_message() {
+        let proposal_params = serde_json::json!({
+            "requester": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+            "to": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+            "value": "1000",
+            "method": 0,
+            "params": "",
+        });
+        
+        let proposal_params_expected: MessageParams =
+            serde_json::from_value(proposal_params).unwrap();
+    
+        let proposal_hash = blake2b_256(serialize_params(proposal_params_expected).unwrap().as_ref());
+                
+        let approval_params = serde_json::json!({
+            "txn_id": 1234,
+            "proposal_hash_data": base64::encode(proposal_hash),
+        });
+        
+        let approval_params_expected: MessageParams =
+            serde_json::from_value(approval_params).unwrap();
+            
         let multisig_approval = serde_json::json!(
         {
             "to": "t01",
@@ -1149,16 +1186,7 @@ mod tests {
             "gasprice": "1",
             "gaslimit": 1000000,
             "method": 3,
-            "params": {
-                "txn_id": 1234,
-                "proposal_hash_data": {
-                    "requester": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-                    "to": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
-                    "value": "1000",
-                    "method": 0,
-                    "params": "",
-                }
-            }
+            "params": base64::encode(serialize_params(approval_params_expected).unwrap()),
         });
 
         let multisig_approval_message_api = approve_multisig_message(
@@ -1192,6 +1220,27 @@ mod tests {
 
     #[test]
     fn support_multisig_cancel_message() {
+        let proposal_params = serde_json::json!({
+            "requester": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+            "to": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+            "value": "1000",
+            "method": 0,
+            "params": "",
+        });
+        
+        let proposal_params_expected: MessageParams =
+            serde_json::from_value(proposal_params).unwrap();
+    
+        let proposal_hash = blake2b_256(serialize_params(proposal_params_expected).unwrap().as_ref());
+                
+        let cancel_params = serde_json::json!({
+            "txn_id": 1234,
+            "proposal_hash_data": base64::encode(proposal_hash),
+        });
+        
+        let cancel_params_expected: MessageParams =
+            serde_json::from_value(cancel_params).unwrap();
+            
         let multisig_cancel = serde_json::json!(
         {
             "to": "t01",
@@ -1201,16 +1250,7 @@ mod tests {
             "gasprice": "1",
             "gaslimit": 1000000,
             "method": 4,
-            "params": {
-                "txn_id": 1234,
-                "proposal_hash_data": {
-                    "requester": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-                    "to": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
-                    "value": "1000",
-                    "method": 0,
-                    "params": "",
-                }
-            }
+            "params": base64::encode(serialize_params(cancel_params_expected).unwrap()),
         });
 
         let multisig_cancel_message_api = cancel_multisig_message(
