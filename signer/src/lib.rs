@@ -655,14 +655,15 @@ pub fn create_pymtchan(
         pch_constructor_params: create_payment_channel_params,
     };
 
+    // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
     let pch_create_message_api = UnsignedMessageAPI {
         to: "t01".to_owned(),            // INIT_ACTOR_ADDR
         from: from_address.to_owned(),
         nonce,
         value,
         // Next two based on https://github.com/filecoin-project/lotus/blob/fe4efa0e0ee045d38f63f4955d01cbf3e36bc41f/paychmgr/simple.go#L40
-        gas_price: "0".to_string(),
-        gas_limit: 1000000,
+        gas_price: "1".to_string(),
+        gas_limit: 20000000,
         method: MethodInit::Exec as u64,
         params: MessageParams::MessageParamsPaymentChannelCreate(message_params_create_pymtchan),
     };
@@ -1123,8 +1124,8 @@ mod tests {
         let bls_key = PrivateKey::try_from(from_key.to_string()).unwrap();
         let from_pkey = "93079ccf450c7205b0a8ec64a16e62f59f61275909b14e91a684d4acc6f321b4ec41f4543313c205ae60019fec9c304e";
 
-        let to_key = "f945c98b4ebade1084c583316556fd27ec0ac855a1857e758e71bb59791e030d";
-        let to_address = "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy";
+        //let to_key = "f945c98b4ebade1084c583316556fd27ec0ac855a1857e758e71bb59791e030d";
+        //let to_address = "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy";
 
         let pch_create = serde_json::json!(
         {
@@ -1258,14 +1259,6 @@ mod tests {
         );
 
     }
-
-// TODO:
-// create a voucher:  node/impl/paychVoucherCreate
-// check if a voucher is valid:  paychmgr/paych.go
-// check if a voucher is spendable:  paychmgr/paych.go
-// add a voucher to the channel:  paychmgr/paych.go
-// submit a voucher to the channel:  node/impl/PaychVoucherSubmit
-// close a payment channel (includes settle logic):  node/impl/PaychClose
 
     #[test]
     fn support_multisig_create() {
