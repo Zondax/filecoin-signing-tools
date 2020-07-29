@@ -8,16 +8,22 @@
     )
 )]
 
-use crate::api::{UnsignedMessageAPI, SignedMessageAPI, MessageTxNetwork, MessageTx, MessageTxAPI, SignatureAPI, MessageParams};
-use num_bigint_chainsafe::BigUint;
-use forest_cid::{multihash::Identity, Cid, Codec};
+use crate::api::{
+    MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
+    UnsignedMessageAPI,
+};
 use crate::error::SignerError;
-use extras::{MethodInit, MethodMultisig, ConstructorParams, ExecParams, ProposalHashData, TxnID, TxnIDParams, ProposeParams, INIT_ACTOR_ADDR};
+use extras::{
+    ConstructorParams, ExecParams, MethodInit, MethodMultisig, ProposalHashData, ProposeParams,
+    TxnID, TxnIDParams, INIT_ACTOR_ADDR,
+};
 use forest_address::{Address, Network};
+use forest_cid::{multihash::Identity, Cid, Codec};
+use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
+use num_bigint_chainsafe::BigUint;
 use std::convert::TryFrom;
 use std::str::FromStr;
-use forest_encoding::blake2b_256;
 
 use crate::extended_key::ExtendedSecretKey;
 use bip39::{Language, MnemonicType, Seed};
@@ -451,7 +457,7 @@ pub fn create_multisig(
         .into_iter()
         .map(|address_string| Address::from_str(&address_string))
         .collect();
-        
+
     let signers = match signers_tmp {
         Ok(signers) => signers,
         Err(_) => {
@@ -460,21 +466,22 @@ pub fn create_multisig(
             ));
         }
     };
-        
+
     let constructor_params_multisig = ConstructorParams {
         signers: signers,
         num_approvals_threshold: required,
         unlock_duration: 0,
     };
-    
-    let serialized_constructor_params = forest_vm::Serialized::serialize::<ConstructorParams>(constructor_params_multisig)
-        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
+    let serialized_constructor_params =
+        forest_vm::Serialized::serialize::<ConstructorParams>(constructor_params_multisig)
+            .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_multisig = ExecParams {
         code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),
         constructor_params: serialized_constructor_params,
     };
-    
+
     let serialized_params = forest_vm::Serialized::serialize::<ExecParams>(message_params_multisig)
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
@@ -517,10 +524,9 @@ pub fn proposal_multisig_message(
         method: 0,
         params: forest_vm::Serialized::new(Vec::new()),
     };
-    
+
     let params = forest_vm::Serialized::serialize::<ProposeParams>(propose_params_multisig)
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
-
 
     let multisig_propose_message_api = UnsignedMessageAPI {
         to: multisig_address,
@@ -555,16 +561,17 @@ fn approve_or_cancel_multisig_message(
         method: 0,
         params: forest_vm::Serialized::new(Vec::new()),
     };
-    
-    let serialize_proposal_parameter = forest_vm::Serialized::serialize::<ProposalHashData>(proposal_parameter)
-        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
+    let serialize_proposal_parameter =
+        forest_vm::Serialized::serialize::<ProposalHashData>(proposal_parameter)
+            .map_err(|err| SignerError::GenericString(err.to_string()))?;
     let proposal_hash = blake2b_256(&serialize_proposal_parameter);
-    
+
     let params_txnid = TxnIDParams {
         id: TxnID(message_id),
         proposal_hash,
     };
-    
+
     let params = forest_vm::Serialized::serialize::<TxnIDParams>(params_txnid)
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
@@ -666,15 +673,16 @@ mod tests {
         ConstructorParamsMultisig, MessageParams, MessageParamsMultisig, MessageTxAPI,
         UnsignedMessageAPI,
     };
-    use forest_encoding::blake2b_256;
     use crate::signature::{Signature, SignatureBLS};
     use crate::{
         approve_multisig_message, cancel_multisig_message, create_multisig, key_derive,
         key_derive_from_seed, key_generate_mnemonic, key_recover, proposal_multisig_message,
-        transaction_parse, transaction_serialize, transaction_sign_bls_raw, transaction_sign_raw,
-        verify_aggregated_signature, verify_signature, serialize_params, CborBuffer, Mnemonic, PrivateKey,
+        serialize_params, transaction_parse, transaction_serialize, transaction_sign_bls_raw,
+        transaction_sign_raw, verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic,
+        PrivateKey,
     };
     use bip39::{Language, Seed};
+    use forest_encoding::blake2b_256;
     use forest_encoding::to_vec;
     use std::convert::TryFrom;
 
@@ -1049,18 +1057,17 @@ mod tests {
             "signers": ["t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba", "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"],
             "num_approvals_threshold": 1
         });
-        
+
         let constructor_params_expected: MessageParams =
             serde_json::from_value(constructor_params).unwrap();
-                        
+
         let exec_params = serde_json::json!({
             "code_cid": "fil/1/multisig",
             "constructor_params": base64::encode(serialize_params(constructor_params_expected).unwrap()),
         });
-            
-        let exec_params_expected: MessageParams =
-            serde_json::from_value(exec_params).unwrap();
-        
+
+        let exec_params_expected: MessageParams = serde_json::from_value(exec_params).unwrap();
+
         let multisig_create = serde_json::json!(
         {
             "to": "t01",
@@ -1111,10 +1118,10 @@ mod tests {
             "method": 0,
             "params": "",
         });
-        
+
         let proposal_params_expected: MessageParams =
             serde_json::from_value(proposal_params).unwrap();
-        
+
         let multisig_proposal = serde_json::json!(
         {
             "to": "t01",
@@ -1163,20 +1170,21 @@ mod tests {
             "method": 0,
             "params": "",
         });
-        
+
         let proposal_params_expected: MessageParams =
             serde_json::from_value(proposal_params).unwrap();
-    
-        let proposal_hash = blake2b_256(serialize_params(proposal_params_expected).unwrap().as_ref());
-                
+
+        let proposal_hash =
+            blake2b_256(serialize_params(proposal_params_expected).unwrap().as_ref());
+
         let approval_params = serde_json::json!({
             "txn_id": 1234,
             "proposal_hash_data": base64::encode(proposal_hash),
         });
-        
+
         let approval_params_expected: MessageParams =
             serde_json::from_value(approval_params).unwrap();
-            
+
         let multisig_approval = serde_json::json!(
         {
             "to": "t01",
@@ -1227,20 +1235,20 @@ mod tests {
             "method": 0,
             "params": "",
         });
-        
+
         let proposal_params_expected: MessageParams =
             serde_json::from_value(proposal_params).unwrap();
-    
-        let proposal_hash = blake2b_256(serialize_params(proposal_params_expected).unwrap().as_ref());
-                
+
+        let proposal_hash =
+            blake2b_256(serialize_params(proposal_params_expected).unwrap().as_ref());
+
         let cancel_params = serde_json::json!({
             "txn_id": 1234,
             "proposal_hash_data": base64::encode(proposal_hash),
         });
-        
-        let cancel_params_expected: MessageParams =
-            serde_json::from_value(cancel_params).unwrap();
-            
+
+        let cancel_params_expected: MessageParams = serde_json::from_value(cancel_params).unwrap();
+
         let multisig_cancel = serde_json::json!(
         {
             "to": "t01",

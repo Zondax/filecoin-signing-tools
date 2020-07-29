@@ -75,7 +75,8 @@ impl TryFrom<MessageParamsMultisig> for ExecParams {
     type Error = SignerError;
 
     fn try_from(exec_constructor: MessageParamsMultisig) -> Result<ExecParams, Self::Error> {
-        let serialized_constructor_multisig_params = base64::decode(exec_constructor.constructor_params)
+        let serialized_constructor_multisig_params =
+            base64::decode(exec_constructor.constructor_params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
         if exec_constructor.code_cid != "fil/1/multisig".to_string() {
@@ -110,7 +111,7 @@ impl TryFrom<ProposeParamsMultisig> for ProposeParams {
 
     fn try_from(propose_params: ProposeParamsMultisig) -> Result<ProposeParams, Self::Error> {
         let params = base64::decode(propose_params.params)
-                .map_err(|err| SignerError::GenericString(err.to_string()))?;
+            .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
         Ok(ProposeParams {
             to: Address::from_str(&propose_params.to)?,
@@ -141,10 +142,12 @@ pub struct PropoposalHashDataParamsMultisig {
 impl TryFrom<PropoposalHashDataParamsMultisig> for ProposalHashData {
     type Error = SignerError;
 
-    fn try_from(proposal_params: PropoposalHashDataParamsMultisig) -> Result<ProposalHashData, Self::Error> {
+    fn try_from(
+        proposal_params: PropoposalHashDataParamsMultisig,
+    ) -> Result<ProposalHashData, Self::Error> {
         let params = base64::decode(proposal_params.params)
-                .map_err(|err| SignerError::GenericString(err.to_string()))?;
-                
+            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
         Ok(ProposalHashData {
             requester: Address::from_str(&proposal_params.requester)?,
             to: Address::from_str(&proposal_params.to)?,
@@ -171,14 +174,14 @@ impl TryFrom<TxnIDParamsMultisig> for TxnIDParams {
 
     fn try_from(params: TxnIDParamsMultisig) -> Result<TxnIDParams, Self::Error> {
         let proposal_hash = base64::decode(params.proposal_hash_data)
-                .map_err(|err| SignerError::GenericString(err.to_string()))?;
-        
+            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
         let mut array = [0; 32];
-        array.copy_from_slice(&proposal_hash); 
-        
+        array.copy_from_slice(&proposal_hash);
+
         Ok(TxnIDParams {
             id: TxnID(params.txn_id),
-            proposal_hash : array,
+            proposal_hash: array,
         })
     }
 }
@@ -293,19 +296,19 @@ impl MessageParams {
                 let params_bytes = base64::decode(&params_string)
                     .map_err(|err| SignerError::GenericString(err.to_string()))?;
                 forest_vm::Serialized::new(params_bytes)
-            },
+            }
             MessageParams::PropoposalHashDataParamsMultisig(params) => {
                 let params = ProposalHashData::try_from(params)?;
-                    
+
                 forest_vm::Serialized::serialize::<ProposalHashData>(params)
                     .map_err(|err| SignerError::GenericString(err.to_string()))?
-            },
+            }
             MessageParams::ConstructorParamsMultisig(constructor_params) => {
                 let params = ConstructorParams::try_from(constructor_params)?;
-                    
+
                 forest_vm::Serialized::serialize::<ConstructorParams>(params)
                     .map_err(|err| SignerError::GenericString(err.to_string()))?
-            },
+            }
             MessageParams::MessageParamsMultisig(multisig_params) => {
                 let params = ExecParams::try_from(multisig_params)?;
 
@@ -357,7 +360,6 @@ impl MessageParams {
         Ok(params_serialized)
     }
 }
-
 
 /// Unsigned message api structure
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
