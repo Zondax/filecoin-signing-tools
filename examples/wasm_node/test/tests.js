@@ -7,7 +7,7 @@ if (process.env.PURE_JS) {
 
 const bip39 = require('bip39');
 const bip32 = require('bip32');
-const getDigest = require('./utils').getDigest;
+const {getDigest, blake2b256} = require('./utils');
 const secp256k1 = require('secp256k1');
 const fs = require('fs');
 const assert = require('assert');
@@ -241,7 +241,6 @@ describe("transactionSerialize", function() {
         Params: Buffer.from(serialized_swap_params).toString('base64')
     }
 
-    console.log("wut")
     let serialized_params = filecoin_signer.serializeParams(params);
 
     let transaction = {
@@ -508,9 +507,18 @@ describeCall("proposeMultisig", function() {
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
     console.log(recoveredKey.address)
-
+    
     let to_address = recoveredKey.address;
     let from_address = recoveredKey.address;
+    
+    let params = {
+      to: recoveredKey.address,
+      value: '1000',
+      method: 0,
+      params: ''
+    };
+    
+    let params_base64 = Buffer.from(filecoin_signer.serializeParams(params)).toString('base64');
 
     let expected = {
       to: 't01004',
@@ -520,12 +528,7 @@ describeCall("proposeMultisig", function() {
       gasprice: '1',
       gaslimit: 1000000,
       method: 2,
-      params: {
-        to: recoveredKey.address,
-        value: '1000',
-        method: 0,
-        params: ''
-      }
+      params: params_base64
     }
 
     let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01004", to_address, from_address, "1000", 1);
@@ -607,6 +610,19 @@ describeCall("approveMultisig", function() {
     let to_address = recoveredKey.address;
     let from_address = recoveredKey.address;
     let proposer_address = recoveredKey.address;
+    
+    let proposal_params = {
+      requester: recoveredKey.address,
+      to: recoveredKey.address,
+      value: '1000',
+      method: 0,
+      params: ''
+    };
+    
+    let txn_id_params = {
+      txn_id: 1234,
+      proposal_hash_data: Buffer.from(blake2b256(filecoin_signer.serializeParams(proposal_params))).toString('base64')
+    }
 
     let expected = {
       to: 't01004',
@@ -616,16 +632,7 @@ describeCall("approveMultisig", function() {
       gasprice: '1',
       gaslimit: 1000000,
       method: 3,
-      params: {
-        txn_id: 1234,
-        proposal_hash_data: {
-          requester: recoveredKey.address,
-          to: recoveredKey.address,
-          value: '1000',
-          method: 0,
-          params: ''
-        }
-      }
+      params: Buffer.from(filecoin_signer.serializeParams(txn_id_params)).toString('base64')
     }
 
     let approve_multisig_transaction = filecoin_signer.approveMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address, 1);
@@ -709,6 +716,19 @@ describeCall("cancelMultisig", function() {
     let to_address = recoveredKey.address;
     let from_address = recoveredKey.address;
     let proposer_address = recoveredKey.address;
+    
+    let proposal_params = {
+      requester: recoveredKey.address,
+      to: recoveredKey.address,
+      value: '1000',
+      method: 0,
+      params: ''
+    };
+    
+    let txn_id_params = {
+      txn_id: 1234,
+      proposal_hash_data: Buffer.from(blake2b256(filecoin_signer.serializeParams(proposal_params))).toString('base64')
+    }
 
     let expected = {
       to: 't01004',
@@ -718,16 +738,7 @@ describeCall("cancelMultisig", function() {
       gasprice: '1',
       gaslimit: 1000000,
       method: 4,
-      params: {
-        txn_id: 1234,
-        proposal_hash_data: {
-          requester: recoveredKey.address,
-          to: recoveredKey.address,
-          value: '1000',
-          method: 0,
-          params: ''
-        }
-      }
+      params: Buffer.from(filecoin_signer.serializeParams(txn_id_params)).toString('base64')
     }
 
     let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address, 1);
@@ -803,9 +814,11 @@ describeCall('SerializeParams', function () {
   it('serialize parameters to cbor data', function () {
     let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
 
+    let constructor_params = { signers: addresses, num_approvals_threshold: 1 }
+
     let params = {
         code_cid: 'fil/1/multisig',
-        constructor_params: { signers: addresses, num_approvals_threshold: 1 }
+        constructor_params: Buffer.from(filecoin_signer.serializeParams(constructor_params)).toString('base64')
     }
 
     let serialized_params = filecoin_signer.serializeParams(params);
@@ -821,9 +834,11 @@ describeCall('SerializeParams', function () {
   it('serialize parameters to cbor data test with PascalCase', function () {
     let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
 
+    let constructor_params = { Signers: addresses, NumApprovalsThreshold: 1 }
+
     let params = {
         CodeCid: 'fil/1/multisig',
-        ConstructorParams: { Signers: addresses, NumApprovalsThreshold: 1 }
+        ConstructorParams: Buffer.from(filecoin_signer.serializeParams(constructor_params)).toString('base64')
     }
 
     let serialized_params = filecoin_signer.serializeParams(params);
@@ -865,13 +880,13 @@ describeCall('SerializeParams', function () {
 
     let serialized_swap_params = filecoin_signer.serializeParams(swap_params);
 
-    console.log(Buffer.from(serialized_swap_params).toString('hex'))
+    console.log(Buffer.from(serialized_swap_params).toString('base64'))
 
     let params = {
         To: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
         Value: "0",
         Method: 7,
-        Params: Buffer.from(serialized_swap_params).toString('hex')
+        Params: Buffer.from(serialized_swap_params).toString('base64')
     }
 
     let serialized_params = filecoin_signer.serializeParams(params);
