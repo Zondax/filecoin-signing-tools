@@ -1,5 +1,4 @@
 use filecoin_signer::api::SignedMessageAPI;
-use filecoin_signer::serialize_params;
 use serde_json::json;
 use wasm_bindgen::prelude::*;
 #[cfg(target_arch = "wasm32")]
@@ -20,9 +19,6 @@ extern "C" {
 pub fn convert_to_lotus_signed_message(
     signed_message: SignedMessageAPI,
 ) -> Result<String, JsValue> {
-    let params = serialize_params(signed_message.message.params)
-        .map_err(|err| JsValue::from(err.to_string()))?;
-
     let signed_message_lotus = json!({
         "Message": {
             "To": signed_message.message.to,
@@ -32,7 +28,7 @@ pub fn convert_to_lotus_signed_message(
             "GasPrice": signed_message.message.gas_price,
             "GasLimit":signed_message.message.gas_limit,
             "Method": signed_message.message.method,
-            "Params": base64::encode(params),
+            "Params": signed_message.message.params,
         },
         "Signature": {
             "Type": signed_message.signature.sig_type,

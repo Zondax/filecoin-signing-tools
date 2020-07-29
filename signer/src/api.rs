@@ -69,18 +69,14 @@ pub struct MessageParamsMultisig {
     #[serde(alias = "CodeCid")]
     pub code_cid: String,
     #[serde(alias = "ConstructorParams")]
-    pub constructor_params: ConstructorParamsMultisig,
+    pub constructor_params: String,
 }
 
 impl TryFrom<MessageParamsMultisig> for ExecParams {
     type Error = SignerError;
 
     fn try_from(exec_constructor: MessageParamsMultisig) -> Result<ExecParams, Self::Error> {
-        let constructor_multisig_params =
-            ConstructorParams::try_from(exec_constructor.constructor_params)?;
-
-        let serialized_constructor_multisig_params =
-            forest_vm::Serialized::serialize::<ConstructorParams>(constructor_multisig_params)
+        let serialized_constructor_multisig_params = base64::decode(exec_constructor.constructor_params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
         if exec_constructor.code_cid != "fil/1/multisig".to_string() {
@@ -91,7 +87,7 @@ impl TryFrom<MessageParamsMultisig> for ExecParams {
 
         Ok(ExecParams {
             code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),
-            constructor_params: serialized_constructor_multisig_params,
+            constructor_params: forest_vm::Serialized::new(serialized_constructor_multisig_params),
         })
     }
 }
@@ -290,7 +286,8 @@ impl MessageParams {
     pub fn serialize(self) -> Result<Serialized, SignerError> {
         let params_serialized = match self {
             MessageParams::MessageParamsSerialized(params_string) => {
-                let params_bytes = hex::decode(&params_string)?;
+                let params_bytes = base64::decode(&params_string)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?;
                 forest_vm::Serialized::new(params_bytes)
             }
             MessageParams::MessageParamsMultisig(multisig_params) => {
@@ -345,6 +342,7 @@ impl MessageParams {
     }
 }
 
+
 /// Unsigned message api structure
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
@@ -363,7 +361,7 @@ pub struct UnsignedMessageAPI {
     #[serde(alias = "gas_limit")]
     pub gas_limit: u64,
     pub method: u64,
-    pub params: MessageParams,
+    pub params: String,
 }
 
 /// Signature api structure
@@ -534,8 +532,9 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
         let gas_limit = message_api.gas_limit;
         let gas_price = BigUint::from_str(&message_api.gas_price)?;
 
-        let message_params: MessageParams = message_api.params.clone();
-        let params = message_params.serialize()?;
+        let message_params_bytes = base64::decode(&message_api.params)
+            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+        let params = Serialized::new(message_params_bytes);
 
         let tmp = UnsignedMessage::builder()
             .to(to)
@@ -564,11 +563,8 @@ impl From<UnsignedMessage> for UnsignedMessageAPI {
             value: unsigned_message.value().to_string(),
             gas_price: unsigned_message.gas_price().to_string(),
             gas_limit: unsigned_message.gas_limit(),
-            // FIXME: cannot extract method byte. Set always as 0
             method: unsigned_message.method_num(),
-            // FIXME: need a proper way to serialize parameters, for now
-            // only method=0 is supported for keep empty
-            params: MessageParams::MessageParamsSerialized(params_hex_string),
+            params: params_hex_string,
         }
     }
 }

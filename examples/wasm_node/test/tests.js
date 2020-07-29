@@ -232,15 +232,16 @@ describe("transactionSerialize", function() {
 
     let serialized_swap_params = filecoin_signer.serializeParams(swap_params);
 
-    console.log(Buffer.from(serialized_swap_params).toString('hex'))
+    console.log(Buffer.from(serialized_swap_params).toString('base64'))
 
     let params = {
         To: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
         Value: "0",
         Method: 7,
-        Params: Buffer.from(serialized_swap_params).toString('hex')
+        Params: Buffer.from(serialized_swap_params).toString('base64')
     }
 
+    console.log("wut")
     let serialized_params = filecoin_signer.serializeParams(params);
 
     let transaction = {
@@ -251,7 +252,7 @@ describe("transactionSerialize", function() {
         gasprice: "2500",
         gaslimit: 25000,
         method: 7,
-        params: Buffer.from(serialized_params).toString('hex')
+        params: Buffer.from(serialized_params).toString('base64')
     };
 
     console.log(filecoin_signer.transactionSerialize(transaction));
@@ -410,6 +411,16 @@ describeCall("createMultisig", function() {
 
     let addresses = [recoveredKey.address,"t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
     let sender_address = recoveredKey.address;
+    
+    let constructor_params = {
+      signers: addresses,
+      num_approvals_threshold: 1
+    };
+    
+    let exec_params = {
+      code_cid: 'fil/1/multisig',
+      constructor_params: Buffer.from(filecoin_signer.serializeParams(constructor_params)).toString('base64'),
+    };
 
     let expected = {
       to: 't01',
@@ -419,10 +430,7 @@ describeCall("createMultisig", function() {
       gasprice: '1',
       gaslimit: 1000000,
       method: 2,
-      params: {
-        code_cid: 'fil/1/multisig',
-        constructor_params: { signers: addresses, num_approvals_threshold: 1 }
-      }
+      params: Buffer.from(filecoin_signer.serializeParams(exec_params)).toString('base64')
     };
 
     let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1, 1);

@@ -8,17 +8,16 @@
     )
 )]
 
-use crate::api::{
-    ConstructorParamsMultisig, MessageParams, MessageParamsMultisig, MessageTx, MessageTxAPI,
-    MessageTxNetwork, PropoposalHashDataParamsMultisig, ProposeParamsMultisig, SignatureAPI,
-    SignedMessageAPI, TxnIDParamsMultisig, UnsignedMessageAPI,
-};
+use crate::api::{UnsignedMessageAPI, SignedMessageAPI, MessageTxNetwork, MessageTx, MessageTxAPI, SignatureAPI, MessageParams};
+use num_bigint_chainsafe::BigUint;
+use forest_cid::{multihash::Identity, Cid, Codec};
 use crate::error::SignerError;
-use extras::{MethodInit, MethodMultisig, INIT_ACTOR_ADDR};
+use extras::{MethodInit, MethodMultisig, ConstructorParams, ExecParams, ProposalHashData, TxnID, TxnIDParams, ProposeParams, INIT_ACTOR_ADDR};
 use forest_address::{Address, Network};
 use forest_encoding::{from_slice, to_vec};
 use std::convert::TryFrom;
 use std::str::FromStr;
+use forest_encoding::blake2b_256;
 
 use crate::extended_key::ExtendedSecretKey;
 use bip39::{Language, MnemonicType, Seed};
@@ -448,16 +447,36 @@ pub fn create_multisig(
     required: i64,
     nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
-    let constructor_params_multisig = ConstructorParamsMultisig {
-        signers: addresses,
+    let signers_tmp: Result<Vec<Address>, _> = addresses
+        .into_iter()
+        .map(|address_string| Address::from_str(&address_string))
+        .collect();
+        
+    let signers = match signers_tmp {
+        Ok(signers) => signers,
+        Err(_) => {
+            return Err(SignerError::GenericString(
+                "Failed to parse one of the signer addresses".to_string(),
+            ));
+        }
+    };
+        
+    let constructor_params_multisig = ConstructorParams {
+        signers: signers,
         num_approvals_threshold: required,
-        unlock_duration: -1,
+        unlock_duration: 0,
     };
+    
+    let serialized_constructor_params = forest_vm::Serialized::serialize::<ConstructorParams>(constructor_params_multisig)
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-    let message_params_multisig = MessageParamsMultisig {
-        code_cid: "fil/1/multisig".to_string(),
-        constructor_params: constructor_params_multisig,
+    let message_params_multisig = ExecParams {
+        code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),
+        constructor_params: serialized_constructor_params,
     };
+    
+    let serialized_params = forest_vm::Serialized::serialize::<ExecParams>(message_params_multisig)
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let multisig_create_message_api = UnsignedMessageAPI {
         to: INIT_ACTOR_ADDR.to_string(),
@@ -469,7 +488,7 @@ pub fn create_multisig(
         // used the same value as https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L78
         gas_limit: 1000000,
         method: MethodInit::Exec as u64,
-        params: MessageParams::MessageParamsMultisig(message_params_multisig),
+        params: base64::encode(serialized_params.bytes()),
     };
 
     Ok(multisig_create_message_api)
@@ -492,12 +511,16 @@ pub fn proposal_multisig_message(
     amount: String,
     nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
-    let propose_params_multisig = ProposeParamsMultisig {
-        to: to_address,
-        value: amount,
+    let propose_params_multisig = ProposeParams {
+        to: Address::from_str(&to_address)?,
+        value: BigUint::from_str(&amount)?,
         method: 0,
-        params: "".to_string(),
+        params: forest_vm::Serialized::new(Vec::new()),
     };
+    
+    let params = forest_vm::Serialized::serialize::<ProposeParams>(propose_params_multisig)
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
 
     let multisig_propose_message_api = UnsignedMessageAPI {
         to: multisig_address,
@@ -509,7 +532,7 @@ pub fn proposal_multisig_message(
         // used the same value as https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L78
         gas_limit: 1000000,
         method: MethodMultisig::Propose as u64,
-        params: MessageParams::ProposeParamsMultisig(propose_params_multisig),
+        params: base64::encode(params.bytes()),
     };
 
     Ok(multisig_propose_message_api)
@@ -525,17 +548,25 @@ fn approve_or_cancel_multisig_message(
     from_address: String,
     nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
-    // FIXME: missing hash proposal field
-    let params = TxnIDParamsMultisig {
-        txn_id: message_id,
-        proposal_hash_data: PropoposalHashDataParamsMultisig {
-            requester: proposer_address,
-            to: to_address,
-            value: amount,
-            method: 0,
-            params: "".to_string(),
-        },
+    let proposal_parameter = ProposalHashData {
+        requester: Address::from_str(&proposer_address)?,
+        to: Address::from_str(&to_address)?,
+        value: BigUint::from_str(&amount)?,
+        method: 0,
+        params: forest_vm::Serialized::new(Vec::new()),
     };
+    
+    let serialize_proposal_parameter = forest_vm::Serialized::serialize::<ProposalHashData>(proposal_parameter)
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+    let proposal_hash = blake2b_256(&serialize_proposal_parameter);
+    
+    let params_txnid = TxnIDParams {
+        id: TxnID(message_id),
+        proposal_hash,
+    };
+    
+    let params = forest_vm::Serialized::serialize::<TxnIDParams>(params_txnid)
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let multisig_unsigned_message_api = UnsignedMessageAPI {
         to: multisig_address,
@@ -545,7 +576,7 @@ fn approve_or_cancel_multisig_message(
         gas_price: "1".to_string(),
         gas_limit: 1000000,
         method,
-        params: MessageParams::TxnIDParamsMultisig(params),
+        params: base64::encode(params.bytes()),
     };
 
     Ok(multisig_unsigned_message_api)
@@ -935,7 +966,7 @@ mod tests {
             gas_price: "2500".to_string(),
             gas_limit: 25000,
             method: 0,
-            params: MessageParams::MessageParamsSerialized("".to_string()),
+            params: "".to_string(),
         };
 
         let raw_sig = transaction_sign_bls_raw(&message, &bls_key).unwrap();
@@ -979,7 +1010,7 @@ mod tests {
                     gas_price: "2500".to_string(),
                     gas_limit: 25000,
                     method: 0,
-                    params: MessageParams::MessageParamsSerialized("".to_string()),
+                    params: "".to_string(),
                 }
             })
             .collect();
