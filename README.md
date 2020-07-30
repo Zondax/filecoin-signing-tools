@@ -56,4 +56,8 @@ Contributions are welcome.  Check out the [issues](/issues) for a start.
 
 ## License
 
-Dual-licensed under [MIT](https://github.com/filecoin-project/lotus/blob/master/LICENSE-MIT) + [Apache 2.0](https://github.com/filecoin-project/lotus/blob/master/LICENSE-APACHE)
+Licensed under [Apache 2.0](https://github.com/filecoin-project/lotus/blob/master/LICENSE-APACHE) per the Zondax library from which this forked.
+
+## Why the fork?
+
+It is not our intention to maintain a permenant or long-term fork of [filecoin-signing-tools](https://github.com/Zondax/filecoin-signing-tools).  This fork gives our team the ability to focus only on PCH extensions while development continues in the core [filecoin-signing-tools](https://github.com/Zondax/filecoin-signing-tools).  Eventually all work here will either be merged back into [filecoin-signing-tools](https://github.com/Zondax/filecoin-signing-tools), or isolated into a separate crate that runs on top of [filecoin-signing-tools](https://github.com/Zondax/filecoin-signing-tools).
