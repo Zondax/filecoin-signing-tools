@@ -200,7 +200,6 @@ impl FilecoinApp {
                 Ok(address)
             }
 
-            // FIXME
             Err(e) => Err(LedgerAppError::TransportError(e)),
         }
     }

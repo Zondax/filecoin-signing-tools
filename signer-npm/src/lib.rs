@@ -177,7 +177,7 @@ pub fn transaction_serialize(message: JsValue) -> Result<String, JsValue> {
 pub fn transaction_serialize_raw(unsigned_message: JsValue) -> Result<Vec<u8>, JsValue> {
     set_panic_hook();
 
-    // FIXME: Should be MessageTxAPI because it can be unsigned message or signed message
+    // TODO: Should be MessageTxAPI because it can be unsigned message or signed message
     let unsigned_message: UnsignedMessageAPI = unsigned_message
         .into_serde()
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;

@@ -50,7 +50,6 @@ function keyDerive(mnemonic, path, password) {
 function keyRecover(privateKey, testnet) {
   // verify format and convert to buffer if needed
   privateKey = tryToPrivateKeyBuffer(privateKey);
-  console.log(privateKey)
   return new ExtendedKey(privateKey, testnet);
 }
 
@@ -116,8 +115,6 @@ function transactionSerialize(message) {
 }
 
 function transactionParse(cborMessage, testnet) {
-  // FIXME: Check buffer size and extra bytes
-  // https://github.com/dignifiedquire/borc/issues/47
   const decoded = cbor.deserialize(Buffer.from(cborMessage, "hex"));
 
   if (decoded[0] !== 0) {
@@ -125,7 +122,7 @@ function transactionParse(cborMessage, testnet) {
   }
   if (decoded.length < 9) {
     throw new Error(
-      "The cbor is missing some fields... please verify you 9 fields."
+      "The cbor is missing some fields... please verify you have 9 fields."
     );
   }
 
@@ -175,7 +172,7 @@ function transactionSign(unsignedMessage, privateKey) {
 
   signedMessage.message = unsignedMessage;
 
-  // FIXME: only support secp256k1
+  // TODO: support BLS scheme
   signedMessage.signature = {
     data: signature.toString("base64"),
     type: ProtocolIndicator.SECP256K1,
