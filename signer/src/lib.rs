@@ -445,6 +445,7 @@ pub fn verify_aggregated_signature(
 /// * `value` - Value to send on the multisig
 /// * `required` - Number of required signatures required
 /// * `nonce` - Nonce of the message
+/// * `duration` - Duration of the multisig
 ///
 pub fn create_multisig(
     sender_address: String,
