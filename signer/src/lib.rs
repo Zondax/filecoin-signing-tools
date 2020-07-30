@@ -693,7 +693,6 @@ mod tests {
     use rayon::prelude::*;
 
     const BLS_PUBKEY: &str = "ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc07904";
-    // FIXME! Might be invalid
     const BLS_PRIVATEKEY: &str = "d31ed8d06197f7631e58117d99c5ae4791183f17b6772eb4afc5c840e0f7d412";
 
     // NOTE: not the same transaction used in other tests.

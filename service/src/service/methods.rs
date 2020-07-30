@@ -263,7 +263,6 @@ pub async fn send_sign(c: MethodCall, config: RemoteNodeSection) -> Result<Succe
     // signed message
     let signed_message = filecoin_signer::transaction_sign(&params.transaction, &private_key)?;
 
-    // FIXME: hack to verify node network
     let result = client::is_mainnet(&config.url, &config.jwt).await?;
 
     if result {
