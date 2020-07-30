@@ -468,9 +468,11 @@ pub fn create_multisig(
             ));
         }
     };
-    
+
     if duration < 0 && duration != -1 {
-        return Err(SignerError::GenericString("Invalid duration value (duration >= -1)".to_string()));
+        return Err(SignerError::GenericString(
+            "Invalid duration value (duration >= -1)".to_string(),
+        ));
     };
 
     let constructor_params_multisig = ConstructorParams {
