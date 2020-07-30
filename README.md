@@ -48,7 +48,7 @@ The above diagram illustrates the general PCH concept under "normal" retrieval c
 
 ## Compile and Run
 
-A companion repo, [wasm_filecoin](https://github.com/mgoelzer/wasm_filecoin) is developed in parallel that demonstrates use of the Rust PCH code in this repo in browser-based JS applications.  Compile and build instructions can be found [there](https://github.com/mgoelzer/wasm_filecoin), as well as instructions for incorporating this code into your own library.
+A companion repo, [wasm_filecoin](https://github.com/mgoelzer/wasm_filecoin) is developed in parallel that demonstrates use of these Rust PCH exntesions in a browser-based JS application.  Compile and build instructions can be found [over there](https://github.com/mgoelzer/wasm_filecoin).
 
 ## Contributing
 
