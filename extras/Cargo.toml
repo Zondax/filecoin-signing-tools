@@ -14,6 +14,6 @@ forest_address = "0.2.0"
 forest_encoding = "0.1.1"
 forest_cid = "0.1.0"
 num_bigint = { package = "forest_bigint", version = "0.1.0"}
-clock = { git = "https://github.com/chainsafe/forest", branch="master" }
+clock = { git = "https://github.com/chainsafe/forest", branch="main" }
 serde = { version = "1.0", features = ["derive"] }
 lazy_static = "1.4.0"
