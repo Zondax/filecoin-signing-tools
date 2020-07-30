@@ -452,6 +452,7 @@ pub fn create_multisig(
     value: String,
     required: i64,
     nonce: u64,
+    duration: i64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     let signers_tmp: Result<Vec<Address>, _> = addresses
         .into_iter()
@@ -466,11 +467,15 @@ pub fn create_multisig(
             ));
         }
     };
+    
+    if duration < 0 && duration != -1 {
+        return Err(SignerError::GenericString("Invalid duration value (duration >= -1)".to_string()));
+    };
 
     let constructor_params_multisig = ConstructorParams {
         signers: signers,
         num_approvals_threshold: required,
-        unlock_duration: 0,
+        unlock_duration: duration,
     };
 
     let serialized_constructor_params =
