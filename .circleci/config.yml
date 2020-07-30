@@ -96,8 +96,6 @@ jobs:
       - image: zondax/rust-ci:latest
     steps:
       - checkout
-      - run: rustup install 1.44.0
-      - run: rustup default 1.44.0
       - run: cargo --version
       - restore-sccache-cache
       - run: sudo apt-get update && sudo apt-get install -y firefox-esr libnss3
@@ -125,8 +123,6 @@ jobs:
             ./rustup.sh -y
             source $HOME/.cargo/env
             rm rustup.sh
-            rustup install 1.44.0
-            rustup default 1.44.0
       - checkout
       - run: git submodule update --init --recursive
       - run: docker pull zondax/builder-zemu
