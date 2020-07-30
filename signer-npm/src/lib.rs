@@ -308,6 +308,7 @@ pub fn create_multisig(
     value: String,
     required: i32,
     nonce: u32,
+    duration: i64,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
@@ -329,6 +330,7 @@ pub fn create_multisig(
         value,
         required as i64,
         nonce as u64,
+        duration,
     )
     .map_err(|e| {
         JsValue::from_str(format!("Error creating multisig transaction: {}", e).as_str())
