@@ -1,98 +1,51 @@
-# Filecoin Signing Tools
+# Temporary Fork of Zondax's Filecoin Signing Tools
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![CircleCI](https://circleci.com/gh/Zondax/filecoin-signing-tools.svg?style=shield&circle-token=51b2d5fe68c0eb73436dace6f47fa0a387169ef5)](https://circleci.com/gh/Zondax/filecoin-signing-tools)
-[![npm version](https://badge.fury.io/js/%40zondax%2Ffilecoin-signing-tools.svg)](https://badge.fury.io/js/%40zondax%2Ffilecoin-signing-tools)
+This repo is a fork of [Zondax's filecoin-signing-tools](https://github.com/Zondax/filecoin-signing-tools), a Js + Rust WASM library for generating and signing messages for submission to the Filecoin virtual machine.
 
-You can find more information in the [Documentation Site](https://zondax.ch/projects/filecoin-signing-tools/)
+The purpose of this repo is to extend the original library to carry out Filecoin Payment Channel (PCH) operations on chain, such as creating a new payment channel, settling it, creating and redeeming vouchers within a channel, and so forth.  Once these extensions are developed, they will be made available either as an add-on crate that runs atop Zondax's [filecoin-signing-tools](https://github.com/Zondax/filecoin-signing-tools) or as a series of PRs against [filecoin-signing-tools](https://github.com/Zondax/filecoin-signing-tools) to bring this PCH functionality directly into the [filecoin-signing-tools](https://github.com/Zondax/filecoin-signing-tools) library.
 
-- Rust Native Library
-  - Secp256k1
-  - Multisig (Work in progress)
-  - BLS
-  - Hardware Wallet support (Ledger Nano S/X)
-  - Filecoin transactions (CBOR <> JSON serialization)
-- WASM Library
-  - Secp256k1
-  - Multisig (Work in progress)
-  - BLS
-  - Hardware Wallet support (Ledger Nano S/X)
-  - Filecoin transactions (CBOR <> JSON serialization)
-- JSON RPC Server
-  - Focus: Exchange integration
-  - Exposes most of the functions available in the signing library
-  - Lotus integration:
-    - nonce caching
-    - determine testnet vs mainnet
-    - retrieve nonce
-    - submit signed transaction
-    - retrieve tx status
-    
-- Examples
+## Development Status of Payment Channel (PCH) Extensions
 
-  | Caller          | Callee          | Status                           |                                  |
-  |-----------------|-----------------|----------------------------------|----------------------------------|
-  | Node.js         | JSONRPC Service | Ready :heavy_check_mark:         | [Link](examples/service_jsonrpc) |
-  |                 |                 |                                  |                                  |
-  | Browser         | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm_browser)    |
-  | Browser         | WASM + Ledger   | Ready :heavy_check_mark:         | [Link](examples/wasm_node)       |
-  | Node.js / Mocha | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm_node)       |
-  |                 |                 |                                  |                                  |
-  | Rust            | Rust + Ledger   | Ready :heavy_check_mark:         | [Link](examples/wasm_ledger)     |
-  | C               | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/c)           |
-  | C++             | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/c++)         |
-  | Java            | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/java)        |
-  | Kotlin          | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/kotlin)      |
-  | Go              | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/go)          |
-  | Objective-C     | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/objective-c) |
-  | Swift           | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/swift)       |
-  | Flutter         | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/flutter)     |
-  | React Native    | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
+> Legend: :green_apple: Done &nbsp; :lemon: In Progress &nbsp; :tomato: Not started
 
-## Running tests and examples
+| **Payment Channels (PCH)**                   | Status        | Comment                           |
+| -------------------------------------------- | :-----------: | :-------------------------------: | 
+| Create PCH                                   | :green_apple: |                                   | 
+| Update PCH State                             | :tomato:      |                                   | 
+| Settle PCH                                   | :tomato:      |                                   | 
+| Collect PCH                                  | :tomato:      |                                   | 
 
-> TIP: A good place to look for reproducible steps is the circleci configuration of this project
+| **Payment Vouchers**                         | Status        | Comment                           |
+| -------------------------------------------- | :-----------: | :-------------------------------: | 
+| Create Voucher                               | :tomato:      |                                   | 
+| Verify Voucher                               | :tomato:      |                                   | 
+| Add Voucher to PCH                           | :tomato:      |                                   | 
+| Submit Best-spendable Voucher                | :tomato:      |                                   | 
 
-### Installing dependencies
+## Why?
 
-```bash
-make deps
-```
+By developing PCH functionality in Rust, retrieval client developers can develop primarily off-chain retrieval protocols, while still producing enough on-chain artifacts to make the retrieval transactions verifiable.
 
-### Rust
+## How Are Payment Channels (PCH) Used in Filecoin
 
-```bash
-cargo test -p filecoin-signer
-```
+PCH's provide a mechanism for a buyer of data to receive a small portion of the data (say, 1MB) then make a small payment, then receive another small portion, and so on.  In this manner, if either side fails to fully fulfill its obligation -- either to provide all the data, or provide vouchers summing up to the total price -- both will walk away having been fairly compensated for what they did provide.
 
-### Service
+![pch diagram](https://github.com/mgoelzer/wasm_filecoin/blob/master/pch-diagram.png)
 
-To run these tests, you need to set two environment variables first so tests can reach a Lotus node:
+In the normal case:
 
-|                  |          |
-|------------------|----------|
-| LOTUS_SECRET_URL | some_url |
-| LOTUS_SECRET_JWT | some_jwt |
+1.  Payer (green) creates the payment channel (PCH).
 
-Then you can run:
+2.  Payer (green) then creates a voucher and passes it to the payee (blue)
 
-```bash
-cargo test -p filecoin-signer
-```
+3.  Payee (blue) checks it and adds it to the list of vouchers for the lane being used.
 
-### WASM
+4.  The cycle can continue as many times as necessary.  At some point, payer (green) calls Settle.
 
-Build WASM and link it locally so examples are linked to the local version:
+5-6.  Payee (blue) now has ~12 hours to Submit its best voucher before the channel can be Collected.
 
-```bash
-make link_wasm
-```
+The above diagram illustrates the general PCH concept under "normal" retrieval circumstances.  For a complete description of the retrieval client and provider state machines, see [go-fil-markets/retrievalmarket](https://github.com/filecoin-project/go-fil-markets/tree/master/retrievalmarket).
 
-After this, you can run the following tests / examples:
+## Compile and Run
 
-| Command                  | Description               |
-|--------------------------|---------------------------|
-| `make test_wasm_unit`    | Unit tests                |
-| `make test_wasm_node`    | Node integration tests    |
-| `make test_wasm_browser` | Browser integration tests |
-| `make test_wasm_ledger`  | Ledger integration tests  |
+A companion repo, [wasm_filecoin](https://github.com/mgoelzer/wasm_filecoin) is being developed to expose the Rust code in this crate to browser-based JS applications.  Compile and build instructions can be found there.
