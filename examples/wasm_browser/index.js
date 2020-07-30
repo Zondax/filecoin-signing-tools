@@ -46,6 +46,8 @@ log(`<b>public  key  </b> ${key.public_hexstring}`);
 log(`<b>private key  </b> ${key.private_hexstring}`);
 log(`<b>public array </b> ${key.public_raw}`);
 log(`<b>private array</b> ${key.private_raw}`);
+log(`<b>public base64</b> ${key.public_base64}`);
+log(`<b>private base64</b> ${key.private_base64}`);
 
 /////////////////////////////////
 // Recover key
