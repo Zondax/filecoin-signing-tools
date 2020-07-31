@@ -1062,7 +1062,8 @@ mod tests {
     fn support_multisig_create() {
         let constructor_params = serde_json::json!({
             "signers": ["t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba", "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"],
-            "num_approvals_threshold": 1
+            "num_approvals_threshold": 1,
+            "unlock_duration": 0
         });
 
         let constructor_params_expected: MessageParams =
@@ -1070,7 +1071,7 @@ mod tests {
 
         let exec_params = serde_json::json!({
             "code_cid": "fil/1/multisig",
-            "constructor_params": base64::encode(serialize_params(constructor_params_expected).unwrap()),
+            "constructor_params": base64::encode(serialize_params(constructor_params_expected).unwrap())
         });
 
         let exec_params_expected: MessageParams = serde_json::from_value(exec_params).unwrap();
@@ -1096,6 +1097,7 @@ mod tests {
             "1000".to_string(),
             1,
             1,
+            0
         )
         .unwrap();
 

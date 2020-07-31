@@ -52,7 +52,7 @@ impl TryFrom<ConstructorParamsMultisig> for ConstructorParams {
         };
 
         Ok(ConstructorParams {
-            signers,
+            signers: signers,
             num_approvals_threshold: constructor_params.num_approvals_threshold,
             unlock_duration: constructor_params.unlock_duration,
         })
