@@ -10,8 +10,8 @@ The purpose of this repo is to extend the original library to carry out Filecoin
 | -------------------------------------------- | :----------------: | 
 | Create PCH                                   |:white_check_mark:  |
 | Update PCH State                             |     :x:       |
-| Settle PCH                                   |     :x:       |
-| Collect PCH                                  |     :x:       |
+| Settle PCH                                   |  :airplane:       |
+| Collect PCH                                  |  :airplane:       |
 
 | **Payment Vouchers**                         |  Status  |
 | -------------------------------------------- | :----------------: |
