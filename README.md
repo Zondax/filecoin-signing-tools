@@ -6,21 +6,19 @@ The purpose of this repo is to extend the original library to carry out Filecoin
 
 ## Development Status of Payment Channel (PCH) Extensions
 
-> Legend: :green_apple: Done &nbsp; :lemon: In Progress &nbsp; :tomato: Not started
+| **Payment Channels (PCH)**                   |  Status  | 
+| -------------------------------------------- | :----------------: | 
+| Create PCH                                   |:white_check_mark:  |
+| Update PCH State                             |     :x:       |
+| Settle PCH                                   |     :x:       |
+| Collect PCH                                  |     :x:       |
 
-| **Payment Channels (PCH)**                   | Status        | Comment                           |
-| -------------------------------------------- | :-----------: | :-------------------------------: | 
-| Create PCH                                   | :green_apple: |                                   | 
-| Update PCH State                             | :tomato:      |                                   | 
-| Settle PCH                                   | :tomato:      |                                   | 
-| Collect PCH                                  | :tomato:      |                                   | 
-
-| **Payment Vouchers**                         | Status        | Comment                           |
-| -------------------------------------------- | :-----------: | :-------------------------------: | 
-| Create Voucher                               | :tomato:      |                                   | 
-| Verify Voucher                               | :tomato:      |                                   | 
-| Add Voucher to PCH                           | :tomato:      |                                   | 
-| Submit Best-spendable Voucher                | :tomato:      |                                   | 
+| **Payment Vouchers**                         |  Status  |
+| -------------------------------------------- | :----------------: |
+| Create Voucher                               |     :x:       | 
+| Verify Voucher                               |     :x:       |
+| Add Voucher to PCH                           |     :x:       |
+| Submit Best-spendable Voucher                |     :x:       |
 
 ## Why?
 
