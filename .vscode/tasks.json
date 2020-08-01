@@ -7,7 +7,10 @@
 			"problemMatcher": [
 				"$rustc"
 			],
-			"group": "build",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
 			"options" : {
 				"cwd" : "${workspaceFolder}"
 			},
@@ -19,10 +22,7 @@
 			"problemMatcher": [
 				"$rustc"
 			],
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"options" : {
 				"cwd" : "${workspaceFolder}"
 			},
