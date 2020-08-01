@@ -454,6 +454,51 @@ pub fn create_pymtchan(
     Ok(pch_transaction_js)
 }
 
+#[wasm_bindgen(js_name = settlePymtChan)]
+pub fn settle_pymtchan(
+    pch_address: String,
+    from_address: String,
+    nonce: u32,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let pch_transaction = filecoin_signer::settle_pymtchan(
+        &pch_address,
+        &from_address,
+        nonce as u64,
+    )
+    .map_err(|e| {
+        JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str())
+    })?;
+
+    let pch_transaction_js = JsValue::from_serde(&pch_transaction)
+        .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(pch_transaction_js)
+}
+
+#[wasm_bindgen(js_name = collectPymtChan)]
+pub fn collect_pymtchan(
+    pch_address: String,
+    from_address: String,
+    nonce: u32,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let pch_transaction = filecoin_signer::collect_pymtchan(
+        &pch_address,
+        &from_address,
+        nonce as u64,
+    )
+    .map_err(|e| {
+        JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str())
+    })?;
+
+    let pch_transaction_js = JsValue::from_serde(&pch_transaction)
+        .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(pch_transaction_js)
+}
 
 #[wasm_bindgen(js_name = serializeParams)]
 pub fn serialize_params(params_value: JsValue) -> Result<Vec<u8>, JsValue> {

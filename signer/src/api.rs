@@ -3,7 +3,7 @@ use crate::signature::Signature;
 use extras::{
     AddSignerParams, ChangeNumApprovalsThresholdParams, ConstructorParams, ExecParams,
     ProposalHashData, ProposeParams, RemoveSignerParams, SwapSignerParams, TxnID, TxnIDParams,
-    PymtChanCreateParams
+    PymtChanCreateParams, UpdateChannelStateParams
 };
 use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
@@ -11,9 +11,11 @@ use forest_encoding::blake2b_256;
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
 use num_bigint_chainsafe::BigUint;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer, Deserializer};
+use serde::ser::SerializeSeq;
 use std::convert::TryFrom;
 use std::str::FromStr;
+use forest_encoding::tuple::*;
 
 pub enum SigTypes {
     SigTypeSecp256k1 = 0x01,
@@ -330,6 +332,138 @@ impl TryFrom<MessageParamsPaymentChannelCreate> for ExecParams {
     }
 }
 
+/// Payment channel update state params
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct PaymentChannelUpdateStateParams {
+    pub sv: SignedVoucher,
+    pub secret: Vec<u8>,
+    pub proof: Vec<u8>,
+}
+
+impl TryFrom<PaymentChannelUpdateStateParams> for UpdateChannelStateParams {
+    type Error = SignerError;
+
+    fn try_from(params: PaymentChannelUpdateStateParams) -> Result<UpdateChannelStateParams, Self::Error> {
+        use serde_cbor::ser::to_vec_packed;
+        let cbor = to_vec_packed(&params.sv).unwrap();
+        Ok(UpdateChannelStateParams {
+            sv: Serialized::new(cbor),
+            secret: vec![],
+            proof: vec![],
+        })
+    }
+}
+
+/// *crypto.Signature Go type:  specs-actors/actors/crytpo:Signature
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct SpecsActorsCryptoSignature {
+    pub typ: u8,
+    #[serde(with = "serde_bytes")]
+    pub data: Vec<u8>,
+}
+
+impl From<&SpecsActorsCryptoSignature> for SpecsActorsCryptoSignature {
+    fn from(sig: &SpecsActorsCryptoSignature) -> Self {
+        let d = sig.data.iter().map(|el|  el.clone() ).collect();
+        SpecsActorsCryptoSignature {
+            typ: sig.typ,
+            data: d,
+        }
+    }
+}
+
+impl Serialize for SpecsActorsCryptoSignature {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> 
+        where S: Serializer
+    {
+        let mut v = Vec::<u8>::new();
+        v.push(self.typ);
+        v.extend(self.data.iter().map(|x| x.clone() ));
+        serde_bytes::Serialize::serialize(&v, serializer)
+    }
+}
+
+/// Signed voucher
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+//#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize_tuple, Serialize_tuple)]
+pub struct SignedVoucher {
+    pub timeLockMin: i64,                       // not supported - must be 0
+    pub timeLockMax: i64,                       // not supported - must be 0
+    // Serializing to 0x40 (empty byte string), consistent with Lotus-generated voucher
+    #[serde(with = "serde_bytes")]
+    pub secretPreimage: Vec<u8>,                // not supported - must be blank
+    // This should serialize to 0xf6 (cbor null) per https://github.com/whyrusleeping/cbor-gen/blob/227fab5a237792e633ddc99254a5a8a03642cb7a/utils.go#L523
+    pub extra: Option::<i32>,                   // not supported - must be None
+    pub lane: u64,
+    pub nonce: u64,
+    // Needs to serialize as either:
+    //   empty byte array                                      if Amount==0
+    //   concat(0x00,[Amount encoded as a big endian slice])   if Amount>0
+    // ref:  https://github.com/filecoin-project/specs-actors/blob/master/actors/abi/big/int.go#L225
+    #[serde(serialize_with = "SignedVoucher::serde_ser_to_cbor_be_int_bytes")]
+    pub amount: u64,
+    pub minSettleHeight: i64,                   // not supported - must be zero
+    // Must serialize to 0x80 (cbor empty array)
+    pub merges: [u8;0],
+    // If this is absent, it must serialize as 0xf6 (cbor null).
+    pub signature: Option<SpecsActorsCryptoSignature>,
+}
+
+
+impl From<&SignedVoucher> for SignedVoucher {
+    fn from(sv: &SignedVoucher) -> Self {
+        let sig : SpecsActorsCryptoSignature = (&sv.signature).as_ref().unwrap().into();
+        Self::new(sv.lane, sv.nonce, sv.amount, &sig)
+    }
+}
+
+impl SignedVoucher {
+    pub fn new(lane: u64, nonce: u64, amount: u64, signature: &SpecsActorsCryptoSignature) -> SignedVoucher {
+        //let signature : SpecsActorsCryptoSignature = signature.into();
+        SignedVoucher{
+            timeLockMin: 0,
+            timeLockMax: 0,
+            secretPreimage: vec![],
+            extra: Option::<i32>::None,
+            lane,
+            nonce,
+            amount,
+            minSettleHeight: 0,
+            merges: [],
+            signature: Some( signature.into() )
+        }
+    }
+
+    /// Serialises a u64 into its 0x00-prefixed big endian representation
+    pub fn serde_ser_to_cbor_be_int_bytes<S>(n: &u64, serializer: S) -> Result<S::Ok, S::Error> 
+        where S: Serializer
+    {
+        let be_bytes = n.to_be_bytes();
+        let mut v = Vec::<u8>::new();
+        v.push(0 as u8);
+        let mut leading_zero = true;
+        
+        // v.extend(be_bytes.iter().skip_white(|&x| *x==0 ));
+        // ^^^ would be cleaner but skip_while not implemented for vec<u8> so using this ugliness instead:
+        v.extend(be_bytes.iter().filter_map(|x| if *x==0 {
+            if !leading_zero {
+                Some(*x)
+            } else {
+                None
+            }
+        } else {
+            leading_zero = false;
+            Some(*x)
+        }));
+
+        serde_bytes::Serialize::serialize(&v, serializer)
+    }
+}
+
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
 #[serde(untagged)]
@@ -344,6 +478,7 @@ pub enum MessageParams {
     ChangeNumApprovalsThresholdMultisigParams(ChangeNumApprovalsThresholdMultisigParams),
     PaymentChannelCreateParams(PaymentChannelCreateParams),
     MessageParamsPaymentChannelCreate(MessageParamsPaymentChannelCreate),
+    PaymentChannelUpdateStateParams(PaymentChannelUpdateStateParams),
 }
 
 impl MessageParams {
@@ -411,6 +546,13 @@ impl MessageParams {
                 forest_vm::Serialized::serialize::<ExecParams>(params)
                     .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
+            MessageParams::PaymentChannelUpdateStateParams(pch_update_params) => {
+                let params = UpdateChannelStateParams::try_from(pch_update_params)?;
+
+                forest_vm::Serialized::serialize::<UpdateChannelStateParams>(params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
+            }
+
         };
 
         Ok(params_serialized)

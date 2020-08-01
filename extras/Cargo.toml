@@ -15,4 +15,5 @@ forest_cid = { git = "https://github.com/zondax/forest", branch="lola/txnid-para
 num_bigint = { package = "forest_bigint" , git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig"  }
 clock = { git = "https://github.com/zondax/forest", branch="lola/txnid-params-multisig"  }
 serde = { version = "1.0", features = ["derive"] }
+serde_bytes = "0.11.5"
 lazy_static = "1.4.0"
