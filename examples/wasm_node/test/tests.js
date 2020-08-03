@@ -413,7 +413,8 @@ describeCall("createMultisig", function() {
     
     let constructor_params = {
       signers: addresses,
-      num_approvals_threshold: 1
+      num_approvals_threshold: 1,
+      unlock_duration: 0,
     };
     
     let exec_params = {
@@ -432,12 +433,53 @@ describeCall("createMultisig", function() {
       params: Buffer.from(filecoin_signer.serializeParams(exec_params)).toString('base64')
     };
 
-    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1, 1);
+    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1, 1, BigInt(0));
 
     console.log(create_multisig_transaction);
 
     assert.deepStrictEqual(expected, create_multisig_transaction);
   });
+
+  it("should return a create multisig transaction with duration -1", function() {
+    let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
+    let privateKey = child.privateKey.toString('hex');
+
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
+
+    console.log(recoveredKey.address)
+
+    let addresses = [recoveredKey.address,"t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
+    let sender_address = recoveredKey.address;
+    
+    let constructor_params = {
+      signers: addresses,
+      num_approvals_threshold: 1,
+      unlock_duration: -1,
+    };
+    
+    let exec_params = {
+      code_cid: 'fil/1/multisig',
+      constructor_params: Buffer.from(filecoin_signer.serializeParams(constructor_params)).toString('base64'),
+    };
+
+    let expected = {
+      to: 't01',
+      from: recoveredKey.address,
+      nonce: 1,
+      value: '1000',
+      gasprice: '1',
+      gaslimit: 1000000,
+      method: 2,
+      params: Buffer.from(filecoin_signer.serializeParams(exec_params)).toString('base64')
+    };
+
+    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1, 1, BigInt(-1));
+
+    console.log(create_multisig_transaction);
+
+    assert.deepStrictEqual(expected, create_multisig_transaction);
+  });
+
 
   it("should return a serialized version of the create multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
@@ -452,7 +494,7 @@ describeCall("createMultisig", function() {
 
     let expected = "89004200015501dfe49184d46adc8f89d44638beb45f78fcad259001430003e84200011a000f424002584982d82a53000155000e66696c2f312f6d756c7469736967583083825501dfe49184d46adc8f89d44638beb45f78fcad259055011eaf1c8a4bbfeeb0870b1745b1f57503470b71160100";
 
-    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1, 1);
+    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1, 1, BigInt(0));
 
     let serialized_create_multisig_transaction = filecoin_signer.transactionSerialize(create_multisig_transaction);
 
@@ -489,7 +531,7 @@ describeCall("createMultisig", function() {
       }
     }
 
-    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1, 1);
+    let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1, 1, BigInt(0));
 
     let signature = filecoin_signer.transactionSignLotus(create_multisig_transaction, privateKey);
 
@@ -814,7 +856,7 @@ describeCall('SerializeParams', function () {
   it('serialize parameters to cbor data', function () {
     let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
 
-    let constructor_params = { signers: addresses, num_approvals_threshold: 1 }
+    let constructor_params = { signers: addresses, num_approvals_threshold: 1, unlock_duration: 0 }
 
     let params = {
         code_cid: 'fil/1/multisig',
@@ -834,7 +876,7 @@ describeCall('SerializeParams', function () {
   it('serialize parameters to cbor data test with PascalCase', function () {
     let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
 
-    let constructor_params = { Signers: addresses, NumApprovalsThreshold: 1 }
+    let constructor_params = { Signers: addresses, NumApprovalsThreshold: 1, UnlockDuration: 0 }
 
     let params = {
         CodeCid: 'fil/1/multisig',

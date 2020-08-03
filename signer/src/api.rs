@@ -26,8 +26,7 @@ pub struct ConstructorParamsMultisig {
     pub signers: Vec<String>,
     #[serde(alias = "NumApprovalsThreshold")]
     pub num_approvals_threshold: i64,
-    #[serde(skip)]
-    // FIXME: only skip if -1
+    #[serde(alias = "UnlockDuration")]
     pub unlock_duration: i64,
 }
 
@@ -53,10 +52,9 @@ impl TryFrom<ConstructorParamsMultisig> for ConstructorParams {
         };
 
         Ok(ConstructorParams {
-            signers,
+            signers: signers,
             num_approvals_threshold: constructor_params.num_approvals_threshold,
-            // FIXME: What is default ? Optional ?
-            unlock_duration: 0,
+            unlock_duration: constructor_params.unlock_duration,
         })
     }
 }

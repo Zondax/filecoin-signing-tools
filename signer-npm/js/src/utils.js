@@ -81,7 +81,6 @@ function addressAsBytes(address) {
 
   const protocolIndicatorByte = `0${protocolIndicator}`;
 
-  // TODO: check checksum!
   const bytes_address = Buffer.concat([
     Buffer.from(protocolIndicatorByte, "hex"),
     Buffer.from(payload),

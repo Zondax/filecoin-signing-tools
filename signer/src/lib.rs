@@ -445,6 +445,7 @@ pub fn verify_aggregated_signature(
 /// * `value` - Value to send on the multisig
 /// * `required` - Number of required signatures required
 /// * `nonce` - Nonce of the message
+/// * `duration` - Duration of the multisig
 ///
 pub fn create_multisig(
     sender_address: String,
@@ -452,6 +453,7 @@ pub fn create_multisig(
     value: String,
     required: i64,
     nonce: u64,
+    duration: i64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     let signers_tmp: Result<Vec<Address>, _> = addresses
         .into_iter()
@@ -467,10 +469,16 @@ pub fn create_multisig(
         }
     };
 
+    if duration < 0 && duration != -1 {
+        return Err(SignerError::GenericString(
+            "Invalid duration value (duration >= -1)".to_string(),
+        ));
+    };
+
     let constructor_params_multisig = ConstructorParams {
         signers: signers,
         num_approvals_threshold: required,
-        unlock_duration: 0,
+        unlock_duration: duration,
     };
 
     let serialized_constructor_params =
@@ -1054,7 +1062,8 @@ mod tests {
     fn support_multisig_create() {
         let constructor_params = serde_json::json!({
             "signers": ["t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba", "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"],
-            "num_approvals_threshold": 1
+            "num_approvals_threshold": 1,
+            "unlock_duration": 0
         });
 
         let constructor_params_expected: MessageParams =
@@ -1062,7 +1071,7 @@ mod tests {
 
         let exec_params = serde_json::json!({
             "code_cid": "fil/1/multisig",
-            "constructor_params": base64::encode(serialize_params(constructor_params_expected).unwrap()),
+            "constructor_params": base64::encode(serialize_params(constructor_params_expected).unwrap())
         });
 
         let exec_params_expected: MessageParams = serde_json::from_value(exec_params).unwrap();
@@ -1088,6 +1097,7 @@ mod tests {
             "1000".to_string(),
             1,
             1,
+            0,
         )
         .unwrap();
 
