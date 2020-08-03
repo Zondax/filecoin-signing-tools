@@ -35,6 +35,9 @@ pub enum SignerError {
     /// BLS error
     #[error("Couldn't convert from slice")]
     TryFromSlice(#[from] TryFromSliceError),
+    /// Base64 decode Error
+    #[error("Base64 decode error | {0}")]
+    DecodeError(#[from] base64::DecodeError),
 }
 
 #[cfg(feature = "with-ffi-support")]

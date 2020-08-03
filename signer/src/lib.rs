@@ -80,15 +80,9 @@ impl TryFrom<String> for PrivateKey {
     type Error = SignerError;
 
     fn try_from(s: String) -> Result<PrivateKey, Self::Error> {
-        if let Ok(v) = hex::decode(&s) {
-            return PrivateKey::try_from(v);
-        }
-
-        if let Ok(v) = base64::decode(&s) {
-            return PrivateKey::try_from(v);
-        }
-
-        Err(SignerError::KeyDecoding())
+        let v = base64::decode(&s)?;
+        
+        PrivateKey::try_from(v)
     }
 }
 
