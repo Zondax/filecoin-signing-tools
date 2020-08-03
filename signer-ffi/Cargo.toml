@@ -2,7 +2,7 @@
 ffi-support = "0.4"
 filecoin-signer = { features = ["with-ffi-support"], path = "../signer" }
 hex = "0.4"
-jni = { optional = true, version = "0.16" }
+jni = { optional = true, version = "0.17" }
 
 [features]
 with-jni = ["jni"]
