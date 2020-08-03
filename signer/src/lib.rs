@@ -275,7 +275,12 @@ pub fn transaction_sign_raw(
     private_key: &PrivateKey,
 ) -> Result<Signature, SignerError> {
     // the `from` address protocol let us know which signing scheme to use
-    let signature = match unsigned_message_api.from.as_bytes()[1] {
+    let signature = match unsigned_message_api
+        .from
+        .as_bytes()
+        .get(1)
+        .ok_or(SignerError::GenericString("Empty signing protocol".into()))?
+    {
         b'1' => Signature::SignatureSECP256K1(transaction_sign_secp56k1_raw(
             unsigned_message_api,
             private_key,
