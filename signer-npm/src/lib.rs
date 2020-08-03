@@ -462,7 +462,7 @@ mod tests_wasm {
         }"#;
 
     const EXAMPLE_PRIVATE_KEY: &str =
-        "f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a";
+        "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=";
 
     #[test]
     fn check_signature() {

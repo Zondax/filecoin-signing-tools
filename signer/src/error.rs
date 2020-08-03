@@ -54,6 +54,7 @@ impl From<SignerError> for ffi_support::ExternError {
             SignerError::BLS(_) => 8,
             SignerError::InvalidBIP44Path(_) => 8,
             SignerError::TryFromSlice(_) => 10,
+            SignerError::DecodeError(_) => 11,
         };
         Self::new_error(ffi_support::ErrorCode::new(code), e.to_string())
     }
