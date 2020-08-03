@@ -3,7 +3,10 @@ NPM_PACKAGE_NAME:="@zondax/filecoin-signing-tools"
 build: deps build_npm
 
 
-deps_npm:
+install_wasmpack:
+ifeq ($(SILENT),)
+	@echo -n "Going to install wasm-pack in your system, are you sure ? [y/N] " && read ans && [ $${ans:-N} = y ]
+endif
 	curl -o /tmp/tmp.sh https://rustwasm.github.io/wasm-pack/installer/init.sh
 	chmod +x /tmp/tmp.sh
 	/tmp/tmp.sh -f
@@ -54,7 +57,10 @@ test_ledger: link_npm
 demo_npm_browser: link_npm
 	cd examples/wasm_browser && yarn install && yarn certificate && yarn start
 
-deps_rust:
+install_deps_rust:
+ifeq ($(SILENT),)
+		@echo -n "Going to install the following cargo packages : \n- cargo-audit \n- cargo-license \n- cargo-outdated \n- cargo-watch \n- https \n- sccache \nDo you want to continue with the operation ? [y/N] " && read ans && [ $${ans:-N} = y ]
+endif
 	cargo install cargo-audit
 	cargo install cargo-license
 	cargo install cargo-outdated
@@ -63,7 +69,7 @@ deps_rust:
 	yarn install
 	echo "Remember to add export RUSTC_WRAPPER=sccache to your environment."
 
-deps: deps_npm deps_rust
+deps: install_wasmpack install_deps_rust
 
 checks:
 	cargo fmt -- --check

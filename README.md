@@ -55,9 +55,16 @@ You can find more information in the [Documentation Site](https://zondax.ch/proj
 
 ### Installing dependencies
 
+You will need [rust](https://www.rust-lang.org/tools/install) installed.
+
 ```bash
-make deps
+# Install wasm-pack in your system
+$ make install_wasmpack
+# Install some utilitary tools
+$ make install_deps_rust
 ```
+
+Note: wasm  parck are required if you want to use the wasm version of the lib.
 
 ### Rust
 
