@@ -4,7 +4,9 @@ build: deps build_npm
 
 
 install_wasmpack:
+ifeq ($(SILENT),)
 	@echo -n "Going to install wasm-pack in your system, are you sure ? [y/N] " && read ans && [ $${ans:-N} = y ]
+endif
 	curl -o /tmp/tmp.sh https://rustwasm.github.io/wasm-pack/installer/init.sh
 	chmod +x /tmp/tmp.sh
 	/tmp/tmp.sh -f
@@ -56,7 +58,9 @@ demo_npm_browser: link_npm
 	cd examples/wasm_browser && yarn install && yarn certificate && yarn start
 
 install_deps_rust:
-	@echo -n "Going to install the folowing cargo package : \n- cargo-audit \n- cargo-license \n- cargo-outdated \n- cargo-watch \n- https \n- sccache \nDo you want to continue with the operation ? [y/N] " && read ans && [ $${ans:-N} = y ]
+ifeq ($(SILENT),)
+		@echo -n "Going to install the folowing cargo package : \n- cargo-audit \n- cargo-license \n- cargo-outdated \n- cargo-watch \n- https \n- sccache \nDo you want to continue with the operation ? [y/N] " && read ans && [ $${ans:-N} = y ]
+endif
 	cargo install cargo-audit
 	cargo install cargo-license
 	cargo install cargo-outdated

@@ -99,7 +99,7 @@ jobs:
       - run: cargo --version
       - restore-sccache-cache
       - run: sudo apt-get update && sudo apt-get install -y firefox-esr libnss3
-      - run: make deps_npm
+      - run: make install_wasmpack SILENT=true
       # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-signing-tools/issues/68
       - run: make test_npm_unit
       - run: make test_npm_node
@@ -137,7 +137,7 @@ jobs:
           command: |
             source $HOME/.cargo/env
             nvm use 14.4.0
-            make deps_npm
+            make install_wasmpack SILENT=true
       - run:
           name: Run zemu tests
           command: |
@@ -193,7 +193,7 @@ jobs:
     steps:
       - checkout
       - restore-sccache-cache
-      - run: make deps_npm
+      - run: make install_wasmpack SILENT=true
       - run: make build_npm
       - run:
           name: Update tag
