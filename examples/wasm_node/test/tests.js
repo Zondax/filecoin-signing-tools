@@ -154,21 +154,6 @@ describe("keyDeriveFromSeed", function() {
 })
 
 describe("keyRecover", function() {
-  it("should recover testnet key", function() {
-    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
-    let privateKey = child.privateKey.toString('hex');
-
-    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
-
-    console.log("Public Key Raw         :", recoveredKey.public_raw);
-    console.log("Public Key             :", recoveredKey.public_hexstring);
-    console.log("Private                :", recoveredKey.private_hexstring);
-    console.log("Address                :", recoveredKey.address);
-
-    assert.strictEqual(recoveredKey.private_hexstring, child.privateKey.toString("hex"));
-    assert.strictEqual(recoveredKey.address, "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
-  });
-
   it("should recover testnet key (buffer private key)", function() {
     let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
     let privateKey = child.privateKey;
@@ -182,21 +167,6 @@ describe("keyRecover", function() {
 
     assert.strictEqual(recoveredKey.private_hexstring, child.privateKey.toString("hex"));
     assert.strictEqual(recoveredKey.address, "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
-  });
-
-  it("should recover mainnet key", function() {
-    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
-    let privateKey = child.privateKey.toString('hex');
-
-    let recoveredKey = filecoin_signer.keyRecover(privateKey, false);
-
-    console.log("Public Key Raw         :", recoveredKey.public_raw);
-    console.log("Public Key             :", recoveredKey.public_hexstring);
-    console.log("Private                :", recoveredKey.private_hexstring);
-    console.log("Address                :", recoveredKey.address);
-
-    assert.strictEqual(recoveredKey.private_hexstring, child.privateKey.toString("hex"));
-    assert.strictEqual(recoveredKey.address, "f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
   });
 
   it("key recover mainnet base64", () => {
@@ -302,7 +272,7 @@ describe("transactionSign", function() {
   it("should sign transaction", function() {
     const example_key = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
 
-    var signed_tx = filecoin_signer.transactionSign(EXAMPLE_TRANSACTION, example_key.privateKey.toString("hex"));
+    var signed_tx = filecoin_signer.transactionSign(EXAMPLE_TRANSACTION, example_key.privateKey.toString("base64"));
     console.log(signed_tx.signature);
     const signature = Buffer.from(signed_tx.signature.data, 'base64');
 
@@ -328,7 +298,7 @@ describe("transactionSignLotus", function() {
   it("should sign transaction and return a Lotus compatible json string", function() {
     const example_key = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
 
-    var signed_tx = filecoin_signer.transactionSignLotus(EXAMPLE_TRANSACTION, example_key.privateKey.toString("hex"));
+    var signed_tx = filecoin_signer.transactionSignLotus(EXAMPLE_TRANSACTION, example_key.privateKey.toString("base64"));
 
     console.log(signed_tx)
 
@@ -356,7 +326,7 @@ describe("transactionSignRaw", function() {
   it("should sign transaction and return raw signature", function() {
     const example_key = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
 
-    let signature = filecoin_signer.transactionSignRaw(EXAMPLE_TRANSACTION, example_key.privateKey.toString("hex"));
+    let signature = filecoin_signer.transactionSignRaw(EXAMPLE_TRANSACTION, example_key.privateKey.toString("base64"));
     signature = Buffer.from(signature);
     let message_digest = getDigest(Buffer.from(EXAMPLE_CBOR_TX, 'hex'));
 
@@ -402,7 +372,7 @@ if (process.env.PURE_JS) { describeCall = describe.skip }
 describeCall("createMultisig", function() {
   it("should return a create multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
-    let privateKey = child.privateKey.toString('hex');
+    let privateKey = child.privateKey.toString("base64");
 
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
@@ -483,7 +453,7 @@ describeCall("createMultisig", function() {
 
   it("should return a serialized version of the create multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
-    let privateKey = child.privateKey.toString('hex');
+    let privateKey = child.privateKey.toString("base64");
 
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
@@ -505,7 +475,7 @@ describeCall("createMultisig", function() {
 
   it("should return a signature of the create multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
-    let privateKey = child.privateKey.toString('hex');
+    let privateKey = child.privateKey.toString("base64");
 
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
@@ -544,7 +514,7 @@ describeCall("createMultisig", function() {
 describeCall("proposeMultisig", function() {
   it("should return a propose multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
-    let privateKey = child.privateKey.toString('hex');
+    let privateKey = child.privateKey.toString("base64");
 
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
@@ -582,7 +552,7 @@ describeCall("proposeMultisig", function() {
 
   it("should return a serialized version of the propose multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
-    let privateKey = child.privateKey.toString('hex');
+    let privateKey = child.privateKey.toString("base64");
 
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
@@ -604,7 +574,7 @@ describeCall("proposeMultisig", function() {
 
   it("should return a signature of the create multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
-    let privateKey = child.privateKey.toString('hex');
+    let privateKey = child.privateKey.toString("base64");
 
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
@@ -643,7 +613,7 @@ describeCall("proposeMultisig", function() {
 describeCall("approveMultisig", function() {
   it("should return an approval multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
-    let privateKey = child.privateKey.toString('hex');
+    let privateKey = child.privateKey.toString("base64");
 
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
@@ -686,7 +656,7 @@ describeCall("approveMultisig", function() {
 
   it("should return a serialized version of the approval multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
-    let privateKey = child.privateKey.toString('hex');
+    let privateKey = child.privateKey.toString("base64");
 
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
@@ -709,7 +679,7 @@ describeCall("approveMultisig", function() {
 
   it("should return a signature of the approve multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
-    let privateKey = child.privateKey.toString('hex');
+    let privateKey = child.privateKey.toString("base64");
 
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
@@ -749,7 +719,7 @@ describeCall("approveMultisig", function() {
 describeCall("cancelMultisig", function() {
   it("should return a cancel multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
-    let privateKey = child.privateKey.toString('hex');
+    let privateKey = child.privateKey.toString("base64");
 
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
@@ -792,7 +762,7 @@ describeCall("cancelMultisig", function() {
 
   it("should return a serialized version of the cancel multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
-    let privateKey = child.privateKey.toString('hex');
+    let privateKey = child.privateKey.toString("base64");
 
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
@@ -815,7 +785,7 @@ describeCall("cancelMultisig", function() {
 
   it("should return a signature of the cancel multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
-    let privateKey = child.privateKey.toString('hex');
+    let privateKey = child.privateKey.toString("base64");
 
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
@@ -954,7 +924,7 @@ describeCall('BLS support', function () {
         let tc = jsonBLSData[i];
 
         it(`BLS signing test case n°${i}`, function () {
-            var signed_tx = filecoin_signer.transactionSign(tc.message, tc.sk);
+            var signed_tx = filecoin_signer.transactionSign(tc.message, Buffer.from(tc.sk, "hex").toString("base64"));
 
             const signature = Buffer.from(signed_tx.signature.data, 'base64');
 
