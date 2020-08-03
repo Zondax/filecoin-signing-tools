@@ -202,7 +202,7 @@ test("sign_transaction", async () => {
   const response = await callMethod(
     URL,
     "sign_transaction",
-    [EXAMPLE_TRANSACTION, child.privateKey.toString("hex")],
+    [EXAMPLE_TRANSACTION, child.privateKey.toString("base64")],
     1,
   );
 
