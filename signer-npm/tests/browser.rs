@@ -58,7 +58,7 @@ fn sign() {
     }))
     .unwrap();
 
-    let private_key: &str = r#"f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a"#;
+    let private_key: &str = r#"8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo="#;
 
     let answer = filecoin_signer_wasm::transaction_sign(
         example_unsigned_message,
