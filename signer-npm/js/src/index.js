@@ -2,7 +2,7 @@ const bip39 = require("bip39");
 const bip32 = require("bip32");
 const cbor = require("ipld-dag-cbor").util;
 const secp256k1 = require("secp256k1");
-const BN = require('bn.js');
+const BN = require("bn.js");
 
 const ExtendedKey = require("./extendedkey");
 const {
@@ -54,17 +54,17 @@ function keyRecover(privateKey, testnet) {
 }
 
 function transactionSerializeRaw(message) {
-  if (!"to" in message || typeof message.to !== "string") {
+  if (!("to" in message) || typeof message.to !== "string") {
     throw new Error("'to' is a required field and has to be a 'string'");
   }
-  if (!"from" in message || typeof message.from !== "string") {
+  if (!("from" in message) || typeof message.from !== "string") {
     throw new Error("'from' is a required field and has to be a 'string'");
   }
-  if (!"nonce" in message || typeof message.nonce !== "number") {
+  if (!("nonce" in message) || typeof message.nonce !== "number") {
     throw new Error("'nonce' is a required field and has to be a 'number'");
   }
   if (
-    !"value" in message ||
+    !("value" in message) ||
     typeof message.value !== "string" ||
     message.value === "" ||
     message.value.includes("-")
@@ -73,13 +73,13 @@ function transactionSerializeRaw(message) {
       "'value' is a required field and has to be a 'string' but not empty or negative"
     );
   }
-  if (!"gasprice" in message || typeof message.gasprice !== "string") {
+  if (!("gasprice" in message) || typeof message.gasprice !== "string") {
     throw new Error("'gasprice' is a required field and has to be a 'string'");
   }
-  if (!"gaslimit" in message || typeof message.gaslimit !== "number") {
+  if (!("gaslimit" in message) || typeof message.gaslimit !== "number") {
     throw new Error("'gaslimit' is a required field and has to be a 'number'");
   }
-  if (!"method" in message || typeof message.method !== "number") {
+  if (!("method" in message) || typeof message.method !== "number") {
     throw new Error("'method' is a required field and has to be a 'number'");
   }
 
@@ -87,12 +87,20 @@ function transactionSerializeRaw(message) {
   const from = addressAsBytes(message.from);
 
   const valueBigInt = new BN(message.value, 10);
-  const valueBuffer = valueBigInt.toArrayLike(Buffer, 'be', valueBigInt.byteLength());
-  const value = Buffer.concat([Buffer.from('00', 'hex'), valueBuffer]);
+  const valueBuffer = valueBigInt.toArrayLike(
+    Buffer,
+    "be",
+    valueBigInt.byteLength()
+  );
+  const value = Buffer.concat([Buffer.from("00", "hex"), valueBuffer]);
 
   const gaspriceBigInt = new BN(message.gasprice, 10);
-  const gaspriceBuffer = gaspriceBigInt.toArrayLike(Buffer, 'be', gaspriceBigInt.byteLength());
-  const gasprice = Buffer.concat([Buffer.from('00', 'hex'), gaspriceBuffer]);
+  const gaspriceBuffer = gaspriceBigInt.toArrayLike(
+    Buffer,
+    "be",
+    gaspriceBigInt.byteLength()
+  );
+  const gasprice = Buffer.concat([Buffer.from("00", "hex"), gaspriceBuffer]);
 
   const message_to_encode = [
     0,
@@ -134,8 +142,8 @@ function transactionParse(cborMessage, testnet) {
   if (decoded[4][0] === 0x01) {
     throw new Error("Value cant be negative");
   }
-  message.value = new BN(decoded[4].toString('hex'), 16).toString(10);
-  message.gasprice = new BN(decoded[5].toString('hex'), 16).toString(10);
+  message.value = new BN(decoded[4].toString("hex"), 16).toString(10);
+  message.gasprice = new BN(decoded[5].toString("hex"), 16).toString(10);
   message.gaslimit = decoded[6];
   message.method = decoded[7];
   message.params = decoded[8].toString();
@@ -157,7 +165,10 @@ function transactionSignRaw(unsignedMessage, privateKey) {
   const messageDigest = getDigest(unsignedMessage);
   const signature = secp256k1.ecdsaSign(messageDigest, privateKey);
 
-  return Buffer.concat([Buffer.from(signature.signature), Buffer.from([signature.recid])]);
+  return Buffer.concat([
+    Buffer.from(signature.signature),
+    Buffer.from([signature.recid]),
+  ]);
 }
 
 function transactionSign(unsignedMessage, privateKey) {

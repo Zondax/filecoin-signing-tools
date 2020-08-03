@@ -47,9 +47,7 @@ function getAccountFromPath(path) {
 }
 
 function addressAsBytes(address) {
-  let address_decoded,
-    payload,
-    checksum;
+  let address_decoded, payload, checksum;
   const protocolIndicator = address[1];
 
   switch (Number(protocolIndicator)) {
@@ -68,7 +66,7 @@ function addressAsBytes(address) {
     case ProtocolIndicator.ACTOR:
       address_decoded = base32Decode(address.slice(2).toUpperCase(), "RFC4648");
 
-      payload = address_decoded.slice(0, -4);;
+      payload = address_decoded.slice(0, -4);
       checksum = Buffer.from(address_decoded.slice(-4));
 
       if (payload.byteLength !== 32) {
@@ -88,9 +86,9 @@ function addressAsBytes(address) {
     Buffer.from(payload),
   ]);
 
-  if (getChecksum(bytes_address).toString('hex') !== checksum.toString('hex')) {
+  if (getChecksum(bytes_address).toString("hex") !== checksum.toString("hex")) {
     throw new InvalidChecksumAddress();
-  };
+  }
 
   return bytes_address;
 }
