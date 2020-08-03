@@ -687,7 +687,7 @@ mod tests {
     use rayon::prelude::*;
 
     const BLS_PUBKEY: &str = "ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc07904";
-    const BLS_PRIVATEKEY: &str = "d31ed8d06197f7631e58117d99c5ae4791183f17b6772eb4afc5c840e0f7d412";
+    const BLS_PRIVATEKEY: &str = "0x7Y0GGX92MeWBF9mcWuR5EYPxe2dy60r8XIQOD31BI=";
 
     // NOTE: not the same transaction used in other tests.
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
@@ -716,12 +716,12 @@ mod tests {
         "8289005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a0430009c41909c4004058420106398485060ca2a4deb97027f518f45569360c3873a4303926fa6909a7299d4c55883463120836358ff3396882ee0dc2cf15961bd495cdfb3de1ee2e8bd3768e01";
 
     const EXAMPLE_PRIVATE_KEY: &str =
-        "f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a";
+        "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=";
 
     #[test]
     fn decode_key() {
         let pk = PrivateKey::try_from(EXAMPLE_PRIVATE_KEY.to_string()).unwrap();
-        assert_eq!(hex::encode(&pk.0), EXAMPLE_PRIVATE_KEY);
+        assert_eq!(base64::encode(&pk.0), EXAMPLE_PRIVATE_KEY);
     }
 
     #[test]
@@ -740,7 +740,7 @@ mod tests {
         let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "").unwrap();
 
         assert_eq!(
-            hex::encode(&extended_key.private_key.0),
+            base64::encode(&extended_key.private_key.0),
             EXAMPLE_PRIVATE_KEY
         );
     }
@@ -759,8 +759,8 @@ mod tests {
         let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "password").unwrap();
 
         assert_eq!(
-            hex::encode(&extended_key.private_key.0),
-            hex::encode(&extended_key_expected.private_key.0)
+            base64::encode(&extended_key.private_key.0),
+            base64::encode(&extended_key_expected.private_key.0)
         );
     }
 
@@ -777,7 +777,7 @@ mod tests {
         let extended_key = key_derive_from_seed(seed.as_bytes(), "m/44'/461'/0/0/0").unwrap();
 
         assert_eq!(
-            hex::encode(&extended_key.private_key.0),
+            base64::encode(&extended_key.private_key.0),
             EXAMPLE_PRIVATE_KEY
         );
     }
@@ -790,7 +790,7 @@ mod tests {
         let recovered_key = key_recover(&private_key, testnet).unwrap();
 
         assert_eq!(
-            hex::encode(&recovered_key.private_key.0),
+            base64::encode(&recovered_key.private_key.0),
             EXAMPLE_PRIVATE_KEY
         );
 
@@ -808,7 +808,7 @@ mod tests {
         let recovered_key = key_recover(&private_key, testnet).unwrap();
 
         assert_eq!(
-            hex::encode(&recovered_key.private_key.0),
+            base64::encode(&recovered_key.private_key.0),
             EXAMPLE_PRIVATE_KEY
         );
 
