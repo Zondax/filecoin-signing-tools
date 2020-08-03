@@ -81,7 +81,7 @@ impl TryFrom<String> for PrivateKey {
 
     fn try_from(s: String) -> Result<PrivateKey, Self::Error> {
         let v = base64::decode(&s)?;
-        
+
         PrivateKey::try_from(v)
     }
 }

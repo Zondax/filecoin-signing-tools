@@ -93,7 +93,7 @@ fn extract_private_key(private_key_js: JsValue) -> Result<PrivateKey, JsValue> {
     }
 
     Err(JsValue::from(
-        "Private key must be encoded as hexstring, base64 or buffer",
+        "Private key must be encoded as base64 string or be a buffer",
     ))
 }
 
