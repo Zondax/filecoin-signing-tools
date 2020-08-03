@@ -461,8 +461,7 @@ mod tests_wasm {
             "params": ""
         }"#;
 
-    const EXAMPLE_PRIVATE_KEY: &str =
-        "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=";
+    const EXAMPLE_PRIVATE_KEY: &str = "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=";
 
     #[test]
     fn check_signature() {
