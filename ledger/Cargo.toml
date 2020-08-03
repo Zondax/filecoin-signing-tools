@@ -25,10 +25,10 @@ futures = "0.3.4"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0.16"
 
-ledger-transport = { git = "https://github.com/Zondax/ledger-rs" }
-ledger-zondax-generic = { git = "https://github.com/Zondax/ledger-rs" }
+ledger-transport = { git = "https://github.com/Zondax/ledger-rs", rev="f7f7affe989ba6a30049637fa92486071bc75df9" }
+ledger-zondax-generic = { git = "https://github.com/Zondax/ledger-rs", rev="f7f7affe989ba6a30049637fa92486071bc75df9" }
 
-zx-bip44 = { git = "https://github.com/Zondax/blockchain-tools-rs" }
+zx-bip44 = { git = "https://github.com/Zondax/blockchain-tools-rs", rev="3524b955bc10dda0c47908cd2e0b857cf83733ad" }
 
 # For wasm compiling
 [target.'cfg(target_arch = "wasm32")'.dependencies]
