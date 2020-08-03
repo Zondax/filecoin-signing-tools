@@ -30,5 +30,5 @@ module.exports = {
   UnknownProtocolIndicator,
   InvalidPayloadLength,
   ProtocolNotSupported,
-  InvalidChecksumAddress
+  InvalidChecksumAddress,
 };
