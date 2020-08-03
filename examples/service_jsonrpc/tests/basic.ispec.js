@@ -48,7 +48,7 @@ test("key_derive", async () => {
 
   // Do we have a results
   expect(response).toHaveProperty("result");
-  expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
+  expect(response.result.private_base64).toEqual(child.privateKey.toString("base64"));
   expect(response.result.address).toEqual("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
 });
 
@@ -62,7 +62,7 @@ test("key_derive testnet path", async () => {
 
   // Do we have a results
   expect(response).toHaveProperty("result");
-  expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
+  expect(response.result.private_base64).toEqual(child.privateKey.toString("base64"));
   expect(response.result.public_hexstring).toEqual(expectedPubKey.toString("hex"));
   expect(response.result.address.startsWith("t")).toBeTruthy();
 });
@@ -99,7 +99,7 @@ test("key_derive missing password parameter (verify default)", async () => {
   console.log(response);
 
   expect(response).toHaveProperty("result");
-  expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
+  expect(response.result.private_base64).toEqual(child.privateKey.toString("base64"));
   expect(response.result.public_hexstring).toEqual(expectedPubKey.toString("hex"));
   expect(response.result.address).toEqual("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
 });
@@ -115,7 +115,7 @@ test("key_derive_from_seed", async () => {
 
   // Do we have a results
   expect(response).toHaveProperty("result");
-  expect(response.result.private_hexstring).toEqual(child.privateKey.toString("hex"));
+  expect(response.result.private_base64).toEqual(child.privateKey.toString("base64"));
   expect(response.result.public_hexstring).toEqual(expectedPubKey.toString("hex"));
   expect(response.result.address).toEqual("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
 });
@@ -361,7 +361,7 @@ test("send_signed_tx", async () => {
   const signedTxResponse = await callMethod(
     URL,
     "sign_transaction",
-    [transaction, keyAddressResponse.result.private_hexstring],
+    [transaction, keyAddressResponse.result.private_base64],
     2,
   );
 
@@ -454,7 +454,7 @@ test("send_sign", async () => {
   const response = await callMethod(
     URL,
     "send_sign",
-    [transaction, keyAddressResponse.result.private_hexstring],
+    [transaction, keyAddressResponse.result.private_base64],
     2,
   );
 
