@@ -59,7 +59,7 @@ demo_npm_browser: link_npm
 
 install_deps_rust:
 ifeq ($(SILENT),)
-		@echo -n "Going to install the folowing cargo package : \n- cargo-audit \n- cargo-license \n- cargo-outdated \n- cargo-watch \n- https \n- sccache \nDo you want to continue with the operation ? [y/N] " && read ans && [ $${ans:-N} = y ]
+		@echo -n "Going to install the following cargo packages : \n- cargo-audit \n- cargo-license \n- cargo-outdated \n- cargo-watch \n- https \n- sccache \nDo you want to continue with the operation ? [y/N] " && read ans && [ $${ans:-N} = y ]
 endif
 	cargo install cargo-audit
 	cargo install cargo-license
