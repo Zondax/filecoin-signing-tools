@@ -69,7 +69,7 @@ Arguments:
 ```rust
 use signer::{key_recover, PrivateKey};
 
-let private_key = PrivateKey::try_from("f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a").unwrap();
+let private_key = PrivateKey::try_from("8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=").unwrap();
 
 let extended_key = key_recover(private_key, true).unwrap();
 
@@ -162,7 +162,7 @@ const transaction: &str = r#"
 
 let message_user_api: UnsignedMessageAPI = serde_json::from_str(transaction).unwrap();
 
-let private_key = PrivateKey::try_from("f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a").unwrap();
+let private_key = PrivateKey::try_from("8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=").unwrap();
 
 let raw_signature = transaction_sign_raw(&message_user_api, &private_key).unwrap();
 
@@ -208,7 +208,7 @@ const transaction: &str = r#"
 
 let message_user_api: UnsignedMessageAPI = serde_json::from_str(transaction).unwrap();
 
-let private_key = PrivateKey::try_from("f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a").unwrap();
+let private_key = PrivateKey::try_from("8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=").unwrap();
 
 let raw_signature = transaction_sign(&message_user_api, &private_key).unwrap();
 
@@ -228,7 +228,7 @@ use signer::{transaction_sign_raw, verify_signature};
 
 let cbor_data = CborBuffer(hex::decode("885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040").unwrap());
 
-let private_key = PrivateKey::try_from("f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a".to_string()).unwrap();
+let private_key = PrivateKey::try_from("8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=".to_string()).unwrap();
 
 const transaction: &str = r#"
     {
@@ -252,6 +252,71 @@ let result = verify_signature(&signature, &cbor_data).unwrap()
 println!("{}", result);
 ```
 
+## create_multisig
+
+Utilitary function to create a create multisig message. Return an unsigned message.
+
+Arguments:
+* **sender_address**: A string address;
+* **addresses**: List of string addresses of the multisig;
+* **value**: Value to send on the multisig;
+* **required**: Number of required signatures required;
+* **nonce**: Nonce of the message;
+* **duration**: Duration of the multisig;
+
+```rust
+ todo!()
+```
+
+## proposal_multisig_message
+
+Utilitary function to create a proposal multisig message. Return an unsigned message.
+
+Arguments:
+* **multisig_address**: A string address;
+* **to_address**: A string address;
+* **from_address**: A string address;
+* **amount**: Amount of the transaction;
+* **nonce**: Nonce of the message;
+
+```rust
+ todo!()
+```
+
+## approve_multisig_message
+
+Utilitary function to create an approve multisig message. Return an unsigned message.
+
+Arguments
+* **multisig_address**: A string address
+* **message_id**: message id
+* **proposer_address**: A string address
+* **to_address**: A string address
+* **amount**: Amount of the transaction
+* **from_address**: A string address
+* **nonce**: Nonce of the message
+
+```rust
+ todo!()
+```
+
+## cancel_multisig_message
+
+Utilitary function to create a cancel multisig message. Return an unsigned message.
+
+Arguments
+* **multisig_address**: A string address
+* **message_id**: message id
+* **proposer_address**: A string address
+* **to_address**: A string address
+* **amount**: Amount of the transaction
+* **from_address**: A string address
+* **nonce**: Nonce of the message
+
+```rust
+ todo!()
+```
+
 ## verify\_aggregated\_signature
 
 Verify BLS aggragated signature.
@@ -261,5 +326,62 @@ Arguments :
 * **CBOR transactions**: An array of CBOR transactions to verify;
 
 ```rust
-  todo!();
+// sign 3 messages
+let num_messages = 3;
+
+let mut rng = XorShiftRng::from_seed([
+    0x59, 0x62, 0xbe, 0x5d, 0x76, 0x3d, 0x31, 0x8d, 0x17, 0xdb, 0x37, 0x32, 0x54, 0x06,
+    0xbc, 0xe5,
+]);
+
+// generate private keys
+let private_keys: Vec<_> = (0..num_messages)
+    .map(|_| bls_signatures::PrivateKey::generate(&mut rng))
+    .collect();
+
+// generate messages
+let messages: Vec<UnsignedMessageAPI> = (0..num_messages)
+    .map(|i| {
+        //Prepare transaction
+        let bls_public_key = private_keys[i].public_key();
+        let bls_address = Address::new_bls(&bls_public_key.as_bytes()).unwrap();
+
+        UnsignedMessageAPI {
+            to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
+            from: bls_address.to_string(),
+            nonce: 1,
+            value: "100000".to_string(),
+            gas_price: "2500".to_string(),
+            gas_limit: 25000,
+            method: 0,
+            params: "".to_string(),
+        }
+    })
+    .collect();
+
+// sign messages
+let sigs: Vec<bls_signatures::Signature>;
+sigs = messages
+    .par_iter()
+    .zip(private_keys.par_iter())
+    .map(|(message, pk)| {
+        let private_key = PrivateKey::try_from(pk.as_bytes()).expect("FIX ME");
+        let raw_sig = transaction_sign_bls_raw(message, &private_key).unwrap();
+
+        bls_signatures::Serialize::from_bytes(&raw_sig.0).expect("FIX ME")
+    })
+    .collect::<Vec<bls_signatures::Signature>>();
+
+// serialize messages
+let cbor_messages: Vec<CborBuffer>;
+cbor_messages = messages
+    .par_iter()
+    .map(|message| transaction_serialize(message).unwrap())
+    .collect::<Vec<CborBuffer>>();
+
+let aggregated_signature = bls_signatures::aggregate(&sigs);
+
+let sig = SignatureBLS::try_from(aggregated_signature.as_bytes()).expect("FIX ME");
+
+assert!(verify_aggregated_signature(&sig, &cbor_messages[..]).unwrap());
 ```

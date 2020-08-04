@@ -92,7 +92,7 @@ cargo test -p filecoin-signer
 Build WASM and link it locally so examples are linked to the local version:
 
 ```bash
-make link_wasm
+make build_wasm
 ```
 
 After this, you can run the following tests / examples:
