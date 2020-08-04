@@ -412,7 +412,7 @@ describeCall("createMultisig", function() {
 
   it("should return a create multisig transaction with duration -1", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
-    let privateKey = child.privateKey.toString('hex');
+    let privateKey = child.privateKey.toString("base64");
 
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
