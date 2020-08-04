@@ -45,7 +45,7 @@ filecoin-signer = { path = "../signer" }
 # ledger app
 filecoin-signer-ledger = { path = "../ledger" }
 
-zx-bip44 = { git = "https://github.com/Zondax/blockchain-tools-rs", rev="3524b955bc10dda0c47908cd2e0b857cf83733ad" }
+zx-bip44 = "0.1.0"
 
 [dependencies.wasm-bindgen]
 version = "^0.2.65"
