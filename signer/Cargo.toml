@@ -44,7 +44,7 @@ forest_cid = "0.1.0"
 tiny-bip39 = "0.7.3"
 num_bigint_chainsafe = { package = "forest_bigint", version = "0.1.0"}
 
-zx-bip44 = { git = "https://github.com/Zondax/blockchain-tools-rs", rev="3524b955bc10dda0c47908cd2e0b857cf83733ad" }
+zx-bip44 = "0.1.0"
 
 extras = { path = "../extras"}
 
