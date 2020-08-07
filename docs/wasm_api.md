@@ -71,7 +71,7 @@ console.log(keypair);
 Recover a extended key from a private key.
 
 Arguments :
-* **privateKey**: a private key (hexstring or Buffer);
+* **privateKey**: a private key (base64 string or Buffer);
 * **testnet**: a boolean value. Indicate if you want testnet or mainnet address;
 
 ```javascript
@@ -79,7 +79,7 @@ const signer_wasm = require('@zondax/filecoin-signer');
 // or for browser
 // import * as signer_wasm from "@zondax/filecoin-signer";
 
-let privateKey = "private_key_hexstring";
+let privateKey = "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=";
 
 const testnet = true;
 
@@ -117,9 +117,9 @@ const cbor_transaction =  signer_wasm.transactionSerialize(transaction);
 console.log(cbor_transaction);
 ```
 
-## transaction\_serialize\_raw
+## transactionSerializeRaw
 
-Serialize a transaction and return teh CBOR equivalent as a Uint8Array.
+Serialize a transaction and return the CBOR equivalent as a Uint8Array.
 
 Arguments :
 * **transaction**: a filecoin transaction;
@@ -140,41 +140,11 @@ const transaction = {
     "params": ""
 };
 
-const cbor_transaction =  signer_wasm.transactionSerialize(transaction);
+const cbor_uint8_array =  signer_wasm.transactionSerializeRaw(transaction);
 
 //
-console.log(cbor_transaction);
+console.log(cbor_uint8_array);
 ```
-
-## transactionSerializeRaw
-
-Serialize a transaction and return a CBOR buffer.
-
-Arguments :
-* **transaction**: a filecoin transaction;
-
-```javascript
-const signer_wasm = require('@zondax/filecoin-signer');
-// or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer";
-
-const transaction = {
-    "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-    "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
-    "nonce": 1,
-    "value": "100000",
-    "gasprice": "2500",
-    "gaslimit": "25000",
-    "method": 0,
-    "params": ""
-};
-
-const cbor_transaction =  signer_wasm.transactionSerializeRaw(JSON.stringify(transaction));
-
-//
-console.log(cbor_buffer);
-```
-
 
 ## transactionParse
 
@@ -205,7 +175,7 @@ Sign a transaction and return the signature (RSV format).
 
 Arguments:
 * **transaction**: a filecoin transaction;
-* **privatekey**: a private key (hexstring or buffer);
+* **privatekey**: a private key (base64 string or buffer);
 
 ```javascript
 const signer_wasm = require('@zondax/filecoin-signer');
@@ -219,7 +189,7 @@ const MASTER_KEY = "xprv424242424242424242";
 let MASTER_NODE = bip32.fromBase58(MASTER_KEY);
 const example_key = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
 
-const signed_tx = signer_wasm.transactionSign(EXAMPLE_TRANSACTION, example_key.privateKey.toString("hex"));
+const signed_tx = signer_wasm.transactionSign(EXAMPLE_TRANSACTION, example_key.privateKey.toString("base64"));
 
 console.log(signed_tx);
 ```
@@ -244,9 +214,34 @@ const MASTER_KEY = "xprv424242424242424242";
 let MASTER_NODE = bip32.fromBase58(MASTER_KEY);
 const example_key = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
 
-const signed_tx_json = signer_wasm.transactionSignLotus(EXAMPLE_TRANSACTION, example_key.privateKey.toString("hex"));
+const signed_tx_json = signer_wasm.transactionSignLotus(EXAMPLE_TRANSACTION, example_key.privateKey.toString("base64"));
 
 console.log(signed_tx_json);
+```
+
+## transactionSignRaw
+
+Sign a transaction and return a buffer signature.
+
+Arguments:
+* **transaction**: a filecoin transaction;
+* **privatekey**: a private key (base64 string or buffer);
+
+```javascript
+const signer_wasm = require('@zondax/filecoin-signer');
+// or for browser
+// import * as signer_wasm from "@zondax/filecoin-signer";
+const bip32 = require('bip32');
+
+// Use your private key
+const MASTER_KEY = "xprv424242424242424242";
+
+let MASTER_NODE = bip32.fromBase58(MASTER_KEY);
+const example_key = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+
+const buffer_signature = signer_wasm.transactionSignRaw(EXAMPLE_TRANSACTION, example_key.privateKey.toString("base64"));
+
+console.log(buffer_signature);
 ```
 
 ## verifySignature
@@ -287,6 +282,8 @@ Arguments :
 * **Addresses**: the list of addresses taking part in the multisig contract;
 * **Amount**: amount to start the multisig with;
 * **Required signatures**: minimal number of signatures required;
+* **Nonce**: nonce of transaction;
+* **Duration**: Unlock duration value, `-1` if no unlocking duration;
 
 ```javascript
 const signer_wasm = require('@zondax/filecoin-signer');
@@ -297,7 +294,7 @@ const signer_wasm = require('@zondax/filecoin-signer');
 let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
 let sender_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 
-let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1);
+let create_multisig_transaction = filecoin_signer.createMultisig(sender_address, addresses, "1000", 1, 1, BigInt(0));
 
 console.log(create_multisig_transaction);
 ```
@@ -311,6 +308,7 @@ Arguments :
 * **To address**: address to which the funds are being moved from the multisig;
 * **From address**: the one in the `From` field;
 * **Amount**: amount to start the multisig with;
+* **Nonce**: nonce of transaction;
 
 ```javascript
 const signer_wasm = require('@zondax/filecoin-signer');
@@ -321,7 +319,7 @@ const signer_wasm = require('@zondax/filecoin-signer');
 let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 
-let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01", to_address, from_address, "1000");
+let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01", to_address, from_address, "1000", 1);
 
 console.log(propose_multisig_transaction);
 ```
@@ -337,6 +335,7 @@ Arguments :
 * **To address**: address to which the funds are being moved from the multisig;
 * **Amount**: amount to start the multisig with;
 * **From address**: the one in the `From` field;
+* **Nonce**: nonce of transaction;
 
 ```javascript
 const signer_wasm = require('@zondax/filecoin-signer');
@@ -348,7 +347,7 @@ let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 
-let approve_multisig_transaction = filecoin_signer.approveMultisig("t01", 1234, proposer_address, to_address, "1000", from_address);
+let approve_multisig_transaction = filecoin_signer.approveMultisig("t01", 1234, proposer_address, to_address, "1000", from_address, 1);
 
 console.log(approve_multisig_transaction);
 ```
@@ -364,6 +363,8 @@ Arguments :
 * **To address**: address to which the funds are being moved from the multisig;
 * **Amount**: amount to start the multisig with;
 * **From address**: the one in the `From` field;
+* **Nonce**: nonce of transaction;
+
 
 ```javascript
 const signer_wasm = require('@zondax/filecoin-signer');
@@ -375,7 +376,7 @@ let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 let from_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 let proposer_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
 
-let approve_multisig_transaction = filecoin_signer.cancelMultisig("t01", 1234, proposer_address, to_address, "1000", from_address);
+let approve_multisig_transaction = filecoin_signer.cancelMultisig("t01", 1234, proposer_address, to_address, "1000", from_address,1);
 
 console.log(approve_multisig_transaction);
 ```
@@ -394,9 +395,11 @@ const signer_wasm = require('@zondax/filecoin-signer');
 
 let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
 
+let constructor_params = { signers: addresses, num_approvals_threshold: 1, unlock_duration: 0 }
+
 let params = {
     code_cid: 'fil/1/multisig',
-    constructor_params: { signers: addresses, num_approvals_threshold: 1 }
+    constructor_params: Buffer.from(filecoin_signer.serializeParams(constructor_params)).toString('base64')
 }
 
 let serialized_params = filecoin_signer.serializeParams(params);
