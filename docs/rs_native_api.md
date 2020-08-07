@@ -265,7 +265,23 @@ Arguments:
 * **duration**: Duration of the multisig;
 
 ```rust
- todo!()
+use signer::create_multisig;
+
+let result = create_multisig(
+    "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+    vec![
+        "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+        "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
+    ],
+    "1000".to_string(),
+    1,
+    1,
+    0,
+)
+.unwrap();
+
+println!("{}", result);
+
 ```
 
 ## proposal_multisig_message
@@ -280,7 +296,19 @@ Arguments:
 * **nonce**: Nonce of the message;
 
 ```rust
- todo!()
+use signer::proposal_multisig_message;
+
+let result = proposal_multisig_message(
+    "t01".to_string(),
+    "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
+    "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+    "1000".to_string(),
+    1,
+)
+.unwrap();
+
+println!("{}", result);
+
 ```
 
 ## approve_multisig_message
@@ -297,7 +325,21 @@ Arguments
 * **nonce**: Nonce of the message
 
 ```rust
- todo!()
+use signer::approve_multisig_message;
+
+let result = approve_multisig_message(
+    "t01".to_string(),
+    1234,
+    "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+    "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
+    "1000".to_string(),
+    "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+    1,
+)
+.unwrap();
+
+println!("{}", result);
+
 ```
 
 ## cancel_multisig_message
@@ -314,7 +356,21 @@ Arguments
 * **nonce**: Nonce of the message
 
 ```rust
- todo!()
+use signer::cancel_multisig_message;
+
+let result = cancel_multisig_message(
+    "t01".to_string(),
+    1234,
+    "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+    "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
+    "1000".to_string(),
+    "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+    1,
+)
+.unwrap();
+
+println!("{}", result);
+
 ```
 
 ## verify\_aggregated\_signature
@@ -329,10 +385,7 @@ Arguments :
 // sign 3 messages
 let num_messages = 3;
 
-let mut rng = XorShiftRng::from_seed([
-    0x59, 0x62, 0xbe, 0x5d, 0x76, 0x3d, 0x31, 0x8d, 0x17, 0xdb, 0x37, 0x32, 0x54, 0x06,
-    0xbc, 0xe5,
-]);
+let mut rng = ChaCha8Rng::seed_from_u64(12);
 
 // generate private keys
 let private_keys: Vec<_> = (0..num_messages)
@@ -365,10 +418,10 @@ sigs = messages
     .par_iter()
     .zip(private_keys.par_iter())
     .map(|(message, pk)| {
-        let private_key = PrivateKey::try_from(pk.as_bytes()).expect("FIX ME");
+        let private_key = PrivateKey::try_from(pk.as_bytes()).unwrap();
         let raw_sig = transaction_sign_bls_raw(message, &private_key).unwrap();
 
-        bls_signatures::Serialize::from_bytes(&raw_sig.0).expect("FIX ME")
+        bls_signatures::Serialize::from_bytes(&raw_sig.0).unwrap()
     })
     .collect::<Vec<bls_signatures::Signature>>();
 
@@ -379,9 +432,9 @@ cbor_messages = messages
     .map(|message| transaction_serialize(message).unwrap())
     .collect::<Vec<CborBuffer>>();
 
-let aggregated_signature = bls_signatures::aggregate(&sigs);
+let aggregated_signature = bls_signatures::aggregate(&sigs).unwrap();
 
-let sig = SignatureBLS::try_from(aggregated_signature.as_bytes()).expect("FIX ME");
+let sig = SignatureBLS::try_from(aggregated_signature.as_bytes()).unwrap();
 
 assert!(verify_aggregated_signature(&sig, &cbor_messages[..]).unwrap());
 ```
