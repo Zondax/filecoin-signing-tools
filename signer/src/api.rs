@@ -570,7 +570,7 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
 
 impl From<UnsignedMessage> for UnsignedMessageAPI {
     fn from(unsigned_message: UnsignedMessage) -> UnsignedMessageAPI {
-        let params_hex_string = hex::encode(unsigned_message.params().bytes());
+        let params_b64_string = base64::encode(unsigned_message.params().bytes());
 
         UnsignedMessageAPI {
             to: unsigned_message.to().to_string(),
@@ -580,7 +580,7 @@ impl From<UnsignedMessage> for UnsignedMessageAPI {
             gas_price: unsigned_message.gas_price().to_string(),
             gas_limit: unsigned_message.gas_limit(),
             method: unsigned_message.method_num(),
-            params: params_hex_string,
+            params: params_b64_string,
         }
     }
 }
@@ -620,6 +620,9 @@ mod tests {
     const EXAMPLE_CBOR_DATA: &str =
         "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c41961a80040";
 
+    const EXAMPLE_CBOR_DATA_CONV: &str = 
+        "89004a00f1ebbdffd3b8a2f31d5501f37f58c3a7a332e82d7fc9b98b787307b9d9d00a1bd855bb720578c9fd4900303e8b41a88eb5374900bdd0d9758132e3831b2321b1be430dbeca1bbcdc60c414af97b9582009e2ace99e3da32a2c898db0a70ea7782257b37d768cd08558fcd5cbc5dcc9bb";
+
     #[test]
     fn json_to_cbor() {
         let message_api: UnsignedMessageAPI =
@@ -640,7 +643,6 @@ mod tests {
         let cbor_buffer = decode(EXAMPLE_CBOR_DATA).expect("FIXME");
 
         let message: UnsignedMessage = from_slice(&cbor_buffer).expect("could not decode cbor");
-        println!("{:?}", message);
 
         let message_user_api =
             UnsignedMessageAPI::try_from(message).expect("could not convert message");
@@ -654,5 +656,19 @@ mod tests {
             serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE).expect("FIXME");
 
         assert_eq!(message_api, message_user_api)
+    }
+
+    #[test]
+    fn conversion_unsigned_messages() {
+        let cbor_bytes = decode(EXAMPLE_CBOR_DATA_CONV).unwrap();
+        
+        let message: UnsignedMessage = from_slice(&cbor_bytes).expect("could not decode cbor");
+
+        let message_api: UnsignedMessageAPI =
+            UnsignedMessageAPI::try_from(message.clone()).unwrap();
+        
+        let message_back = UnsignedMessage::try_from(&message_api).unwrap();
+
+        assert_eq!(message, message_back);
     }
 }
