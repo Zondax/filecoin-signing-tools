@@ -620,8 +620,7 @@ mod tests {
     const EXAMPLE_CBOR_DATA: &str =
         "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c41961a80040";
 
-    const EXAMPLE_CBOR_DATA_CONV: &str = 
-        "89004a00f1ebbdffd3b8a2f31d5501f37f58c3a7a332e82d7fc9b98b787307b9d9d00a1bd855bb720578c9fd4900303e8b41a88eb5374900bdd0d9758132e3831b2321b1be430dbeca1bbcdc60c414af97b9582009e2ace99e3da32a2c898db0a70ea7782257b37d768cd08558fcd5cbc5dcc9bb";
+    const EXAMPLE_CBOR_DATA_CONV: &str = "89004a00f1ebbdffd3b8a2f31d5501f37f58c3a7a332e82d7fc9b98b787307b9d9d00a1bd855bb720578c9fd4900303e8b41a88eb5374900bdd0d9758132e3831b2321b1be430dbeca1bbcdc60c414af97b9582009e2ace99e3da32a2c898db0a70ea7782257b37d768cd08558fcd5cbc5dcc9bb";
 
     #[test]
     fn json_to_cbor() {
@@ -661,12 +660,12 @@ mod tests {
     #[test]
     fn conversion_unsigned_messages() {
         let cbor_bytes = decode(EXAMPLE_CBOR_DATA_CONV).unwrap();
-        
+
         let message: UnsignedMessage = from_slice(&cbor_bytes).expect("could not decode cbor");
 
         let message_api: UnsignedMessageAPI =
             UnsignedMessageAPI::try_from(message.clone()).unwrap();
-        
+
         let message_back = UnsignedMessage::try_from(&message_api).unwrap();
 
         assert_eq!(message, message_back);
