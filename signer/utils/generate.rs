@@ -1,7 +1,7 @@
 use bls_signatures::Serialize;
 use bls_signatures::*;
 use rand::SeedableRng;
-use rand_xorshift::XorShiftRng;
+use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 
 use filecoin_signer::api::UnsignedMessageAPI;
@@ -32,10 +32,7 @@ struct TestCase {
 fn run(num_messages: usize) {
     println!("Generate {} test case", num_messages);
 
-    let mut rng = XorShiftRng::from_seed([
-        0x59, 0x62, 0xbe, 0x5d, 0x76, 0x3d, 0x31, 0x8d, 0x17, 0xdb, 0x37, 0x32, 0x54, 0x06, 0xbc,
-        0xe5,
-    ]);
+    let mut rng = ChaCha8Rng::seed_from_u64(12);
 
     // generate private keys
     let private_keys: Vec<_> = (0..num_messages)

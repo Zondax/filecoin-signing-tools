@@ -696,7 +696,7 @@ mod tests {
     use bls_signatures::Serialize;
     use forest_address::Address;
     use rand::SeedableRng;
-    use rand_xorshift::XorShiftRng;
+    use rand_chacha::ChaCha8Rng;
     use rayon::prelude::*;
 
     const BLS_PUBKEY: &str = "ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc07904";
@@ -999,10 +999,7 @@ mod tests {
         // sign 3 messages
         let num_messages = 3;
 
-        let mut rng = XorShiftRng::from_seed([
-            0x59, 0x62, 0xbe, 0x5d, 0x76, 0x3d, 0x31, 0x8d, 0x17, 0xdb, 0x37, 0x32, 0x54, 0x06,
-            0xbc, 0xe5,
-        ]);
+        let mut rng = ChaCha8Rng::seed_from_u64(12);
 
         // generate private keys
         let private_keys: Vec<_> = (0..num_messages)
@@ -1049,7 +1046,7 @@ mod tests {
             .map(|message| transaction_serialize(message).unwrap())
             .collect::<Vec<CborBuffer>>();
 
-        let aggregated_signature = bls_signatures::aggregate(&sigs);
+        let aggregated_signature = bls_signatures::aggregate(&sigs).expect("FIX ME");
 
         let sig = SignatureBLS::try_from(aggregated_signature.as_bytes()).expect("FIX ME");
 
