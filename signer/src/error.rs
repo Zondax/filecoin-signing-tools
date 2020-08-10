@@ -35,6 +35,9 @@ pub enum SignerError {
     /// BLS error
     #[error("Couldn't convert from slice")]
     TryFromSlice(#[from] TryFromSliceError),
+    /// Base64 decode Error
+    #[error("Base64 decode error | {0}")]
+    DecodeError(#[from] base64::DecodeError),
 }
 
 #[cfg(feature = "with-ffi-support")]
@@ -51,6 +54,7 @@ impl From<SignerError> for ffi_support::ExternError {
             SignerError::BLS(_) => 8,
             SignerError::InvalidBIP44Path(_) => 8,
             SignerError::TryFromSlice(_) => 10,
+            SignerError::DecodeError(_) => 11,
         };
         Self::new_error(ffi_support::ErrorCode::new(code), e.to_string())
     }

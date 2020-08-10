@@ -2,7 +2,7 @@ const bip39 = require("bip39");
 const bip32 = require("bip32");
 const cbor = require("ipld-dag-cbor").util;
 const secp256k1 = require("secp256k1");
-const BN = require('bn.js');
+const BN = require("bn.js");
 
 const ExtendedKey = require("./extendedkey");
 const {
@@ -50,7 +50,6 @@ function keyDerive(mnemonic, path, password) {
 function keyRecover(privateKey, testnet) {
   // verify format and convert to buffer if needed
   privateKey = tryToPrivateKeyBuffer(privateKey);
-  console.log(privateKey)
   return new ExtendedKey(privateKey, testnet);
 }
 
@@ -64,17 +63,17 @@ function serializeBigNum(gasprice) {
 }
 
 function transactionSerializeRaw(message) {
-  if (!"to" in message || typeof message.to !== "string") {
+  if (!("to" in message) || typeof message.to !== "string") {
     throw new Error("'to' is a required field and has to be a 'string'");
   }
-  if (!"from" in message || typeof message.from !== "string") {
+  if (!("from" in message) || typeof message.from !== "string") {
     throw new Error("'from' is a required field and has to be a 'string'");
   }
-  if (!"nonce" in message || typeof message.nonce !== "number") {
+  if (!("nonce" in message) || typeof message.nonce !== "number") {
     throw new Error("'nonce' is a required field and has to be a 'number'");
   }
   if (
-    !"value" in message ||
+    !("value" in message) ||
     typeof message.value !== "string" ||
     message.value === "" ||
     message.value.includes("-")
@@ -83,16 +82,16 @@ function transactionSerializeRaw(message) {
       "'value' is a required field and has to be a 'string' but not empty or negative"
     );
   }
-  if (!"gasfeecap" in message || typeof message.gasfeecap !== "string") {
+  if (!("gasfeecap") in message || typeof message.gasfeecap !== "string") {
     throw new Error("'gasfeecap' is a required field and has to be a 'string'");
   }
-  if (!"gaspremium" in message || typeof message.gaspremium !== "string") {
+  if (!("gaspremium") in message || typeof message.gaspremium !== "string") {
     throw new Error("'gaspremium' is a required field and has to be a 'string'");
   }
-  if (!"gaslimit" in message || typeof message.gaslimit !== "number") {
+  if (!("gaslimit" in message) || typeof message.gaslimit !== "number") {
     throw new Error("'gaslimit' is a required field and has to be a 'number'");
   }
-  if (!"method" in message || typeof message.method !== "number") {
+  if (!("method" in message) || typeof message.method !== "number") {
     throw new Error("'method' is a required field and has to be a 'number'");
   }
 
@@ -125,8 +124,6 @@ function transactionSerialize(message) {
 }
 
 function transactionParse(cborMessage, testnet) {
-  // FIXME: Check buffer size and extra bytes
-  // https://github.com/dignifiedquire/borc/issues/47
   const decoded = cbor.deserialize(Buffer.from(cborMessage, "hex"));
 
   if (decoded[0] !== 0) {
@@ -134,7 +131,7 @@ function transactionParse(cborMessage, testnet) {
   }
   if (decoded.length < 9) {
     throw new Error(
-      "The cbor is missing some fields... please verify you 9 fields."
+      "The cbor is missing some fields... please verify you have 9 fields."
     );
   }
 
@@ -146,8 +143,8 @@ function transactionParse(cborMessage, testnet) {
   if (decoded[4][0] === 0x01) {
     throw new Error("Value cant be negative");
   }
-  message.value = new BN(decoded[4].toString('hex'), 16).toString(10);
-  message.gasprice = new BN(decoded[5].toString('hex'), 16).toString(10);
+  message.value = new BN(decoded[4].toString("hex"), 16).toString(10);
+  message.gasprice = new BN(decoded[5].toString("hex"), 16).toString(10);
   message.gaslimit = decoded[6];
   message.method = decoded[7];
   message.params = decoded[8].toString();
@@ -169,7 +166,10 @@ function transactionSignRaw(unsignedMessage, privateKey) {
   const messageDigest = getDigest(unsignedMessage);
   const signature = secp256k1.ecdsaSign(messageDigest, privateKey);
 
-  return Buffer.concat([Buffer.from(signature.signature), Buffer.from([signature.recid])]);
+  return Buffer.concat([
+    Buffer.from(signature.signature),
+    Buffer.from([signature.recid]),
+  ]);
 }
 
 function transactionSign(unsignedMessage, privateKey) {
@@ -184,7 +184,7 @@ function transactionSign(unsignedMessage, privateKey) {
 
   signedMessage.message = unsignedMessage;
 
-  // FIXME: only support secp256k1
+  // TODO: support BLS scheme
   signedMessage.signature = {
     data: signature.toString("base64"),
     type: ProtocolIndicator.SECP256K1,

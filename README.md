@@ -55,9 +55,16 @@ You can find more information in the [Documentation Site](https://zondax.ch/proj
 
 ### Installing dependencies
 
+You will need [rust](https://www.rust-lang.org/tools/install) installed.
+
 ```bash
-make deps
+# Install wasm-pack in your system
+$ make install_wasmpack
+# Install some utilitary tools
+$ make install_deps_rust
 ```
+
+Note: wasm  parck are required if you want to use the wasm version of the lib.
 
 ### Rust
 
@@ -85,7 +92,7 @@ cargo test -p filecoin-signer
 Build WASM and link it locally so examples are linked to the local version:
 
 ```bash
-make link_wasm
+make build_wasm
 ```
 
 After this, you can run the following tests / examples:

@@ -48,9 +48,7 @@ function getAccountFromPath(path) {
 }
 
 function addressAsBytes(address) {
-  let address_decoded,
-    payload,
-    checksum;
+  let address_decoded, payload, checksum;
   const protocolIndicator = address[1];
   const protocolIndicatorByte = `0${protocolIndicator}`;
 
@@ -66,7 +64,7 @@ function addressAsBytes(address) {
     case ProtocolIndicator.SECP256K1:
       address_decoded = base32Decode(address.slice(2).toUpperCase(), "RFC4648");
 
-      payload = address_decoded.slice(0, -4);;
+      payload = address_decoded.slice(0, -4);
       checksum = Buffer.from(address_decoded.slice(-4));
 
       if (payload.byteLength !== 20) {
@@ -76,10 +74,10 @@ function addressAsBytes(address) {
     case ProtocolIndicator.ACTOR:
       address_decoded = base32Decode(address.slice(2).toUpperCase(), "RFC4648");
 
-      payload = address_decoded.slice(0, -4);;
+      payload = address_decoded.slice(0, -4);
       checksum = Buffer.from(address_decoded.slice(-4));
 
-      if (payload.byteLength !== 32) {
+      if (payload.byteLength !== 20) {
         throw new InvalidPayloadLength();
       }
       break;
@@ -89,17 +87,14 @@ function addressAsBytes(address) {
       throw new UnknownProtocolIndicator();
   }
 
-  // TODO: check checksum!
   const bytes_address = Buffer.concat([
     Buffer.from(protocolIndicatorByte, "hex"),
     Buffer.from(payload),
   ]);
 
-  if (getChecksum(bytes_address).toString('hex') !== checksum.toString('hex')) {
-    console.log(getChecksum(bytes_address))
-    console.log(checksum)
+  if (getChecksum(bytes_address).toString("hex") !== checksum.toString("hex")) {
     throw new InvalidChecksumAddress();
-  };
+  }
 
   return bytes_address;
 }
@@ -117,7 +112,7 @@ function bytesToAddress(payload, testnet) {
       }
       break;
     case ProtocolIndicator.ACTOR:
-      if (payload.slice(1).length !== 32) {
+      if (payload.slice(1).length !== 20) {
         throw new InvalidPayloadLength();
       }
       break;
