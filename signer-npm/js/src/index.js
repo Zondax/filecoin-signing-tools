@@ -54,6 +54,15 @@ function keyRecover(privateKey, testnet) {
   return new ExtendedKey(privateKey, testnet);
 }
 
+function serializeBigNum(gasprice) {
+  if (gasprice == "0") {
+    return Buffer.from("")
+  }
+  const gaspriceBigInt = new BN(gasprice, 10);
+  const gaspriceBuffer = gaspriceBigInt.toArrayLike(Buffer, 'be', gaspriceBigInt.byteLength());
+  return Buffer.concat([Buffer.from('00', 'hex'), gaspriceBuffer]);
+}
+
 function transactionSerializeRaw(message) {
   if (!"to" in message || typeof message.to !== "string") {
     throw new Error("'to' is a required field and has to be a 'string'");
@@ -74,8 +83,11 @@ function transactionSerializeRaw(message) {
       "'value' is a required field and has to be a 'string' but not empty or negative"
     );
   }
-  if (!"gasprice" in message || typeof message.gasprice !== "string") {
-    throw new Error("'gasprice' is a required field and has to be a 'string'");
+  if (!"gasfeecap" in message || typeof message.gasfeecap !== "string") {
+    throw new Error("'gasfeecap' is a required field and has to be a 'string'");
+  }
+  if (!"gaspremium" in message || typeof message.gaspremium !== "string") {
+    throw new Error("'gaspremium' is a required field and has to be a 'string'");
   }
   if (!"gaslimit" in message || typeof message.gaslimit !== "number") {
     throw new Error("'gaslimit' is a required field and has to be a 'number'");
@@ -87,17 +99,9 @@ function transactionSerializeRaw(message) {
   const to = addressAsBytes(message.to);
   const from = addressAsBytes(message.from);
 
-  const valueBigInt = new BN(message.value, 10);
-  const valueBuffer = valueBigInt.toArrayLike(Buffer, 'be', valueBigInt.byteLength());
-  const value = Buffer.concat([Buffer.from('00', 'hex'), valueBuffer]);
-
-  const gaspriceBigInt = new BN(message.gasprice, 10);
-  const gaspriceBuffer = gaspriceBigInt.toArrayLike(Buffer, 'be', gaspriceBigInt.byteLength());
-  let gasprice = Buffer.concat([Buffer.from('00', 'hex'), gaspriceBuffer]);
-
-  if (message.gasprice == "0") {
-    gasprice = Buffer.from("")
-  }
+  const value = serializeBigNum(message.value);
+  const gasfeecap = serializeBigNum(message.gasfeecap);
+  const gaspremium = serializeBigNum(message.gaspremium);
 
   const message_to_encode = [
     0,
@@ -105,8 +109,9 @@ function transactionSerializeRaw(message) {
     from,
     message.nonce,
     value,
-    gasprice,
     message.gaslimit,
+    gasfeecap,
+    gaspremium,
     message.method,
     Buffer.from(message.params),
   ];
@@ -195,7 +200,8 @@ function transactionSignLotus(unsignedMessage, privateKey) {
     Message: {
       From: signedMessage.message.from,
       GasLimit: signedMessage.message.gaslimit,
-      GasPrice: signedMessage.message.gasprice,
+      GasFeeCap: signedMessage.message.gasfeecap,
+      GasPremium: signedMessage.message.gaspremium,
       Method: signedMessage.message.method,
       Nonce: signedMessage.message.nonce,
       Params: Buffer.from(signedMessage.message.params, "hex").toString("base64"),
