@@ -1,15 +1,13 @@
 use crate::error::SignerError;
 use crate::signature::Signature;
-use extras::{
-    AddSignerParams, ChangeNumApprovalsThresholdParams, ConstructorParams, ExecParams,
-    ProposalHashData, ProposeParams, RemoveSignerParams, SwapSignerParams, TxnID, TxnIDParams,
-};
+use extras::{multisig, paych, ExecParams};
 use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
+use forest_encoding::tuple::*;
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
 use num_bigint_chainsafe::BigUint;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 use std::convert::TryFrom;
 use std::str::FromStr;
 
@@ -30,12 +28,12 @@ pub struct ConstructorParamsMultisig {
     pub unlock_duration: i64,
 }
 
-impl TryFrom<ConstructorParamsMultisig> for ConstructorParams {
+impl TryFrom<ConstructorParamsMultisig> for multisig::ConstructorParams {
     type Error = SignerError;
 
     fn try_from(
         constructor_params: ConstructorParamsMultisig,
-    ) -> Result<ConstructorParams, Self::Error> {
+    ) -> Result<multisig::ConstructorParams, Self::Error> {
         let signers_tmp: Result<Vec<Address>, _> = constructor_params
             .signers
             .into_iter()
@@ -51,7 +49,7 @@ impl TryFrom<ConstructorParamsMultisig> for ConstructorParams {
             }
         };
 
-        Ok(ConstructorParams {
+        Ok(multisig::ConstructorParams {
             signers: signers,
             num_approvals_threshold: constructor_params.num_approvals_threshold,
             unlock_duration: constructor_params.unlock_duration,
@@ -62,29 +60,35 @@ impl TryFrom<ConstructorParamsMultisig> for ConstructorParams {
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
-pub struct MessageParamsMultisig {
+pub struct ExecParamsAPI {
     #[serde(alias = "CodeCid")]
     pub code_cid: String,
     #[serde(alias = "ConstructorParams")]
     pub constructor_params: String,
 }
 
-impl TryFrom<MessageParamsMultisig> for ExecParams {
+impl TryFrom<ExecParamsAPI> for ExecParams {
     type Error = SignerError;
 
-    fn try_from(exec_constructor: MessageParamsMultisig) -> Result<ExecParams, Self::Error> {
+    fn try_from(exec_constructor: ExecParamsAPI) -> Result<ExecParams, Self::Error> {
         let serialized_constructor_multisig_params =
             base64::decode(exec_constructor.constructor_params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-        if exec_constructor.code_cid != "fil/1/multisig".to_string() {
+        if exec_constructor.code_cid != "fil/1/multisig".to_string()
+            && exec_constructor.code_cid != "fil/1/paymentchannel".to_string()
+        {
             return Err(SignerError::GenericString(
-                "Only support `fil/1/multisig` code for now.".to_string(),
+                "Only support `fil/1/multisig` and `fil/1/paymentchannel` code for now."
+                    .to_string(),
             ));
         }
 
         Ok(ExecParams {
-            code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),
+            code_cid: Cid::new_v1(
+                Codec::Raw,
+                Identity::digest(exec_constructor.code_cid.as_bytes()),
+            ),
             constructor_params: forest_vm::Serialized::new(serialized_constructor_multisig_params),
         })
     }
@@ -104,14 +108,16 @@ pub struct ProposeParamsMultisig {
     pub params: String,
 }
 
-impl TryFrom<ProposeParamsMultisig> for ProposeParams {
+impl TryFrom<ProposeParamsMultisig> for multisig::ProposeParams {
     type Error = SignerError;
 
-    fn try_from(propose_params: ProposeParamsMultisig) -> Result<ProposeParams, Self::Error> {
+    fn try_from(
+        propose_params: ProposeParamsMultisig,
+    ) -> Result<multisig::ProposeParams, Self::Error> {
         let params = base64::decode(propose_params.params)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-        Ok(ProposeParams {
+        Ok(multisig::ProposeParams {
             to: Address::from_str(&propose_params.to)?,
             value: BigUint::from_str(&propose_params.value)?,
             method: propose_params.method,
@@ -137,16 +143,16 @@ pub struct PropoposalHashDataParamsMultisig {
     pub params: String,
 }
 
-impl TryFrom<PropoposalHashDataParamsMultisig> for ProposalHashData {
+impl TryFrom<PropoposalHashDataParamsMultisig> for multisig::ProposalHashData {
     type Error = SignerError;
 
     fn try_from(
         proposal_params: PropoposalHashDataParamsMultisig,
-    ) -> Result<ProposalHashData, Self::Error> {
+    ) -> Result<multisig::ProposalHashData, Self::Error> {
         let params = base64::decode(proposal_params.params)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-        Ok(ProposalHashData {
+        Ok(multisig::ProposalHashData {
             requester: Address::from_str(&proposal_params.requester)?,
             to: Address::from_str(&proposal_params.to)?,
             value: BigUint::from_str(&proposal_params.value)?,
@@ -167,18 +173,18 @@ pub struct TxnIDParamsMultisig {
     pub proposal_hash_data: String,
 }
 
-impl TryFrom<TxnIDParamsMultisig> for TxnIDParams {
+impl TryFrom<TxnIDParamsMultisig> for multisig::TxnIDParams {
     type Error = SignerError;
 
-    fn try_from(params: TxnIDParamsMultisig) -> Result<TxnIDParams, Self::Error> {
+    fn try_from(params: TxnIDParamsMultisig) -> Result<multisig::TxnIDParams, Self::Error> {
         let proposal_hash = base64::decode(params.proposal_hash_data)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
         let mut array = [0; 32];
         array.copy_from_slice(&proposal_hash);
 
-        Ok(TxnIDParams {
-            id: TxnID(params.txn_id),
+        Ok(multisig::TxnIDParams {
+            id: multisig::TxnID(params.txn_id),
             proposal_hash: array,
         })
     }
@@ -195,11 +201,11 @@ pub struct AddSignerMultisigParams {
     pub increase: bool,
 }
 
-impl TryFrom<AddSignerMultisigParams> for AddSignerParams {
+impl TryFrom<AddSignerMultisigParams> for multisig::AddSignerParams {
     type Error = SignerError;
 
-    fn try_from(params: AddSignerMultisigParams) -> Result<AddSignerParams, Self::Error> {
-        Ok(AddSignerParams {
+    fn try_from(params: AddSignerMultisigParams) -> Result<multisig::AddSignerParams, Self::Error> {
+        Ok(multisig::AddSignerParams {
             signer: Address::from_str(&params.signer)?,
             increase: params.increase,
         })
@@ -217,11 +223,13 @@ pub struct RemoveSignerMultisigParams {
     pub decrease: bool,
 }
 
-impl TryFrom<RemoveSignerMultisigParams> for RemoveSignerParams {
+impl TryFrom<RemoveSignerMultisigParams> for multisig::RemoveSignerParams {
     type Error = SignerError;
 
-    fn try_from(params: RemoveSignerMultisigParams) -> Result<RemoveSignerParams, Self::Error> {
-        Ok(RemoveSignerParams {
+    fn try_from(
+        params: RemoveSignerMultisigParams,
+    ) -> Result<multisig::RemoveSignerParams, Self::Error> {
+        Ok(multisig::RemoveSignerParams {
             signer: Address::from_str(&params.signer)?,
             decrease: params.decrease,
         })
@@ -239,11 +247,13 @@ pub struct SwapSignerMultisigParams {
     pub to: String,
 }
 
-impl TryFrom<SwapSignerMultisigParams> for SwapSignerParams {
+impl TryFrom<SwapSignerMultisigParams> for multisig::SwapSignerParams {
     type Error = SignerError;
 
-    fn try_from(params: SwapSignerMultisigParams) -> Result<SwapSignerParams, Self::Error> {
-        Ok(SwapSignerParams {
+    fn try_from(
+        params: SwapSignerMultisigParams,
+    ) -> Result<multisig::SwapSignerParams, Self::Error> {
+        Ok(multisig::SwapSignerParams {
             from: Address::from_str(&params.from)?,
             to: Address::from_str(&params.to)?,
         })
@@ -259,15 +269,186 @@ pub struct ChangeNumApprovalsThresholdMultisigParams {
     pub new_threshold: i64,
 }
 
-impl TryFrom<ChangeNumApprovalsThresholdMultisigParams> for ChangeNumApprovalsThresholdParams {
+impl TryFrom<ChangeNumApprovalsThresholdMultisigParams>
+    for multisig::ChangeNumApprovalsThresholdParams
+{
     type Error = SignerError;
 
     fn try_from(
         params: ChangeNumApprovalsThresholdMultisigParams,
-    ) -> Result<ChangeNumApprovalsThresholdParams, Self::Error> {
-        Ok(ChangeNumApprovalsThresholdParams {
+    ) -> Result<multisig::ChangeNumApprovalsThresholdParams, Self::Error> {
+        Ok(multisig::ChangeNumApprovalsThresholdParams {
             new_threshold: params.new_threshold,
         })
+    }
+}
+
+/// Payment channel create params
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct PaymentChannelCreateParams {
+    #[serde(alias = "From")]
+    pub from: String,
+    #[serde(alias = "To")]
+    pub to: String,
+}
+
+impl TryFrom<PaymentChannelCreateParams> for paych::ConstructorParams {
+    type Error = SignerError;
+
+    fn try_from(
+        params: PaymentChannelCreateParams,
+    ) -> Result<paych::ConstructorParams, Self::Error> {
+        Ok(paych::ConstructorParams {
+            from: Address::from_str(&params.from)?,
+            to: Address::from_str(&params.to)?,
+        })
+    }
+}
+
+/// Payment channel update state params
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct PaymentChannelUpdateStateParams {
+    #[serde(alias = "Sv")]
+    pub sv: String,
+    #[serde(alias = "Secret")]
+    pub secret: Vec<u8>,
+    #[serde(alias = "Proof")]
+    pub proof: Vec<u8>,
+}
+
+impl TryFrom<PaymentChannelUpdateStateParams> for paych::UpdateChannelStateParams {
+    type Error = SignerError;
+
+    fn try_from(
+        params: PaymentChannelUpdateStateParams,
+    ) -> Result<paych::UpdateChannelStateParams, Self::Error> {
+        let cbor_sv = base64::decode(params.sv)?;
+        let sv: paych::SignedVoucher = forest_encoding::from_slice(cbor_sv.as_ref())?;
+        Ok(paych::UpdateChannelStateParams {
+            sv: sv,
+            secret: vec![],
+            proof: vec![],
+        })
+    }
+}
+
+/// *crypto.Signature Go type:  specs-actors/actors/crytpo:Signature
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct SpecsActorsCryptoSignature {
+    pub typ: u8,
+    #[serde(with = "serde_bytes")]
+    pub data: Vec<u8>,
+}
+
+impl From<&SpecsActorsCryptoSignature> for SpecsActorsCryptoSignature {
+    fn from(sig: &SpecsActorsCryptoSignature) -> Self {
+        let d = sig.data.iter().map(|el| el.clone()).collect();
+        SpecsActorsCryptoSignature {
+            typ: sig.typ,
+            data: d,
+        }
+    }
+}
+
+impl Serialize for SpecsActorsCryptoSignature {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut v = Vec::<u8>::new();
+        v.push(self.typ);
+        v.extend(self.data.iter().map(|x| x.clone()));
+        serde_bytes::Serialize::serialize(&v, serializer)
+    }
+}
+
+/// Signed voucher
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+//#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize_tuple, Serialize_tuple)]
+pub struct SignedVoucherAPI {
+    pub time_lock_min: i64, // not supported - must be 0
+    pub time_lock_max: i64, // not supported - must be 0
+    // Serializing to 0x40 (empty byte string), consistent with Lotus-generated voucher
+    #[serde(with = "serde_bytes")]
+    pub secret_preimage: Vec<u8>, // not supported - must be blank
+    // This should serialize to 0xf6 (cbor null) per https://github.com/whyrusleeping/cbor-gen/blob/227fab5a237792e633ddc99254a5a8a03642cb7a/utils.go#L523
+    pub extra: Option<i32>, // not supported - must be None
+    pub lane: u64,
+    pub nonce: u64,
+    // Needs to serialize as either:
+    //   empty byte array                                      if Amount==0
+    //   concat(0x00,[Amount encoded as a big endian slice])   if Amount>0
+    // ref:  https://github.com/filecoin-project/specs-actors/blob/master/actors/abi/big/int.go#L225
+    #[serde(serialize_with = "SignedVoucherAPI::serde_ser_to_cbor_be_int_bytes")]
+    pub amount: u64,
+    pub min_settle_height: i64, // not supported - must be zero
+    // Must serialize to 0x80 (cbor empty array)
+    pub merges: [u8; 0],
+    // If this is absent, it must serialize as 0xf6 (cbor null).
+    pub signature: Option<SpecsActorsCryptoSignature>,
+}
+
+impl From<&SignedVoucherAPI> for SignedVoucherAPI {
+    fn from(sv: &SignedVoucherAPI) -> Self {
+        let sig: SpecsActorsCryptoSignature = (&sv.signature).as_ref().unwrap().into();
+        Self::new(sv.lane, sv.nonce, sv.amount, &sig)
+    }
+}
+
+impl SignedVoucherAPI {
+    pub fn new(
+        lane: u64,
+        nonce: u64,
+        amount: u64,
+        signature: &SpecsActorsCryptoSignature,
+    ) -> SignedVoucherAPI {
+        //let signature : SpecsActorsCryptoSignature = signature.into();
+        SignedVoucherAPI {
+            time_lock_min: 0,
+            time_lock_max: 0,
+            secret_preimage: vec![],
+            extra: Option::<i32>::None,
+            lane,
+            nonce,
+            amount,
+            min_settle_height: 0,
+            merges: [],
+            signature: Some(signature.into()),
+        }
+    }
+
+    /// Serialises a u64 into its 0x00-prefixed big endian representation
+    pub fn serde_ser_to_cbor_be_int_bytes<S>(n: &u64, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let be_bytes = n.to_be_bytes();
+        let mut v = Vec::<u8>::new();
+        v.push(0 as u8);
+        let mut leading_zero = true;
+
+        // v.extend(be_bytes.iter().skip_white(|&x| *x==0 ));
+        // ^^^ would be cleaner but skip_while not implemented for vec<u8> so using this ugliness instead:
+        v.extend(be_bytes.iter().filter_map(|x| {
+            if *x == 0 {
+                if !leading_zero {
+                    Some(*x)
+                } else {
+                    None
+                }
+            } else {
+                leading_zero = false;
+                Some(*x)
+            }
+        }));
+
+        serde_bytes::Serialize::serialize(&v, serializer)
     }
 }
 
@@ -278,13 +459,15 @@ pub enum MessageParams {
     MessageParamsSerialized(String),
     PropoposalHashDataParamsMultisig(PropoposalHashDataParamsMultisig),
     ConstructorParamsMultisig(ConstructorParamsMultisig),
-    MessageParamsMultisig(MessageParamsMultisig),
+    MessageParamsMultisig(ExecParamsAPI),
     ProposeParamsMultisig(ProposeParamsMultisig),
     TxnIDParamsMultisig(TxnIDParamsMultisig),
     AddSignerMultisigParams(AddSignerMultisigParams),
     RemoveSignerMultisigParams(RemoveSignerMultisigParams),
     SwapSignerMultisigParams(SwapSignerMultisigParams),
     ChangeNumApprovalsThresholdMultisigParams(ChangeNumApprovalsThresholdMultisigParams),
+    PaymentChannelCreateParams(PaymentChannelCreateParams),
+    PaymentChannelUpdateStateParams(PaymentChannelUpdateStateParams),
 }
 
 impl MessageParams {
@@ -296,15 +479,15 @@ impl MessageParams {
                 forest_vm::Serialized::new(params_bytes)
             }
             MessageParams::PropoposalHashDataParamsMultisig(params) => {
-                let params = ProposalHashData::try_from(params)?;
+                let params = multisig::ProposalHashData::try_from(params)?;
 
-                forest_vm::Serialized::serialize::<ProposalHashData>(params)
+                forest_vm::Serialized::serialize::<multisig::ProposalHashData>(params)
                     .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
             MessageParams::ConstructorParamsMultisig(constructor_params) => {
-                let params = ConstructorParams::try_from(constructor_params)?;
+                let params = multisig::ConstructorParams::try_from(constructor_params)?;
 
-                forest_vm::Serialized::serialize::<ConstructorParams>(params)
+                forest_vm::Serialized::serialize::<multisig::ConstructorParams>(params)
                     .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
             MessageParams::MessageParamsMultisig(multisig_params) => {
@@ -314,43 +497,57 @@ impl MessageParams {
                     .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
             MessageParams::ProposeParamsMultisig(multisig_proposal_params) => {
-                let params = ProposeParams::try_from(multisig_proposal_params)?;
+                let params = multisig::ProposeParams::try_from(multisig_proposal_params)?;
 
-                forest_vm::Serialized::serialize::<ProposeParams>(params)
+                forest_vm::Serialized::serialize::<multisig::ProposeParams>(params)
                     .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
             MessageParams::TxnIDParamsMultisig(multisig_txn_id_params) => {
-                let params = TxnIDParams::try_from(multisig_txn_id_params)?;
+                let params = multisig::TxnIDParams::try_from(multisig_txn_id_params)?;
 
-                forest_vm::Serialized::serialize::<TxnIDParams>(params)
+                forest_vm::Serialized::serialize::<multisig::TxnIDParams>(params)
                     .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
             MessageParams::AddSignerMultisigParams(add_signer_params) => {
-                let params = AddSignerParams::try_from(add_signer_params)?;
+                let params = multisig::AddSignerParams::try_from(add_signer_params)?;
 
-                forest_vm::Serialized::serialize::<AddSignerParams>(params)
+                forest_vm::Serialized::serialize::<multisig::AddSignerParams>(params)
                     .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
             MessageParams::RemoveSignerMultisigParams(remove_signer_params) => {
-                let params = RemoveSignerParams::try_from(remove_signer_params)?;
+                let params = multisig::RemoveSignerParams::try_from(remove_signer_params)?;
 
-                forest_vm::Serialized::serialize::<RemoveSignerParams>(params)
+                forest_vm::Serialized::serialize::<multisig::RemoveSignerParams>(params)
                     .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
             MessageParams::SwapSignerMultisigParams(swap_signer_params) => {
-                let params = SwapSignerParams::try_from(swap_signer_params)?;
+                let params = multisig::SwapSignerParams::try_from(swap_signer_params)?;
 
-                forest_vm::Serialized::serialize::<SwapSignerParams>(params)
+                forest_vm::Serialized::serialize::<multisig::SwapSignerParams>(params)
                     .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
             MessageParams::ChangeNumApprovalsThresholdMultisigParams(
                 change_num_approvals_treshold_params,
             ) => {
-                let params = ChangeNumApprovalsThresholdParams::try_from(
+                let params = multisig::ChangeNumApprovalsThresholdParams::try_from(
                     change_num_approvals_treshold_params,
                 )?;
 
-                forest_vm::Serialized::serialize::<ChangeNumApprovalsThresholdParams>(params)
+                forest_vm::Serialized::serialize::<multisig::ChangeNumApprovalsThresholdParams>(
+                    params,
+                )
+                .map_err(|err| SignerError::GenericString(err.to_string()))?
+            }
+            MessageParams::PaymentChannelCreateParams(pymtchan_create_params) => {
+                let params = paych::ConstructorParams::try_from(pymtchan_create_params)?;
+
+                forest_vm::Serialized::serialize::<paych::ConstructorParams>(params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
+            }
+            MessageParams::PaymentChannelUpdateStateParams(pch_update_params) => {
+                let params = paych::UpdateChannelStateParams::try_from(pch_update_params)?;
+
+                forest_vm::Serialized::serialize::<paych::UpdateChannelStateParams>(params)
                     .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
         };

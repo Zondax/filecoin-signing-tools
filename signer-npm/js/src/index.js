@@ -3,6 +3,7 @@ const bip32 = require("bip32");
 const cbor = require("ipld-dag-cbor").util;
 const secp256k1 = require("secp256k1");
 const BN = require("bn.js");
+const { MethodInit, MethodPaych } = require("./methods");
 
 const ExtendedKey = require("./extendedkey");
 const {
@@ -82,6 +83,9 @@ function transactionSerializeRaw(message) {
   if (!("method" in message) || typeof message.method !== "number") {
     throw new Error("'method' is a required field and has to be a 'number'");
   }
+  if (!("params" in message) || typeof message.params !== "string") {
+    throw new Error("'params' is a required field and has to be a 'string'");
+  }
 
   const to = addressAsBytes(message.to);
   const from = addressAsBytes(message.from);
@@ -111,7 +115,7 @@ function transactionSerializeRaw(message) {
     gasprice,
     message.gaslimit,
     message.method,
-    Buffer.from(""),
+    Buffer.from(message.params, "base64"),
   ];
 
   return cbor.serialize(message_to_encode);
@@ -246,6 +250,164 @@ function verifySignature(signature, message) {
   );
 }
 
+function createPymtChan(from, to, amount, nonce) {
+  if (typeof from !== "string") {
+    throw new Error("`from` address has to be a string.");
+  }
+  if (typeof to !== "string") {
+    throw new Error("`to` address has to be a string.");
+  }
+  if (typeof amount !== "string") {
+    throw new Error("`amount` address has to be a string.");
+  }
+  let constructorParams = [to, from];
+  let serializedConstructorParams = cbor.serialize(constructorParams);
+
+  let execParams = [
+    {
+      42: Buffer.from(
+        "000155001466696C2F312F7061796D656E746368616E6E656C",
+        "hex"
+      ),
+    },
+    serializedConstructorParams,
+  ];
+  let serializedParams = cbor.serialize(execParams);
+  let message = {
+    from: from,
+    to: "t01",
+    nonce: nonce,
+    value: new BN(amount).toString(10),
+    gasprice: new BN("100").toString(10),
+    gaslimit: 200000000,
+    method: MethodInit.Exec,
+    params: serializedParams.toString("base64"),
+  };
+
+  return message;
+}
+
+function settlePymtChan(pch, from, nonce) {
+  if (typeof pch !== "string") {
+    throw new Error("`pch` address has to be a string.");
+  }
+  if (typeof from !== "string") {
+    throw new Error("`from` address has to be a string.");
+  }
+  let message = {
+    from: from,
+    to: pch,
+    nonce: nonce,
+    value: new BN("0".toString("hex"), 16).toString(10),
+    gasprice: new BN("100".toString("hex"), 16).toString(10),
+    gaslimit: 200000000,
+    method: MethodPaych.Settle,
+    params: "",
+  };
+  return message;
+}
+
+function collectPymtChan(pch, from, nonce) {
+  if (typeof pch !== "string") {
+    throw new Error("`pch` address has to be a string.");
+  }
+  if (typeof from !== "string") {
+    throw new Error("`from` address has to be a string.");
+  }
+  let message = {
+    from: from,
+    to: pch,
+    nonce: nonce,
+    value: new BN("0".toString("hex"), 16).toString(10),
+    gasprice: new BN("100".toString("hex"), 16).toString(10),
+    gaslimit: 200000000,
+    method: MethodPaych.Collect,
+    params: "",
+  };
+  return message;
+}
+
+function updatePymtChan(pch, from, signedVoucherBase64, nonce) {
+  if (typeof pch !== "string") {
+    throw new Error("`pch` address has to be a string.");
+  }
+  if (typeof from !== "string") {
+    throw new Error("`from` address has to be a string.");
+  }
+  if (typeof signedVoucherBase64 !== "string") {
+    throw new Error("`signedVoucher` has to be a base64 string.");
+  }
+  let cborSignedVoucher = Buffer.from(signedVoucherBase64, "base64");
+  let signedVoucher = cbor.deserialize(cborSignedVoucher);
+  let updateChannelStateParams = [
+    signedVoucher,
+    Buffer.alloc(0),
+    Buffer.alloc(0),
+  ];
+  let serializedParams = cbor.serialize(updateChannelStateParams);
+  let message = {
+    from: from,
+    to: pch,
+    nonce: nonce,
+    value: new BN("0".toString("hex"), 16).toString(10),
+    gasprice: new BN("100".toString("hex"), 16).toString(10),
+    gaslimit: 200000000,
+    method: MethodPaych.UpdateChannelState,
+    params: serializedParams.toSTring("base64"),
+  };
+  return message;
+}
+
+function signVoucher(unsignedVoucherBase64, privateKey) {
+  if (typeof unsignedVoucherBase64 !== "string") {
+    throw new Error("`unsignedVoucher` has to be a base64 string.");
+  }
+  if (typeof privateKey !== "string") {
+    throw new Error("`privateKey` has to be a base64 string.");
+  }
+  let cborUnsignedVoucher = Buffer.from(unsignedVoucherBase64, "base64");
+
+  // verify format and convert to buffer if needed
+  privateKey = tryToPrivateKeyBuffer(privateKey);
+
+  const messageDigest = getDigest(cborUnsignedVoucher);
+  const signature = secp256k1.ecdsaSign(messageDigest, privateKey);
+
+  let unsignedVoucher = cbor.deserialize(cborUnsignedVoucher);
+
+  unsignedVoucher[9] = signature;
+
+  const signedVoucher = cbor.serialize(unsignedVoucher);
+
+  return signedVoucher.toString("base64");
+}
+
+function createVoucher(
+  timeLockMin,
+  timeLockMax,
+  amount,
+  lane,
+  nonce,
+  minSettleHeight
+) {
+  let voucher = [
+    timeLockMin,
+    timeLockMax,
+    Buffer.alloc(0),
+    null,
+    lane,
+    nonce,
+    amount,
+    minSettleHeight,
+    [],
+    Buffer.alloc(0),
+  ];
+
+  let serializedVoucher = cbor.serialize(voucher);
+
+  return serializedVoucher.toString("base64");
+}
+
 module.exports = {
   generateMnemonic,
   keyDerive,
@@ -258,4 +420,10 @@ module.exports = {
   transactionSignLotus,
   transactionSignRaw,
   verifySignature,
+  createVoucher,
+  signVoucher,
+  updatePymtChan,
+  collectPymtChan,
+  createPymtChan,
+  settlePymtChan,
 };

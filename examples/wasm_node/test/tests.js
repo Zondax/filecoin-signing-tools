@@ -11,6 +11,7 @@ const {getDigest, blake2b256} = require('./utils');
 const secp256k1 = require('secp256k1');
 const fs = require('fs');
 const assert = require('assert');
+const cbor = require("ipld-dag-cbor").util;
 
 const EXAMPLE_MNEMONIC = "equip will roof matter pink blind book anxiety banner elbow sun young";
 const EXAMPLE_CBOR_TX = "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a0430009c41961a80040";
@@ -909,6 +910,298 @@ describeCall('SerializeParams', function () {
       "845501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6284007582d825501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b7116",
       Buffer.from(serialized_params).toString('hex')
     )
+  })
+})
+
+describe('createPymtChan', function () {
+  it('create payment channel transaction and sign (SECP256K1)', function () {    
+    const privateKey = "+UXJi0663hCExYMxZVb9J+wKyFWhhX51jnG7WXkeAw0=";
+    
+    const recover = filecoin_signer.keyRecover(privateKey, true);
+        
+    const from = recover.address;
+    const to = "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq";
+    
+    let serializedParams
+    
+    if (!process.env.PURE_JS) {
+      const createParams = {
+        From: from,
+        To: to,
+      }      
+      
+      serializedParams = Buffer.from(filecoin_signer.serializeParams(createParams));
+          
+      let execParams = {
+          CodeCid: 'fil/1/paymentchannel',
+          ConstructorParams: serializedParams.toString('base64')
+      }
+      
+      serializedParams = Buffer.from(filecoin_signer.serializeParams(execParams)).toString("base64");
+    } else {
+      serializedParams = "gtgqWBkAAVUAFGZpbC8xL3BheW1lbnRjaGFubmVsWEqCVQElRUfDOAbbTJ6ACbjr2cTS5fIBglgxA5MHnM9FDHIFsKjsZKFuYvWfYSdZCbFOkaaE1KzG8yG07EH0VDMTwgWuYAGf7JwwTg==";
+    }
+            
+    const expected = {
+      Message: {
+        From: from,
+        GasLimit: 200000000,
+        GasPrice: '100',
+        Method: 2,
+        Nonce: 1,
+        Params: serializedParams,
+        To: 't01',
+        Value: '10000000000'
+      },
+    }
+              
+    let create_pymtchan = filecoin_signer.createPymtChan(from, to, "10000000000", 1);
+    
+    console.log(create_pymtchan)
+    
+    let signedMessage = filecoin_signer.transactionSignLotus(create_pymtchan, privateKey);
+    signedMessage = JSON.parse(signedMessage)
+
+    console.log(signedMessage);
+
+    assert.deepStrictEqual(expected.Message, signedMessage.Message);
+    
+    const signature = Buffer.from(signedMessage.Signature.Data, "base64");
+    
+    const serializedMessage = filecoin_signer.transactionSerialize(create_pymtchan);
+        
+    const messageDigest = getDigest(Buffer.from(serializedMessage, 'hex'));    
+        
+    // Remove the V value from the signature (last byte)
+    assert(secp256k1.ecdsaVerify(signature.slice(0, -1), messageDigest, recover.public_raw))
+
+  })
+  it('create payment channel transaction and sign (BLS)', function () {    
+    let privateKey = "8niW4fUBoKNo3GMDVfWu0oari11js4t1QpwXVBpEpFA=";
+    let from = "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq";
+    let to = "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy";
+    
+    let serializedParams
+    
+    if (!process.env.PURE_JS) {
+      const createParams = {
+        From: from,
+        To: to,
+      }
+          
+      serializedParams = Buffer.from(filecoin_signer.serializeParams(createParams));
+      
+      let execParams = {
+          CodeCid: 'fil/1/paymentchannel',
+          ConstructorParams: serializedParams.toString('base64')
+      }
+      
+      serializedParams = Buffer.from(filecoin_signer.serializeParams(execParams)).toString('base64');
+      console.log(serializedParams)
+    } else {
+      serializedParams = "gtgqWBkAAVUAFGZpbC8xL3BheW1lbnRjaGFubmVsWEqCWDEDkwecz0UMcgWwqOxkoW5i9Z9hJ1kJsU6RpoTUrMbzIbTsQfRUMxPCBa5gAZ/snDBOVQElRUfDOAbbTJ6ACbjr2cTS5fIBgg==";
+    }
+    
+    console.log(serializedParams)
+
+    const expected = {
+      Message: {
+        From: from,
+        GasLimit: 200000000,
+        GasPrice: '100',
+        Method: 2,
+        Nonce: 1,
+        Params: serializedParams,
+        To: 't01',
+        Value: '10000000000'
+      }
+    }
+          
+    let create_pymtchan = filecoin_signer.createPymtChan(from, to, "10000000000", 1)
+    
+    console.log(create_pymtchan)
+    
+    let signedMessage = filecoin_signer.transactionSignLotus(create_pymtchan, privateKey);
+    signedMessage = JSON.parse(signedMessage);
+
+    assert.deepStrictEqual(expected.Message, signedMessage.Message);
+    
+    // TODO: verify signature
+    // but with which lib ?
+
+  })
+})
+
+describe('updatePymtChan', function () {
+  it('update payment channel transaction and sign', function () {    
+    const privateKey = "+UXJi0663hCExYMxZVb9J+wKyFWhhX51jnG7WXkeAw0=";
+    
+    const recover = filecoin_signer.keyRecover(privateKey, true);
+    
+    const from = recover.address;
+    
+    const signedVoucherBase64 = "ihkE0gBA9gABRAABhqABgFhCAYqo8UzN75vK2qA4j8kljdUjoa7hQSUDqpLXD79KYzrGb1Mr4RwInD/1j+Q6hZBN+9qgRnKmE07y3Lsc5Q9FMp4B";
+    
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
+
+    let serializedParams
+    
+    if (!process.env.PURE_JS) {
+
+      let updateChannelStateParams = {
+        Sv: signedVoucherBase64,
+        Secret: [],
+        Proof: [],
+      }
+      
+      serializedParams = Buffer.from(filecoin_signer.serializeParams(updateChannelStateParams)).toString('base64');
+    } else {
+      serializedParams = "g4oZBNIAQPYAAUQAAYagAYBYQgGKqPFMze+bytqgOI/JJY3VI6Gu4UElA6qS1w+/SmM6xm9TK+EcCJw/9Y/kOoWQTfvaoEZyphNO8ty7HOUPRTKeAUBA";
+    }
+
+    const expected = {
+      Message : {
+        From: from,
+        GasLimit: 200000000,
+        GasPrice: '100',
+        Method: 2,
+        Nonce: 1,
+        Params: serializedParams,
+        To: 't01003',
+        Value: '0'
+      }
+    }
+    
+    let update_pymtchan = filecoin_signer.updatePymtChan("t01003", recoveredKey.address, signedVoucherBase64, 1)
+    
+    console.log(update_pymtchan)    
+    
+    let signedMessage = filecoin_signer.transactionSignLotus(update_pymtchan, privateKey);
+    signedMessage = JSON.parse(signedMessage)
+
+    assert.deepStrictEqual(expected.Message, signedMessage.Message);
+
+    const signature = Buffer.from(signedMessage.Signature.Data, "base64");
+    
+    const serializedMessage = filecoin_signer.transactionSerialize(update_pymtchan);
+        
+    const messageDigest = getDigest(Buffer.from(serializedMessage, 'hex'));    
+        
+    // Remove the V value from the signature (last byte)
+    assert(secp256k1.ecdsaVerify(signature.slice(0, -1), messageDigest, recover.public_raw));
+  })
+})
+
+describe('settlePymtChan', function () {
+  it('settle payment channel and sign', function () {    
+    const privateKey = "+UXJi0663hCExYMxZVb9J+wKyFWhhX51jnG7WXkeAw0=";
+    const recover = filecoin_signer.keyRecover(privateKey, true);
+    const from = recover.address;    
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
+
+    const expected = {
+      Message : {
+        From: from,
+        GasLimit: 20000000,
+        GasPrice: '0',
+        Method: 3,
+        Nonce: 1,
+        Params: "",
+        To: 't01003',
+        Value: '0'
+      }
+    }
+    let settle_pymtchan = filecoin_signer.settlePymtChan("t01003", recoveredKey.address, 1)
+    
+    console.log(settle_pymtchan)    
+    
+    let signedMessage = filecoin_signer.transactionSignLotus(settle_pymtchan, privateKey);
+    signedMessage = JSON.parse(signedMessage);
+    
+    assert.deepStrictEqual(expected.Message, signedMessage.Message);
+
+    const signature = Buffer.from(signedMessage.Signature.Data, "base64");
+    const serializedMessage = filecoin_signer.transactionSerialize(settle_pymtchan);
+    const messageDigest = getDigest(Buffer.from(serializedMessage, 'hex'));    
+        
+    // Remove the V value from the signature (last byte)
+    assert(secp256k1.ecdsaVerify(signature.slice(0, -1), messageDigest, recover.public_raw));
+  })
+})
+
+describe('collectPymtChan', function () {
+  it('settle payment channel and sign', function () {    
+    const privateKey = "+UXJi0663hCExYMxZVb9J+wKyFWhhX51jnG7WXkeAw0=";
+    const recover = filecoin_signer.keyRecover(privateKey, true);
+    const from = recover.address;    
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
+
+    const expected = {
+      Message : {
+        From: from,
+        GasLimit: 20000000,
+        GasPrice: '0',
+        Method: 4,
+        Nonce: 1,
+        Params: "",
+        To: 't01003',
+        Value: '0'
+      }
+    }
+    
+    let collect_pymtchan = filecoin_signer.collectPymtChan("t01003", recoveredKey.address, 1)
+    let signedMessage = filecoin_signer.transactionSignLotus(collect_pymtchan, privateKey);
+    signedMessage = JSON.parse(signedMessage);
+    
+    assert.deepStrictEqual(expected.Message, signedMessage.Message);
+
+    const signature = Buffer.from(signedMessage.Signature.Data, "base64");
+    const serializedMessage = filecoin_signer.transactionSerialize(collect_pymtchan);
+    const messageDigest = getDigest(Buffer.from(serializedMessage, 'hex'));    
+        
+    // Remove the V value from the signature (last byte)
+    assert(secp256k1.ecdsaVerify(signature.slice(0, -1), messageDigest, recover.public_raw));
+  })
+})
+
+describe('createVoucher', function () {
+  it('create a voucher', function () {
+    const voucher = filecoin_signer.createVoucher(
+      BigInt(1234),
+      BigInt(0),
+      "100000",
+      BigInt(0),
+      BigInt(1),
+      BigInt(1),
+    );
+    
+    // TODO: might not be valid...
+    const expected = "ihkE0gBA9gABRAABhqABgPY=";
+    
+    assert.strictEqual(expected, voucher);
+  })
+})
+
+describe('signVoucher', function () {
+  it('sign a voucher', function () {
+    let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
+    let privateKey = child.privateKey.toString("base64");
+
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
+    
+    // TODO: might not be valid...
+    const voucher = "ihkE0gBA9gABRAABhqABgPY=";
+    
+    const signedVoucher = filecoin_signer.signVoucher(voucher, privateKey);
+    
+    let signature = cbor.deserialize(Buffer.from(signedVoucher, 'base64'))[9];
+    
+    signature = signature.slice(1,-1);
+    console.log(signature.length)
+        
+    const messageDigest = getDigest(Buffer.from(voucher, 'base64'));    
+        
+    assert(secp256k1.ecdsaVerify(signature, messageDigest, recoveredKey.public_raw));
   })
 })
 

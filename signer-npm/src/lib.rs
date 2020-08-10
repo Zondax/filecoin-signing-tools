@@ -312,10 +312,8 @@ pub fn create_multisig(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let addresses_strings_tmp: Result<Vec<String>, _> = addresses
-        .into_iter()
-        .map(|address_value| signer_value_to_string(address_value))
-        .collect();
+    let addresses_strings_tmp: Result<Vec<String>, _> =
+        addresses.into_iter().map(signer_value_to_string).collect();
 
     let addresses_strings = match addresses_strings_tmp {
         Ok(addresses_strings) => addresses_strings,
@@ -429,6 +427,131 @@ pub fn cancel_multisig(
         .map_err(|e| JsValue::from(format!("Error canceling transaction: {}", e)))?;
 
     Ok(multisig_transaction_js)
+}
+
+#[wasm_bindgen(js_name = createPymtChan)]
+pub fn create_pymtchan(
+    from_address: String,
+    to_address: String,
+    amount: String,
+    nonce: u32,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let pch_transaction =
+        filecoin_signer::create_pymtchan(from_address, to_address, amount, nonce as u64).map_err(
+            |e| JsValue::from_str(format!("Error creating payment channel: {}", e).as_str()),
+        )?;
+
+    let pch_transaction_js = JsValue::from_serde(&pch_transaction)
+        .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(pch_transaction_js)
+}
+
+#[wasm_bindgen(js_name = settlePymtChan)]
+pub fn settle_pymtchan(
+    pch_address: String,
+    from_address: String,
+    nonce: u32,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let pch_transaction = filecoin_signer::settle_pymtchan(pch_address, from_address, nonce as u64)
+        .map_err(|e| {
+            JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str())
+        })?;
+
+    let pch_transaction_js = JsValue::from_serde(&pch_transaction)
+        .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(pch_transaction_js)
+}
+
+#[wasm_bindgen(js_name = collectPymtChan)]
+pub fn collect_pymtchan(
+    pch_address: String,
+    from_address: String,
+    nonce: u32,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let pch_transaction =
+        filecoin_signer::collect_pymtchan(pch_address, from_address, nonce as u64).map_err(
+            |e| JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str()),
+        )?;
+
+    let pch_transaction_js = JsValue::from_serde(&pch_transaction)
+        .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(pch_transaction_js)
+}
+
+#[wasm_bindgen(js_name = updatePymtChan)]
+pub fn update_pymtchan(
+    pch_address: String,
+    from_address: String,
+    signed_voucher: String,
+    nonce: u32,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    // TODO: verify if `pch_address` is an actor address. Not needed but good improvement.
+
+    let pch_transaction =
+        filecoin_signer::update_pymtchan(pch_address, from_address, signed_voucher, nonce as u64)
+            .map_err(|e| {
+            JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str())
+        })?;
+
+    let pch_transaction_js = JsValue::from_serde(&pch_transaction)
+        .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(pch_transaction_js)
+}
+
+#[wasm_bindgen(js_name = signVoucher)]
+pub fn sign_voucher(voucher: String, private_key_js: JsValue) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let private_key_bytes = extract_private_key(private_key_js)?;
+
+    let voucher = filecoin_signer::sign_voucher(voucher, &private_key_bytes)
+        .map_err(|e| JsValue::from_str(format!("Error signing voucher: {}", e).as_str()))?;
+
+    let voucher_js = JsValue::from_serde(&voucher)
+        .map_err(|e| JsValue::from(format!("Error converting voucher: {}", e)))?;
+
+    Ok(voucher_js)
+}
+
+#[wasm_bindgen(js_name = createVoucher)]
+pub fn create_voucher(
+    time_lock_min: i64,
+    time_lock_max: i64,
+    amount: String,
+    lane: u64,
+    nonce: u64,
+    min_settle_height: i64,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let voucher = filecoin_signer::create_voucher(
+        time_lock_min,
+        time_lock_max,
+        amount,
+        lane,
+        nonce,
+        min_settle_height,
+    )
+    .map_err(|e| {
+        JsValue::from_str(format!("Error creating payment channel voucher: {}", e).as_str())
+    })?;
+
+    let voucher_js = JsValue::from_serde(&voucher)
+        .map_err(|e| JsValue::from(format!("Error converting payment channel voucher: {}", e)))?;
+
+    Ok(voucher_js)
 }
 
 #[wasm_bindgen(js_name = serializeParams)]
