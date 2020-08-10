@@ -6,6 +6,7 @@ use forest_vm::{MethodNum, Serialized, TokenAmount, METHOD_CONSTRUCTOR};
 use lazy_static::lazy_static;
 use num_bigint::biguint_ser;
 use serde::{Deserialize, Serialize};
+use serde_bytes;
 
 /// Exec Params
 #[derive(Serialize_tuple, Deserialize_tuple)]
@@ -116,6 +117,16 @@ pub enum MethodInit {
     Exec = 2,
 }
 
+/// Methods payment channel
+/// https://github.com/filecoin-project/specs-actors/blob/master/actors/builtin/methods.go#L49
+#[repr(u64)]
+pub enum MethodsPaych {
+    Constructor = 1,
+    UpdateChannelState = 2,
+    Settle = 3,
+    Collect = 4,
+}
+
 lazy_static! {
     pub static ref SYSTEM_ACTOR_ADDR: Address         = Address::new_id(0);
     pub static ref INIT_ACTOR_ADDR: Address           = Address::new_id(1);
@@ -127,4 +138,21 @@ lazy_static! {
 
     // Distinguished AccountActor that is the destination of all burnt funds.
     pub static ref BURNT_FUNDS_ACTOR_ADDR: Address    = Address::new_id(99);
+}
+
+// Payment channel create params
+#[derive(Serialize_tuple, Deserialize_tuple)]
+pub struct PymtChanCreateParams {
+    pub from: Address,
+    pub to: Address,
+}
+
+// Payment channel update state params
+#[derive(Serialize_tuple, Deserialize_tuple)]
+pub struct UpdateChannelStateParams {
+    pub sv: Serialized,
+    #[serde(with = "serde_bytes")]
+    pub secret: Vec<u8>,
+    #[serde(with = "serde_bytes")]
+    pub proof: Vec<u8>,
 }
