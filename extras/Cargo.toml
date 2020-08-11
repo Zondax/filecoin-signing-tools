@@ -13,6 +13,7 @@ forest_message = "0.3.0"
 forest_address = "0.2.0"
 forest_encoding = "0.1.1"
 forest_cid = "0.1.0"
+forest_crypto = "0.2.1"
 num_bigint = { package = "forest_bigint", version = "0.1.0"}
 clock = { git = "https://github.com/chainsafe/forest", rev="2863f64e40fde88433f9a00be764872f54c2e5ba" }
 serde = { version = "1.0", features = ["derive"] }
