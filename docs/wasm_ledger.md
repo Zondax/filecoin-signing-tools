@@ -29,6 +29,29 @@ const keys = await keyRetrieveFromDevice(path, transport);
 console.log(keys);
 ```
 
+### showKeyOnDevice
+
+Show the key on the device.
+
+Arguments:
+* **path**: the BIP44 path as a string (e.g "m/44'/461'/0/0/1");
+* **transport**: the ledger transport;
+
+
+```javascript
+import { showKeyOnDevice } from '@zondax/filecoin-signer';
+import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
+
+const transport = await TransportNodeHid.create();
+
+const path = "m/44'/461'/0/0/1";
+
+const keys = await showKeyOnDevice(path, transport);
+
+console.log(keys);
+```
+
+
 ### transactionSignWithDevice <Badge text="Removed" type="warning" vertical="middle"/>
 
 Sign the transaction using a device using a given path. Return a ready to send transaction through the [JSON RPC service](/jsonrpc/). However it will not work with lotus json rpc service.
@@ -71,4 +94,58 @@ const path = "m/44'/461'/0/0/1";
 const signature = await transactionSignRawWithDevice(transaction, path, transport);
 
 console.log(signature);
+```
+
+### appInfo
+
+Give information on the filecoin App.
+
+Arguments:
+* **transport**: the ledger transport;
+
+```javascript
+import { appInfo } from '@zondax/filecoin-signer';
+import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
+
+const transport = await TransportNodeHid.create();
+
+const info = await appInfo(transport);
+
+console.log(info);
+```
+
+### deviceInfo
+
+Give information on the device info.
+
+Arguments:
+* **transport**: the ledger transport;
+
+```javascript
+import { deviceInfo } from '@zondax/filecoin-signer';
+import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
+
+const transport = await TransportNodeHid.create();
+
+const info = await deviceInfo(transport);
+
+console.log(info);
+```
+
+### getVersion
+
+Get the app version.
+
+Arguments:
+* **transport**: the ledger transport;
+
+```javascript
+import { getVersion } from '@zondax/filecoin-signer';
+import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
+
+const transport = await TransportNodeHid.create();
+
+const version = await getVersion(transport);
+
+console.log(version);
 ```

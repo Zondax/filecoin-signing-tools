@@ -93,7 +93,7 @@ fn extract_private_key(private_key_js: JsValue) -> Result<PrivateKey, JsValue> {
     }
 
     Err(JsValue::from(
-        "Private key must be encoded as hexstring, base64 or buffer",
+        "Private key must be encoded as base64 string or be a buffer",
     ))
 }
 
@@ -177,7 +177,7 @@ pub fn transaction_serialize(message: JsValue) -> Result<String, JsValue> {
 pub fn transaction_serialize_raw(unsigned_message: JsValue) -> Result<Vec<u8>, JsValue> {
     set_panic_hook();
 
-    // FIXME: Should be MessageTxAPI because it can be unsigned message or signed message
+    // TODO: Should be MessageTxAPI because it can be unsigned message or signed message
     let unsigned_message: UnsignedMessageAPI = unsigned_message
         .into_serde()
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
@@ -308,6 +308,7 @@ pub fn create_multisig(
     value: String,
     required: i32,
     nonce: u32,
+    duration: i64,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
@@ -329,6 +330,7 @@ pub fn create_multisig(
         value,
         required as i64,
         nonce as u64,
+        duration,
     )
     .map_err(|e| {
         JsValue::from_str(format!("Error creating multisig transaction: {}", e).as_str())
@@ -461,8 +463,7 @@ mod tests_wasm {
             "params": ""
         }"#;
 
-    const EXAMPLE_PRIVATE_KEY: &str =
-        "f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a";
+    const EXAMPLE_PRIVATE_KEY: &str = "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=";
 
     #[test]
     fn check_signature() {

@@ -18,4 +18,11 @@ function getDigest(message) {
   return Buffer.from(blake.blake2bFinal(blakeCtx));
 }
 
-module.exports = { getCID, getDigest };
+function blake2b256(message) {
+  const blakeCtx = blake.blake2bInit(32);
+  blake.blake2bUpdate(blakeCtx, message);
+  const hash = blake.blake2bFinal(blakeCtx);
+  return hash;
+}
+
+module.exports = { getCID, getDigest, blake2b256 };

@@ -48,12 +48,10 @@ class ExtendedKey {
   }
 
   get public_base64() {
-    // REVIEW: will this work in browser ?
     return this.publicKey.toString("base64");
   }
 
   get private_base64() {
-    // REVIEW: will this work in browser ?
     return this.privateKey.toString("base64");
   }
 }

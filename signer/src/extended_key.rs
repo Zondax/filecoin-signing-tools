@@ -2,7 +2,7 @@ use secp256k1::util::{COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_K
 use secp256k1::{PublicKey, SecretKey};
 
 use crate::error::SignerError;
-use hmac::{Hmac, Mac};
+use hmac::{Hmac, Mac, NewMac};
 use sha2::Sha512;
 use std::convert::TryFrom;
 use std::fmt;
@@ -21,6 +21,8 @@ pub struct ExtendedSecretKey {
     chain_code: ChainCode,
 }
 
+type HmacSha512 = Hmac<Sha512>;
+
 impl fmt::Display for ExtendedSecretKey {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
@@ -36,10 +38,10 @@ impl TryFrom<&[u8]> for ExtendedSecretKey {
     type Error = SignerError;
 
     fn try_from(seed: &[u8]) -> Result<ExtendedSecretKey, Self::Error> {
-        let mut hmac: Hmac<Sha512> = Hmac::new_varkey(HMAC_SEED)?;
-        hmac.input(seed);
+        let mut hmac = HmacSha512::new_varkey(HMAC_SEED)?;
+        hmac.update(seed);
 
-        let hmac_code = hmac.result().code();
+        let hmac_code = hmac.finalize().into_bytes();
         let (master_private_key, master_chain_code) = hmac_code.split_at(32);
 
         ExtendedSecretKey::new(
@@ -90,16 +92,16 @@ impl ExtendedSecretKey {
 
         if child_index & HARDENED_BIT == 0 {
             // Not hardened
-            hmac.input(&self.public_key_compressed());
-            hmac.input(&child_index.to_be_bytes());
+            hmac.update(&self.public_key_compressed());
+            hmac.update(&child_index.to_be_bytes());
         } else {
             // Hardened
-            hmac.input(&[0u8]);
-            hmac.input(&self.secret_key());
-            hmac.input(&child_index.to_be_bytes());
+            hmac.update(&[0u8]);
+            hmac.update(&self.secret_key());
+            hmac.update(&child_index.to_be_bytes());
         }
 
-        let hmac_result = hmac.result().code();
+        let hmac_result = hmac.finalize().into_bytes();
         let (secret_key_shift, child_chain_code) = hmac_result.split_at(32);
 
         let mut child_secret_key = self.secret_key.clone();

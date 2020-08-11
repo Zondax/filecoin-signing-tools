@@ -215,7 +215,7 @@ Sign a transaction and return the signature (RSV format).
 
 Arguments:
 * **transaction**: a filecoin transaction;
-* **privatekey**: a private key as hexstring;
+* **privatekey**: a private key as base64 string;
 
 ```javascript
 const axios = require("axios");
@@ -235,8 +235,8 @@ const params = [
     method: 0,
     params: "",
   }
-  // privatekey hexstring
-  "f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a"];
+  // privatekey base64 string
+  "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo="];
 
 const response = await await axios.post(
   URL,
