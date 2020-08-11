@@ -5,7 +5,6 @@ use forest_encoding::tuple::*;
 use forest_encoding::Cbor;
 use forest_vm::{MethodNum, Serialized, TokenAmount, METHOD_CONSTRUCTOR};
 use num_bigint::{bigint_ser, biguint_ser, BigInt};
-use serde_bytes;
 
 /// Maximum number of lanes in a channel
 pub const LANE_LIMIT: usize = 256;

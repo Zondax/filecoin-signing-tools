@@ -9,8 +9,7 @@
 )]
 
 use crate::api::{
-    MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
-    SignedVoucherAPI, UnsignedMessageAPI,
+    MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI, UnsignedMessageAPI,
 };
 use crate::error::SignerError;
 use extras::{multisig, paych, ExecParams, MethodInit, INIT_ACTOR_ADDR};
@@ -472,7 +471,7 @@ pub fn create_multisig(
     };
 
     let constructor_params_multisig = multisig::ConstructorParams {
-        signers: signers,
+        signers,
         num_approvals_threshold: required,
         unlock_duration: duration,
     };
@@ -781,7 +780,7 @@ pub fn settle_pymtchan(
     let pch_settle_message_api = UnsignedMessageAPI {
         to: pch_address,
         from: from_address,
-        nonce: nonce,
+        nonce,
         value: "0".to_string(),
         // Next two based on https://github.com/filecoin-project/lotus/blob/fe4efa0e0ee045d38f63f4955d01cbf3e36bc41f/paychmgr/simple.go#L40
         gas_price: "0".to_string(),
@@ -825,7 +824,7 @@ pub fn collect_pymtchan(
 #[cfg(test)]
 mod tests {
     use crate::api::{
-        MessageParams, MessageTxAPI, PaymentChannelCreateParams, SignedVoucherAPI,
+        MessageParams, MessageTxAPI,
         SpecsActorsCryptoSignature, UnsignedMessageAPI,
     };
     use crate::signature::{Signature, SignatureBLS};
@@ -834,7 +833,7 @@ mod tests {
         create_pymtchan, key_derive, key_derive_from_seed, key_generate_mnemonic, key_recover,
         proposal_multisig_message, serialize_params, settle_pymtchan, transaction_parse,
         transaction_serialize, transaction_sign, transaction_sign_bls_raw, transaction_sign_raw,
-        update_pymtchan, verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic,
+        verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic,
         PrivateKey,
     };
     use bip39::{Language, Seed};
@@ -1417,9 +1416,9 @@ mod tests {
         let from_key = "Is8RE05W1aR6Xyk4IbpVA71sU2ibVQQgle80rjs8U8E=".to_string();
         let _from_pkey = "34a9e12cd978a29b89681365507433c6e3ee9daa"; // from base32decode("gsu6clgzpcrjxclicnsva5bty3r65hnk")
         let _pch_addr_hex = "70125899295ada2a86f7e48f90df1b6b486945ad"; // from base32decode("oajfrgjjllncvbxx4shzbxy3nnegsrnn")
-        let privkey = PrivateKey::try_from(from_key).unwrap();
+        let _privkey = PrivateKey::try_from(from_key).unwrap();
 
-        let sig = SpecsActorsCryptoSignature {
+        let _sig = SpecsActorsCryptoSignature {
             typ: 1,
             data: vec![
                 0x7C, 0xD6, 0xC3, 0xB4, 0xD1, 0x7A, 0x0C, 0x01, 0xEA, 0x4E, 0x9A, 0xE7, 0xB9, 0x28,
@@ -1429,7 +1428,19 @@ mod tests {
                 0x0C, 0x83, 0xE5, 0xCE, 0x59, 0xD4, 0xF6, 0x1D, 0x01,
             ],
         };
-        /*let sv = SignedVoucherAPI::new(0,1,1,&sig);
+        
+        /*let sv = paych::SignedVoucher{
+            time_lock_min: 0,
+            time_lock_max: 0,
+            secret_preimage: vec![],
+            extra: Option::<i32>::None,
+            lane: 0,
+            nonce: 1,
+            amount: 1,
+            min_settle_height: 0,
+            merges: [],
+            signature: Some(sig),
+        };
 
         let pch_update_message_unsigned_api = update_pymtchan(
             "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq".to_string(),

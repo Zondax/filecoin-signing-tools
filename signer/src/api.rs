@@ -7,8 +7,7 @@ use forest_encoding::tuple::*;
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
 use num_bigint_chainsafe::BigUint;
-use serde::ser::SerializeSeq;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize, Serializer};
 use std::convert::TryFrom;
 use std::str::FromStr;
 
@@ -364,11 +363,11 @@ impl Serialize for SpecsActorsCryptoSignature {
 //#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[derive(Debug, Clone, PartialEq, Deserialize_tuple, Serialize_tuple)]
 pub struct SignedVoucherAPI {
-    pub timeLockMin: i64, // not supported - must be 0
-    pub timeLockMax: i64, // not supported - must be 0
+    pub time_lock_min: i64, // not supported - must be 0
+    pub time_lock_max: i64, // not supported - must be 0
     // Serializing to 0x40 (empty byte string), consistent with Lotus-generated voucher
     #[serde(with = "serde_bytes")]
-    pub secretPreimage: Vec<u8>, // not supported - must be blank
+    pub secret_preimage: Vec<u8>, // not supported - must be blank
     // This should serialize to 0xf6 (cbor null) per https://github.com/whyrusleeping/cbor-gen/blob/227fab5a237792e633ddc99254a5a8a03642cb7a/utils.go#L523
     pub extra: Option<i32>, // not supported - must be None
     pub lane: u64,
@@ -379,7 +378,7 @@ pub struct SignedVoucherAPI {
     // ref:  https://github.com/filecoin-project/specs-actors/blob/master/actors/abi/big/int.go#L225
     #[serde(serialize_with = "SignedVoucherAPI::serde_ser_to_cbor_be_int_bytes")]
     pub amount: u64,
-    pub minSettleHeight: i64, // not supported - must be zero
+    pub min_settle_height: i64, // not supported - must be zero
     // Must serialize to 0x80 (cbor empty array)
     pub merges: [u8; 0],
     // If this is absent, it must serialize as 0xf6 (cbor null).
@@ -402,14 +401,14 @@ impl SignedVoucherAPI {
     ) -> SignedVoucherAPI {
         //let signature : SpecsActorsCryptoSignature = signature.into();
         SignedVoucherAPI {
-            timeLockMin: 0,
-            timeLockMax: 0,
-            secretPreimage: vec![],
+            time_lock_min: 0,
+            time_lock_max: 0,
+            secret_preimage: vec![],
             extra: Option::<i32>::None,
             lane,
             nonce,
             amount,
-            minSettleHeight: 0,
+            min_settle_height: 0,
             merges: [],
             signature: Some(signature.into()),
         }
