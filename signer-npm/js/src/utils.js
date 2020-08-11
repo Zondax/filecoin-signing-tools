@@ -54,12 +54,12 @@ function addressAsBytes(address) {
 
   switch (Number(protocolIndicator)) {
     case ProtocolIndicator.ID:
-      if (address.length > 18) {
+      if (address.length > 32) {
         throw new InvalidPayloadLength();
       }
       return Buffer.concat([
         Buffer.from(protocolIndicatorByte, "hex"),
-        Buffer.from(leb.unsigned.encode(address.substr(2)))
+        Buffer.from(leb.unsigned.encode(address.substr(2))),
       ]);
     case ProtocolIndicator.SECP256K1:
       address_decoded = base32Decode(address.slice(2).toUpperCase(), "RFC4648");

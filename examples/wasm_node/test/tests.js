@@ -369,6 +369,9 @@ describe("verifySignature", function() {
 let describeCall = describe;
 if (process.env.PURE_JS) { describeCall = describe.skip }
 
+let describeJSOnly = describe;
+if (!process.env.PURE_JS) { describeJSOnly = describe.skip }
+
 describeCall("createMultisig", function() {
   it("should return a create multisig transaction", function() {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
@@ -1011,3 +1014,26 @@ describe('Transaction Deserialization - Parameterized', function () {
         })
     }
 });
+
+describeJSOnly('Serialize with params', function () {
+  it("signs transaction with params", () => {
+    const tx = {
+      to: 't080',
+      from: 't1pnzozdkjnmtmnh6i3ufl7ianvwl2lq7tybazudy',
+      nonce: 4,
+      value: '123456789',
+      gasprice: '1000000000',
+      gaslimit: 25000000,
+      method: 2,
+      params: Buffer.from("hEIABkACWBmCQwDsB1MAASXfo3Ghnm98tUOVygAAAAAA", "base64"),
+    }
+    const mnemonic = 'robot matrix ribbon husband feature attitude noise imitate matrix shaft resist cliff lab now gold menu grocery truth deliver camp about stand consider number'
+    const path = "m/44'/1'/1/0/2"
+    const private_hexstring = filecoin_signer.keyDerive(mnemonic, path, '').private_hexstring
+
+    let result = filecoin_signer.transactionSignLotus(tx, private_hexstring)
+    let expected = {"Message":{"From":"t1pnzozdkjnmtmnh6i3ufl7ianvwl2lq7tybazudy","GasLimit":25000000,"GasPrice":"1000000000","Method":2,"Nonce":4,"Params":"hEIABkACWBmCQwDsB1MAASXfo3Ghnm98tUOVygAAAAAA","To":"t080","Value":"123456789"},"Signature":{"Data":"+HWKGi45nbQo5u7Uv9rT44iHUkOAwuN4NIyk7RjNM/JMeg+E6k6xOZkitfNKxgKgXlbQEDd2lLcOuB7XqZAztAE=","Type":1}}
+
+    assert.deepStrictEqual(JSON.stringify(expected), result);
+  })
+})
