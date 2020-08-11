@@ -9,11 +9,11 @@
 )]
 
 use crate::api::{
-    MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI, SignedVoucherAPI,
-    UnsignedMessageAPI,
+    MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
+    SignedVoucherAPI, UnsignedMessageAPI,
 };
 use crate::error::SignerError;
-use extras::{multisig, paych, MethodInit, ExecParams, INIT_ACTOR_ADDR};
+use extras::{multisig, paych, ExecParams, MethodInit, INIT_ACTOR_ADDR};
 use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
 use forest_encoding::blake2b_256;
@@ -477,9 +477,10 @@ pub fn create_multisig(
         unlock_duration: duration,
     };
 
-    let serialized_constructor_params =
-        forest_vm::Serialized::serialize::<multisig::ConstructorParams>(constructor_params_multisig)
-            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+    let serialized_constructor_params = forest_vm::Serialized::serialize::<
+        multisig::ConstructorParams,
+    >(constructor_params_multisig)
+    .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_multisig = ExecParams {
         code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),
@@ -529,8 +530,9 @@ pub fn proposal_multisig_message(
         params: forest_vm::Serialized::new(Vec::new()),
     };
 
-    let params = forest_vm::Serialized::serialize::<multisig::ProposeParams>(propose_params_multisig)
-        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+    let params =
+        forest_vm::Serialized::serialize::<multisig::ProposeParams>(propose_params_multisig)
+            .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let multisig_propose_message_api = UnsignedMessageAPI {
         to: multisig_address,
@@ -672,7 +674,7 @@ pub fn serialize_params(params: MessageParams) -> Result<CborBuffer, SignerError
 }
 
 /// Utility function to create a payment channel creation message.  Returns unsigned message.
-/// 
+///
 /// # Arguments
 ///
 /// * `from_address` - A string address
@@ -686,7 +688,7 @@ pub fn create_pymtchan(
     value: String,
     nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
-    let create_payment_channel_params = paych::ConstructorParams { 
+    let create_payment_channel_params = paych::ConstructorParams {
         from: Address::from_str(&from_address)?,
         to: Address::from_str(&to_address)?,
     };
@@ -695,18 +697,18 @@ pub fn create_pymtchan(
         forest_vm::Serialized::serialize::<paych::ConstructorParams>(create_payment_channel_params)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-
     let message_params_create_pymtchan = ExecParams {
         code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/paymentchannel")),
         constructor_params: serialized_constructor_params,
     };
-    
-    let serialized_params = forest_vm::Serialized::serialize::<ExecParams>(message_params_create_pymtchan)
-        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
+    let serialized_params =
+        forest_vm::Serialized::serialize::<ExecParams>(message_params_create_pymtchan)
+            .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
     let pch_create_message_api = UnsignedMessageAPI {
-        to: "t01".to_owned(),            // INIT_ACTOR_ADDR
+        to: "t01".to_owned(), // INIT_ACTOR_ADDR
         from: from_address.to_owned(),
         nonce,
         value,
@@ -721,7 +723,7 @@ pub fn create_pymtchan(
 }
 
 /// Utility function to update the state of a payment channel.  Returns unsigned message.
-/// 
+///
 /// # Arguments
 ///
 /// * `pch_address` - A string address
@@ -735,19 +737,20 @@ pub fn update_pymtchan(
     signed_voucher: paych::SignedVoucher,
     nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
-    
-    let update_payment_channel_params = paych::UpdateChannelStateParams { 
+    let update_payment_channel_params = paych::UpdateChannelStateParams {
         sv: signed_voucher,
         secret: vec![],
         proof: vec![],
     };
-    
-    let serialized_params = forest_vm::Serialized::serialize::<paych::UpdateChannelStateParams>(update_payment_channel_params)
-        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
+    let serialized_params = forest_vm::Serialized::serialize::<paych::UpdateChannelStateParams>(
+        update_payment_channel_params,
+    )
+    .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
     let pch_update_message_api = UnsignedMessageAPI {
-        to: from_address,            // INIT_ACTOR_ADDR
+        to: from_address, // INIT_ACTOR_ADDR
         from: pch_address,
         nonce,
         value: "0".to_string(),
@@ -762,7 +765,7 @@ pub fn update_pymtchan(
 }
 
 /// Utility function to generate a payment channel settle message.  Returns unsigned message.
-/// 
+///
 /// # Arguments
 ///
 /// * `pch_address` - A string address
@@ -774,7 +777,6 @@ pub fn settle_pymtchan(
     from_address: String,
     nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
-    
     // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
     let pch_settle_message_api = UnsignedMessageAPI {
         to: pch_address,
@@ -792,7 +794,7 @@ pub fn settle_pymtchan(
 }
 
 /// Utility function to generate a payment channel collect message.  Returns unsigned message.
-/// 
+///
 /// # Arguments
 ///
 /// * `pch_address` - A string address
@@ -823,17 +825,16 @@ pub fn collect_pymtchan(
 #[cfg(test)]
 mod tests {
     use crate::api::{
-        MessageParams,
-        MessageTxAPI, UnsignedMessageAPI, 
-        PaymentChannelCreateParams, SignedVoucherAPI,
-        SpecsActorsCryptoSignature,
+        MessageParams, MessageTxAPI, PaymentChannelCreateParams, SignedVoucherAPI,
+        SpecsActorsCryptoSignature, UnsignedMessageAPI,
     };
     use crate::signature::{Signature, SignatureBLS};
     use crate::{
-        approve_multisig_message, cancel_multisig_message, create_multisig, key_derive,
-        key_derive_from_seed, key_generate_mnemonic, key_recover, proposal_multisig_message,
-        serialize_params, transaction_parse, transaction_serialize, transaction_sign_bls_raw,
-        transaction_sign_raw, transaction_sign, verify_aggregated_signature, verify_signature, create_pymtchan, collect_pymtchan, settle_pymtchan, update_pymtchan, CborBuffer, Mnemonic,
+        approve_multisig_message, cancel_multisig_message, collect_pymtchan, create_multisig,
+        create_pymtchan, key_derive, key_derive_from_seed, key_generate_mnemonic, key_recover,
+        proposal_multisig_message, serialize_params, settle_pymtchan, transaction_parse,
+        transaction_serialize, transaction_sign, transaction_sign_bls_raw, transaction_sign_raw,
+        update_pymtchan, verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic,
         PrivateKey,
     };
     use bip39::{Language, Seed};
@@ -1216,10 +1217,10 @@ mod tests {
     //         "method": builtin.MethodsInit.Exec,
     //         "params": "(see below)"
     //     }"#;
-	// where the p.ch. payments are going to address 
-	//   t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy
+    // where the p.ch. payments are going to address
+    //   t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy
     //
-    // 
+    //
     // How does simple.go:createPaych() create the Params field?
     //
     // 1. First serialize to/from into 'params':
@@ -1249,7 +1250,7 @@ mod tests {
     //      58 31                  # bytes(49) == From: (t3)smdzzt2fbrzalmfi5
     //        0393079CCF450C7205B0 #              rskc3tc6wpwcj2zbgyu5engqtkk
     //        A8EC64A16E62F59F6127 #              zrxteg2oyqpukqzrhqqfvzqadh7m
-    //        5909B14E91A684D4ACC6 #              tqye4(43liejq) 
+    //        5909B14E91A684D4ACC6 #              tqye4(43liejq)
     //        F321B4EC41F4543313C205AE60019FEC9C304E
     //      01                     # unsigned(1) ==> Nonce: 1
     //      42                     # bytes(2)
@@ -1260,7 +1261,7 @@ mod tests {
     //      02                     # unsigned(2): ==> Method: builtin.
     //                             #                 MethodsInit.Exec (2)
     //      58 6A                  # bytes(106) ==> Params: 'enc' above
-    //        82D82A5819000155001466696C2F312F7061796D656E746368616E6E656C584A8258310393079CCF450C7205B0A8EC64A16E62F59F61275909B14E91A684D4ACC6F321B4EC41F4543313C205AE60019FEC9C304E5501254547C33806DB4C9E8009B8EBD9C4D2E5F20182 
+    //        82D82A5819000155001466696C2F312F7061796D656E746368616E6E656C584A8258310393079CCF450C7205B0A8EC64A16E62F59F61275909B14E91A684D4ACC6F321B4EC41F4543313C205AE60019FEC9C304E5501254547C33806DB4C9E8009B8EBD9C4D2E5F20182
     //      58 61                  # bytes(97) ==> Signature
     //        02836BEF21C8075AD92BE49C2A47C08A2236036B1879301D81B71D285A49E6DE91816FC5C41918F292FD691A5BE23C0E9409C4C62570624356501B785D793950F17BB36E5DA58FE9468E5604D3041B9D13333B8FB1D8A817EFF7FC70A18D676D2C
     #[test]
@@ -1272,7 +1273,7 @@ mod tests {
 
         //let to_key = "f945c98b4ebade1084c583316556fd27ec0ac855a1857e758e71bb59791e030d";
         //let to_address = "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy";
-        
+
         /*let paych_constructor_params = paych::ConstructorParams{
             to: Address::from_str("t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy").unwrap(),
             from: Address::from_str("t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq").unwrap(),
@@ -1343,7 +1344,7 @@ mod tests {
     // (see previous example for detailed field labeling)
     //
     // 82                                   # array(2)
-    const PYMTCHAN_EXAMPLE_UNSIGNED_MSG_CBOR : &str = r#"
+    const PYMTCHAN_EXAMPLE_UNSIGNED_MSG_CBOR: &str = r#"
        89                                   # array(9)
           00                                # unsigned(0) 'Version
           42                                # bytes(2)    'To
@@ -1361,27 +1362,26 @@ mod tests {
              82D82A5819000155001466696C2F312F7061796D656E746368616E6E656C584A825501254547C33806DB4C9E8009B8EBD9C4D2E5F2018258310393079CCF450C7205B0A8EC64A16E62F59F61275909B14E91A684D4ACC6F321B4EC41F4543313C205AE60019FEC9C304E 
     "#;
     //   58 42                                # bytes(66)   'Signature
-    //      01D2C3D56B58CAD05781E8107A90DF55B6715DEE12FEEB268CF697FF24BC9ABF5777C7EE2A939F4FD9E8EEB40FB5DE396B73A03DC019699593A87E299E9927F37F01 
+    //      01D2C3D56B58CAD05781E8107A90DF55B6715DEE12FEEB268CF697FF24BC9ABF5777C7EE2A939F4FD9E8EEB40FB5DE396B73A03DC019699593A87E299E9927F37F01
     #[test]
     fn payment_channel_creation_secp256k1_signing() {
         let from_key = "+UXJi0663hCExYMxZVb9J+wKyFWhhX51jnG7WXkeAw0=".to_string();
         let _from_pkey = "254547c33806db4c9e8009b8ebd9c4d2e5f20182";
         let privkey = PrivateKey::try_from(from_key).unwrap();
 
-        let _pch_create_message_unsigned = serde_json::json!(
-            PYMTCHAN_EXAMPLE_UNSIGNED_MSG);
-        let pch_create_message_api : UnsignedMessageAPI = 
+        let _pch_create_message_unsigned = serde_json::json!(PYMTCHAN_EXAMPLE_UNSIGNED_MSG);
+        let pch_create_message_api: UnsignedMessageAPI =
             serde_json::from_str(PYMTCHAN_EXAMPLE_UNSIGNED_MSG)
-            .expect("Could not serialize unsigned message");
+                .expect("Could not serialize unsigned message");
         // TODO:  ^^^ this is an error, these lines are duplicated.  First one should have called create_pymtchan()
- 
+
         let signed_message_result = transaction_sign(&pch_create_message_api, &privkey).unwrap();
         // TODO:  how do I check the signature of a transaction_sign() result
 
         // Check the raw bytes match the test vector cbor
-        let cbor_result_unsigned_msg = 
+        let cbor_result_unsigned_msg =
             transaction_serialize(&signed_message_result.message).unwrap();
-        let mut expected_unsigned_message_cbor_string : String = 
+        let mut expected_unsigned_message_cbor_string: String =
             PYMTCHAN_EXAMPLE_UNSIGNED_MSG_CBOR.to_string();
         let mut new_expected_unsigned_message_cbor_string = String::from("");
         let re = Regex::new(r"(?P<comment>#.*)").unwrap();
@@ -1391,13 +1391,12 @@ mod tests {
         }
         expected_unsigned_message_cbor_string = new_expected_unsigned_message_cbor_string;
         &expected_unsigned_message_cbor_string.retain(|c| !c.is_whitespace());
-        
+
         assert_eq!(
             hex::encode(&cbor_result_unsigned_msg),
             expected_unsigned_message_cbor_string.to_ascii_lowercase(),
             "Correct unsigned message should match"
         );
-
     }
 
     const PYMTCHAN_UPDATE_EXAMPLE_UNSIGNED_MSG: &str = r#"
@@ -1420,9 +1419,15 @@ mod tests {
         let _pch_addr_hex = "70125899295ada2a86f7e48f90df1b6b486945ad"; // from base32decode("oajfrgjjllncvbxx4shzbxy3nnegsrnn")
         let privkey = PrivateKey::try_from(from_key).unwrap();
 
-        let sig = SpecsActorsCryptoSignature{
+        let sig = SpecsActorsCryptoSignature {
             typ: 1,
-            data: vec![0x7C, 0xD6, 0xC3, 0xB4, 0xD1, 0x7A, 0x0C, 0x01, 0xEA, 0x4E, 0x9A, 0xE7, 0xB9, 0x28, 0x61, 0x98, 0x30, 0x7E, 0x02, 0x07, 0xAC, 0x33, 0xC7, 0xB3, 0xD7, 0xFB, 0x26, 0x92, 0xB4, 0x13, 0x58, 0x7B, 0x2F, 0x81, 0xBB, 0xCC, 0x48, 0x47, 0x9F, 0x89, 0xD2, 0x3B, 0x77, 0x45, 0x3F, 0xF3, 0x6C, 0xBC, 0x01, 0x05, 0x45, 0x10, 0xF7, 0xBE, 0x3C, 0xB0, 0x0C, 0x83, 0xE5, 0xCE, 0x59, 0xD4, 0xF6, 0x1D, 0x01],
+            data: vec![
+                0x7C, 0xD6, 0xC3, 0xB4, 0xD1, 0x7A, 0x0C, 0x01, 0xEA, 0x4E, 0x9A, 0xE7, 0xB9, 0x28,
+                0x61, 0x98, 0x30, 0x7E, 0x02, 0x07, 0xAC, 0x33, 0xC7, 0xB3, 0xD7, 0xFB, 0x26, 0x92,
+                0xB4, 0x13, 0x58, 0x7B, 0x2F, 0x81, 0xBB, 0xCC, 0x48, 0x47, 0x9F, 0x89, 0xD2, 0x3B,
+                0x77, 0x45, 0x3F, 0xF3, 0x6C, 0xBC, 0x01, 0x05, 0x45, 0x10, 0xF7, 0xBE, 0x3C, 0xB0,
+                0x0C, 0x83, 0xE5, 0xCE, 0x59, 0xD4, 0xF6, 0x1D, 0x01,
+            ],
         };
         /*let sv = SignedVoucherAPI::new(0,1,1,&sig);
 
@@ -1466,7 +1471,7 @@ mod tests {
         "method": 3,
         "params": ""
     }"#;
-    
+
     #[test]
     fn payment_channel_settle() {
         let from_key = "Is8RE05W1aR6Xyk4IbpVA71sU2ibVQQgle80rjs8U8E=".to_string();
@@ -1483,13 +1488,13 @@ mod tests {
 
         let pch_settle_message_unsigned_expected: UnsignedMessageAPI =
             serde_json::from_str(PYMTCHAN_SETTLE_EXAMPLE_UNSIGNED_MSG)
-            .expect("Could not serialize unsigned message");
+                .expect("Could not serialize unsigned message");
 
         assert_eq!(
             serde_json::to_string(&pch_settle_message_unsigned_expected).unwrap(),
             serde_json::to_string(&pch_settle_message_unsigned_api).unwrap()
         );
-        
+
         // Sign
         let signature = transaction_sign_raw(&pch_settle_message_unsigned_api, &privkey).unwrap();
 
@@ -1530,13 +1535,13 @@ mod tests {
 
         let pch_collect_message_unsigned_expected: UnsignedMessageAPI =
             serde_json::from_str(PYMTCHAN_COLLECT_EXAMPLE_UNSIGNED_MSG)
-            .expect("Could not serialize unsigned message");
+                .expect("Could not serialize unsigned message");
 
         assert_eq!(
             serde_json::to_string(&pch_collect_message_unsigned_expected).unwrap(),
             serde_json::to_string(&pch_collect_message_unsigned_api).unwrap()
         );
-    
+
         // Sign
         let signature = transaction_sign_raw(&pch_collect_message_unsigned_api, &privkey).unwrap();
 
@@ -1551,8 +1556,8 @@ mod tests {
 
     #[test]
     fn serialize_signed_payment_voucher() {
-        use crate::api::SpecsActorsCryptoSignature;
         use crate::api::SignedVoucherAPI;
+        use crate::api::SpecsActorsCryptoSignature;
         use serde_cbor::ser::to_vec_packed;
 
         // This is the Lotus voucher
@@ -1576,14 +1581,22 @@ mod tests {
         //  017CD6C3B4D17A0C01EA4E9AE7B9286198307E0207AC33C7B3D7FB2692B413587B2F81BBCC48479F89D23B77453FF36CBC01054510F7BE3CB00C83E5CE59D4F61D01
         let test_vector_cbor_hex_string = "8a000040f6000142000100805842017cd6c3b4d17a0c01ea4e9ae7b9286198307e0207ac33c7b3d7fb2692b413587b2f81bbcc48479f89d23b77453ff36cbc01054510f7be3cb00c83e5ce59d4f61d01";
 
-        let sig = SpecsActorsCryptoSignature{
+        let sig = SpecsActorsCryptoSignature {
             typ: 1,
-            data: vec![0x7C, 0xD6, 0xC3, 0xB4, 0xD1, 0x7A, 0x0C, 0x01, 0xEA, 0x4E, 0x9A, 0xE7, 0xB9, 0x28, 0x61, 0x98, 0x30, 0x7E, 0x02, 0x07, 0xAC, 0x33, 0xC7, 0xB3, 0xD7, 0xFB, 0x26, 0x92, 0xB4, 0x13, 0x58, 0x7B, 0x2F, 0x81, 0xBB, 0xCC, 0x48, 0x47, 0x9F, 0x89, 0xD2, 0x3B, 0x77, 0x45, 0x3F, 0xF3, 0x6C, 0xBC, 0x01, 0x05, 0x45, 0x10, 0xF7, 0xBE, 0x3C, 0xB0, 0x0C, 0x83, 0xE5, 0xCE, 0x59, 0xD4, 0xF6, 0x1D, 0x01],
+            data: vec![
+                0x7C, 0xD6, 0xC3, 0xB4, 0xD1, 0x7A, 0x0C, 0x01, 0xEA, 0x4E, 0x9A, 0xE7, 0xB9, 0x28,
+                0x61, 0x98, 0x30, 0x7E, 0x02, 0x07, 0xAC, 0x33, 0xC7, 0xB3, 0xD7, 0xFB, 0x26, 0x92,
+                0xB4, 0x13, 0x58, 0x7B, 0x2F, 0x81, 0xBB, 0xCC, 0x48, 0x47, 0x9F, 0x89, 0xD2, 0x3B,
+                0x77, 0x45, 0x3F, 0xF3, 0x6C, 0xBC, 0x01, 0x05, 0x45, 0x10, 0xF7, 0xBE, 0x3C, 0xB0,
+                0x0C, 0x83, 0xE5, 0xCE, 0x59, 0xD4, 0xF6, 0x1D, 0x01,
+            ],
         };
-        let sv = SignedVoucherAPI::new(0,1,1,&sig);
+        let sv = SignedVoucherAPI::new(0, 1, 1, &sig);
         let serialized_cbor = to_vec_packed(&sv).unwrap();
         let mut serialized_cbor_hex_string = String::new();
-        serialized_cbor.iter().for_each(|x| serialized_cbor_hex_string.push_str( &format!("{:02x}", x) ));
+        serialized_cbor
+            .iter()
+            .for_each(|x| serialized_cbor_hex_string.push_str(&format!("{:02x}", x)));
         //println!("serialized cbor = '{}'",serialized_cbor_hex_string);
         assert_eq!(serialized_cbor_hex_string, test_vector_cbor_hex_string);
     }

@@ -440,15 +440,11 @@ pub fn create_pymtchan(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let pch_transaction = filecoin_signer::create_pymtchan(
-        &from_address,
-        &to_address,
-        amount,
-        nonce as u64,
-    )
-    .map_err(|e| {
-        JsValue::from_str(format!("Error creating payment channel: {}", e).as_str())
-    })?;
+    let pch_transaction =
+        filecoin_signer::create_pymtchan(&from_address, &to_address, amount, nonce as u64)
+            .map_err(|e| {
+                JsValue::from_str(format!("Error creating payment channel: {}", e).as_str())
+            })?;
 
     let pch_transaction_js = JsValue::from_serde(&pch_transaction)
         .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
@@ -464,14 +460,10 @@ pub fn settle_pymtchan(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let pch_transaction = filecoin_signer::settle_pymtchan(
-        &pch_address,
-        &from_address,
-        nonce as u64,
-    )
-    .map_err(|e| {
-        JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str())
-    })?;
+    let pch_transaction =
+        filecoin_signer::settle_pymtchan(&pch_address, &from_address, nonce as u64).map_err(
+            |e| JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str()),
+        )?;
 
     let pch_transaction_js = JsValue::from_serde(&pch_transaction)
         .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
@@ -487,14 +479,10 @@ pub fn collect_pymtchan(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let pch_transaction = filecoin_signer::collect_pymtchan(
-        &pch_address,
-        &from_address,
-        nonce as u64,
-    )
-    .map_err(|e| {
-        JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str())
-    })?;
+    let pch_transaction =
+        filecoin_signer::collect_pymtchan(&pch_address, &from_address, nonce as u64).map_err(
+            |e| JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str()),
+        )?;
 
     let pch_transaction_js = JsValue::from_serde(&pch_transaction)
         .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
@@ -556,6 +544,4 @@ mod tests_wasm {
 
         println!("{:?}", signed_tx);
     }
-
-
 }

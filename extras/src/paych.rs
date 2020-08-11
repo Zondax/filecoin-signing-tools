@@ -1,11 +1,11 @@
-use forest_address::Address;
 use clock::ChainEpoch;
+use forest_address::Address;
 use forest_crypto::signature::Signature;
-use serde_bytes;
-use num_bigint::{bigint_ser, biguint_ser, BigInt};
 use forest_encoding::tuple::*;
 use forest_encoding::Cbor;
 use forest_vm::{MethodNum, Serialized, TokenAmount, METHOD_CONSTRUCTOR};
+use num_bigint::{bigint_ser, biguint_ser, BigInt};
+use serde_bytes;
 
 /// Maximum number of lanes in a channel
 pub const LANE_LIMIT: usize = 256;
@@ -75,7 +75,6 @@ pub struct Merge {
 impl Cbor for State {}
 impl Cbor for LaneState {}
 impl Cbor for Merge {}
-
 
 /// A voucher is sent by `from` to `to` off-chain in order to enable
 /// `to` to redeem payments on-chain in the future

@@ -5,7 +5,6 @@ use forest_vm::{MethodNum, Serialized, TokenAmount, METHOD_CONSTRUCTOR};
 use num_bigint::biguint_ser;
 use serde::{Deserialize, Serialize};
 
-
 /// Transaction ID type
 // TODO change to uvarint encoding
 #[derive(Clone, Copy, Default, Serialize, Deserialize)]

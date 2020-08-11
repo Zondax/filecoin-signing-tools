@@ -2,10 +2,10 @@ pub mod multisig;
 pub mod paych;
 
 use forest_address::Address;
-use lazy_static::lazy_static;
 use forest_cid::Cid;
 use forest_encoding::tuple::*;
 use forest_vm::Serialized;
+use lazy_static::lazy_static;
 
 /// Methods init
 /// https://github.com/filecoin-project/specs-actors/blob/master/actors/builtin/methods.go#L21
