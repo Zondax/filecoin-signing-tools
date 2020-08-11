@@ -9,7 +9,8 @@
 )]
 
 use crate::api::{
-    MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI, UnsignedMessageAPI,
+    MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
+    UnsignedMessageAPI,
 };
 use crate::error::SignerError;
 use extras::{multisig, paych, ExecParams, MethodInit, INIT_ACTOR_ADDR};
@@ -823,18 +824,14 @@ pub fn collect_pymtchan(
 
 #[cfg(test)]
 mod tests {
-    use crate::api::{
-        MessageParams, MessageTxAPI,
-        SpecsActorsCryptoSignature, UnsignedMessageAPI,
-    };
+    use crate::api::{MessageParams, MessageTxAPI, SpecsActorsCryptoSignature, UnsignedMessageAPI};
     use crate::signature::{Signature, SignatureBLS};
     use crate::{
         approve_multisig_message, cancel_multisig_message, collect_pymtchan, create_multisig,
         create_pymtchan, key_derive, key_derive_from_seed, key_generate_mnemonic, key_recover,
         proposal_multisig_message, serialize_params, settle_pymtchan, transaction_parse,
         transaction_serialize, transaction_sign, transaction_sign_bls_raw, transaction_sign_raw,
-        verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic,
-        PrivateKey,
+        verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic, PrivateKey,
     };
     use bip39::{Language, Seed};
     use forest_encoding::blake2b_256;
@@ -1428,7 +1425,7 @@ mod tests {
                 0x0C, 0x83, 0xE5, 0xCE, 0x59, 0xD4, 0xF6, 0x1D, 0x01,
             ],
         };
-        
+
         /*let sv = paych::SignedVoucher{
             time_lock_min: 0,
             time_lock_max: 0,

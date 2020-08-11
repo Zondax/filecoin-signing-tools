@@ -312,10 +312,8 @@ pub fn create_multisig(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let addresses_strings_tmp: Result<Vec<String>, _> = addresses
-        .into_iter()
-        .map(signer_value_to_string)
-        .collect();
+    let addresses_strings_tmp: Result<Vec<String>, _> =
+        addresses.into_iter().map(signer_value_to_string).collect();
 
     let addresses_strings = match addresses_strings_tmp {
         Ok(addresses_strings) => addresses_strings,
@@ -441,10 +439,9 @@ pub fn create_pymtchan(
     set_panic_hook();
 
     let pch_transaction =
-        filecoin_signer::create_pymtchan(from_address, to_address, amount, nonce as u64)
-            .map_err(|e| {
-                JsValue::from_str(format!("Error creating payment channel: {}", e).as_str())
-            })?;
+        filecoin_signer::create_pymtchan(from_address, to_address, amount, nonce as u64).map_err(
+            |e| JsValue::from_str(format!("Error creating payment channel: {}", e).as_str()),
+        )?;
 
     let pch_transaction_js = JsValue::from_serde(&pch_transaction)
         .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
@@ -460,10 +457,10 @@ pub fn settle_pymtchan(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let pch_transaction =
-        filecoin_signer::settle_pymtchan(pch_address, from_address, nonce as u64).map_err(
-            |e| JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str()),
-        )?;
+    let pch_transaction = filecoin_signer::settle_pymtchan(pch_address, from_address, nonce as u64)
+        .map_err(|e| {
+            JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str())
+        })?;
 
     let pch_transaction_js = JsValue::from_serde(&pch_transaction)
         .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
