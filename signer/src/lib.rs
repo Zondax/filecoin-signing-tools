@@ -736,7 +736,7 @@ pub fn update_pymtchan(
     from_address: String,
     signed_voucher: paych::SignedVoucher,
     nonce: u64,
-) -> Result<UnsignedMessageAPI, SignerError> {
+) -> Result<UnsignedMessageAPI, SignerError> {    
     let update_payment_channel_params = paych::UpdateChannelStateParams {
         sv: signed_voucher,
         secret: vec![],
@@ -824,19 +824,21 @@ pub fn collect_pymtchan(
 
 #[cfg(test)]
 mod tests {
-    use crate::api::{MessageParams, MessageTxAPI, SpecsActorsCryptoSignature, UnsignedMessageAPI};
+    use crate::api::{MessageParams, MessageTxAPI, UnsignedMessageAPI};
     use crate::signature::{Signature, SignatureBLS};
     use crate::{
         approve_multisig_message, cancel_multisig_message, collect_pymtchan, create_multisig,
         create_pymtchan, key_derive, key_derive_from_seed, key_generate_mnemonic, key_recover,
         proposal_multisig_message, serialize_params, settle_pymtchan, transaction_parse,
         transaction_serialize, transaction_sign, transaction_sign_bls_raw, transaction_sign_raw,
-        verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic, PrivateKey,
+        verify_aggregated_signature, verify_signature, update_pymtchan, CborBuffer, Mnemonic, PrivateKey,
     };
+    use extras::paych;
     use bip39::{Language, Seed};
     use forest_encoding::blake2b_256;
     use forest_encoding::to_vec;
     use std::convert::TryFrom;
+    use num_bigint_chainsafe::BigInt;
 
     use bls_signatures::Serialize;
     use forest_address::Address;
@@ -1402,46 +1404,44 @@ mod tests {
         "nonce": 1,
         "value": "0",
         "gasprice": "100",
-        "gaslimit": 20000000,
+        "gaslimit": 200000000,
         "method": 2,
-        "params": "g1hQigAAQPYAAUIAAQCAWEIBfNbDtNF6DAHqTprnuShhmDB+AgesM8ez1/smkrQTWHsvgbvMSEefidI7d0U/82y8AQVFEPe+PLAMg+XOWdT2HQFAQA=="
+        "params": "g4oAAED2AAFCAAEAgFhCAXzWw7TRegwB6k6a57koYZgwfgIHrDPHs9f7JpK0E1h7L4G7zEhHn4nSO3dFP/NsvAEFRRD3vjywDIPlzlnU9h0BQEA="
     }"#;
-    // ^^ params == 8358508a000040f6000142000100805842017cd6c3b4d17a0c01ea4e9ae7b9286198307e0207ac33c7b3d7fb2692b413587b2f81bbcc48479f89d23b77453ff36cbc01054510f7be3cb00c83e5ce59d4f61d014040
 
     #[test]
     fn payment_channel_update() {
+        use forest_crypto::signature::Signature;
+
         let from_key = "Is8RE05W1aR6Xyk4IbpVA71sU2ibVQQgle80rjs8U8E=".to_string();
         let _from_pkey = "34a9e12cd978a29b89681365507433c6e3ee9daa"; // from base32decode("gsu6clgzpcrjxclicnsva5bty3r65hnk")
         let _pch_addr_hex = "70125899295ada2a86f7e48f90df1b6b486945ad"; // from base32decode("oajfrgjjllncvbxx4shzbxy3nnegsrnn")
-        let _privkey = PrivateKey::try_from(from_key).unwrap();
+        let privkey = PrivateKey::try_from(from_key).unwrap();
 
-        let _sig = SpecsActorsCryptoSignature {
-            typ: 1,
-            data: vec![
+        let sig = Signature::new_secp256k1(vec![
                 0x7C, 0xD6, 0xC3, 0xB4, 0xD1, 0x7A, 0x0C, 0x01, 0xEA, 0x4E, 0x9A, 0xE7, 0xB9, 0x28,
                 0x61, 0x98, 0x30, 0x7E, 0x02, 0x07, 0xAC, 0x33, 0xC7, 0xB3, 0xD7, 0xFB, 0x26, 0x92,
                 0xB4, 0x13, 0x58, 0x7B, 0x2F, 0x81, 0xBB, 0xCC, 0x48, 0x47, 0x9F, 0x89, 0xD2, 0x3B,
                 0x77, 0x45, 0x3F, 0xF3, 0x6C, 0xBC, 0x01, 0x05, 0x45, 0x10, 0xF7, 0xBE, 0x3C, 0xB0,
                 0x0C, 0x83, 0xE5, 0xCE, 0x59, 0xD4, 0xF6, 0x1D, 0x01,
-            ],
-        };
+            ]);
 
-        /*let sv = paych::SignedVoucher{
+        let sv = paych::SignedVoucher{
             time_lock_min: 0,
             time_lock_max: 0,
-            secret_preimage: vec![],
-            extra: Option::<i32>::None,
+            secret_pre_image: Vec::new(),
+            extra: Option::<paych::ModVerifyParams>::None,
             lane: 0,
             nonce: 1,
-            amount: 1,
+            amount: BigInt::parse_bytes(b"1",10).unwrap(),
             min_settle_height: 0,
-            merges: [],
+            merges: vec![],
             signature: Some(sig),
         };
 
         let pch_update_message_unsigned_api = update_pymtchan(
-            "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq".to_string(),
             "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq".to_string(),
+            "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq".to_string(),
             sv,
             1,
         )
@@ -1465,7 +1465,7 @@ mod tests {
         let message_cbor = CborBuffer(to_vec(&message).unwrap());
 
         let valid_signature = verify_signature(&signature, &message_cbor);
-        assert!(valid_signature.unwrap());*/
+        assert!(valid_signature.unwrap());
     }
 
     const PYMTCHAN_SETTLE_EXAMPLE_UNSIGNED_MSG: &str = r#"
