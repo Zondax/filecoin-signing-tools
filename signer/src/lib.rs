@@ -734,11 +734,15 @@ pub fn create_pymtchan(
 pub fn update_pymtchan(
     pch_address: String,
     from_address: String,
-    signed_voucher: paych::SignedVoucher,
+    signed_voucher: String,
     nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
+    let sv_cbor = base64::decode(signed_voucher)?;
+    
+    let sv: paych::SignedVoucher = forest_encoding::from_slice(sv_cbor.as_ref())?;
+
     let update_payment_channel_params = paych::UpdateChannelStateParams {
-        sv: signed_voucher,
+        sv: sv,
         secret: vec![],
         proof: vec![],
     };
@@ -1505,11 +1509,13 @@ mod tests {
             merges: vec![],
             signature: Some(sig),
         };
+        
+        let sv_base64 = base64::encode(to_vec(&sv).unwrap());
 
         let pch_update_message_unsigned_api = update_pymtchan(
             "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq".to_string(),
             "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq".to_string(),
-            sv,
+            sv_base64,
             1,
         )
         .unwrap();
