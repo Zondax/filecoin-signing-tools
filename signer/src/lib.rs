@@ -736,7 +736,7 @@ pub fn update_pymtchan(
     from_address: String,
     signed_voucher: paych::SignedVoucher,
     nonce: u64,
-) -> Result<UnsignedMessageAPI, SignerError> {    
+) -> Result<UnsignedMessageAPI, SignerError> {
     let update_payment_channel_params = paych::UpdateChannelStateParams {
         sv: signed_voucher,
         secret: vec![],
@@ -831,14 +831,15 @@ mod tests {
         create_pymtchan, key_derive, key_derive_from_seed, key_generate_mnemonic, key_recover,
         proposal_multisig_message, serialize_params, settle_pymtchan, transaction_parse,
         transaction_serialize, transaction_sign, transaction_sign_bls_raw, transaction_sign_raw,
-        verify_aggregated_signature, verify_signature, update_pymtchan, CborBuffer, Mnemonic, PrivateKey,
+        update_pymtchan, verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic,
+        PrivateKey,
     };
-    use extras::paych;
     use bip39::{Language, Seed};
+    use extras::paych;
     use forest_encoding::blake2b_256;
     use forest_encoding::to_vec;
-    use std::convert::TryFrom;
     use num_bigint_chainsafe::BigInt;
+    use std::convert::TryFrom;
 
     use bls_signatures::Serialize;
     use forest_address::Address;
@@ -1419,21 +1420,21 @@ mod tests {
         let privkey = PrivateKey::try_from(from_key).unwrap();
 
         let sig = Signature::new_secp256k1(vec![
-                0x7C, 0xD6, 0xC3, 0xB4, 0xD1, 0x7A, 0x0C, 0x01, 0xEA, 0x4E, 0x9A, 0xE7, 0xB9, 0x28,
-                0x61, 0x98, 0x30, 0x7E, 0x02, 0x07, 0xAC, 0x33, 0xC7, 0xB3, 0xD7, 0xFB, 0x26, 0x92,
-                0xB4, 0x13, 0x58, 0x7B, 0x2F, 0x81, 0xBB, 0xCC, 0x48, 0x47, 0x9F, 0x89, 0xD2, 0x3B,
-                0x77, 0x45, 0x3F, 0xF3, 0x6C, 0xBC, 0x01, 0x05, 0x45, 0x10, 0xF7, 0xBE, 0x3C, 0xB0,
-                0x0C, 0x83, 0xE5, 0xCE, 0x59, 0xD4, 0xF6, 0x1D, 0x01,
-            ]);
+            0x7C, 0xD6, 0xC3, 0xB4, 0xD1, 0x7A, 0x0C, 0x01, 0xEA, 0x4E, 0x9A, 0xE7, 0xB9, 0x28,
+            0x61, 0x98, 0x30, 0x7E, 0x02, 0x07, 0xAC, 0x33, 0xC7, 0xB3, 0xD7, 0xFB, 0x26, 0x92,
+            0xB4, 0x13, 0x58, 0x7B, 0x2F, 0x81, 0xBB, 0xCC, 0x48, 0x47, 0x9F, 0x89, 0xD2, 0x3B,
+            0x77, 0x45, 0x3F, 0xF3, 0x6C, 0xBC, 0x01, 0x05, 0x45, 0x10, 0xF7, 0xBE, 0x3C, 0xB0,
+            0x0C, 0x83, 0xE5, 0xCE, 0x59, 0xD4, 0xF6, 0x1D, 0x01,
+        ]);
 
-        let sv = paych::SignedVoucher{
+        let sv = paych::SignedVoucher {
             time_lock_min: 0,
             time_lock_max: 0,
             secret_pre_image: Vec::new(),
             extra: Option::<paych::ModVerifyParams>::None,
             lane: 0,
             nonce: 1,
-            amount: BigInt::parse_bytes(b"1",10).unwrap(),
+            amount: BigInt::parse_bytes(b"1", 10).unwrap(),
             min_settle_height: 0,
             merges: vec![],
             signature: Some(sig),
@@ -1449,7 +1450,7 @@ mod tests {
 
         let pch_update_message_unsigned_expected: UnsignedMessageAPI =
             serde_json::from_str(PYMTCHAN_UPDATE_EXAMPLE_UNSIGNED_MSG)
-            .expect("Could not serialize unsigned message");
+                .expect("Could not serialize unsigned message");
 
         assert_eq!(
             serde_json::to_string(&pch_update_message_unsigned_expected).unwrap(),
