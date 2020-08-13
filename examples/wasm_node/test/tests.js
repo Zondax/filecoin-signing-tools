@@ -912,6 +912,27 @@ describeCall('SerializeParams', function () {
   })
 })
 
+describeCall('createPymtChan', function () {
+  it('create payment channel transaction and sign', function () {    
+    let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
+    let privateKey = child.privateKey.toString("base64");
+    
+    console.log(privateKey)
+
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
+
+    console.log(recoveredKey.address)
+    
+    let create_pymtchan = filecoin_signer.createPymtChan(recoveredKey.address, "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba", "100000", 1)
+    
+    console.log(create_pymtchan)    
+    
+    let signature = filecoin_signer.transactionSignLotus(create_pymtchan, privateKey);
+
+    console.log(signature);
+    
+  })
+})
 /* ------------------------------------------------------------------------------------------------- */
 
 const bls_tests_vectors_path = "../generated_test_cases.json";

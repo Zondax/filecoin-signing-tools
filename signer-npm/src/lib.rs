@@ -497,9 +497,10 @@ pub fn update_pymtchan(
     set_panic_hook();
 
     let pch_transaction =
-        filecoin_signer::update_pymtchan(pch_address, from_address, signed_voucher, nonce as u64).map_err(
-            |e| JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str()),
-        )?;
+        filecoin_signer::update_pymtchan(pch_address, from_address, signed_voucher, nonce as u64)
+            .map_err(|e| {
+            JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str())
+        })?;
 
     let pch_transaction_js = JsValue::from_serde(&pch_transaction)
         .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;

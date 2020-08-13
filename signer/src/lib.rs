@@ -738,7 +738,7 @@ pub fn update_pymtchan(
     nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     let sv_cbor = base64::decode(signed_voucher)?;
-    
+
     let sv: paych::SignedVoucher = forest_encoding::from_slice(sv_cbor.as_ref())?;
 
     let update_payment_channel_params = paych::UpdateChannelStateParams {
@@ -1509,7 +1509,7 @@ mod tests {
             merges: vec![],
             signature: Some(sig),
         };
-        
+
         let sv_base64 = base64::encode(to_vec(&sv).unwrap());
 
         let pch_update_message_unsigned_api = update_pymtchan(
