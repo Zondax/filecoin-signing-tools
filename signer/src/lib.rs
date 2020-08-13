@@ -822,6 +822,37 @@ pub fn collect_pymtchan(
     Ok(pch_collect_message_api)
 }
 
+/// Sign a voucher for payment channel
+///
+/// # Arguments
+///
+/// * `voucher_string` - Voucher as base64 string;
+/// * `private_key` - Private key as base64 string;
+///
+pub fn sign_voucher(
+    voucher_string: String,
+    private_key: &PrivateKey,
+) -> Result<paych::SignedVoucher, SignerError> {
+    let decoded_voucher = base64::decode(voucher_string)?;
+    let mut voucher : paych::SignedVoucher = from_slice(&decoded_voucher)?;
+        
+    let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
+
+    let digest = utils::get_digest(&decoded_voucher)?;
+    
+    let blob_to_sign = Message::parse_slice(&digest)?;
+
+    let (signature_rs, recovery_id) = sign(&blob_to_sign, &secret_key);
+    
+    let mut signature = SignatureSECP256K1 { 0: [0; 65] };
+    signature.0[..64].copy_from_slice(&signature_rs.serialize()[..]);
+    signature.0[64] = recovery_id.serialize();
+    
+    voucher.signature = Some(forest_crypto::signature::Signature::new_secp256k1(signature.0.to_vec()));
+
+    Ok(voucher)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::api::{MessageParams, MessageTxAPI, UnsignedMessageAPI};
