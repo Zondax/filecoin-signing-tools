@@ -1642,6 +1642,11 @@ mod tests {
         //println!("serialized cbor = '{}'",serialized_cbor_hex_string);
         assert_eq!(serialized_cbor_hex_string, test_vector_cbor_hex_string);
     }
+    
+    #[test]
+    fn test_sign_voucher() {
+        todo!()
+    }
 
     #[test]
     fn support_multisig_create() {
