@@ -103,7 +103,7 @@ function transactionSerializeRaw(message) {
     gasprice,
     message.gaslimit,
     message.method,
-    Buffer.from(""),
+    Buffer.from(message.params),
   ];
 
   return cbor.serialize(message_to_encode);
@@ -191,7 +191,9 @@ function transactionSignLotus(unsignedMessage, privateKey) {
       GasPrice: signedMessage.message.gasprice,
       Method: signedMessage.message.method,
       Nonce: signedMessage.message.nonce,
-      Params: signedMessage.message.params,
+      Params: Buffer.from(signedMessage.message.params, "hex").toString(
+        "base64"
+      ),
       To: signedMessage.message.to,
       Value: signedMessage.message.value,
     },
