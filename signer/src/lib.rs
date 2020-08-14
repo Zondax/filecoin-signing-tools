@@ -33,7 +33,6 @@ use secp256k1::util::{
     COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
 };
 use secp256k1::{recover, sign, verify, Message, RecoveryId};
-use zeroize::Zeroize;
 use zx_bip44::BIP44Path;
 
 use crate::signature::{Signature, SignatureBLS, SignatureSECP256K1};
@@ -59,8 +58,6 @@ impl AsRef<[u8]> for CborBuffer {
 pub const SIGNATURE_RECOVERY_SIZE: usize = SIGNATURE_SIZE + 1;
 
 /// Private key buffer
-#[derive(Zeroize, Debug)]
-#[zeroize(drop)]
 pub struct PrivateKey(pub [u8; SECRET_KEY_SIZE]);
 
 /// Public key buffer
