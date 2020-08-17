@@ -930,7 +930,6 @@ describeCall('createPymtChan', function () {
     let signature = filecoin_signer.transactionSignLotus(create_pymtchan, privateKey);
 
     console.log(signature);
-    
   })
 })
 /* ------------------------------------------------------------------------------------------------- */
