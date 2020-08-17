@@ -1676,10 +1676,10 @@ mod tests {
         assert_eq!(serialized_cbor_hex_string, test_vector_cbor_hex_string);
     }
 
-    #[test]
+    /*#[test]
     fn test_sign_voucher() {
-        todo!()
-    }
+
+    }*/
 
     #[test]
     fn support_multisig_create() {
