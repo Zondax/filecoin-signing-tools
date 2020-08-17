@@ -18,7 +18,7 @@ use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
 use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
-use num_bigint_chainsafe::{BigUint, BigInt};
+use num_bigint_chainsafe::{BigInt, BigUint};
 use std::convert::TryFrom;
 use std::str::FromStr;
 
@@ -872,7 +872,7 @@ pub fn create_voucher(
     nonce: u64,
     min_settle_height: i64,
 ) -> Result<paych::SignedVoucher, SignerError> {
-    let voucher = paych::SignedVoucher{
+    let voucher = paych::SignedVoucher {
         time_lock_min: time_lock_min,
         time_lock_max: time_lock_max,
         secret_pre_image: Vec::new(),
@@ -884,7 +884,7 @@ pub fn create_voucher(
         merges: Vec::new(),
         signature: None,
     };
-    
+
     Ok(voucher)
 }
 
@@ -1675,7 +1675,7 @@ mod tests {
         //println!("serialized cbor = '{}'",serialized_cbor_hex_string);
         assert_eq!(serialized_cbor_hex_string, test_vector_cbor_hex_string);
     }
-    
+
     #[test]
     fn test_sign_voucher() {
         todo!()
