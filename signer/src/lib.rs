@@ -18,7 +18,7 @@ use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
 use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
-use num_bigint_chainsafe::BigUint;
+use num_bigint_chainsafe::{BigUint, BigInt};
 use std::convert::TryFrom;
 use std::str::FromStr;
 
@@ -852,6 +852,39 @@ pub fn sign_voucher(
         signature.0.to_vec(),
     ));
 
+    Ok(voucher)
+}
+
+/// Create a voucher for payment channel
+///
+/// # Arguments
+///
+/// * `payment_channel_address` - The payment channel address;
+/// * `amount` - Amount in the voucher;
+/// * `lane` - Lane of the voucher;
+/// * `nonce` - Next nonce of the voucher;
+///
+pub fn create_voucher(
+    time_lock_min: i64,
+    time_lock_max: i64,
+    amount: String,
+    lane: u64,
+    nonce: u64,
+    min_settle_height: i64,
+) -> Result<paych::SignedVoucher, SignerError> {
+    let voucher = paych::SignedVoucher{
+        time_lock_min: time_lock_min,
+        time_lock_max: time_lock_max,
+        secret_pre_image: Vec::new(),
+        extra: None,
+        lane: lane,
+        nonce: nonce,
+        amount: BigInt::parse_bytes(amount.as_bytes(), 10).unwrap(),
+        min_settle_height: min_settle_height,
+        merges: Vec::new(),
+        signature: None,
+    };
+    
     Ok(voucher)
 }
 
