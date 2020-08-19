@@ -754,8 +754,8 @@ pub fn update_pymtchan(
 
     // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
     let pch_update_message_api = UnsignedMessageAPI {
-        to: from_address, // INIT_ACTOR_ADDR
-        from: pch_address,
+        to: pch_address, // INIT_ACTOR_ADDR
+        from: from_address,
         nonce,
         value: "0".to_string(),
         // Next two based on https://github.com/filecoin-project/lotus/blob/fe4efa0e0ee045d38f63f4955d01cbf3e36bc41f/paychmgr/simple.go#L40
@@ -836,7 +836,7 @@ pub fn collect_pymtchan(
 pub fn sign_voucher(
     voucher_string: String,
     private_key: &PrivateKey,
-) -> Result<paych::SignedVoucher, SignerError> {
+) -> Result<String, SignerError> {
     let decoded_voucher = base64::decode(voucher_string)?;
     let mut voucher: paych::SignedVoucher = from_slice(&decoded_voucher)?;
 
@@ -855,8 +855,10 @@ pub fn sign_voucher(
     voucher.signature = Some(forest_crypto::signature::Signature::new_secp256k1(
         signature.0.to_vec(),
     ));
+    
+    let cbor_voucher = base64::encode(to_vec(&voucher)?);
 
-    Ok(voucher)
+    Ok(cbor_voucher)
 }
 
 /// Create a voucher for payment channel
@@ -875,7 +877,7 @@ pub fn create_voucher(
     lane: u64,
     nonce: u64,
     min_settle_height: i64,
-) -> Result<paych::SignedVoucher, SignerError> {
+) -> Result<String, SignerError> {
     let voucher = paych::SignedVoucher {
         time_lock_min: time_lock_min,
         time_lock_max: time_lock_max,
@@ -888,8 +890,10 @@ pub fn create_voucher(
         merges: Vec::new(),
         signature: None,
     };
+    
+    let cbor_voucher = base64::encode(to_vec(&voucher)?);
 
-    Ok(voucher)
+    Ok(cbor_voucher)
 }
 
 #[cfg(test)]

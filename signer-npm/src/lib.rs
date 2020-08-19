@@ -508,6 +508,50 @@ pub fn update_pymtchan(
     Ok(pch_transaction_js)
 }
 
+#[wasm_bindgen(js_name = signVoucher)]
+pub fn sign_voucher(
+    voucher: String,
+    private_key_js: JsValue
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+    
+    let private_key_bytes = extract_private_key(private_key_js)?;
+
+    let voucher =
+        filecoin_signer::sign_voucher(voucher, &private_key_bytes)
+            .map_err(|e| {
+            JsValue::from_str(format!("Error signing voucher: {}", e).as_str())
+        })?;
+
+    let voucher_js = JsValue::from_serde(&voucher)
+        .map_err(|e| JsValue::from(format!("Error converting voucher: {}", e)))?;
+
+    Ok(voucher_js)
+}
+
+#[wasm_bindgen(js_name = createVoucher)]
+pub fn create_voucher(
+    time_lock_min: i64,
+    time_lock_max: i64,
+    amount: String,
+    lane: u64,
+    nonce: u64,
+    min_settle_height: i64,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let voucher =
+        filecoin_signer::create_voucher(time_lock_min, time_lock_max, amount, lane, nonce, min_settle_height)
+            .map_err(|e| {
+            JsValue::from_str(format!("Error creating payment channel voucher: {}", e).as_str())
+        })?;
+
+    let voucher_js = JsValue::from_serde(&voucher)
+        .map_err(|e| JsValue::from(format!("Error converting payment channel voucher: {}", e)))?;
+
+    Ok(voucher_js)
+}
+
 #[wasm_bindgen(js_name = serializeParams)]
 pub fn serialize_params(params_value: JsValue) -> Result<Vec<u8>, JsValue> {
     set_panic_hook();
