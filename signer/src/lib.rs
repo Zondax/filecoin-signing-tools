@@ -855,7 +855,7 @@ pub fn sign_voucher(
     voucher.signature = Some(forest_crypto::signature::Signature::new_secp256k1(
         signature.0.to_vec(),
     ));
-    
+
     let cbor_voucher = base64::encode(to_vec(&voucher)?);
 
     Ok(cbor_voucher)
@@ -890,7 +890,7 @@ pub fn create_voucher(
         merges: Vec::new(),
         signature: None,
     };
-    
+
     let cbor_voucher = base64::encode(to_vec(&voucher)?);
 
     Ok(cbor_voucher)
