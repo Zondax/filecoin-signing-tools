@@ -4,14 +4,14 @@ const bip32 = require('bip32');
 const axios = require('axios');
 
 const URL = "http://192.168.1.38:1234/rpc/v0"
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.2l5dql9PvaFPNY8_0UynbY0usJZ99dbIwpPUtaEDIYs"
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.1Ys00_AiuYuXpNQ_eexBNKL1ZYq_6Xim9SpYwXs3GwY"
 
 const privateKeyBase64 = "YbDPh1vq3fBClzbiwDt6WjniAdZn8tNcCwcBO2hDwyk="
 const privateKey = Buffer.from(privateKeyBase64, 'base64')
 
 const headers = { "Authorization": `Bearer ${TOKEN}` }
 
-const skip = true
+const skip = false
 
 async function main () {
   let response
@@ -321,7 +321,7 @@ async function main () {
   console.log(response.data)
   nonce = response.data.result
   
-  let update_paych_message = filecoin_signer.settlePymtChan("101003", "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy", signedVoucher, nonce)
+  update_paych_message = filecoin_signer.settlePymtChan("101003", "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy", signedVoucher, nonce)
 
   console.log(update_paych_message)
 

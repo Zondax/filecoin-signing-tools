@@ -75,14 +75,14 @@ impl TryFrom<ExecParamsAPI> for ExecParams {
             base64::decode(exec_constructor.constructor_params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-        if exec_constructor.code_cid != "fil/1/multisig".to_string() {
+        if exec_constructor.code_cid != "fil/1/multisig".to_string() && exec_constructor.code_cid != "fil/1/paymentchannel".to_string() {
             return Err(SignerError::GenericString(
-                "Only support `fil/1/multisig` code for now.".to_string(),
+                "Only support `fil/1/multisig` and `fil/1/paymentchannel` code for now.".to_string(),
             ));
         }
 
         Ok(ExecParams {
-            code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),
+            code_cid: Cid::new_v1(Codec::Raw, Identity::digest(exec_constructor.code_cid.as_bytes())),
             constructor_params: forest_vm::Serialized::new(serialized_constructor_multisig_params),
         })
     }
@@ -306,8 +306,11 @@ impl TryFrom<PaymentChannelCreateParams> for paych::ConstructorParams {
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct PaymentChannelUpdateStateParams {
+    #[serde(alias = "Sv")]
     pub sv: String,
+    #[serde(alias = "Secret")]
     pub secret: Vec<u8>,
+    #[serde(alias = "Proof")]
     pub proof: Vec<u8>,
 }
 

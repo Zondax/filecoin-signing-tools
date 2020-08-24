@@ -124,6 +124,8 @@ pub struct PaymentVerifyParams {
     pub proof: Vec<u8>,
 }
 
+/// State channel parameters
+// REVIEW: do we still need proof ? (https://github.com/filecoin-project/specs-actors/blob/master/actors/builtin/paych/paych_actor.go#L80-L83)
 #[derive(Serialize_tuple, Deserialize_tuple)]
 pub struct UpdateChannelStateParams {
     pub sv: SignedVoucher,
