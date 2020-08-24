@@ -75,14 +75,20 @@ impl TryFrom<ExecParamsAPI> for ExecParams {
             base64::decode(exec_constructor.constructor_params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-        if exec_constructor.code_cid != "fil/1/multisig".to_string() && exec_constructor.code_cid != "fil/1/paymentchannel".to_string() {
+        if exec_constructor.code_cid != "fil/1/multisig".to_string()
+            && exec_constructor.code_cid != "fil/1/paymentchannel".to_string()
+        {
             return Err(SignerError::GenericString(
-                "Only support `fil/1/multisig` and `fil/1/paymentchannel` code for now.".to_string(),
+                "Only support `fil/1/multisig` and `fil/1/paymentchannel` code for now."
+                    .to_string(),
             ));
         }
 
         Ok(ExecParams {
-            code_cid: Cid::new_v1(Codec::Raw, Identity::digest(exec_constructor.code_cid.as_bytes())),
+            code_cid: Cid::new_v1(
+                Codec::Raw,
+                Identity::digest(exec_constructor.code_cid.as_bytes()),
+            ),
             constructor_params: forest_vm::Serialized::new(serialized_constructor_multisig_params),
         })
     }
