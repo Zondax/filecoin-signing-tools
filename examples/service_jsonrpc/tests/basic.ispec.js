@@ -6,26 +6,26 @@ import fs from "fs";
 import { getDigest } from "./utils.js";
 import { callMethod } from "../src";
 
-const tests_vectors_path = "../manual_testvectors.json";
+const testsVectorsPath = "../manual_testvectors.json";
 
 // WARNING: filecoin-service is expected to be running
 const URL = "http://127.0.0.1:3030/v0";
 const EXPECTED_MNEMONIC = "equip will roof matter pink blind book anxiety banner elbow sun young";
-const EXPECTED_SEED = "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5";
+const EXPECTED_SEED =
+  "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5";
 const EXPECTED_ROOT_NODE = bip32.fromBase58(EXPECTED_SEED);
 
 const EXAMPLE_TRANSACTION_CBOR =
   "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a0430009c41961a80040";
-
-var status_cid;
 
 const EXAMPLE_TRANSACTION = {
   to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
   from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
   nonce: 1,
   value: "100000",
-  gasprice: "2500",
+  gasfeecap: 1,
   gaslimit: 25000,
+  gaspremium: 0,
   method: 0,
   params: "",
 };
@@ -133,14 +133,14 @@ test("transaction_parse", async () => {
 });
 
 test("transaction_parse_invalid_length", async () => {
-  const response = await callMethod(URL, "transaction_parse", [EXAMPLE_TRANSACTION_CBOR + "'", true], 1);
+  const response = await callMethod(URL, "transaction_parse", [`${EXAMPLE_TRANSACTION_CBOR}'`, true], 1);
 
   expect(response).toHaveProperty("error");
   expect(response.error.message).toMatch(/Hex decoding | Invalid length/);
 });
 
 test("transaction_testvectors", async () => {
-  const rawData = fs.readFileSync(tests_vectors_path);
+  const rawData = fs.readFileSync(testsVectorsPath);
   const jsonData = JSON.parse(rawData);
 
   for (let i = 0; i < jsonData.length; i += 1) {
@@ -166,7 +166,7 @@ test("transaction_testvectors", async () => {
   }
 });
 
-const rawData = fs.readFileSync(tests_vectors_path);
+const rawData = fs.readFileSync(testsVectorsPath);
 const jsonData = JSON.parse(rawData);
 
 for (let i = 0; i < jsonData.length; i += 1) {
@@ -282,9 +282,10 @@ test("verify_signature signed with lotus", async () => {
   const cbor_tx = Buffer.from(serialized_tx.result).toString("hex");
   const message_digest = getDigest(Buffer.from(cbor_tx, "hex"));
 
-
-  const signatureRSV =
-    Buffer.from("BjmEhQYMoqTeuXAn9Rj0VWk2DDhzpDA5JvppCacpnUxViDRjEgg2NY/zOWiC7g3CzxWWG9SVzfs94e4ui9N2jgE=", "base64").toString("hex");
+  const signatureRSV = Buffer.from(
+    "BjmEhQYMoqTeuXAn9Rj0VWk2DDhzpDA5JvppCacpnUxViDRjEgg2NY/zOWiC7g3CzxWWG9SVzfs94e4ui9N2jgE=",
+    "base64",
+  ).toString("hex");
 
   const signatureBuffer = Buffer.from(signatureRSV, "hex").slice(0, -1);
   const recoveredID = Buffer.from(signatureRSV, "hex")[64];
@@ -340,7 +341,7 @@ test("send_signed_tx", async () => {
   console.log("Nonce: ", !isNaN(nonce));
 
   if (isNaN(nonce)) {
-    nonce = 1
+    nonce = 1;
   }
 
   expect(!isNaN(nonce)).toBeTruthy();
@@ -348,7 +349,7 @@ test("send_signed_tx", async () => {
   const transaction = {
     to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
     from: keyAddressResponse.result.address,
-    nonce: nonce,
+    nonce,
     value: "1",
     gasprice: "0",
     gaslimit: 1000000,
@@ -367,7 +368,7 @@ test("send_signed_tx", async () => {
 
   console.log("SignedTx: ", signedTxResponse);
 
-  let signature_hex = Buffer.from(signedTxResponse.result.signature.data, "base64").toString("hex");
+  const signature_hex = Buffer.from(signedTxResponse.result.signature.data, "base64").toString("hex");
   console.log("Signature_hex: ", signature_hex);
   console.log("Signature_hex_len: ", signature_hex.length);
   expect(signature_hex.length).toBe(130);
@@ -377,47 +378,40 @@ test("send_signed_tx", async () => {
   const response = await callMethod(URL, "send_signed_tx", [signedTxResponse.result], 1);
 
   console.log(response);
-  status_cid = response.result['/'];
-
   expect(response).toHaveProperty("result");
 });
 
-
 test("get_status", async () => {
-  const response = await callMethod(URL, "get_status", [status_cid], 1);
+  const messageCid = "bafy2bzacedjxvl3e2rjm77j3grrsdv3vrlnvaepi4umlv2x4fegr2ewmpyxgq";
+  const response = await callMethod(URL, "get_status", [messageCid], 1);
   console.log(response);
 
   expect(response).toHaveProperty("result");
 
   expect(response.result).toHaveProperty("From");
+  expect(response.result).toHaveProperty("GasFeeCap");
   expect(response.result).toHaveProperty("GasLimit");
-  expect(response.result).toHaveProperty("GasPrice");
+  expect(response.result).toHaveProperty("GasPremium");
   expect(response.result).toHaveProperty("Method");
   expect(response.result).toHaveProperty("Nonce");
   expect(response.result).toHaveProperty("Params");
   expect(response.result).toHaveProperty("To");
   expect(response.result).toHaveProperty("Value");
   expect(response.result).toHaveProperty("Version");
-
 });
 
 test("get_status fail", async () => {
-  const message_cid = "bafy2bzaceaxm23epjsmh75yvzcecsrbavlmkcxnva66bkdebdcnyw3bjrc74u";
-  const response = await callMethod(URL, "get_status", [message_cid], 1);
+  const messageCid = "bafy2bzacedjxvl3e2rjm77j3grrsdv3vrlnvaepi4umlv2x4feg12ewmpyxgq";
+  const response = await callMethod(URL, "get_status", [messageCid], 1);
   console.log(response);
 
   expect(response).toHaveProperty("error");
 });
 
 test("get_nonce", async () => {
-  const account = "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy";
+  const account = "t3rmtwjnpwtiklvurmi5i47aquk3tbdznat4qrctmjgbvnhtm6tbjz7jxghwqi43qzibwjjhp6yvq7woy5r4pq";
 
-  const response = await callMethod(
-    URL,
-    "get_nonce",
-    [account],
-    1,
-  );
+  const response = await callMethod(URL, "get_nonce", [account], 1);
 
   console.log(response);
 
@@ -435,13 +429,13 @@ test("send_sign", async () => {
 
   console.log("-----------------------------------------------------------------------------------");
   let nonce = nonceResponse.result;
-  nonce++;
+  nonce+=1;
   console.log("Nonce: ", nonce);
 
   const transaction = {
     to: "t12af556jrt3e2qlphobrvl53qf6xborrscg4ibeq",
     from: keyAddressResponse.result.address,
-    nonce: nonce,
+    nonce,
     value: "1",
     gasprice: "0",
     gaslimit: 1000000,
@@ -480,7 +474,7 @@ test("send_sign wrong network", async () => {
   const transaction = {
     to: "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
     from: keyAddressResponse.result.address,
-    nonce: nonce,
+    nonce,
     value: "1",
     gasprice: "0",
     gaslimit: "1000000",

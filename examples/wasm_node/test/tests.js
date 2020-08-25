@@ -307,7 +307,7 @@ describe("transactionSignLotus", function() {
       "Message": {
         "From": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
         "GasLimit": 25000,
-        "GasPrice": "2500",
+        "GasPremium": "2500",
         "Method": 0,
         "Nonce": 1,
         "Params": "",
@@ -380,13 +380,13 @@ describeCall("createMultisig", function() {
 
     let addresses = [recoveredKey.address,"t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
     let sender_address = recoveredKey.address;
-    
+
     let constructor_params = {
       signers: addresses,
       num_approvals_threshold: 1,
       unlock_duration: 0,
     };
-    
+
     let exec_params = {
       code_cid: 'fil/1/multisig',
       constructor_params: Buffer.from(filecoin_signer.serializeParams(constructor_params)).toString('base64'),
@@ -420,13 +420,13 @@ describeCall("createMultisig", function() {
 
     let addresses = [recoveredKey.address,"t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
     let sender_address = recoveredKey.address;
-    
+
     let constructor_params = {
       signers: addresses,
       num_approvals_threshold: 1,
       unlock_duration: -1,
     };
-    
+
     let exec_params = {
       code_cid: 'fil/1/multisig',
       constructor_params: Buffer.from(filecoin_signer.serializeParams(constructor_params)).toString('base64'),
@@ -488,7 +488,7 @@ describeCall("createMultisig", function() {
       "Message":{
         "From":recoveredKey.address,
         "GasLimit":1000000,
-        "GasPrice":"1",
+        "GasPremium":"1",
         "Method":2,
         "Nonce":1,
         "Params":"gtgqUwABVQAOZmlsLzEvbXVsdGlzaWdYMIOCVQHf5JGE1Grcj4nURji+tF94/K0lkFUBHq8ciku/7rCHCxdFsfV1A0cLcRYBAA==",
@@ -519,17 +519,17 @@ describeCall("proposeMultisig", function() {
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
     console.log(recoveredKey.address)
-    
+
     let to_address = recoveredKey.address;
     let from_address = recoveredKey.address;
-    
+
     let params = {
       to: recoveredKey.address,
       value: '1000',
       method: 0,
       params: ''
     };
-    
+
     let params_base64 = Buffer.from(filecoin_signer.serializeParams(params)).toString('base64');
 
     let expected = {
@@ -587,7 +587,7 @@ describeCall("proposeMultisig", function() {
       "Message":{
         "From":recoveredKey.address,
         "GasLimit":1000000,
-        "GasPrice":"1",
+        "GasPremium":"1",
         "Method":2,
         "Nonce":1,
         "Params":"hFUB3+SRhNRq3I+J1EY4vrRfePytJZBDAAPoAEA=",
@@ -622,7 +622,7 @@ describeCall("approveMultisig", function() {
     let to_address = recoveredKey.address;
     let from_address = recoveredKey.address;
     let proposer_address = recoveredKey.address;
-    
+
     let proposal_params = {
       requester: recoveredKey.address,
       to: recoveredKey.address,
@@ -630,7 +630,7 @@ describeCall("approveMultisig", function() {
       method: 0,
       params: ''
     };
-    
+
     let txn_id_params = {
       txn_id: 1234,
       proposal_hash_data: Buffer.from(blake2b256(filecoin_signer.serializeParams(proposal_params))).toString('base64')
@@ -693,7 +693,7 @@ describeCall("approveMultisig", function() {
       "Message":{
         "From":recoveredKey.address,
         "GasLimit":1000000,
-        "GasPrice":"1",
+        "GasPremium":"1",
         "Method":3,
         "Nonce":1,
         "Params":"ghkE0pggGPoYtBjCGOIYchjjDxjRGN4YixjtGDYYwxiWGDcYwRi+GJQYHhYY3RiSGO0Yrg8YVBi2Bhh8GP8YQhj/",
@@ -728,7 +728,7 @@ describeCall("cancelMultisig", function() {
     let to_address = recoveredKey.address;
     let from_address = recoveredKey.address;
     let proposer_address = recoveredKey.address;
-    
+
     let proposal_params = {
       requester: recoveredKey.address,
       to: recoveredKey.address,
@@ -736,7 +736,7 @@ describeCall("cancelMultisig", function() {
       method: 0,
       params: ''
     };
-    
+
     let txn_id_params = {
       txn_id: 1234,
       proposal_hash_data: Buffer.from(blake2b256(filecoin_signer.serializeParams(proposal_params))).toString('base64')
@@ -799,7 +799,7 @@ describeCall("cancelMultisig", function() {
       "Message":{
         "From":recoveredKey.address,
         "GasLimit":1000000,
-        "GasPrice":"1",
+        "GasPremium":"1",
         "Method":4,
         "Nonce":1,
         "Params":"ghkE0pggGPoYtBjCGOIYchjjDxjRGN4YixjtGDYYwxiWGDcYwRi+GJQYHhYY3RiSGO0Yrg8YVBi2Bhh8GP8YQhj/",

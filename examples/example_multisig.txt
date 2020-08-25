@@ -18,7 +18,7 @@
       "Method" : 2,
       "To" : "t01",
       "Value" : "10000",
-      "GasPrice" : "0",
+      "GasPremium" : "0",
       "Version" : 0,
       "From" : "t3qc7jyphnl4ofu3tuwxkmqjw2zklnejnwkuxdcxpfw47wesf3ixcbdurzuznkg2tvdms37co4kieioqygnnpq",
       "Params" : "gtgqUwABVQAOZmlsLzEvbXVsdGlzaWdYMIOCVQH9HQ9N/Nfpmvy5moMmt9xFnTLGKFUBHq8ciku/7rCHCxdFsfV1A0cLcRYBAA=="

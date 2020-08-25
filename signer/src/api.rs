@@ -368,14 +368,22 @@ pub struct UnsignedMessageAPI {
     pub from: String,
     pub nonce: u64,
     pub value: String,
-    #[serde(rename = "gasprice")]
-    #[serde(alias = "gasPrice")]
-    #[serde(alias = "gas_price")]
-    pub gas_price: String,
+
     #[serde(rename = "gaslimit")]
     #[serde(alias = "gasLimit")]
     #[serde(alias = "gas_limit")]
     pub gas_limit: u64,
+
+    #[serde(rename = "gasfeecap")]
+    #[serde(alias = "gasFeeCap")]
+    #[serde(alias = "gas_fee_cap")]
+    pub gas_fee_cap: String,
+
+    #[serde(rename = "gaspremium")]
+    #[serde(alias = "gasPremium")]
+    #[serde(alias = "gas_premium")]
+    pub gas_premium: String,
+
     pub method: u64,
     pub params: String,
 }
@@ -546,7 +554,8 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
         let value = BigUint::from_str(&message_api.value)?;
         let gas_limit = message_api.gas_limit;
-        let gas_price = BigUint::from_str(&message_api.gas_price)?;
+        let gas_fee_cap = BigUint::from_str(&message_api.gas_fee_cap)?;
+        let gas_premium = BigUint::from_str(&message_api.gas_premium)?;
 
         let message_params_bytes = base64::decode(&message_api.params)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
@@ -560,7 +569,8 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
             .method_num(message_api.method)
             .params(params)
             .gas_limit(gas_limit)
-            .gas_price(gas_price)
+            .gas_fee_cap(gas_fee_cap)
+            .gas_fee_premium(gas_premium)
             .build()
             .map_err(SignerError::GenericString)?;
 
@@ -577,8 +587,9 @@ impl From<UnsignedMessage> for UnsignedMessageAPI {
             from: unsigned_message.from().to_string(),
             nonce: unsigned_message.sequence(),
             value: unsigned_message.value().to_string(),
-            gas_price: unsigned_message.gas_price().to_string(),
             gas_limit: unsigned_message.gas_limit(),
+            gas_fee_cap: unsigned_message.gas_fee_cap().to_string(),
+            gas_premium: unsigned_message.gas_premium().to_string(),
             method: unsigned_message.method_num(),
             params: params_hex_string,
         }

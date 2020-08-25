@@ -199,7 +199,7 @@ function transactionSignLotus(unsignedMessage, privateKey) {
     Message: {
       From: signedMessage.message.from,
       GasLimit: signedMessage.message.gaslimit,
-      GasPrice: signedMessage.message.gasprice,
+      GasPremium: signedMessage.message.gasprice,
       Method: signedMessage.message.method,
       Nonce: signedMessage.message.nonce,
       Params: signedMessage.message.params,

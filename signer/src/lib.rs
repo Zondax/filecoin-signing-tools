@@ -497,10 +497,9 @@ pub fn create_multisig(
         from: sender_address,
         nonce,
         value,
-        // https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L46
-        gas_price: "1".to_string(),
-        // used the same value as https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L78
         gas_limit: 1000000,
+        gas_fee_cap: "2500".to_string(),
+        gas_premium: "2500".to_string(),
         method: MethodInit::Exec as u64,
         params: base64::encode(serialized_params.bytes()),
     };
@@ -540,10 +539,9 @@ pub fn proposal_multisig_message(
         from: from_address,
         nonce,
         value: "0".to_string(),
-        // https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L46
-        gas_price: "1".to_string(),
-        // used the same value as https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L78
         gas_limit: 1000000,
+        gas_fee_cap: "2500".to_string(),
+        gas_premium: "2500".to_string(),
         method: MethodMultisig::Propose as u64,
         params: base64::encode(params.bytes()),
     };
@@ -587,8 +585,9 @@ fn approve_or_cancel_multisig_message(
         from: from_address,
         nonce,
         value: "0".to_string(),
-        gas_price: "1".to_string(),
         gas_limit: 1000000,
+        gas_fee_cap: "2500".to_string(),
+        gas_premium: "2500".to_string(),
         method,
         params: base64::encode(params.bytes()),
     };
@@ -974,8 +973,9 @@ mod tests {
             from: bls_address.to_string(),
             nonce: 1,
             value: "100000".to_string(),
-            gas_price: "2500".to_string(),
             gas_limit: 25000,
+            gas_fee_cap: "2500".to_string(),
+            gas_premium: "2500".to_string(),
             method: 0,
             params: "".to_string(),
         };
@@ -1015,8 +1015,9 @@ mod tests {
                     from: bls_address.to_string(),
                     nonce: 1,
                     value: "100000".to_string(),
-                    gas_price: "2500".to_string(),
                     gas_limit: 25000,
+                    gas_fee_cap: "2500".to_string(),
+                    gas_premium: "2500".to_string(),
                     method: 0,
                     params: "".to_string(),
                 }
