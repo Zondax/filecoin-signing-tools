@@ -21,7 +21,7 @@ use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
 use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
-use num_bigint_chainsafe::BigUint;
+use num_bigint_chainsafe::BigInt;
 use std::convert::TryFrom;
 use std::str::FromStr;
 
@@ -526,7 +526,7 @@ pub fn proposal_multisig_message(
 ) -> Result<UnsignedMessageAPI, SignerError> {
     let propose_params_multisig = ProposeParams {
         to: Address::from_str(&to_address)?,
-        value: BigUint::from_str(&amount)?,
+        value: BigInt::from_str(&amount)?,
         method: 0,
         params: forest_vm::Serialized::new(Vec::new()),
     };
@@ -562,7 +562,7 @@ fn approve_or_cancel_multisig_message(
     let proposal_parameter = ProposalHashData {
         requester: Address::from_str(&proposer_address)?,
         to: Address::from_str(&to_address)?,
-        value: BigUint::from_str(&amount)?,
+        value: BigInt::from_str(&amount)?,
         method: 0,
         params: forest_vm::Serialized::new(Vec::new()),
     };

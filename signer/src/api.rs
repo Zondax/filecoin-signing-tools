@@ -8,7 +8,7 @@ use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
-use num_bigint_chainsafe::BigUint;
+use num_bigint_chainsafe::BigInt;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use std::str::FromStr;
@@ -113,7 +113,7 @@ impl TryFrom<ProposeParamsMultisig> for ProposeParams {
 
         Ok(ProposeParams {
             to: Address::from_str(&propose_params.to)?,
-            value: BigUint::from_str(&propose_params.value)?,
+            value: BigInt::from_str(&propose_params.value)?,
             method: propose_params.method,
             params: forest_vm::Serialized::new(params),
         })
@@ -149,7 +149,7 @@ impl TryFrom<PropoposalHashDataParamsMultisig> for ProposalHashData {
         Ok(ProposalHashData {
             requester: Address::from_str(&proposal_params.requester)?,
             to: Address::from_str(&proposal_params.to)?,
-            value: BigUint::from_str(&proposal_params.value)?,
+            value: BigInt::from_str(&proposal_params.value)?,
             method: proposal_params.method,
             params: forest_vm::Serialized::new(params),
         })
@@ -372,7 +372,7 @@ pub struct UnsignedMessageAPI {
     #[serde(rename = "gaslimit")]
     #[serde(alias = "gasLimit")]
     #[serde(alias = "gas_limit")]
-    pub gas_limit: u64,
+    pub gas_limit: i64,
 
     #[serde(rename = "gasfeecap")]
     #[serde(alias = "gasFeeCap")]
@@ -552,10 +552,10 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
         let from = Address::from_str(&message_api.from)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
-        let value = BigUint::from_str(&message_api.value)?;
+        let value = BigInt::from_str(&message_api.value)?;
         let gas_limit = message_api.gas_limit;
-        let gas_fee_cap = BigUint::from_str(&message_api.gas_fee_cap)?;
-        let gas_premium = BigUint::from_str(&message_api.gas_premium)?;
+        let gas_fee_cap = BigInt::from_str(&message_api.gas_fee_cap)?;
+        let gas_premium = BigInt::from_str(&message_api.gas_premium)?;
 
         let message_params_bytes = base64::decode(&message_api.params)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
@@ -569,8 +569,8 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
             .method_num(message_api.method)
             .params(params)
             .gas_limit(gas_limit)
+            .gas_premium(gas_premium)
             .gas_fee_cap(gas_fee_cap)
-            .gas_fee_premium(gas_premium)
             .build()
             .map_err(SignerError::GenericString)?;
 
