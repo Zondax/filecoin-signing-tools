@@ -53,7 +53,6 @@ function addressAsBytes(address) {
   switch (Number(protocolIndicator)) {
     case ProtocolIndicator.ID:
       throw new ProtocolNotSupported("ID");
-      break;
     case ProtocolIndicator.SECP256K1:
       address_decoded = base32Decode(address.slice(2).toUpperCase(), "RFC4648");
 

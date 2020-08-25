@@ -3,8 +3,8 @@ const bip39 = require('bip39');
 const bip32 = require('bip32');
 const axios = require('axios');
 
-const URL = "http://192.168.1.38:1234/rpc/v0"
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.1Ys00_AiuYuXpNQ_eexBNKL1ZYq_6Xim9SpYwXs3GwY"
+const URL = process.env.URL
+const TOKEN = process.env.TOKEN
 
 const privateKeyBase64 = "YbDPh1vq3fBClzbiwDt6WjniAdZn8tNcCwcBO2hDwyk="
 const privateKey = Buffer.from(privateKeyBase64, 'base64')
@@ -59,7 +59,8 @@ async function main () {
           From: address,
           To: "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
           Nonce: nonce,
-          GasPrice: "1",
+          GasPremium: "1",
+          GasFeeCap: "1",
           GasLimit: 1000000,
           Method: 0,
           Value: "100000000000",
@@ -114,7 +115,8 @@ async function main () {
           From: address,
           To: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
           Nonce: nonce,
-          GasPrice: "1",
+          GasFeeCap: "1",
+          GasPremium: "1",
           GasLimit: 1000000,
           Method: 0,
           Value: "100000000000",
