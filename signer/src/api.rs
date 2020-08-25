@@ -1,17 +1,20 @@
-use crate::error::SignerError;
-use crate::signature::Signature;
-use extras::{
-    AddSignerParams, ChangeNumApprovalsThresholdParams, ConstructorParams, ExecParams,
-    ProposalHashData, ProposeParams, RemoveSignerParams, SwapSignerParams, TxnID, TxnIDParams,
-};
+use std::convert::TryFrom;
+use std::str::FromStr;
+
 use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
 use num_bigint_chainsafe::BigInt;
 use serde::{Deserialize, Serialize};
-use std::convert::TryFrom;
-use std::str::FromStr;
+
+use extras::{
+    AddSignerParams, ChangeNumApprovalsThresholdParams, ConstructorParams, ExecParams,
+    ProposalHashData, ProposeParams, RemoveSignerParams, SwapSignerParams, TxnID, TxnIDParams,
+};
+
+use crate::error::SignerError;
+use crate::signature::Signature;
 
 pub enum SigTypes {
     SigTypeSecp256k1 = 0x01,
@@ -52,7 +55,7 @@ impl TryFrom<ConstructorParamsMultisig> for ConstructorParams {
         };
 
         Ok(ConstructorParams {
-            signers: signers,
+            signers,
             num_approvals_threshold: constructor_params.num_approvals_threshold,
             unlock_duration: constructor_params.unlock_duration,
         })
@@ -77,7 +80,7 @@ impl TryFrom<MessageParamsMultisig> for ExecParams {
             base64::decode(exec_constructor.constructor_params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-        if exec_constructor.code_cid != "fil/1/multisig".to_string() {
+        if exec_constructor.code_cid != "fil/1/multisig" {
             return Err(SignerError::GenericString(
                 "Only support `fil/1/multisig` code for now.".to_string(),
             ));
@@ -610,11 +613,13 @@ impl From<SignedMessage> for SignedMessageAPI {
 
 #[cfg(test)]
 mod tests {
-    use crate::api::UnsignedMessageAPI;
+    use std::convert::TryFrom;
+
     use forest_encoding::{from_slice, to_vec};
     use forest_message::UnsignedMessage;
     use hex::{decode, encode};
-    use std::convert::TryFrom;
+
+    use crate::api::UnsignedMessageAPI;
 
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
         {

@@ -1,33 +1,15 @@
-#![cfg_attr(
-    not(test),
-    deny(
-        clippy::option_unwrap_used,
-        clippy::option_expect_used,
-        clippy::result_unwrap_used,
-        clippy::result_expect_used,
-    )
-)]
+#![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used,))]
 
-use crate::api::{
-    MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
-    UnsignedMessageAPI,
-};
-use crate::error::SignerError;
-use extras::{
-    ConstructorParams, ExecParams, MethodInit, MethodMultisig, ProposalHashData, ProposeParams,
-    TxnID, TxnIDParams, INIT_ACTOR_ADDR,
-};
+use std::convert::TryFrom;
+use std::str::FromStr;
+
+use bip39::{Language, MnemonicType, Seed};
+use bls_signatures::Serialize;
 use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
 use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
 use num_bigint_chainsafe::BigInt;
-use std::convert::TryFrom;
-use std::str::FromStr;
-
-use crate::extended_key::ExtendedSecretKey;
-use bip39::{Language, MnemonicType, Seed};
-use bls_signatures::Serialize;
 use rayon::prelude::*;
 use secp256k1::util::{
     COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
@@ -35,6 +17,17 @@ use secp256k1::util::{
 use secp256k1::{recover, sign, verify, Message, RecoveryId};
 use zx_bip44::BIP44Path;
 
+use extras::{
+    ConstructorParams, ExecParams, MethodInit, MethodMultisig, ProposalHashData, ProposeParams,
+    TxnID, TxnIDParams, INIT_ACTOR_ADDR,
+};
+
+use crate::api::{
+    MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
+    UnsignedMessageAPI,
+};
+use crate::error::SignerError;
+use crate::extended_key::ExtendedSecretKey;
 use crate::signature::{Signature, SignatureBLS, SignatureSECP256K1};
 
 pub mod api;
@@ -279,7 +272,7 @@ pub fn transaction_sign_raw(
         .from
         .as_bytes()
         .get(1)
-        .ok_or(SignerError::GenericString("Empty signing protocol".into()))?
+        .ok_or_else(|| SignerError::GenericString("Empty signing protocol".into()))?
     {
         b'1' => Signature::SignatureSECP256K1(transaction_sign_secp56k1_raw(
             unsigned_message_api,
@@ -475,7 +468,7 @@ pub fn create_multisig(
     };
 
     let constructor_params_multisig = ConstructorParams {
-        signers: signers,
+        signers,
         num_approvals_threshold: required,
         unlock_duration: duration,
     };
@@ -549,6 +542,7 @@ pub fn proposal_multisig_message(
     Ok(multisig_propose_message_api)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn approve_or_cancel_multisig_message(
     method: u64,
     multisig_address: String,
@@ -675,6 +669,17 @@ pub fn serialize_params(params: MessageParams) -> Result<CborBuffer, SignerError
 
 #[cfg(test)]
 mod tests {
+    use std::convert::TryFrom;
+
+    use bip39::{Language, Seed};
+    use bls_signatures::Serialize;
+    use forest_address::Address;
+    use forest_encoding::blake2b_256;
+    use forest_encoding::to_vec;
+    use rand::SeedableRng;
+    use rand_chacha::ChaCha8Rng;
+    use rayon::prelude::*;
+
     use crate::api::{MessageParams, MessageTxAPI, UnsignedMessageAPI};
     use crate::signature::{Signature, SignatureBLS};
     use crate::{
@@ -684,16 +689,6 @@ mod tests {
         transaction_sign_raw, verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic,
         PrivateKey,
     };
-    use bip39::{Language, Seed};
-    use forest_encoding::blake2b_256;
-    use forest_encoding::to_vec;
-    use std::convert::TryFrom;
-
-    use bls_signatures::Serialize;
-    use forest_address::Address;
-    use rand::SeedableRng;
-    use rand_chacha::ChaCha8Rng;
-    use rayon::prelude::*;
 
     const BLS_PUBKEY: &str = "ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc07904";
     const BLS_PRIVATEKEY: &str = "0x7Y0GGX92MeWBF9mcWuR5EYPxe2dy60r8XIQOD31BI=";
