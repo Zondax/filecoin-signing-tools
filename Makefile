@@ -1,6 +1,6 @@
 NPM_PACKAGE_NAME:="@zondax/filecoin-signing-tools"
 
-build: deps build_npm
+build: build_npm
 
 
 install_wasmpack:

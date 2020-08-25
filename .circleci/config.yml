@@ -175,7 +175,6 @@ jobs:
           command: |
             cd examples/service_jsonrpc
             yarn install
-      - run: ls .circleci
       - run:
           name: wait for service to be available
           command: .circleci/wait_for_port.sh 3030
