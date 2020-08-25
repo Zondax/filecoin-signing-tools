@@ -676,10 +676,7 @@ pub fn serialize_params(params: MessageParams) -> Result<CborBuffer, SignerError
 
 #[cfg(test)]
 mod tests {
-    use crate::api::{
-        ConstructorParamsMultisig, MessageParams, MessageParamsMultisig, MessageTxAPI,
-        UnsignedMessageAPI,
-    };
+    use crate::api::{MessageParams, MessageTxAPI, UnsignedMessageAPI};
     use crate::signature::{Signature, SignatureBLS};
     use crate::{
         approve_multisig_message, cancel_multisig_message, create_multisig, key_derive,
