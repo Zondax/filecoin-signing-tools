@@ -22,7 +22,8 @@
   ],
   "dependencies": {
     "@zondax/filecoin-signer": "../../signer-npm/pkg/",
-    "axios": "^0.19.2"
+    "axios": "^0.19.2",
+    "cids": "^1.0.0"
   },
   "devDependencies": {
     "bip32": "^2.0.5",

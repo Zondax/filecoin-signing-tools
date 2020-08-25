@@ -918,24 +918,30 @@ describe('createPymtChan', function () {
     const privateKey = "+UXJi0663hCExYMxZVb9J+wKyFWhhX51jnG7WXkeAw0=";
     
     const recover = filecoin_signer.keyRecover(privateKey, true);
-    
+        
     const from = recover.address;
     const to = "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq";
     
-    const createParams = {
-      From: from,
-      To: to,
+    let serializedParams
+    
+    if (!process.env.PURE_JS) {
+      const createParams = {
+        From: from,
+        To: to,
+      }      
+      
+      serializedParams = Buffer.from(filecoin_signer.serializeParams(createParams));
+          
+      let execParams = {
+          CodeCid: 'fil/1/paymentchannel',
+          ConstructorParams: serializedParams.toString('base64')
+      }
+      
+      serializedParams = Buffer.from(filecoin_signer.serializeParams(execParams)).toString("base64");
+    } else {
+      serializedParams = "gtgqWBkAAVUAFGZpbC8xL3BheW1lbnRjaGFubmVsWEqCVQElRUfDOAbbTJ6ACbjr2cTS5fIBglgxA5MHnM9FDHIFsKjsZKFuYvWfYSdZCbFOkaaE1KzG8yG07EH0VDMTwgWuYAGf7JwwTg==";
     }
-    
-    let serializedParams = Buffer.from(filecoin_signer.serializeParams(createParams));
-    
-    let execParams = {
-        CodeCid: 'fil/1/paymentchannel',
-        ConstructorParams: serializedParams.toString('base64')
-    }
-    
-    serializedParams = Buffer.from(filecoin_signer.serializeParams(execParams));
-        
+            
     const expected = {
       Message: {
         From: from,
@@ -943,13 +949,13 @@ describe('createPymtChan', function () {
         GasPrice: '100',
         Method: 2,
         Nonce: 1,
-        Params: serializedParams.toString("base64"),
+        Params: serializedParams,
         To: 't01',
         Value: '10000000000'
       },
     }
-        
-    let create_pymtchan = filecoin_signer.createPymtChan(from, to, "10000000000", 1)
+              
+    let create_pymtchan = filecoin_signer.createPymtChan(from, to, "10000000000", 1);
     
     console.log(create_pymtchan)
     
@@ -975,20 +981,29 @@ describe('createPymtChan', function () {
     let from = "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq";
     let to = "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy";
     
-    const createParams = {
-      From: from,
-      To: to,
+    let serializedParams
+    
+    if (!process.env.PURE_JS) {
+      const createParams = {
+        From: from,
+        To: to,
+      }
+          
+      serializedParams = Buffer.from(filecoin_signer.serializeParams(createParams));
+      
+      let execParams = {
+          CodeCid: 'fil/1/paymentchannel',
+          ConstructorParams: serializedParams.toString('base64')
+      }
+      
+      serializedParams = Buffer.from(filecoin_signer.serializeParams(execParams)).toString('base64');
+      console.log(serializedParams)
+    } else {
+      serializedParams = "gtgqWBkAAVUAFGZpbC8xL3BheW1lbnRjaGFubmVsWEqCWDEDkwecz0UMcgWwqOxkoW5i9Z9hJ1kJsU6RpoTUrMbzIbTsQfRUMxPCBa5gAZ/snDBOVQElRUfDOAbbTJ6ACbjr2cTS5fIBgg==";
     }
-        
-    let serializedParams = Buffer.from(filecoin_signer.serializeParams(createParams));
     
-    let execParams = {
-        CodeCid: 'fil/1/paymentchannel',
-        ConstructorParams: serializedParams.toString('base64')
-    }
-    
-    serializedParams = Buffer.from(filecoin_signer.serializeParams(execParams));
-    
+    console.log(serializedParams)
+
     const expected = {
       Message: {
         From: from,
@@ -996,21 +1011,20 @@ describe('createPymtChan', function () {
         GasPrice: '100',
         Method: 2,
         Nonce: 1,
-        Params: serializedParams.toString("base64"),
+        Params: serializedParams,
         To: 't01',
         Value: '10000000000'
       }
     }
-        
+          
     let create_pymtchan = filecoin_signer.createPymtChan(from, to, "10000000000", 1)
     
     console.log(create_pymtchan)
     
-    let signature = filecoin_signer.transactionSignLotus(create_pymtchan, privateKey);
+    let signedMessage = filecoin_signer.transactionSignLotus(create_pymtchan, privateKey);
+    signedMessage = JSON.parse(signedMessage);
 
-    console.log(JSON.parse(signature));
-
-    assert.deepStrictEqual(expected.Message, JSON.parse(signature).Message);
+    assert.deepStrictEqual(expected.Message, signedMessage.Message);
     
     // TODO: verify signature
     // but with which lib ?
@@ -1030,13 +1044,20 @@ describe('updatePymtChan', function () {
     
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
-    let updateChannelStateParams = {
-      Sv: signedVoucherBase64,
-      Secret: [],
-      Proof: [],
-    }
+    let serializedParams
     
-    let serializedParams = Buffer.from(filecoin_signer.serializeParams(updateChannelStateParams));
+    if (!process.env.PURE_JS) {
+
+      let updateChannelStateParams = {
+        Sv: signedVoucherBase64,
+        Secret: [],
+        Proof: [],
+      }
+      
+      serializedParams = Buffer.from(filecoin_signer.serializeParams(updateChannelStateParams)).toString('base64');
+    } else {
+      serializedParams = "g4oZBNIAQPYAAUQAAYagAYBYQgGKqPFMze+bytqgOI/JJY3VI6Gu4UElA6qS1w+/SmM6xm9TK+EcCJw/9Y/kOoWQTfvaoEZyphNO8ty7HOUPRTKeAUBA";
+    }
 
     const expected = {
       Message : {
@@ -1045,7 +1066,7 @@ describe('updatePymtChan', function () {
         GasPrice: '100',
         Method: 2,
         Nonce: 1,
-        Params: serializedParams.toString("base64"),
+        Params: serializedParams,
         To: 't01003',
         Value: '0'
       }

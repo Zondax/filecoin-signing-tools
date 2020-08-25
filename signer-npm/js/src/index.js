@@ -199,8 +199,6 @@ function transactionSign(unsignedMessage, privateKey) {
 function transactionSignLotus(unsignedMessage, privateKey) {
   const signedMessage = transactionSign(unsignedMessage, privateKey);
 
-  const paramsBuffer = Buffer.from(signedMessage.message.params, "hex");
-
   return JSON.stringify({
     Message: {
       From: signedMessage.message.from,
@@ -208,7 +206,7 @@ function transactionSignLotus(unsignedMessage, privateKey) {
       GasPrice: signedMessage.message.gasprice,
       Method: signedMessage.message.method,
       Nonce: signedMessage.message.nonce,
-      Params: paramsBuffer.toString("base64"),
+      Params: signedMessage.message.params,
       To: signedMessage.message.to,
       Value: signedMessage.message.value,
     },
@@ -264,8 +262,14 @@ function createPymtChan(from, to, amount, nonce) {
   }
   let constructorParams = [to, from];
   let serializedConstructorParams = cbor.serialize(constructorParams);
+
   let execParams = [
-    cbor.cid("fil/1/paymentchannel"),
+    {
+      42: Buffer.from(
+        "000155001466696C2F312F7061796D656E746368616E6E656C",
+        "hex"
+      ),
+    },
     serializedConstructorParams,
   ];
   let serializedParams = cbor.serialize(execParams);
@@ -279,6 +283,7 @@ function createPymtChan(from, to, amount, nonce) {
     method: MethodInit.Exec,
     params: serializedParams.toString("base64"),
   };
+
   return message;
 }
 
@@ -374,7 +379,7 @@ function signVoucher(unsignedVoucherBase64, privateKey) {
 
   const signedVoucher = cbor.serialize(unsignedVoucher);
 
-  return signedVoucher.toSTring("base64");
+  return signedVoucher.toString("base64");
 }
 
 function createVoucher(
