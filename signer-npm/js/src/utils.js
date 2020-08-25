@@ -1,6 +1,7 @@
 const blake = require("blakejs");
 const base32Decode = require("base32-decode");
 const base32Encode = require("base32-encode");
+const leb = require("leb128");
 
 const assert = require("assert");
 const {
@@ -49,10 +50,17 @@ function getAccountFromPath(path) {
 function addressAsBytes(address) {
   let address_decoded, payload, checksum;
   const protocolIndicator = address[1];
+  const protocolIndicatorByte = `0${protocolIndicator}`;
 
   switch (Number(protocolIndicator)) {
     case ProtocolIndicator.ID:
-      throw new ProtocolNotSupported("ID");
+      if (address.length > 18) {
+        throw new InvalidPayloadLength();
+      }
+      return Buffer.concat([
+        Buffer.from(protocolIndicatorByte, "hex"),
+        Buffer.from(leb.unsigned.encode(address.substr(2)))
+      ]);
     case ProtocolIndicator.SECP256K1:
       address_decoded = base32Decode(address.slice(2).toUpperCase(), "RFC4648");
 
@@ -78,8 +86,6 @@ function addressAsBytes(address) {
     default:
       throw new UnknownProtocolIndicator();
   }
-
-  const protocolIndicatorByte = `0${protocolIndicator}`;
 
   const bytes_address = Buffer.concat([
     Buffer.from(protocolIndicatorByte, "hex"),
