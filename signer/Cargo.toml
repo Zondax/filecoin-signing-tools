@@ -33,11 +33,11 @@ env_logger = "0.7.1"
 arbitrary = { optional = true, features = ["derive"], version = "" }
 ffi-support = { optional = true, version = "0.4" }
 
-forest_vm = "0.2.0"
-forest_message = "0.3.0"
-forest_address = "0.2.2"
-forest_encoding = "0.1.1"
-forest_cid = "0.1.0"
+forest_vm = "0.2.1"
+forest_message = "0.4.0"
+forest_address = "0.2.3"
+forest_encoding = "0.1.2"
+forest_cid = "0.1.1"
 
 tiny-bip39 = "0.7.3"
 num_bigint_chainsafe = { package = "forest_bigint", version = "0.1.0"}
