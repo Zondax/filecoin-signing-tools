@@ -165,10 +165,10 @@ pub async fn is_mainnet(url: &str, jwt: &str) -> Result<bool, ServiceError> {
         _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
     };
 
-    if network == "testnet" || network == "interop" || network.starts_with("localnet") {
-        Ok(false)
-    } else {
+    if network == "mainnet" {
         Ok(true)
+    } else {
+        Ok(false)
     }
 }
 
