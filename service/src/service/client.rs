@@ -157,12 +157,10 @@ pub async fn is_mainnet(url: &str, jwt: &str) -> Result<bool, ServiceError> {
 
     // Handle response
     let network = match resp {
-        Response::Single(Success(s)) => {
-            match s.result.as_str() {
-                Some(net) => String::from(net),
-                _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
-            }
-        }
+        Response::Single(Success(s)) => match s.result.as_str() {
+            Some(net) => String::from(net),
+            _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
+        },
         Response::Single(Failure(f)) => return Err(ServiceError::RemoteNode(JSONRPC(f.error))),
         _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
     };
