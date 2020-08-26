@@ -233,8 +233,8 @@ workflows:
           <<: *no-tags
       - tests_npm:
           <<: *no-tags
-      - tests_ffi:
-          <<: *no-tags
+#      - tests_ffi:
+#          <<: *no-tags
       - tests_service:
           <<: *no-tags
       - tests_ledger:
@@ -246,22 +246,14 @@ workflows:
           <<: *only-release-tags
       - tests_rust:
           <<: *only-release-tags
-      - tests_ffi:
-          <<: *only-release-tags
+#      - tests_ffi:
+#          <<: *only-release-tags
       - tests_npm:
           <<: *only-release-tags
       - tests_service:
           <<: *only-release-tags
       - tests_ledger:
           <<: *only-release-tags
-
-#      - rust_publish:
-#          <<: *only-release-tags
-#          requires:
-#            - build
-#            - tests_rust
-#            - tests_npm
-#            - tests_service
 
       - npm_publish:
           <<: *only-release-tags
