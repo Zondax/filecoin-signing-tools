@@ -1,17 +1,20 @@
-use crate::error::SignerError;
-use crate::signature::Signature;
-use extras::{
-    AddSignerParams, ChangeNumApprovalsThresholdParams, ConstructorParams, ExecParams,
-    ProposalHashData, ProposeParams, RemoveSignerParams, SwapSignerParams, TxnID, TxnIDParams,
-};
+use std::convert::TryFrom;
+use std::str::FromStr;
+
 use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
-use num_bigint_chainsafe::BigUint;
+use num_bigint_chainsafe::BigInt;
 use serde::{Deserialize, Serialize};
-use std::convert::TryFrom;
-use std::str::FromStr;
+
+use extras::{
+    AddSignerParams, ChangeNumApprovalsThresholdParams, ConstructorParams, ExecParams,
+    ProposalHashData, ProposeParams, RemoveSignerParams, SwapSignerParams, TxnID, TxnIDParams,
+};
+
+use crate::error::SignerError;
+use crate::signature::Signature;
 
 pub enum SigTypes {
     SigTypeSecp256k1 = 0x01,
@@ -52,7 +55,7 @@ impl TryFrom<ConstructorParamsMultisig> for ConstructorParams {
         };
 
         Ok(ConstructorParams {
-            signers: signers,
+            signers,
             num_approvals_threshold: constructor_params.num_approvals_threshold,
             unlock_duration: constructor_params.unlock_duration,
         })
@@ -77,7 +80,7 @@ impl TryFrom<MessageParamsMultisig> for ExecParams {
             base64::decode(exec_constructor.constructor_params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-        if exec_constructor.code_cid != "fil/1/multisig".to_string() {
+        if exec_constructor.code_cid != "fil/1/multisig" {
             return Err(SignerError::GenericString(
                 "Only support `fil/1/multisig` code for now.".to_string(),
             ));
@@ -113,7 +116,7 @@ impl TryFrom<ProposeParamsMultisig> for ProposeParams {
 
         Ok(ProposeParams {
             to: Address::from_str(&propose_params.to)?,
-            value: BigUint::from_str(&propose_params.value)?,
+            value: BigInt::from_str(&propose_params.value)?,
             method: propose_params.method,
             params: forest_vm::Serialized::new(params),
         })
@@ -149,7 +152,7 @@ impl TryFrom<PropoposalHashDataParamsMultisig> for ProposalHashData {
         Ok(ProposalHashData {
             requester: Address::from_str(&proposal_params.requester)?,
             to: Address::from_str(&proposal_params.to)?,
-            value: BigUint::from_str(&proposal_params.value)?,
+            value: BigInt::from_str(&proposal_params.value)?,
             method: proposal_params.method,
             params: forest_vm::Serialized::new(params),
         })
@@ -368,14 +371,22 @@ pub struct UnsignedMessageAPI {
     pub from: String,
     pub nonce: u64,
     pub value: String,
-    #[serde(rename = "gasprice")]
-    #[serde(alias = "gasPrice")]
-    #[serde(alias = "gas_price")]
-    pub gas_price: String,
+
     #[serde(rename = "gaslimit")]
     #[serde(alias = "gasLimit")]
     #[serde(alias = "gas_limit")]
-    pub gas_limit: u64,
+    pub gas_limit: i64,
+
+    #[serde(rename = "gasfeecap")]
+    #[serde(alias = "gasFeeCap")]
+    #[serde(alias = "gas_fee_cap")]
+    pub gas_fee_cap: String,
+
+    #[serde(rename = "gaspremium")]
+    #[serde(alias = "gasPremium")]
+    #[serde(alias = "gas_premium")]
+    pub gas_premium: String,
+
     pub method: u64,
     pub params: String,
 }
@@ -544,9 +555,10 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
         let from = Address::from_str(&message_api.from)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
-        let value = BigUint::from_str(&message_api.value)?;
+        let value = BigInt::from_str(&message_api.value)?;
         let gas_limit = message_api.gas_limit;
-        let gas_price = BigUint::from_str(&message_api.gas_price)?;
+        let gas_fee_cap = BigInt::from_str(&message_api.gas_fee_cap)?;
+        let gas_premium = BigInt::from_str(&message_api.gas_premium)?;
 
         let message_params_bytes = base64::decode(&message_api.params)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
@@ -560,7 +572,8 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
             .method_num(message_api.method)
             .params(params)
             .gas_limit(gas_limit)
-            .gas_price(gas_price)
+            .gas_premium(gas_premium)
+            .gas_fee_cap(gas_fee_cap)
             .build()
             .map_err(SignerError::GenericString)?;
 
@@ -577,8 +590,9 @@ impl From<UnsignedMessage> for UnsignedMessageAPI {
             from: unsigned_message.from().to_string(),
             nonce: unsigned_message.sequence(),
             value: unsigned_message.value().to_string(),
-            gas_price: unsigned_message.gas_price().to_string(),
             gas_limit: unsigned_message.gas_limit(),
+            gas_fee_cap: unsigned_message.gas_fee_cap().to_string(),
+            gas_premium: unsigned_message.gas_premium().to_string(),
             method: unsigned_message.method_num(),
             params: params_b64_string,
         }
@@ -599,11 +613,13 @@ impl From<SignedMessage> for SignedMessageAPI {
 
 #[cfg(test)]
 mod tests {
-    use crate::api::UnsignedMessageAPI;
+    use std::convert::TryFrom;
+
     use forest_encoding::{from_slice, to_vec};
     use forest_message::UnsignedMessage;
     use hex::{decode, encode};
-    use std::convert::TryFrom;
+
+    use crate::api::UnsignedMessageAPI;
 
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
         {
@@ -611,14 +627,15 @@ mod tests {
             "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
             "nonce": 1,
             "value": "100000",
-            "gasprice": "2500",
+            "gasfeecap": "1",
+            "gaspremium": "1",
             "gaslimit": 25000,
             "method": 0,
             "params": ""
         }"#;
 
     const EXAMPLE_CBOR_DATA: &str =
-        "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c41961a80040";
+        "8a005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a01961a84200014200010040";
 
     const EXAMPLE_CBOR_DATA_CONV: &str = "89004a00f1ebbdffd3b8a2f31d5501f37f58c3a7a332e82d7fc9b98b787307b9d9d00a1bd855bb720578c9fd4900303e8b41a88eb5374900bdd0d9758132e3831b2321b1be430dbeca1bbcdc60c414af97b9582009e2ace99e3da32a2c898db0a70ea7782257b37d768cd08558fcd5cbc5dcc9bb";
 

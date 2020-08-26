@@ -157,15 +157,18 @@ pub async fn is_mainnet(url: &str, jwt: &str) -> Result<bool, ServiceError> {
 
     // Handle response
     let network = match resp {
-        Response::Single(Success(s)) => s.result,
+        Response::Single(Success(s)) => match s.result.as_str() {
+            Some(net) => String::from(net),
+            _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
+        },
         Response::Single(Failure(f)) => return Err(ServiceError::RemoteNode(JSONRPC(f.error))),
         _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
     };
 
-    if network == "testnet" || network == "interop" {
-        Ok(false)
-    } else {
+    if network == "mainnet" {
         Ok(true)
+    } else {
+        Ok(false)
     }
 }
 
@@ -197,7 +200,7 @@ mod tests {
 
     #[tokio::test]
     async fn example_something_else_and_retrieve_nonce() {
-        let addr = "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba";
+        let addr = "t3v23xwqycr7myhmu7ccfdreqssqozb2zxzatffkv7cdmtpoaobbfc5vi74e7mzc4jlxvvzzj5cuemzyqedsxq";
 
         let credentials = tests::get_remote_credentials();
         let nonce = get_nonce(&credentials.url, &credentials.jwt, &addr).await;
