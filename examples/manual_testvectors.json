@@ -84,7 +84,7 @@
         "valid": true,
         "testnet": false,
         "message": {
-            "to": "f018446744073709551615",
+            "to": "f018446744073709",
             "from": "f00",
             "nonce": 1,
             "value": "100000",
@@ -93,7 +93,7 @@
             "gaspremium": "1",
             "method": 0
         },
-        "encoded_tx_hex": "8a004b00ffffffffffffffffff014200000144000186a01961a84200014200010040"
+        "encoded_tx_hex": "8a004800edeb82bdef98044200000144000186a01961a84200014200010040"
     },
     {
         "description": "Using Protocol 1 addresses",

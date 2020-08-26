@@ -135,7 +135,7 @@ function transactionParse(cborMessage, testnet) {
   if (decoded[0] !== 0) {
     throw new Error("Unsupported version");
   }
-  if (decoded.length < 9) {
+  if (decoded.length < 10) {
     throw new Error(
       "The cbor is missing some fields... please verify you have 9 fields."
     );
@@ -150,10 +150,11 @@ function transactionParse(cborMessage, testnet) {
     throw new Error("Value cant be negative");
   }
   message.value = new BN(decoded[4].toString("hex"), 16).toString(10);
-  message.gasprice = new BN(decoded[5].toString("hex"), 16).toString(10);
-  message.gaslimit = decoded[6];
-  message.method = decoded[7];
-  message.params = decoded[8].toString();
+  message.gaslimit = decoded[5];
+  message.gasfeecap = new BN(decoded[6].toString("hex"), 16).toString(10);
+  message.gaspremium = new BN(decoded[7].toString("hex"), 16).toString(10);
+  message.method = decoded[8];
+  message.params = decoded[9].toString();
 
   return message;
 }
