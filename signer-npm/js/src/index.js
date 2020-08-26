@@ -55,11 +55,15 @@ function keyRecover(privateKey, testnet) {
 
 function serializeBigNum(gasprice) {
   if (gasprice == "0") {
-    return Buffer.from("")
+    return Buffer.from("");
   }
   const gaspriceBigInt = new BN(gasprice, 10);
-  const gaspriceBuffer = gaspriceBigInt.toArrayLike(Buffer, 'be', gaspriceBigInt.byteLength());
-  return Buffer.concat([Buffer.from('00', 'hex'), gaspriceBuffer]);
+  const gaspriceBuffer = gaspriceBigInt.toArrayLike(
+    Buffer,
+    "be",
+    gaspriceBigInt.byteLength()
+  );
+  return Buffer.concat([Buffer.from("00", "hex"), gaspriceBuffer]);
 }
 
 function transactionSerializeRaw(message) {
@@ -82,11 +86,13 @@ function transactionSerializeRaw(message) {
       "'value' is a required field and has to be a 'string' but not empty or negative"
     );
   }
-  if (!("gasfeecap") in message || typeof message.gasfeecap !== "string") {
+  if (!("gasfeecap" in message) || typeof message.gasfeecap !== "string") {
     throw new Error("'gasfeecap' is a required field and has to be a 'string'");
   }
-  if (!("gaspremium") in message || typeof message.gaspremium !== "string") {
-    throw new Error("'gaspremium' is a required field and has to be a 'string'");
+  if (!("gaspremium" in message) || typeof message.gaspremium !== "string") {
+    throw new Error(
+      "'gaspremium' is a required field and has to be a 'string'"
+    );
   }
   if (!("gaslimit" in message) || typeof message.gaslimit !== "number") {
     throw new Error("'gaslimit' is a required field and has to be a 'number'");
@@ -204,7 +210,9 @@ function transactionSignLotus(unsignedMessage, privateKey) {
       GasPremium: signedMessage.message.gaspremium,
       Method: signedMessage.message.method,
       Nonce: signedMessage.message.nonce,
-      Params: Buffer.from(signedMessage.message.params, "hex").toString("base64"),
+      Params: Buffer.from(signedMessage.message.params, "hex").toString(
+        "base64"
+      ),
       To: signedMessage.message.to,
       Value: signedMessage.message.value,
     },

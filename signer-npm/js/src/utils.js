@@ -59,7 +59,7 @@ function addressAsBytes(address) {
       }
       return Buffer.concat([
         Buffer.from(protocolIndicatorByte, "hex"),
-        Buffer.from(leb.unsigned.encode(address.substr(2)))
+        Buffer.from(leb.unsigned.encode(address.substr(2))),
       ]);
     case ProtocolIndicator.SECP256K1:
       address_decoded = base32Decode(address.slice(2).toUpperCase(), "RFC4648");
