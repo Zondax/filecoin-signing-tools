@@ -200,7 +200,7 @@ mod tests {
 
     #[tokio::test]
     async fn example_something_else_and_retrieve_nonce() {
-        let addr = "t3vfs6f7tagrcpnwv65wq3leznbajqyg77bmijrpvoyjv3zjyi3urq25vigfbs3ob6ug5xdihajumtgsxnz2pa";
+        let addr = "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba";
 
         let credentials = tests::get_remote_credentials();
         let nonce = get_nonce(&credentials.url, &credentials.jwt, &addr).await;
