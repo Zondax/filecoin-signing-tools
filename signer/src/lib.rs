@@ -1,7 +1,5 @@
 #![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used,))]
 
-use std::convert::TryFrom;
-use std::str::FromStr;
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
 use forest_address::{Address, Network};
@@ -14,9 +12,11 @@ use secp256k1::util::{
     COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
 };
 use secp256k1::{recover, sign, verify, Message, RecoveryId};
+use std::convert::TryFrom;
+use std::str::FromStr;
 use zx_bip44::BIP44Path;
 
-use extras::{paych, multisig, MethodInit, ExecParams, INIT_ACTOR_ADDR};
+use extras::{multisig, paych, ExecParams, MethodInit, INIT_ACTOR_ADDR};
 
 use crate::api::{
     MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
