@@ -1,18 +1,12 @@
-#![cfg_attr(
-    not(test),
-    deny(
-        clippy::option_unwrap_used,
-        clippy::option_expect_used,
-        clippy::result_unwrap_used,
-        clippy::result_expect_used,
-    )
-)]
+#![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used,))]
+
+use std::convert::TryFrom;
+
+use wasm_bindgen::prelude::*;
 
 use filecoin_signer::api::{MessageParams, UnsignedMessageAPI};
 use filecoin_signer::signature::Signature;
 use filecoin_signer::{CborBuffer, PrivateKey};
-use std::convert::TryFrom;
-use wasm_bindgen::prelude::*;
 
 mod utils;
 
@@ -93,7 +87,7 @@ fn extract_private_key(private_key_js: JsValue) -> Result<PrivateKey, JsValue> {
     }
 
     Err(JsValue::from(
-        "Private key must be encoded as hexstring, base64 or buffer",
+        "Private key must be encoded as base64 string or be a buffer",
     ))
 }
 
@@ -308,13 +302,12 @@ pub fn create_multisig(
     value: String,
     required: i32,
     nonce: u32,
+    duration: i64,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let addresses_strings_tmp: Result<Vec<String>, _> = addresses
-        .into_iter()
-        .map(|address_value| signer_value_to_string(address_value))
-        .collect();
+    let addresses_strings_tmp: Result<Vec<String>, _> =
+        addresses.into_iter().map(signer_value_to_string).collect();
 
     let addresses_strings = match addresses_strings_tmp {
         Ok(addresses_strings) => addresses_strings,
@@ -329,6 +322,7 @@ pub fn create_multisig(
         value,
         required as i64,
         nonce as u64,
+        duration,
     )
     .map_err(|e| {
         JsValue::from_str(format!("Error creating multisig transaction: {}", e).as_str())
@@ -446,8 +440,9 @@ pub fn serialize_params(params_value: JsValue) -> Result<Vec<u8>, JsValue> {
 #[cfg(target_arch = "wasm32")]
 #[cfg(test)]
 mod tests_wasm {
-    use crate::{transaction_sign, verify_signature};
     use wasm_bindgen::prelude::*;
+
+    use crate::{transaction_sign, verify_signature};
 
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
         {
@@ -461,8 +456,7 @@ mod tests_wasm {
             "params": ""
         }"#;
 
-    const EXAMPLE_PRIVATE_KEY: &str =
-        "f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a";
+    const EXAMPLE_PRIVATE_KEY: &str = "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=";
 
     #[test]
     fn check_signature() {

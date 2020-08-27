@@ -20,7 +20,7 @@ pub struct SendSignedTxParamsAPI {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SignTransactionParamsAPI {
     pub transaction: UnsignedMessageAPI,
-    pub prvkey_hex: String,
+    pub prvkey_base64: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -44,7 +44,7 @@ pub struct KeyDeriveFromSeedParamsAPI {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct KeyDeriveResultAPI {
-    pub private_hexstring: String,
+    pub private_base64: String,
     pub public_hexstring: String,
     pub address: String,
 }
@@ -89,7 +89,7 @@ pub async fn key_derive(c: MethodCall, _: RemoteNodeSection) -> Result<Success, 
 
     let result = KeyDeriveResultAPI {
         public_hexstring: hex::encode(&key_address.public_key.0[..]),
-        private_hexstring: hex::encode(&key_address.private_key.0),
+        private_base64: base64::encode(&key_address.private_key.0),
         address: key_address.address,
     };
 
@@ -116,7 +116,7 @@ pub async fn key_derive_from_seed(
 
     let result = KeyDeriveResultAPI {
         public_hexstring: hex::encode(&key_address.public_key.0[..]),
-        private_hexstring: hex::encode(&key_address.private_key.0),
+        private_base64: base64::encode(&key_address.private_key.0),
         address: key_address.address,
     };
 
@@ -173,7 +173,7 @@ pub async fn sign_transaction(
 ) -> Result<Success, ServiceError> {
     let params = c.params.parse::<SignTransactionParamsAPI>()?;
 
-    let private_key = PrivateKey::try_from(params.prvkey_hex)?;
+    let private_key = PrivateKey::try_from(params.prvkey_base64)?;
 
     let signed_message = filecoin_signer::transaction_sign(&params.transaction, &private_key)?;
 
@@ -258,7 +258,7 @@ pub async fn send_signed_tx(
 pub async fn send_sign(c: MethodCall, config: RemoteNodeSection) -> Result<Success, ServiceError> {
     let params = c.params.parse::<SignTransactionParamsAPI>()?;
 
-    let private_key = PrivateKey::try_from(params.prvkey_hex)?;
+    let private_key = PrivateKey::try_from(params.prvkey_base64)?;
 
     // signed message
     let signed_message = filecoin_signer::transaction_sign(&params.transaction, &private_key)?;

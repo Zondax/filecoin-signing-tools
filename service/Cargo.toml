@@ -8,27 +8,37 @@ repository = "https://github.com/Zondax/filecoin-signing-tools"
 description =""
 
 [dependencies]
-gumdrop = "0.7"
-thiserror = "1.0"
-serde = { version = "1", features = ["serde_derive"] }
-serde_json = "1.0"
+thiserror = "1.0.20"
+serde_json = "1.0.57"
 filecoin-signer = { path = "../signer" }
-forest_message = { git = "https://github.com/zondax/forest", rev="b1903ba274fc8e5457e71bc88738f17a7a87bc1f" }
-tokio = { version = "0.2", features = ["full", "time"] }
-reqwest = { version = "0.10.6", features = ["json", "gzip"] }
+forest_message = "0.4.0"
 warp = "0.2.1"
 jsonrpc-core = "14.0.5"
-lru = { optional = true, version = "0.4.3" }
-hex = "0.4"
 lazy_static = "1.4.0"
 libsecp256k1 = "0.3.4"
 blake2b_simd = "0.5.10"
+base64 = "0.12.0"
+hex = { git = "https://github.com/Zondax/rust-hex", rev="6e35fb48999278c8c6c75b099baa4ea2a9d1d12b" }
 
+gumdrop = "0.7.0"
 [dependencies.abscissa_core]
 version = "0.5.2"
-# optional: use `gimli` to capture backtraces
-# see https://github.com/rust-lang/backtrace-rs/issues/189
-# features = ["gimli-backtrace"]
+
+[dependencies.serde]
+version = "1.0.115"
+features = ["serde_derive"]
+
+[dependencies.lru]
+optional = true
+version = "0.5.3"
+
+[dependencies.tokio]
+version = "0.2.22"
+features = ["full", "time"]
+
+[dependencies.reqwest]
+version = "0.10.7"
+features = ["json", "gzip"]
 
 [dev-dependencies]
 abscissa_core = { version = "0.5.1", features = ["testing"] }

@@ -7,7 +7,7 @@
   "Params" : "gtgqUwABVQAOZmlsLzEvbXVsdGlzaWdYMIOCVQH9HQ9N/Nfpmvy5moMmt9xFnTLGKFUBHq8ciku/7rCHCxdFsfV1A0cLcRYBAA==",
   "Version" : 0,
   "Value" : "10000",
-  "GasPrice" : "0"
+  "GasPremium" : "0"
 }
 
 
