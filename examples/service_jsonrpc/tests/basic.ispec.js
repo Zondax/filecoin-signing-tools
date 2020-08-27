@@ -318,6 +318,7 @@ test("verify_invalid_signature", async () => {
 var messageCID
 
 test("send_signed_tx", async () => {
+  jest.setTimeout(10000);
   const path = "m/44'/1'/0/0/0";
   const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path], 1);
 
