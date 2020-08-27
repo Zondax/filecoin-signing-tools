@@ -1,18 +1,12 @@
-#![cfg_attr(
-    not(test),
-    deny(
-        clippy::option_unwrap_used,
-        clippy::option_expect_used,
-        clippy::result_unwrap_used,
-        clippy::result_expect_used,
-    )
-)]
+#![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used,))]
+
+use std::convert::TryFrom;
+
+use wasm_bindgen::prelude::*;
 
 use filecoin_signer::api::{MessageParams, UnsignedMessageAPI};
 use filecoin_signer::signature::Signature;
 use filecoin_signer::{CborBuffer, PrivateKey};
-use std::convert::TryFrom;
-use wasm_bindgen::prelude::*;
 
 mod utils;
 
@@ -571,8 +565,9 @@ pub fn serialize_params(params_value: JsValue) -> Result<Vec<u8>, JsValue> {
 #[cfg(target_arch = "wasm32")]
 #[cfg(test)]
 mod tests_wasm {
-    use crate::{transaction_sign, verify_signature};
     use wasm_bindgen::prelude::*;
+
+    use crate::{transaction_sign, verify_signature};
 
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
         {

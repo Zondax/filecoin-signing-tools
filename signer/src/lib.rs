@@ -1,12 +1,4 @@
-#![cfg_attr(
-    not(test),
-    deny(
-        clippy::option_unwrap_used,
-        clippy::option_expect_used,
-        clippy::result_unwrap_used,
-        clippy::result_expect_used,
-    )
-)]
+#![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used,))]
 
 use crate::api::{
     MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
@@ -22,9 +14,13 @@ use num_bigint_chainsafe::{BigInt, BigUint};
 use std::convert::TryFrom;
 use std::str::FromStr;
 
-use crate::extended_key::ExtendedSecretKey;
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
+use forest_address::{Address, Network};
+use forest_cid::{multihash::Identity, Cid, Codec};
+use forest_encoding::blake2b_256;
+use forest_encoding::{from_slice, to_vec};
+use num_bigint_chainsafe::BigInt;
 use rayon::prelude::*;
 use secp256k1::util::{
     COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
@@ -32,6 +28,17 @@ use secp256k1::util::{
 use secp256k1::{recover, sign, verify, Message, RecoveryId};
 use zx_bip44::BIP44Path;
 
+use extras::{
+    ConstructorParams, ExecParams, MethodInit, MethodMultisig, ProposalHashData, ProposeParams,
+    TxnID, TxnIDParams, INIT_ACTOR_ADDR,
+};
+
+use crate::api::{
+    MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
+    UnsignedMessageAPI,
+};
+use crate::error::SignerError;
+use crate::extended_key::ExtendedSecretKey;
 use crate::signature::{Signature, SignatureBLS, SignatureSECP256K1};
 
 pub mod api;
@@ -276,7 +283,7 @@ pub fn transaction_sign_raw(
         .from
         .as_bytes()
         .get(1)
-        .ok_or(SignerError::GenericString("Empty signing protocol".into()))?
+        .ok_or_else(|| SignerError::GenericString("Empty signing protocol".into()))?
     {
         b'1' => Signature::SignatureSECP256K1(transaction_sign_secp56k1_raw(
             unsigned_message_api,
@@ -495,10 +502,9 @@ pub fn create_multisig(
         from: sender_address,
         nonce,
         value,
-        // https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L46
-        gas_price: "1".to_string(),
-        // used the same value as https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L78
         gas_limit: 1000000,
+        gas_fee_cap: "2500".to_string(),
+        gas_premium: "2500".to_string(),
         method: MethodInit::Exec as u64,
         params: base64::encode(serialized_params.bytes()),
     };
@@ -525,7 +531,7 @@ pub fn proposal_multisig_message(
 ) -> Result<UnsignedMessageAPI, SignerError> {
     let propose_params_multisig = multisig::ProposeParams {
         to: Address::from_str(&to_address)?,
-        value: BigUint::from_str(&amount)?,
+        value: BigInt::from_str(&amount)?,
         method: 0,
         params: forest_vm::Serialized::new(Vec::new()),
     };
@@ -539,10 +545,9 @@ pub fn proposal_multisig_message(
         from: from_address,
         nonce,
         value: "0".to_string(),
-        // https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L46
-        gas_price: "1".to_string(),
-        // used the same value as https://github.com/filecoin-project/lotus/blob/596ed330dda83eac0f6e9c010ef7ada9e543369b/node/impl/full/multisig.go#L78
         gas_limit: 1000000,
+        gas_fee_cap: "2500".to_string(),
+        gas_premium: "2500".to_string(),
         method: multisig::MethodMultisig::Propose as u64,
         params: base64::encode(params.bytes()),
     };
@@ -550,6 +555,7 @@ pub fn proposal_multisig_message(
     Ok(multisig_propose_message_api)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn approve_or_cancel_multisig_message(
     method: u64,
     multisig_address: String,
@@ -563,7 +569,7 @@ fn approve_or_cancel_multisig_message(
     let proposal_parameter = multisig::ProposalHashData {
         requester: Address::from_str(&proposer_address)?,
         to: Address::from_str(&to_address)?,
-        value: BigUint::from_str(&amount)?,
+        value: BigInt::from_str(&amount)?,
         method: 0,
         params: forest_vm::Serialized::new(Vec::new()),
     };
@@ -586,8 +592,9 @@ fn approve_or_cancel_multisig_message(
         from: from_address,
         nonce,
         value: "0".to_string(),
-        gas_price: "1".to_string(),
         gas_limit: 1000000,
+        gas_fee_cap: "2500".to_string(),
+        gas_premium: "2500".to_string(),
         method,
         params: base64::encode(params.bytes()),
     };
@@ -932,24 +939,41 @@ mod tests {
             "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
             "nonce": 1,
             "value": "100000",
-            "gasprice": "2500",
-            "gaslimit": 25000,
+            "gaslimit": 1,
+            "gasfeecap": "1",
+            "gaspremium": "1",
             "method": 0,
             "params": ""
         }"#;
 
     const EXAMPLE_CBOR_DATA: &str =
-        "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a0430009c41961a80040";
+        "8a005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a01961a84200014200010040";
 
     /* signed message :
-    [
-        // Unsigned message part
-        [0,h'01FD1D0F4DFCD7E99AFCB99A8326B7DC459D32C628', h'010F323F4709E8E4DB0C1D4CD374F9F35201D26FB2', 1, h'000186A0', h'0009C4', 2500, 0, h''],
-        // Signed message part (messageType + SignatureRS + recoverID)
-        h'01be9aed6bd3b0493ab8559590f61dc124614e3174d369649fe461a218bab4193651f275f0a3e0c3ce67d6ef5780bba10574be5a2dbb4f1490efc71463fd95d33c01']
+    82                                      # array(2)
+       8A                                   # array(10)
+          00                                # unsigned(0)
+          55                                # bytes(21)
+             01FD1D0F4DFCD7E99AFCB99A8326B7DC459D32C628 # "\x01\xFD\x1D\x0FM\xFC\xD7\xE9\x9A\xFC\xB9\x9A\x83&\xB7\xDCE\x9D2\xC6("
+          55                                # bytes(21)
+             011EAF1C8A4BBFEEB0870B1745B1F57503470B7116 # "\x01\x1E\xAF\x1C\x8AK\xBF\xEE\xB0\x87\v\x17E\xB1\xF5u\x03G\vq\x16"
+          01                                # unsigned(1)
+          44                                # bytes(4)
+             000186A0                       # "\x00\x01\x86\xA0"
+          19 09C4                           # unsigned(2500)
+          42                                # bytes(2)
+             0001                           # "\x00\x01"
+          42                                # bytes(2)
+             0001                           # "\x00\x01"
+          00                                # unsigned(0)
+          40                                # bytes(0)
+                                            # ""
+       58 42                                # bytes(66)
+          0106398485060CA2A4DEB97027F518F45569360C3873A4303926FA6909A7299D4C55883463120836358FF3396882EE0DC2CF15961BD495CDFB3DE1EE2E8BD3768E01 # "\x01\x069\x84\x85\x06\f\xA2\xA4\xDE\xB9p'\xF5\x18\xF4Ui6\f8s\xA409&\xFAi\t\xA7)\x9DLU\x884c\x12\b65\x8F\xF39h\x82\xEE\r\xC2\xCF\x15\x96\e\xD4\x95\xCD\xFB=\xE1\xEE.\x8B\xD3v\x8E\x01"
     */
+
     const SIGNED_MESSAGE_CBOR: &str =
-        "8289005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a0430009c41909c4004058420106398485060ca2a4deb97027f518f45569360c3873a4303926fa6909a7299d4c55883463120836358ff3396882ee0dc2cf15961bd495cdfb3de1ee2e8bd3768e01";
+        "828a005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a01909c4420001420001004058420106398485060ca2a4deb97027f518f45569360c3873a4303926fa6909a7299d4c55883463120836358ff3396882ee0dc2cf15961bd495cdfb3de1ee2e8bd3768e01";
 
     const EXAMPLE_PRIVATE_KEY: &str = "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=";
 
@@ -1200,8 +1224,9 @@ mod tests {
             from: bls_address.to_string(),
             nonce: 1,
             value: "100000".to_string(),
-            gas_price: "2500".to_string(),
             gas_limit: 25000,
+            gas_fee_cap: "2500".to_string(),
+            gas_premium: "2500".to_string(),
             method: 0,
             params: "".to_string(),
         };
@@ -1241,8 +1266,9 @@ mod tests {
                     from: bls_address.to_string(),
                     nonce: 1,
                     value: "100000".to_string(),
-                    gas_price: "2500".to_string(),
                     gas_limit: 25000,
+                    gas_fee_cap: "2500".to_string(),
+                    gas_premium: "2500".to_string(),
                     method: 0,
                     params: "".to_string(),
                 }
@@ -1715,8 +1741,9 @@ mod tests {
             "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
             "nonce": 1,
             "value": "1000",
-            "gasprice": "1",
             "gaslimit": 1000000,
+            "gasfeecap": "2500",
+            "gaspremium": "2500",
             "method": 2,
             "params": base64::encode(serialize_params(exec_params_expected).unwrap()),
         });
@@ -1748,7 +1775,7 @@ mod tests {
 
         assert_eq!(
             hex::encode(&result),
-            "890042000155011eaf1c8a4bbfeeb0870b1745b1f57503470b711601430003e84200011a000f424002584982d82a53000155000e66696c2f312f6d756c74697369675830838255011eaf1c8a4bbfeeb0870b1745b1f57503470b71165501dfe49184d46adc8f89d44638beb45f78fcad25900100"
+            "8a0042000155011eaf1c8a4bbfeeb0870b1745b1f57503470b711601430003e81a000f4240430009c4430009c402584982d82a53000155000e66696c2f312f6d756c74697369675830838255011eaf1c8a4bbfeeb0870b1745b1f57503470b71165501dfe49184d46adc8f89d44638beb45f78fcad25900100"
         );
     }
 
@@ -1766,18 +1793,19 @@ mod tests {
 
         let multisig_proposal = serde_json::json!(
         {
-            "to": "t01",
+            "to": "t01004",
             "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
             "nonce": 1,
             "value": "0",
-            "gasprice": "1",
             "gaslimit": 1000000,
+            "gasfeecap": "2500",
+            "gaspremium": "2500",
             "method": 2,
             "params": base64::encode(serialize_params(proposal_params_expected).unwrap())
         });
 
         let multisig_proposal_message_api = proposal_multisig_message(
-            "t01".to_string(),
+            "t01004".to_string(),
             "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
             "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
             "1000".to_string(),
@@ -1799,7 +1827,7 @@ mod tests {
 
         assert_eq!(
             hex::encode(&result),
-            "890042000155011eaf1c8a4bbfeeb0870b1745b1f57503470b711601404200011a000f424002581d845501dfe49184d46adc8f89d44638beb45f78fcad2590430003e80040"
+            "8a004300ec0755011eaf1c8a4bbfeeb0870b1745b1f57503470b711601401a000f4240430009c4430009c402581d845501dfe49184d46adc8f89d44638beb45f78fcad2590430003e80040"
         );
     }
 
@@ -1829,18 +1857,19 @@ mod tests {
 
         let multisig_approval = serde_json::json!(
         {
-            "to": "t01",
+            "to": "t01004",
             "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
             "nonce": 1,
             "value": "0",
-            "gasprice": "1",
             "gaslimit": 1000000,
+            "gasfeecap": "2500",
+            "gaspremium": "2500",
             "method": 3,
             "params": base64::encode(serialize_params(approval_params_expected).unwrap()),
         });
 
         let multisig_approval_message_api = approve_multisig_message(
-            "t01".to_string(),
+            "t01004".to_string(),
             1234,
             "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
             "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
@@ -1864,7 +1893,7 @@ mod tests {
 
         assert_eq!(
             hex::encode(&result),
-            "890042000155011eaf1c8a4bbfeeb0870b1745b1f57503470b711601404200011a000f4240035845821904d2982018f818ac18f218651829187218f00918ae18aa181d189b186118cf18cd18861870182b1830189318c1189c183018491860184f181918db188c18b3187818f3"
+            "8a004300ec0755011eaf1c8a4bbfeeb0870b1745b1f57503470b711601401a000f4240430009c4430009c4035845821904d2982018f818ac18f218651829187218f00918ae18aa181d189b186118cf18cd18861870182b1830189318c1189c183018491860184f181918db188c18b3187818f3"
         );
     }
 
@@ -1893,18 +1922,19 @@ mod tests {
 
         let multisig_cancel = serde_json::json!(
         {
-            "to": "t01",
+            "to": "t01004",
             "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
             "nonce": 1,
             "value": "0",
-            "gasprice": "1",
             "gaslimit": 1000000,
+            "gasfeecap": "2500",
+            "gaspremium": "2500",
             "method": 4,
             "params": base64::encode(serialize_params(cancel_params_expected).unwrap()),
         });
 
         let multisig_cancel_message_api = cancel_multisig_message(
-            "t01".to_string(),
+            "t01004".to_string(),
             1234,
             "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
             "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy".to_string(),
@@ -1928,7 +1958,7 @@ mod tests {
 
         assert_eq!(
             hex::encode(&result),
-            "890042000155011eaf1c8a4bbfeeb0870b1745b1f57503470b711601404200011a000f4240045845821904d2982018f818ac18f218651829187218f00918ae18aa181d189b186118cf18cd18861870182b1830189318c1189c183018491860184f181918db188c18b3187818f3"
+            "8a004300ec0755011eaf1c8a4bbfeeb0870b1745b1f57503470b711601401a000f4240430009c4430009c4045845821904d2982018f818ac18f218651829187218f00918ae18aa181d189b186118cf18cd18861870182b1830189318c1189c183018491860184f181918db188c18b3187818f3"
         );
     }
 }

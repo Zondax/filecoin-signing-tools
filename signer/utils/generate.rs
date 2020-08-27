@@ -49,8 +49,9 @@ fn run(num_messages: usize) {
                 .to_string(),
             nonce: 1,
             value: "100000".to_string(),
-            gas_price: "2500".to_string(),
             gas_limit: 25000,
+            gas_fee_cap: "1".to_string(),
+            gas_premium: "1".to_string(),
             method: 0,
             params: "".to_owned(),
         })

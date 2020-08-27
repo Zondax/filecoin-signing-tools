@@ -31,21 +31,20 @@ zeroize = { version = "1.1", default-features = false, features = ["zeroize_deri
 sha2 = "0.9.1"
 
 # logging
-log = "0.4"
-env_logger = "0.7"
+log = "0.4.11"
+env_logger = "0.7.1"
 
-arbitrary = { optional = true, features = ["derive"], version = "0.4" }
+arbitrary = { optional = true, features = ["derive"], version = "" }
 ffi-support = { optional = true, version = "0.4" }
 
-# TODO: Update once crates are available
-forest_vm = "0.2.0"
-forest_message = "0.3.0"
-forest_address = "0.2.0"
-forest_encoding = "0.1.1"
-forest_cid = "0.1.0"
+
+forest_vm = "0.2.1"
+forest_message = "0.4.0"
+forest_address = "0.2.3"
+forest_encoding = "0.1.2"
+forest_cid = "0.1.1"
 forest_crypto = "0.2.1"
 
-# TODO: Maybe we can replace these with something leaner
 tiny-bip39 = "0.7.3"
 num_bigint_chainsafe = { package = "forest_bigint", version = "0.1.0"}
 

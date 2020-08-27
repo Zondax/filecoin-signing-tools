@@ -1,15 +1,21 @@
-use crate::error::SignerError;
-use crate::signature::Signature;
-use extras::{multisig, paych, ExecParams};
+use std::convert::TryFrom;
+use std::str::FromStr;
+
 use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
 use forest_encoding::tuple::*;
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
-use num_bigint_chainsafe::BigUint;
-use serde::{Deserialize, Serialize, Serializer};
-use std::convert::TryFrom;
-use std::str::FromStr;
+use num_bigint_chainsafe::BigInt;
+use serde::{Deserialize, Serialize};
+
+use extras::{
+    AddSignerParams, ChangeNumApprovalsThresholdParams, ConstructorParams, ExecParams,
+    ProposalHashData, ProposeParams, RemoveSignerParams, SwapSignerParams, TxnID, TxnIDParams,
+};
+
+use crate::error::SignerError;
+use crate::signature::Signature;
 
 pub enum SigTypes {
     SigTypeSecp256k1 = 0x01,
@@ -50,7 +56,7 @@ impl TryFrom<ConstructorParamsMultisig> for multisig::ConstructorParams {
         };
 
         Ok(multisig::ConstructorParams {
-            signers: signers,
+            signers,
             num_approvals_threshold: constructor_params.num_approvals_threshold,
             unlock_duration: constructor_params.unlock_duration,
         })
@@ -119,7 +125,7 @@ impl TryFrom<ProposeParamsMultisig> for multisig::ProposeParams {
 
         Ok(multisig::ProposeParams {
             to: Address::from_str(&propose_params.to)?,
-            value: BigUint::from_str(&propose_params.value)?,
+            value: BigInt::from_str(&propose_params.value)?,
             method: propose_params.method,
             params: forest_vm::Serialized::new(params),
         })
@@ -155,7 +161,7 @@ impl TryFrom<PropoposalHashDataParamsMultisig> for multisig::ProposalHashData {
         Ok(multisig::ProposalHashData {
             requester: Address::from_str(&proposal_params.requester)?,
             to: Address::from_str(&proposal_params.to)?,
-            value: BigUint::from_str(&proposal_params.value)?,
+            value: BigInt::from_str(&proposal_params.value)?,
             method: proposal_params.method,
             params: forest_vm::Serialized::new(params),
         })
@@ -565,14 +571,22 @@ pub struct UnsignedMessageAPI {
     pub from: String,
     pub nonce: u64,
     pub value: String,
-    #[serde(rename = "gasprice")]
-    #[serde(alias = "gasPrice")]
-    #[serde(alias = "gas_price")]
-    pub gas_price: String,
+
     #[serde(rename = "gaslimit")]
     #[serde(alias = "gasLimit")]
     #[serde(alias = "gas_limit")]
-    pub gas_limit: u64,
+    pub gas_limit: i64,
+
+    #[serde(rename = "gasfeecap")]
+    #[serde(alias = "gasFeeCap")]
+    #[serde(alias = "gas_fee_cap")]
+    pub gas_fee_cap: String,
+
+    #[serde(rename = "gaspremium")]
+    #[serde(alias = "gasPremium")]
+    #[serde(alias = "gas_premium")]
+    pub gas_premium: String,
+
     pub method: u64,
     pub params: String,
 }
@@ -741,9 +755,10 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
         let from = Address::from_str(&message_api.from)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
-        let value = BigUint::from_str(&message_api.value)?;
+        let value = BigInt::from_str(&message_api.value)?;
         let gas_limit = message_api.gas_limit;
-        let gas_price = BigUint::from_str(&message_api.gas_price)?;
+        let gas_fee_cap = BigInt::from_str(&message_api.gas_fee_cap)?;
+        let gas_premium = BigInt::from_str(&message_api.gas_premium)?;
 
         let message_params_bytes = base64::decode(&message_api.params)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
@@ -757,7 +772,8 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
             .method_num(message_api.method)
             .params(params)
             .gas_limit(gas_limit)
-            .gas_price(gas_price)
+            .gas_premium(gas_premium)
+            .gas_fee_cap(gas_fee_cap)
             .build()
             .map_err(SignerError::GenericString)?;
 
@@ -767,17 +783,18 @@ impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
 
 impl From<UnsignedMessage> for UnsignedMessageAPI {
     fn from(unsigned_message: UnsignedMessage) -> UnsignedMessageAPI {
-        let params_hex_string = hex::encode(unsigned_message.params().bytes());
+        let params_b64_string = base64::encode(unsigned_message.params().bytes());
 
         UnsignedMessageAPI {
             to: unsigned_message.to().to_string(),
             from: unsigned_message.from().to_string(),
             nonce: unsigned_message.sequence(),
             value: unsigned_message.value().to_string(),
-            gas_price: unsigned_message.gas_price().to_string(),
             gas_limit: unsigned_message.gas_limit(),
+            gas_fee_cap: unsigned_message.gas_fee_cap().to_string(),
+            gas_premium: unsigned_message.gas_premium().to_string(),
             method: unsigned_message.method_num(),
-            params: params_hex_string,
+            params: params_b64_string,
         }
     }
 }
@@ -796,11 +813,13 @@ impl From<SignedMessage> for SignedMessageAPI {
 
 #[cfg(test)]
 mod tests {
-    use crate::api::UnsignedMessageAPI;
+    use std::convert::TryFrom;
+
     use forest_encoding::{from_slice, to_vec};
     use forest_message::UnsignedMessage;
     use hex::{decode, encode};
-    use std::convert::TryFrom;
+
+    use crate::api::UnsignedMessageAPI;
 
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
         {
@@ -808,14 +827,17 @@ mod tests {
             "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
             "nonce": 1,
             "value": "100000",
-            "gasprice": "2500",
+            "gasfeecap": "1",
+            "gaspremium": "1",
             "gaslimit": 25000,
             "method": 0,
             "params": ""
         }"#;
 
     const EXAMPLE_CBOR_DATA: &str =
-        "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c41961a80040";
+        "8a005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a01961a84200014200010040";
+
+    const EXAMPLE_CBOR_DATA_CONV: &str = "8a004300ec075501dfe49184d46adc8f89d44638beb45f78fcad259001401a000f4240430009c4430009c402581d845501dfe49184d46adc8f89d44638beb45f78fcad2590430003e80040";
 
     #[test]
     fn json_to_cbor() {
@@ -837,7 +859,6 @@ mod tests {
         let cbor_buffer = decode(EXAMPLE_CBOR_DATA).expect("FIXME");
 
         let message: UnsignedMessage = from_slice(&cbor_buffer).expect("could not decode cbor");
-        println!("{:?}", message);
 
         let message_user_api =
             UnsignedMessageAPI::try_from(message).expect("could not convert message");
@@ -851,5 +872,19 @@ mod tests {
             serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE).expect("FIXME");
 
         assert_eq!(message_api, message_user_api)
+    }
+
+    #[test]
+    fn conversion_unsigned_messages() {
+        let cbor_bytes = decode(EXAMPLE_CBOR_DATA_CONV).unwrap();
+
+        let message: UnsignedMessage = from_slice(&cbor_bytes).expect("could not decode cbor");
+
+        let message_api: UnsignedMessageAPI =
+            UnsignedMessageAPI::try_from(message.clone()).unwrap();
+
+        let message_back = UnsignedMessage::try_from(&message_api).unwrap();
+
+        assert_eq!(message, message_back);
     }
 }

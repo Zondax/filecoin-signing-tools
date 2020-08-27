@@ -54,6 +54,19 @@ function keyRecover(privateKey, testnet) {
   return new ExtendedKey(privateKey, testnet);
 }
 
+function serializeBigNum(gasprice) {
+  if (gasprice == "0") {
+    return Buffer.from("");
+  }
+  const gaspriceBigInt = new BN(gasprice, 10);
+  const gaspriceBuffer = gaspriceBigInt.toArrayLike(
+    Buffer,
+    "be",
+    gaspriceBigInt.byteLength()
+  );
+  return Buffer.concat([Buffer.from("00", "hex"), gaspriceBuffer]);
+}
+
 function transactionSerializeRaw(message) {
   if (!("to" in message) || typeof message.to !== "string") {
     throw new Error("'to' is a required field and has to be a 'string'");
@@ -74,8 +87,13 @@ function transactionSerializeRaw(message) {
       "'value' is a required field and has to be a 'string' but not empty or negative"
     );
   }
-  if (!("gasprice" in message) || typeof message.gasprice !== "string") {
-    throw new Error("'gasprice' is a required field and has to be a 'string'");
+  if (!("gasfeecap" in message) || typeof message.gasfeecap !== "string") {
+    throw new Error("'gasfeecap' is a required field and has to be a 'string'");
+  }
+  if (!("gaspremium" in message) || typeof message.gaspremium !== "string") {
+    throw new Error(
+      "'gaspremium' is a required field and has to be a 'string'"
+    );
   }
   if (!("gaslimit" in message) || typeof message.gaslimit !== "number") {
     throw new Error("'gaslimit' is a required field and has to be a 'number'");
@@ -90,21 +108,9 @@ function transactionSerializeRaw(message) {
   const to = addressAsBytes(message.to);
   const from = addressAsBytes(message.from);
 
-  const valueBigInt = new BN(message.value, 10);
-  const valueBuffer = valueBigInt.toArrayLike(
-    Buffer,
-    "be",
-    valueBigInt.byteLength()
-  );
-  const value = Buffer.concat([Buffer.from("00", "hex"), valueBuffer]);
-
-  const gaspriceBigInt = new BN(message.gasprice, 10);
-  const gaspriceBuffer = gaspriceBigInt.toArrayLike(
-    Buffer,
-    "be",
-    gaspriceBigInt.byteLength()
-  );
-  const gasprice = Buffer.concat([Buffer.from("00", "hex"), gaspriceBuffer]);
+  const value = serializeBigNum(message.value);
+  const gasfeecap = serializeBigNum(message.gasfeecap);
+  const gaspremium = serializeBigNum(message.gaspremium);
 
   const message_to_encode = [
     0,
@@ -112,8 +118,9 @@ function transactionSerializeRaw(message) {
     from,
     message.nonce,
     value,
-    gasprice,
     message.gaslimit,
+    gasfeecap,
+    gaspremium,
     message.method,
     Buffer.from(message.params, "base64"),
   ];
@@ -132,7 +139,7 @@ function transactionParse(cborMessage, testnet) {
   if (decoded[0] !== 0) {
     throw new Error("Unsupported version");
   }
-  if (decoded.length < 9) {
+  if (decoded.length < 10) {
     throw new Error(
       "The cbor is missing some fields... please verify you have 9 fields."
     );
@@ -147,10 +154,11 @@ function transactionParse(cborMessage, testnet) {
     throw new Error("Value cant be negative");
   }
   message.value = new BN(decoded[4].toString("hex"), 16).toString(10);
-  message.gasprice = new BN(decoded[5].toString("hex"), 16).toString(10);
-  message.gaslimit = decoded[6];
-  message.method = decoded[7];
-  message.params = decoded[8].toString();
+  message.gaslimit = decoded[5];
+  message.gasfeecap = new BN(decoded[6].toString("hex"), 16).toString(10);
+  message.gaspremium = new BN(decoded[7].toString("hex"), 16).toString(10);
+  message.method = decoded[8];
+  message.params = decoded[9].toString();
 
   return message;
 }
@@ -203,10 +211,13 @@ function transactionSignLotus(unsignedMessage, privateKey) {
     Message: {
       From: signedMessage.message.from,
       GasLimit: signedMessage.message.gaslimit,
-      GasPrice: signedMessage.message.gasprice,
+      GasFeeCap: signedMessage.message.gasfeecap,
+      GasPremium: signedMessage.message.gaspremium,
       Method: signedMessage.message.method,
       Nonce: signedMessage.message.nonce,
-      Params: signedMessage.message.params,
+      Params: Buffer.from(signedMessage.message.params, "hex").toString(
+        "base64"
+      ),
       To: signedMessage.message.to,
       Value: signedMessage.message.value,
     },
@@ -426,4 +437,6 @@ module.exports = {
   collectPymtChan,
   createPymtChan,
   settlePymtChan,
+  addressAsBytes,
+  bytesToAddress,
 };

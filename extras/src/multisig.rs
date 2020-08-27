@@ -5,6 +5,9 @@ use forest_vm::{MethodNum, Serialized, TokenAmount, METHOD_CONSTRUCTOR};
 use num_bigint::biguint_ser;
 use serde::{Deserialize, Serialize};
 
+use num_bigint::bigint_ser;
+use serde::{Deserialize, Serialize};
+
 /// Transaction ID type
 // TODO change to uvarint encoding
 #[derive(Clone, Copy, Default, Serialize, Deserialize)]
@@ -15,7 +18,7 @@ pub struct TxnID(pub i64);
 #[derive(Clone, PartialEq, Debug, Serialize_tuple, Deserialize_tuple)]
 pub struct Transaction {
     pub to: Address,
-    #[serde(with = "biguint_ser")]
+    #[serde(with = "bigint_ser")]
     pub value: TokenAmount,
     pub method: MethodNum,
     pub params: Serialized,
@@ -35,7 +38,7 @@ pub struct ConstructorParams {
 #[derive(Serialize_tuple, Deserialize_tuple)]
 pub struct ProposeParams {
     pub to: Address,
-    #[serde(with = "biguint_ser")]
+    #[serde(with = "bigint_ser")]
     pub value: TokenAmount,
     pub method: MethodNum,
     pub params: Serialized,
@@ -46,7 +49,7 @@ pub struct ProposeParams {
 pub struct ProposalHashData {
     pub requester: Address,
     pub to: Address,
-    #[serde(with = "biguint_ser")]
+    #[serde(with = "bigint_ser")]
     pub value: TokenAmount,
     pub method: u64,
     pub params: Serialized,
