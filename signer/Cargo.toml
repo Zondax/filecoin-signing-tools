@@ -18,9 +18,6 @@ rayon = "1"
 
 bls-signatures = "0.6.1"
 
-# for unit tests
-regex = "1.3.9"
-
 # Crypto related
 hex = { git = "https://github.com/Zondax/rust-hex", rev="6e35fb48999278c8c6c75b099baa4ea2a9d1d12b" }
 getrandom="0.1.14"

@@ -2,9 +2,6 @@ use clock::ChainEpoch;
 use forest_address::Address;
 use forest_encoding::tuple::*;
 use forest_vm::{MethodNum, Serialized, TokenAmount, METHOD_CONSTRUCTOR};
-use num_bigint::biguint_ser;
-use serde::{Deserialize, Serialize};
-
 use num_bigint::bigint_ser;
 use serde::{Deserialize, Serialize};
 

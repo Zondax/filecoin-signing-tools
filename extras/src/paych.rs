@@ -4,7 +4,7 @@ use forest_crypto::signature::Signature;
 use forest_encoding::tuple::*;
 use forest_encoding::Cbor;
 use forest_vm::{MethodNum, Serialized, TokenAmount, METHOD_CONSTRUCTOR};
-use num_bigint::{bigint_ser, biguint_ser, BigInt};
+use num_bigint::{bigint_ser, BigInt};
 
 /// Maximum number of lanes in a channel
 pub const LANE_LIMIT: usize = 256;
@@ -29,7 +29,7 @@ pub struct State {
     /// Recipient of payouts from channel.
     pub to: Address,
     /// Amount successfully redeemed through the payment channel, paid out on `Collect`.
-    #[serde(with = "biguint_ser")]
+    #[serde(with = "bigint_ser")]
     pub to_send: TokenAmount,
     /// Height at which the channel can be collected.
     pub settling_at: ChainEpoch,
