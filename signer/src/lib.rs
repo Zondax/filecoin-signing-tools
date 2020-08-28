@@ -1299,14 +1299,6 @@ mod tests {
         let bls_key = PrivateKey::try_from(from_key).unwrap();
         let from_pkey = "93079ccf450c7205b0a8ec64a16e62f59f61275909b14e91a684d4acc6f321b4ec41f4543313c205ae60019fec9c304e";
 
-        //let to_key = "f945c98b4ebade1084c583316556fd27ec0ac855a1857e758e71bb59791e030d";
-        //let to_address = "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy";
-
-        /*let paych_constructor_params = paych::ConstructorParams{
-            to: Address::from_str("t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy").unwrap(),
-            from: Address::from_str("t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq").unwrap(),
-        }*/
-
         let pch_create = serde_json::json!(
         {
             "to": "t01",           // INIT_ACTOR_ADDR
@@ -1552,10 +1544,10 @@ mod tests {
         assert!(valid_signature.unwrap());
     }
 
-    /*#[test]
+    #[test]
+    #[ignore]
     fn test_sign_voucher() {
-
-    }*/
+    }
 
     #[test]
     fn support_multisig_create() {
