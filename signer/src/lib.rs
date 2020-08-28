@@ -877,10 +877,12 @@ pub fn create_voucher(
     let amount = match BigInt::parse_bytes(amount.as_bytes(), 10) {
         Some(value) => value,
         None => {
-            return Err(SignerError::GenericString("`amount` couldn't be parsed.".to_string()))
-        },
-    };    
-    
+            return Err(SignerError::GenericString(
+                "`amount` couldn't be parsed.".to_string(),
+            ))
+        }
+    };
+
     let voucher = paych::SignedVoucher {
         channel_addr: pch,
         time_lock_min,
