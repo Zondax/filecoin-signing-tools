@@ -914,6 +914,7 @@ mod tests {
 
     use bls_signatures::Serialize;
     use forest_address::Address;
+    use std::str::FromStr;
     use rand::SeedableRng;
     use rand_chacha::ChaCha8Rng;
     use rayon::prelude::*;
@@ -1405,15 +1406,13 @@ mod tests {
         let _pch_addr_hex = "70125899295ada2a86f7e48f90df1b6b486945ad"; // from base32decode("oajfrgjjllncvbxx4shzbxy3nnegsrnn")
         let privkey = PrivateKey::try_from(from_key).unwrap();
 
-        let sig = Signature::new_secp256k1(vec![
-            0x7C, 0xD6, 0xC3, 0xB4, 0xD1, 0x7A, 0x0C, 0x01, 0xEA, 0x4E, 0x9A, 0xE7, 0xB9, 0x28,
-            0x61, 0x98, 0x30, 0x7E, 0x02, 0x07, 0xAC, 0x33, 0xC7, 0xB3, 0xD7, 0xFB, 0x26, 0x92,
-            0xB4, 0x13, 0x58, 0x7B, 0x2F, 0x81, 0xBB, 0xCC, 0x48, 0x47, 0x9F, 0x89, 0xD2, 0x3B,
-            0x77, 0x45, 0x3F, 0xF3, 0x6C, 0xBC, 0x01, 0x05, 0x45, 0x10, 0xF7, 0xBE, 0x3C, 0xB0,
-            0x0C, 0x83, 0xE5, 0xCE, 0x59, 0xD4, 0xF6, 0x1D, 0x01,
-        ]);
+        let sig_decoded = hex::decode("017211fc32c4ba1077b56bdfe05b695bdf461bc03fbe17ed81448513532919cfd53a9edfa719f6f8d587f4b32d8d7da4e8cfc225fc6983b671827a9bbf9ecee73701").unwrap();
+        let sig = Signature::new_secp256k1(sig_decoded);
+
+        let pch = Address::from_str("t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq").unwrap();
 
         let sv = paych::SignedVoucher {
+            channel_addr: pch,
             time_lock_min: 0,
             time_lock_max: 0,
             secret_pre_image: Vec::new(),
@@ -1559,38 +1558,13 @@ mod tests {
         use crate::api::SpecsActorsCryptoSignature;
         use serde_cbor::ser::to_vec_packed;
 
-        // This is the Lotus voucher
-        let _test_vector_cbor_rawbase64 = "igAAQPYAAUIAAQCAWEIBfNbDtNF6DAHqTprnuShhmDB-AgesM8ez1_smkrQTWHsvgbvMSEefidI7d0U_82y8AQVFEPe-PLAMg-XOWdT2HQE";
-
-        // test_vector_cbor broken out by field:
-        //
-        //  8A                                      # array(10)           // array of 10 items
-        //     00                                   # unsigned(0)         // TimeLockMin
-        //     00                                   # unsigned(0)         // TimeLockMax
-        //     40                                   # bytes(0)            // SecretPreimage
-        //                                             # ""
-        //     F6                                   # primitive(22)       // Extra
-        //     00                                   # unsigned(0)         // Lane
-        //     01                                   # unsigned(1)         // Nonce
-        //     42                                   # bytes(2)            // Amount
-        //         0001                              # "\x00\x01"
-        //     00                                   # unsigned(0)         // MinSettleHeight
-        //     80                                   # array(0)            // Merges[]
-        //     58 42                                # bytes(66)           // Signature
-        //  017CD6C3B4D17A0C01EA4E9AE7B9286198307E0207AC33C7B3D7FB2692B413587B2F81BBCC48479F89D23B77453FF36CBC01054510F7BE3CB00C83E5CE59D4F61D01
-        let test_vector_cbor_hex_string = "8a000040f6000142000100805842017cd6c3b4d17a0c01ea4e9ae7b9286198307e0207ac33c7b3d7fb2692b413587b2f81bbcc48479f89d23b77453ff36cbc01054510f7be3cb00c83e5ce59d4f61d01";
+        let test_vector_cbor_hex_string = "8b55023f9dca5732548bbc235146a94f92153c1427fc171904d20040f6000144000186a001805842017211fc32c4ba1077b56bdfe05b695bdf461bc03fbe17ed81448513532919cfd53a9edfa719f6f8d587f4b32d8d7da4e8cfc225fc6983b671827a9bbf9ecee73701";
 
         let sig = SpecsActorsCryptoSignature {
             typ: 1,
-            data: vec![
-                0x7C, 0xD6, 0xC3, 0xB4, 0xD1, 0x7A, 0x0C, 0x01, 0xEA, 0x4E, 0x9A, 0xE7, 0xB9, 0x28,
-                0x61, 0x98, 0x30, 0x7E, 0x02, 0x07, 0xAC, 0x33, 0xC7, 0xB3, 0xD7, 0xFB, 0x26, 0x92,
-                0xB4, 0x13, 0x58, 0x7B, 0x2F, 0x81, 0xBB, 0xCC, 0x48, 0x47, 0x9F, 0x89, 0xD2, 0x3B,
-                0x77, 0x45, 0x3F, 0xF3, 0x6C, 0xBC, 0x01, 0x05, 0x45, 0x10, 0xF7, 0xBE, 0x3C, 0xB0,
-                0x0C, 0x83, 0xE5, 0xCE, 0x59, 0xD4, 0xF6, 0x1D, 0x01,
-            ],
+            data: hex::decode("017211fc32c4ba1077b56bdfe05b695bdf461bc03fbe17ed81448513532919cfd53a9edfa719f6f8d587f4b32d8d7da4e8cfc225fc6983b671827a9bbf9ecee73701").unwrap(),
         };
-        let sv = SignedVoucherAPI::new(0, 1, 1, &sig);
+        let sv = SignedVoucherAPI::new("t2h6o4uvzsksf3yi2ri2uu7eqvhqkcp7axmg3mski".into(),0, 1, 1, &sig);
         let serialized_cbor = to_vec_packed(&sv).unwrap();
         let mut serialized_cbor_hex_string = String::new();
         serialized_cbor
