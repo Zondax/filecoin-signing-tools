@@ -77,15 +77,16 @@ impl Cbor for Merge {}
 
 /// A voucher is sent by `from` to `to` off-chain in order to enable
 /// `to` to redeem payments on-chain in the future
-#[derive(Default, Debug, PartialEq, Serialize_tuple, Deserialize_tuple)]
+#[derive(Debug, PartialEq, Serialize_tuple, Deserialize_tuple)]
 pub struct SignedVoucher {
+    /// ChannelAddr is the address of the payment channel this signed voucher is valid for
+    pub channel_addr: Address,
     /// Min epoch before which the voucher cannot be redeemed
     pub time_lock_min: ChainEpoch,
     /// Max epoch beyond which the voucher cannot be redeemed
     /// set to 0 means no timeout
     pub time_lock_max: ChainEpoch,
     /// (optional) Used by `to` to validate
-    // TODO revisit this type, can probably be a 32 byte array
     #[serde(with = "serde_bytes")]
     pub secret_pre_image: Vec<u8>,
     /// (optional) Specified by `from` to add a verification method to the voucher

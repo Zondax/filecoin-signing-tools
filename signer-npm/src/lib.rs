@@ -521,6 +521,7 @@ pub fn sign_voucher(voucher: String, private_key_js: JsValue) -> Result<JsValue,
 
 #[wasm_bindgen(js_name = createVoucher)]
 pub fn create_voucher(
+    payment_channel_address: String,
     time_lock_min: i64,
     time_lock_max: i64,
     amount: String,
@@ -531,6 +532,7 @@ pub fn create_voucher(
     set_panic_hook();
 
     let voucher = filecoin_signer::create_voucher(
+        payment_channel_address,
         time_lock_min,
         time_lock_max,
         amount,

@@ -858,11 +858,14 @@ pub fn sign_voucher(
 /// # Arguments
 ///
 /// * `payment_channel_address` - The payment channel address;
+/// * `time_lock_min` - Time lock min;
+/// * `time_lock_maax` - Time lock max;
 /// * `amount` - Amount in the voucher;
 /// * `lane` - Lane of the voucher;
 /// * `nonce` - Next nonce of the voucher;
 ///
 pub fn create_voucher(
+    payment_channel_address: String,
     time_lock_min: i64,
     time_lock_max: i64,
     amount: String,
@@ -870,7 +873,9 @@ pub fn create_voucher(
     nonce: u64,
     min_settle_height: i64,
 ) -> Result<String, SignerError> {
+    let pch = Address::from_str(&payment_channel_address)?;
     let voucher = paych::SignedVoucher {
+        channel_addr: pch,
         time_lock_min: time_lock_min,
         time_lock_max: time_lock_max,
         secret_pre_image: Vec::new(),

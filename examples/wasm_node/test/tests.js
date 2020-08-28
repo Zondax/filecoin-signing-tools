@@ -1056,7 +1056,7 @@ describe('updatePymtChan', function () {
     
     const from = recover.address;
     
-    const signedVoucherBase64 = "ihkE0gBA9gABRAABhqABgFhCAYqo8UzN75vK2qA4j8kljdUjoa7hQSUDqpLXD79KYzrGb1Mr4RwInD/1j+Q6hZBN+9qgRnKmE07y3Lsc5Q9FMp4B";
+    const signedVoucherBase64 = "i1UCP53KVzJUi7wjUUapT5IVPBQn/BcZBNIAQPYAAUQAAYagAYBYQgFyEfwyxLoQd7Vr3+BbaVvfRhvAP74X7YFEhRNTKRnP1Tqe36cZ9vjVh/SzLY19pOjPwiX8aYO2cYJ6m7+ezuc3AQ==";
     
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
 
@@ -1186,6 +1186,7 @@ describe('collectPymtChan', function () {
 describe('createVoucher', function () {
   it('create a voucher', function () {
     const voucher = filecoin_signer.createVoucher(
+      "t2h6o4uvzsksf3yi2ri2uu7eqvhqkcp7axmg3mski",
       BigInt(1234),
       BigInt(0),
       "100000",
@@ -1194,8 +1195,7 @@ describe('createVoucher', function () {
       BigInt(1),
     );
     
-    // TODO: might not be valid...
-    const expected = "ihkE0gBA9gABRAABhqABgPY=";
+    const expected = "i1UCP53KVzJUi7wjUUapT5IVPBQn/BcZBNIAQPYAAUQAAYagAYD2";
     
     assert.strictEqual(expected, voucher);
   })
@@ -1208,12 +1208,13 @@ describe('signVoucher', function () {
 
     let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
     
-    // TODO: might not be valid...
-    const voucher = "ihkE0gBA9gABRAABhqABgPY=";
+    const voucher = "i1UCP53KVzJUi7wjUUapT5IVPBQn/BcZBNIAQPYAAUQAAYagAYD2";
     
     const signedVoucher = filecoin_signer.signVoucher(voucher, privateKey);
     
-    let signature = cbor.deserialize(Buffer.from(signedVoucher, 'base64'))[9];
+    console.log(signedVoucher)
+    
+    let signature = cbor.deserialize(Buffer.from(signedVoucher, 'base64'))[10];
     
     signature = signature.slice(1,-1);
     console.log(signature.length)
