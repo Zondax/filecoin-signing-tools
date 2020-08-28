@@ -2,6 +2,10 @@ const filecoin_signer = require('@zondax/filecoin-signing-tools');
 const bip39 = require('bip39');
 const bip32 = require('bip32');
 const axios = require('axios');
+const {getDigest} = require('./test/utils');
+const secp256k1 = require('secp256k1');
+const assert = require('assert');
+const cbor = require("ipld-dag-cbor").util;
 
 const URL = process.env.URL
 const TOKEN = process.env.TOKEN
@@ -15,6 +19,7 @@ const skip = false
 
 async function main () {
   let response
+  var PCH
   
   if (!skip) {
     
@@ -36,7 +41,12 @@ async function main () {
         params: []
       }, {headers})
 
-      let address = response.data.result[1]
+      let address
+      for (i in response.data.result) {
+        if (response.data.result[i].startsWith("t3")) {
+          address = response.data.result[i]
+        }
+      }
       console.log(address)
 
       /* Get nonce */
@@ -59,11 +69,11 @@ async function main () {
           From: address,
           To: "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
           Nonce: nonce,
-          GasPremium: "1",
-          GasFeeCap: "1",
-          GasLimit: 1000000,
+          GasPremium: "2500",
+          GasFeeCap: "2500",
+          GasLimit: 2500000,
           Method: 0,
-          Value: "100000000000",
+          Value: "10000000000000",
           Params: ""
         }]
       }, {headers})
@@ -115,11 +125,11 @@ async function main () {
           From: address,
           To: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
           Nonce: nonce,
-          GasFeeCap: "1",
-          GasPremium: "1",
-          GasLimit: 1000000,
+          GasFeeCap: "2500",
+          GasPremium: "2500",
+          GasLimit: 2500000,
           Method: 0,
-          Value: "100000000000",
+          Value: "10000000000000",
           Params: ""
         }]
       }, {headers})
@@ -208,30 +218,30 @@ async function main () {
       }, { headers })
 
       console.log(response.data)
+      PCH = response.data.result.ReturnDec.IDAddress
   }
 
-  
-  /* Get status */
-  let PAYMENT_CHANNEL_ADDRESS = "t01003"
-  
-  console.log("##### GET PAYMENT CHANNEL STATUS #####")
+  console.log(PCH)
+  let PAYMENT_CHANNEL_ADDRESS = "t01010"
+  if (PCH !== undefined) {
+    PAYMENT_CHANNEL_ADDRESS = PCH
+  }
 
-  response = await axios.post(URL, {
-    jsonrpc: "2.0",
-    method: "Filecoin.PaychStatus",
-    id: 1,
-    params: [PAYMENT_CHANNEL_ADDRESS]
-  }, { headers })
-
-  console.log(response.data)
   
   /* Create Voucher */
   
   console.log("##### CREATE VOUCHER #####")
 
-  let voucher = filecoin_signer.createVoucher(BigInt(1234), BigInt(0), "100000", BigInt(0), BigInt(1), BigInt(1))
+  let voucher = filecoin_signer.createVoucher(PAYMENT_CHANNEL_ADDRESS, BigInt(0), BigInt(0), "100000", BigInt(0), BigInt(1), BigInt(1))
   
   console.log(voucher)
+  
+  /* Recover address */
+  console.log("##### RECOVER ADDRESS #####")
+  
+  let recoveredKey = filecoin_signer.keyRecover(privateKeyBase64, true);
+
+  console.log(recoveredKey.address)
   
   /* Sign Voucher */
   
@@ -245,7 +255,7 @@ async function main () {
   
   console.log("##### CREATE VOUCHER 2 #####")
 
-  let voucher2 = filecoin_signer.createVoucher(BigInt(1234), BigInt(0), "200000", BigInt(0), BigInt(2), BigInt(1))
+  let voucher2 = filecoin_signer.createVoucher(PAYMENT_CHANNEL_ADDRESS, BigInt(0), BigInt(0), "200000", BigInt(0), BigInt(2), BigInt(1))
   
   console.log(voucher2)
   
@@ -256,6 +266,19 @@ async function main () {
   let signedVoucher2 = filecoin_signer.signVoucher(voucher2, privateKeyBase64)
   
   console.log(signedVoucher2)
+  
+  let deserialized_voucher = cbor.deserialize(Buffer.from(signedVoucher2, 'base64'));
+  
+  console.log(deserialized_voucher)
+  
+  let signature = deserialized_voucher[10]
+  
+  signature = signature.slice(1,-1);
+  console.log(signature.length)
+      
+  const messageDigest = getDigest(Buffer.from(voucher2, 'base64'));    
+      
+  assert(secp256k1.ecdsaVerify(signature, messageDigest, recoveredKey.public_raw));
 
   /* Create update voucher message */
   
@@ -274,11 +297,11 @@ async function main () {
   console.log(response.data)
   nonce = response.data.result
   
-  let update_paych_message = filecoin_signer.updatePymtChan("t01003", "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy", signedVoucher, nonce)
+  let update_paych_message = filecoin_signer.updatePymtChan(PAYMENT_CHANNEL_ADDRESS, "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy", signedVoucher, nonce)
 
   console.log(update_paych_message)
 
-  signedMessage = JSON.parse(filecoin_signer.transactionSignLotus(update_paych_message, privateKey));
+  signedMessage = JSON.parse(filecoin_signer.transactionSignLotus(update_paych_message, privateKeyBase64));
   
   console.log(signedMessage)
   
@@ -323,7 +346,7 @@ async function main () {
   console.log(response.data)
   nonce = response.data.result
   
-  update_paych_message = filecoin_signer.settlePymtChan("101003", "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy", signedVoucher, nonce)
+  update_paych_message = filecoin_signer.settlePymtChan(PAYMENT_CHANNEL_ADDRESS, "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy", nonce)
 
   console.log(update_paych_message)
 
