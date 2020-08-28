@@ -1546,8 +1546,7 @@ mod tests {
 
     #[test]
     #[ignore]
-    fn test_sign_voucher() {
-    }
+    fn test_sign_voucher() {}
 
     #[test]
     fn support_multisig_create() {
