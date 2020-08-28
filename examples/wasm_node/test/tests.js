@@ -960,7 +960,8 @@ describe('createPymtChan', function () {
       Message: {
         From: from,
         GasLimit: 200000000,
-        GasPrice: '100',
+        GasFeeCap: '2500',
+        GasPremium: '2500',
         Method: 2,
         Nonce: 1,
         Params: serializedParams,
@@ -1022,7 +1023,8 @@ describe('createPymtChan', function () {
       Message: {
         From: from,
         GasLimit: 200000000,
-        GasPrice: '100',
+        GasFeeCap: '2500',
+        GasPremium: '2500',
         Method: 2,
         Nonce: 1,
         Params: serializedParams,
@@ -1077,7 +1079,8 @@ describe('updatePymtChan', function () {
       Message : {
         From: from,
         GasLimit: 200000000,
-        GasPrice: '100',
+        GasFeeCap: '2500',
+        GasPremium: '2500',
         Method: 2,
         Nonce: 1,
         Params: serializedParams,
@@ -1117,7 +1120,8 @@ describe('settlePymtChan', function () {
       Message : {
         From: from,
         GasLimit: 20000000,
-        GasPrice: '0',
+        GasFeeCap: '2500',
+        GasPremium: '2500',
         Method: 3,
         Nonce: 1,
         Params: "",
@@ -1154,7 +1158,8 @@ describe('collectPymtChan', function () {
       Message : {
         From: from,
         GasLimit: 20000000,
-        GasPrice: '0',
+        GasFeeCap: '2500',
+        GasPremium: '2500',
         Method: 4,
         Nonce: 1,
         Params: "",
