@@ -914,10 +914,10 @@ mod tests {
 
     use bls_signatures::Serialize;
     use forest_address::Address;
-    use std::str::FromStr;
     use rand::SeedableRng;
     use rand_chacha::ChaCha8Rng;
     use rayon::prelude::*;
+    use std::str::FromStr;
 
     const BLS_PUBKEY: &str = "ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc07904";
     const BLS_PRIVATEKEY: &str = "0x7Y0GGX92MeWBF9mcWuR5EYPxe2dy60r8XIQOD31BI=";
@@ -1564,7 +1564,13 @@ mod tests {
             typ: 1,
             data: hex::decode("017211fc32c4ba1077b56bdfe05b695bdf461bc03fbe17ed81448513532919cfd53a9edfa719f6f8d587f4b32d8d7da4e8cfc225fc6983b671827a9bbf9ecee73701").unwrap(),
         };
-        let sv = SignedVoucherAPI::new("t2h6o4uvzsksf3yi2ri2uu7eqvhqkcp7axmg3mski".into(),0, 1, 1, &sig);
+        let sv = SignedVoucherAPI::new(
+            "t2h6o4uvzsksf3yi2ri2uu7eqvhqkcp7axmg3mski".into(),
+            0,
+            1,
+            1,
+            &sig,
+        );
         let serialized_cbor = to_vec_packed(&sv).unwrap();
         let mut serialized_cbor_hex_string = String::new();
         serialized_cbor

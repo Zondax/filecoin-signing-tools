@@ -374,6 +374,7 @@ impl Serialize for SpecsActorsCryptoSignature {
 //#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[derive(Debug, Clone, PartialEq, Deserialize_tuple, Serialize_tuple)]
 pub struct SignedVoucherAPI {
+    pub payment_channel_address: String,
     pub time_lock_min: i64, // not supported - must be 0
     pub time_lock_max: i64, // not supported - must be 0
     // Serializing to 0x40 (empty byte string), consistent with Lotus-generated voucher
@@ -399,12 +400,19 @@ pub struct SignedVoucherAPI {
 impl From<&SignedVoucherAPI> for SignedVoucherAPI {
     fn from(sv: &SignedVoucherAPI) -> Self {
         let sig: SpecsActorsCryptoSignature = (&sv.signature).as_ref().unwrap().into();
-        Self::new(sv.lane, sv.nonce, sv.amount, &sig)
+        Self::new(
+            sv.payment_channel_address.clone(),
+            sv.lane,
+            sv.nonce,
+            sv.amount,
+            &sig,
+        )
     }
 }
 
 impl SignedVoucherAPI {
     pub fn new(
+        pch: String,
         lane: u64,
         nonce: u64,
         amount: u64,
@@ -412,6 +420,7 @@ impl SignedVoucherAPI {
     ) -> SignedVoucherAPI {
         //let signature : SpecsActorsCryptoSignature = signature.into();
         SignedVoucherAPI {
+            payment_channel_address: pch,
             time_lock_min: 0,
             time_lock_max: 0,
             secret_preimage: vec![],
