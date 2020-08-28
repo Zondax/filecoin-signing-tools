@@ -3,8 +3,8 @@ const bip39 = require('bip39');
 const bip32 = require('bip32');
 const axios = require('axios');
 
-const URL = "http://192.168.1.38:1234/rpc/v0"
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.2l5dql9PvaFPNY8_0UynbY0usJZ99dbIwpPUtaEDIYs"
+const URL = process.env.URL
+const TOKEN = process.env.TOKEN
 
 const privateKeyBase64 = "YbDPh1vq3fBClzbiwDt6WjniAdZn8tNcCwcBO2hDwyk="
 const privateKey = Buffer.from(privateKeyBase64, 'base64')
