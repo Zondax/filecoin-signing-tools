@@ -431,12 +431,6 @@ module.exports = {
   transactionSignLotus,
   transactionSignRaw,
   verifySignature,
-  createVoucher,
-  signVoucher,
-  updatePymtChan,
-  collectPymtChan,
-  createPymtChan,
-  settlePymtChan,
   addressAsBytes,
   bytesToAddress,
 };
