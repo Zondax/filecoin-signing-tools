@@ -261,6 +261,7 @@ function verifySignature(signature, message) {
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 function createPymtChan(from, to, amount, nonce) {
   if (typeof from !== "string") {
     throw new Error("`from` address has to be a string.");
@@ -298,6 +299,7 @@ function createPymtChan(from, to, amount, nonce) {
   return message;
 }
 
+// eslint-disable-next-line no-unused-vars
 function settlePymtChan(pch, from, nonce) {
   if (typeof pch !== "string") {
     throw new Error("`pch` address has to be a string.");
@@ -318,6 +320,7 @@ function settlePymtChan(pch, from, nonce) {
   return message;
 }
 
+// eslint-disable-next-line no-unused-vars
 function collectPymtChan(pch, from, nonce) {
   if (typeof pch !== "string") {
     throw new Error("`pch` address has to be a string.");
@@ -338,6 +341,7 @@ function collectPymtChan(pch, from, nonce) {
   return message;
 }
 
+// eslint-disable-next-line no-unused-vars
 function updatePymtChan(pch, from, signedVoucherBase64, nonce) {
   if (typeof pch !== "string") {
     throw new Error("`pch` address has to be a string.");
@@ -369,6 +373,7 @@ function updatePymtChan(pch, from, signedVoucherBase64, nonce) {
   return message;
 }
 
+// eslint-disable-next-line no-unused-vars
 function signVoucher(unsignedVoucherBase64, privateKey) {
   if (typeof unsignedVoucherBase64 !== "string") {
     throw new Error("`unsignedVoucher` has to be a base64 string.");
@@ -393,6 +398,7 @@ function signVoucher(unsignedVoucherBase64, privateKey) {
   return signedVoucher.toString("base64");
 }
 
+// eslint-disable-next-line no-unused-vars
 function createVoucher(
   timeLockMin,
   timeLockMax,
