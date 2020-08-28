@@ -1394,7 +1394,7 @@ mod tests {
         "gasfeecap": "2500",
         "gaspremium": "2500",
         "method": 2,
-        "params": "g4oAAED2AAFCAAEAgFhCAXzWw7TRegwB6k6a57koYZgwfgIHrDPHs9f7JpK0E1h7L4G7zEhHn4nSO3dFP/NsvAEFRRD3vjywDIPlzlnU9h0BQEA="
+        "params": "g4tVAnASWJkpWtoqhvfkj5DfG2tIaUWtAABA9gABQgABAIBYQwEBchH8MsS6EHe1a9/gW2lb30YbwD++F+2BRIUTUykZz9U6nt+nGfb41Yf0sy2NfaToz8Il/GmDtnGCepu/ns7nNwFAQA=="
     }"#;
 
     #[test]
@@ -1550,34 +1550,6 @@ mod tests {
 
         let valid_signature = verify_signature(&signature, &message_cbor);
         assert!(valid_signature.unwrap());
-    }
-
-    #[test]
-    fn serialize_signed_payment_voucher() {
-        use crate::api::SignedVoucherAPI;
-        use crate::api::SpecsActorsCryptoSignature;
-        use serde_cbor::ser::to_vec_packed;
-
-        let test_vector_cbor_hex_string = "8b55023f9dca5732548bbc235146a94f92153c1427fc171904d20040f6000144000186a001805842017211fc32c4ba1077b56bdfe05b695bdf461bc03fbe17ed81448513532919cfd53a9edfa719f6f8d587f4b32d8d7da4e8cfc225fc6983b671827a9bbf9ecee73701";
-
-        let sig = SpecsActorsCryptoSignature {
-            typ: 1,
-            data: hex::decode("017211fc32c4ba1077b56bdfe05b695bdf461bc03fbe17ed81448513532919cfd53a9edfa719f6f8d587f4b32d8d7da4e8cfc225fc6983b671827a9bbf9ecee73701").unwrap(),
-        };
-        let sv = SignedVoucherAPI::new(
-            "t2h6o4uvzsksf3yi2ri2uu7eqvhqkcp7axmg3mski".into(),
-            0,
-            1,
-            1,
-            &sig,
-        );
-        let serialized_cbor = to_vec_packed(&sv).unwrap();
-        let mut serialized_cbor_hex_string = String::new();
-        serialized_cbor
-            .iter()
-            .for_each(|x| serialized_cbor_hex_string.push_str(&format!("{:02x}", x)));
-        //println!("serialized cbor = '{}'",serialized_cbor_hex_string);
-        assert_eq!(serialized_cbor_hex_string, test_vector_cbor_hex_string);
     }
 
     /*#[test]

@@ -101,7 +101,8 @@ fn check_signature() {
     let tx = "8a005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a01961a84200014200010040";
     let signature = "9c5b9323b331117a934344269904e6a9b52c3597c715794d8f3facbac5439009354ab4427492b1955659acce2f52d54149882d3087a280d7e9a9d2862058685900";
 
-    let ret = verify_signature(JsValue::from_str(signature), JsValue::from_str(tx));
+    let ret =
+        filecoin_signer_wasm::verify_signature(JsValue::from_str(signature), JsValue::from_str(tx));
     assert_eq!(ret.is_ok(), true);
     assert_eq!(ret.unwrap(), true);
 }

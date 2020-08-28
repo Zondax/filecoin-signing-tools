@@ -4,7 +4,6 @@ use std::str::FromStr;
 use extras::{multisig, paych, ExecParams};
 use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
-use forest_encoding::tuple::*;
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
 use num_bigint_chainsafe::BigInt;
@@ -365,100 +364,6 @@ impl Serialize for SpecsActorsCryptoSignature {
         let mut v = Vec::<u8>::new();
         v.push(self.typ);
         v.extend(self.data.iter().map(|x| x.clone()));
-        serde_bytes::Serialize::serialize(&v, serializer)
-    }
-}
-
-/// Signed voucher
-#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
-//#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-#[derive(Debug, Clone, PartialEq, Deserialize_tuple, Serialize_tuple)]
-pub struct SignedVoucherAPI {
-    pub payment_channel_address: String,
-    pub time_lock_min: i64, // not supported - must be 0
-    pub time_lock_max: i64, // not supported - must be 0
-    // Serializing to 0x40 (empty byte string), consistent with Lotus-generated voucher
-    #[serde(with = "serde_bytes")]
-    pub secret_preimage: Vec<u8>, // not supported - must be blank
-    // This should serialize to 0xf6 (cbor null) per https://github.com/whyrusleeping/cbor-gen/blob/227fab5a237792e633ddc99254a5a8a03642cb7a/utils.go#L523
-    pub extra: Option<i32>, // not supported - must be None
-    pub lane: u64,
-    pub nonce: u64,
-    // Needs to serialize as either:
-    //   empty byte array                                      if Amount==0
-    //   concat(0x00,[Amount encoded as a big endian slice])   if Amount>0
-    // ref:  https://github.com/filecoin-project/specs-actors/blob/master/actors/abi/big/int.go#L225
-    #[serde(serialize_with = "SignedVoucherAPI::serde_ser_to_cbor_be_int_bytes")]
-    pub amount: u64,
-    pub min_settle_height: i64, // not supported - must be zero
-    // Must serialize to 0x80 (cbor empty array)
-    pub merges: [u8; 0],
-    // If this is absent, it must serialize as 0xf6 (cbor null).
-    pub signature: Option<SpecsActorsCryptoSignature>,
-}
-
-impl From<&SignedVoucherAPI> for SignedVoucherAPI {
-    fn from(sv: &SignedVoucherAPI) -> Self {
-        let sig: SpecsActorsCryptoSignature = (&sv.signature).as_ref().unwrap().into();
-        Self::new(
-            sv.payment_channel_address.clone(),
-            sv.lane,
-            sv.nonce,
-            sv.amount,
-            &sig,
-        )
-    }
-}
-
-impl SignedVoucherAPI {
-    pub fn new(
-        pch: String,
-        lane: u64,
-        nonce: u64,
-        amount: u64,
-        signature: &SpecsActorsCryptoSignature,
-    ) -> SignedVoucherAPI {
-        //let signature : SpecsActorsCryptoSignature = signature.into();
-        SignedVoucherAPI {
-            payment_channel_address: pch,
-            time_lock_min: 0,
-            time_lock_max: 0,
-            secret_preimage: vec![],
-            extra: Option::<i32>::None,
-            lane,
-            nonce,
-            amount,
-            min_settle_height: 0,
-            merges: [],
-            signature: Some(signature.into()),
-        }
-    }
-
-    /// Serialises a u64 into its 0x00-prefixed big endian representation
-    pub fn serde_ser_to_cbor_be_int_bytes<S>(n: &u64, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let be_bytes = n.to_be_bytes();
-        let mut v = Vec::<u8>::new();
-        v.push(0 as u8);
-        let mut leading_zero = true;
-
-        // v.extend(be_bytes.iter().skip_white(|&x| *x==0 ));
-        // ^^^ would be cleaner but skip_while not implemented for vec<u8> so using this ugliness instead:
-        v.extend(be_bytes.iter().filter_map(|x| {
-            if *x == 0 {
-                if !leading_zero {
-                    Some(*x)
-                } else {
-                    None
-                }
-            } else {
-                leading_zero = false;
-                Some(*x)
-            }
-        }));
-
         serde_bytes::Serialize::serialize(&v, serializer)
     }
 }

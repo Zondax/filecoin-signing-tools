@@ -927,7 +927,7 @@ describeCall('SerializeParams', function () {
   })
 })
 
-describe('createPymtChan', function () {
+describeCall('createPymtChan', function () {
   it('create payment channel transaction and sign (SECP256K1)', function () {    
     const privateKey = "+UXJi0663hCExYMxZVb9J+wKyFWhhX51jnG7WXkeAw0=";
     
@@ -1048,7 +1048,7 @@ describe('createPymtChan', function () {
   })
 })
 
-describe('updatePymtChan', function () {
+describeCall('updatePymtChan', function () {
   it('update payment channel transaction and sign', function () {    
     const privateKey = "+UXJi0663hCExYMxZVb9J+wKyFWhhX51jnG7WXkeAw0=";
     
@@ -1109,7 +1109,7 @@ describe('updatePymtChan', function () {
   })
 })
 
-describe('settlePymtChan', function () {
+describeCall('settlePymtChan', function () {
   it('settle payment channel and sign', function () {    
     const privateKey = "+UXJi0663hCExYMxZVb9J+wKyFWhhX51jnG7WXkeAw0=";
     const recover = filecoin_signer.keyRecover(privateKey, true);
@@ -1147,7 +1147,7 @@ describe('settlePymtChan', function () {
   })
 })
 
-describe('collectPymtChan', function () {
+describeCall('collectPymtChan', function () {
   it('settle payment channel and sign', function () {    
     const privateKey = "+UXJi0663hCExYMxZVb9J+wKyFWhhX51jnG7WXkeAw0=";
     const recover = filecoin_signer.keyRecover(privateKey, true);
@@ -1183,7 +1183,7 @@ describe('collectPymtChan', function () {
   })
 })
 
-describe('createVoucher', function () {
+describeCall('createVoucher', function () {
   it('create a voucher', function () {
     const voucher = filecoin_signer.createVoucher(
       "t2h6o4uvzsksf3yi2ri2uu7eqvhqkcp7axmg3mski",
@@ -1201,7 +1201,7 @@ describe('createVoucher', function () {
   })
 })
 
-describe('signVoucher', function () {
+describeCall('signVoucher', function () {
   it('sign a voucher', function () {
     let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
     let privateKey = child.privateKey.toString("base64");
