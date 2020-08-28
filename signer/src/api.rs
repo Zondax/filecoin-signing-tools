@@ -76,8 +76,8 @@ impl TryFrom<ExecParamsAPI> for ExecParams {
             base64::decode(exec_constructor.constructor_params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-        if exec_constructor.code_cid != "fil/1/multisig".to_string()
-            && exec_constructor.code_cid != "fil/1/paymentchannel".to_string()
+        if exec_constructor.code_cid != "fil/1/multisig"
+            && exec_constructor.code_cid != "fil/1/paymentchannel"
         {
             return Err(SignerError::GenericString(
                 "Only support `fil/1/multisig` and `fil/1/paymentchannel` code for now."
@@ -330,7 +330,7 @@ impl TryFrom<PaymentChannelUpdateStateParams> for paych::UpdateChannelStateParam
         let cbor_sv = base64::decode(params.sv)?;
         let sv: paych::SignedVoucher = forest_encoding::from_slice(cbor_sv.as_ref())?;
         Ok(paych::UpdateChannelStateParams {
-            sv: sv,
+            sv,
             secret: vec![],
             proof: vec![],
         })
@@ -348,7 +348,7 @@ pub struct SpecsActorsCryptoSignature {
 
 impl From<&SpecsActorsCryptoSignature> for SpecsActorsCryptoSignature {
     fn from(sig: &SpecsActorsCryptoSignature) -> Self {
-        let d = sig.data.iter().map(|el| el.clone()).collect();
+        let d = sig.data.iter().copied().collect();
         SpecsActorsCryptoSignature {
             typ: sig.typ,
             data: d,

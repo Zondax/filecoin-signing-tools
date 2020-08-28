@@ -701,7 +701,7 @@ pub fn create_pymtchan(
     // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
     let pch_create_message_api = UnsignedMessageAPI {
         to: "t01".to_owned(), // INIT_ACTOR_ADDR
-        from: from_address.to_owned(),
+        from: from_address,
         nonce,
         value,
         gas_limit: 200000000,
@@ -734,7 +734,7 @@ pub fn update_pymtchan(
     let sv: paych::SignedVoucher = forest_encoding::from_slice(sv_cbor.as_ref())?;
 
     let update_payment_channel_params = paych::UpdateChannelStateParams {
-        sv: sv,
+        sv,
         secret: vec![],
         proof: vec![],
     };
@@ -806,7 +806,7 @@ pub fn collect_pymtchan(
     let pch_collect_message_api = UnsignedMessageAPI {
         to: pch_address,
         from: from_address,
-        nonce: nonce,
+        nonce,
         value: "0".to_string(),
         gas_limit: 20000000,
         gas_fee_cap: "2500".to_string(),
@@ -874,16 +874,23 @@ pub fn create_voucher(
     min_settle_height: i64,
 ) -> Result<String, SignerError> {
     let pch = Address::from_str(&payment_channel_address)?;
+    let amount = match BigInt::parse_bytes(amount.as_bytes(), 10) {
+        Some(value) => value,
+        None => {
+            return Err(SignerError::GenericString("`amount` couldn't be parsed.".to_string()))
+        },
+    };    
+    
     let voucher = paych::SignedVoucher {
         channel_addr: pch,
-        time_lock_min: time_lock_min,
-        time_lock_max: time_lock_max,
+        time_lock_min,
+        time_lock_max,
         secret_pre_image: Vec::new(),
         extra: None,
-        lane: lane,
-        nonce: nonce,
-        amount: BigInt::parse_bytes(amount.as_bytes(), 10).unwrap(),
-        min_settle_height: min_settle_height,
+        lane,
+        nonce,
+        amount,
+        min_settle_height,
         merges: Vec::new(),
         signature: None,
     };
