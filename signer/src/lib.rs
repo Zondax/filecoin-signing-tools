@@ -834,7 +834,8 @@ pub fn sign_voucher(
 
     let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
 
-    let digest = utils::get_digest(&decoded_voucher)?;
+    let svb = voucher.signing_bytes()?;
+    let digest = utils::get_digest(&svb)?;
 
     let blob_to_sign = Message::parse_slice(&digest)?;
 
@@ -896,7 +897,7 @@ pub fn create_voucher(
         merges: Vec::new(),
         signature: None,
     };
-
+    
     let cbor_voucher = base64::encode(to_vec(&voucher)?);
 
     Ok(cbor_voucher)

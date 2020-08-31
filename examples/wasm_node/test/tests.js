@@ -1223,6 +1223,40 @@ describeCall('signVoucher', function () {
         
     assert(secp256k1.ecdsaVerify(signature, messageDigest, recoveredKey.public_raw));
   })
+  
+  it('sign a voucher (2)', function () {
+    let child = MASTER_NODE.derivePath("44'/1'/0/0/0");
+    let privateKey = child.privateKey.toString("base64");
+    
+    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
+
+    console.log(recoveredKey.address)
+
+    const voucher = filecoin_signer.createVoucher(
+      "t2h6o4uvzsksf3yi2ri2uu7eqvhqkcp7axmg3mski",
+      BigInt(0),
+      BigInt(0),
+      "10000",
+      BigInt(0),
+      BigInt(1),
+      BigInt(1),
+    );
+    
+    let expectedSignature = "ZEPtUQzGHPmFZaDocdXBEzp1GZ2RBaOxFfrz5Y/PrNJmBwqftyItNZooaAF6CR+vixe2HCmqSLub4ySOoFiuawE=";
+    
+    const signedVoucher = filecoin_signer.signVoucher(voucher, privateKey);
+
+    let signedVoucherCBOR = cbor.deserialize(Buffer.from(signedVoucher, 'base64'));
+
+    console.log(signedVoucherCBOR)
+    let signature = signedVoucherCBOR[10]
+    console.log(Buffer.from(expectedSignature, 'base64'))
+    console.log(signature.slice(1).toString('base64'))
+    
+    assert.strictEqual(signature.slice(1).toString('hex'), expectedSignature);
+
+  })
+  
 })
 
 /* ------------------------------------------------------------------------------------------------- */

@@ -255,7 +255,7 @@ async function main () {
   
   console.log("##### CREATE VOUCHER 2 #####")
 
-  let voucher2 = filecoin_signer.createVoucher(PAYMENT_CHANNEL_ADDRESS, BigInt(0), BigInt(0), "200000", BigInt(0), BigInt(2), BigInt(1))
+  let voucher2 = filecoin_signer.createVoucher("t2pxeooadvarjycy467xos5yufeymxehnkolyfhwi", BigInt(0), BigInt(0), "200000", BigInt(0), BigInt(2), BigInt(1))
   
   console.log(voucher2)
   
