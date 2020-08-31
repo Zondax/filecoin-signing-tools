@@ -1217,7 +1217,7 @@ describeCall('signVoucher', function () {
     let signature = cbor.deserialize(Buffer.from(signedVoucher, 'base64'))[10];
     
     signature = signature.slice(1,-1);
-    console.log(signature.length)
+    console.log(signature.toString("base64"))
         
     const messageDigest = getDigest(Buffer.from(voucher, 'base64'));    
         
@@ -1233,15 +1233,18 @@ describeCall('signVoucher', function () {
     console.log(recoveredKey.address)
 
     const voucher = filecoin_signer.createVoucher(
-      "t2h6o4uvzsksf3yi2ri2uu7eqvhqkcp7axmg3mski",
+      "t24acjqhdetck7irsvmn2p6jpuwnouzjxuoa22rva",
       BigInt(0),
       BigInt(0),
       "10000",
+      BigInt(1),
+      BigInt(1),
       BigInt(0),
-      BigInt(1),
-      BigInt(1),
     );
     
+    /*
+    {"jsonrpc":"2.0","result":{"ChannelAddr":"t24acjqhdetck7irsvmn2p6jpuwnouzjxuoa22rva","TimeLockMin":0,"TimeLockMax":0,"SecretPreimage":null,"Extra":null,"Lane":1,"Nonce":1,"Amount":"10000","MinSettleHeight":0,"Merges":null,"Signature":{"Type":1,"Data":"ZEPtUQzGHPmFZaDocdXBEzp1GZ2RBaOxFfrz5Y/PrNJmBwqftyItNZooaAF6CR+vixe2HCmqSLub4ySOoFiuawE="}},"id":1}
+    */
     let expectedSignature = "ZEPtUQzGHPmFZaDocdXBEzp1GZ2RBaOxFfrz5Y/PrNJmBwqftyItNZooaAF6CR+vixe2HCmqSLub4ySOoFiuawE=";
     
     const signedVoucher = filecoin_signer.signVoucher(voucher, privateKey);
@@ -1251,9 +1254,9 @@ describeCall('signVoucher', function () {
     console.log(signedVoucherCBOR)
     let signature = signedVoucherCBOR[10]
     console.log(Buffer.from(expectedSignature, 'base64'))
-    console.log(signature.slice(1).toString('base64'))
+    console.log(signature.slice(1, -1).toString('base64'))
     
-    assert.strictEqual(signature.slice(1).toString('hex'), expectedSignature);
+    assert.strictEqual(signature.slice(1).toString('base64'), expectedSignature);
 
   })
   
