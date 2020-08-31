@@ -897,7 +897,7 @@ pub fn create_voucher(
         merges: Vec::new(),
         signature: None,
     };
-    
+
     let cbor_voucher = base64::encode(to_vec(&voucher)?);
 
     Ok(cbor_voucher)

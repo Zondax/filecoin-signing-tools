@@ -1,7 +1,7 @@
 use clock::ChainEpoch;
 use forest_address::Address;
 use forest_crypto::signature::Signature;
-use forest_encoding::{tuple::*, Cbor, error::Error, serde_bytes, to_vec};
+use forest_encoding::{error::Error, serde_bytes, to_vec, tuple::*, Cbor};
 use forest_vm::{MethodNum, Serialized, TokenAmount, METHOD_CONSTRUCTOR};
 use num_bigint::{bigint_ser, BigInt};
 
