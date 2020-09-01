@@ -279,7 +279,7 @@ pub fn verify_signature(signature_js: JsValue, message_js: JsValue) -> Result<bo
 
     let message_bytes = extract_bytes(
         message_js,
-        "Message must be encoced as hexstring, base64 or a buffer",
+        "Message must be encoded as hexstring, base64 or a buffer",
     )?;
 
     filecoin_signer::verify_signature(&sig, &CborBuffer(message_bytes))

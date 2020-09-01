@@ -40,7 +40,7 @@ fn main() {
     println!("{:?}", base64::encode(signature_rs.serialize().to_vec()));
 
     let decoded_voucher = base64::decode(base64::encode(to_vec(&v).unwrap())).unwrap();
-    let mut voucher: SignedVoucher = from_slice(&decoded_voucher).unwrap();
+    let voucher: SignedVoucher = from_slice(&decoded_voucher).unwrap();
 
     println!("{:?}", voucher);
 }

@@ -1,5 +1,8 @@
 #![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used,))]
 
+use std::convert::TryFrom;
+use std::str::FromStr;
+
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
 use forest_address::{Address, Network};
@@ -12,8 +15,6 @@ use secp256k1::util::{
     COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
 };
 use secp256k1::{recover, sign, verify, Message, RecoveryId};
-use std::convert::TryFrom;
-use std::str::FromStr;
 use zx_bip44::BIP44Path;
 
 use extras::{multisig, paych, ExecParams, MethodInit, INIT_ACTOR_ADDR};
@@ -835,7 +836,7 @@ pub fn sign_voucher(
     let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
 
     let svb = voucher.signing_bytes()?;
-    let digest = utils::get_digest(&svb)?;
+    let digest = utils::get_digest_voucher(&svb)?;
 
     let blob_to_sign = Message::parse_slice(&digest)?;
 
@@ -849,7 +850,8 @@ pub fn sign_voucher(
         signature.0.to_vec(),
     ));
 
-    let cbor_voucher = base64::encode(to_vec(&voucher)?);
+    let binary_voucher = to_vec(&voucher)?;
+    let cbor_voucher = base64::encode(binary_voucher);
 
     Ok(cbor_voucher)
 }
@@ -905,29 +907,31 @@ pub fn create_voucher(
 
 #[cfg(test)]
 mod tests {
+    use std::convert::TryFrom;
+    use std::str::FromStr;
+
+    use bip39::{Language, Seed};
+    use bls_signatures::Serialize;
+    use forest_address::Address;
+    use forest_encoding::blake2b_256;
+    use forest_encoding::to_vec;
+    use num_bigint_chainsafe::BigInt;
+    use rand::SeedableRng;
+    use rand_chacha::ChaCha8Rng;
+    use rayon::prelude::*;
+
+    use extras::paych;
+
     use crate::api::{MessageParams, MessageTxAPI, UnsignedMessageAPI};
     use crate::signature::{Signature, SignatureBLS};
     use crate::{
         approve_multisig_message, cancel_multisig_message, collect_pymtchan, create_multisig,
-        create_pymtchan, key_derive, key_derive_from_seed, key_generate_mnemonic, key_recover,
-        proposal_multisig_message, serialize_params, settle_pymtchan, transaction_parse,
-        transaction_serialize, transaction_sign, transaction_sign_bls_raw, transaction_sign_raw,
-        update_pymtchan, verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic,
-        PrivateKey,
+        create_pymtchan, create_voucher, key_derive, key_derive_from_seed, key_generate_mnemonic,
+        key_recover, proposal_multisig_message, serialize_params, settle_pymtchan, sign_voucher,
+        transaction_parse, transaction_serialize, transaction_sign, transaction_sign_bls_raw,
+        transaction_sign_raw, update_pymtchan, verify_aggregated_signature, verify_signature,
+        CborBuffer, Mnemonic, PrivateKey,
     };
-    use bip39::{Language, Seed};
-    use extras::paych;
-    use forest_encoding::blake2b_256;
-    use forest_encoding::to_vec;
-    use num_bigint_chainsafe::BigInt;
-    use std::convert::TryFrom;
-
-    use bls_signatures::Serialize;
-    use forest_address::Address;
-    use rand::SeedableRng;
-    use rand_chacha::ChaCha8Rng;
-    use rayon::prelude::*;
-    use std::str::FromStr;
 
     const BLS_PUBKEY: &str = "ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc07904";
     const BLS_PRIVATEKEY: &str = "0x7Y0GGX92MeWBF9mcWuR5EYPxe2dy60r8XIQOD31BI=";
@@ -1328,7 +1332,7 @@ mod tests {
             "1".to_string(),
             1,
         )
-        .unwrap();
+            .unwrap();
 
         let pch_create_message_expected: UnsignedMessageAPI =
             serde_json::from_value(pch_create).unwrap();
@@ -1555,8 +1559,29 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
-    fn test_sign_voucher() {}
+    fn test_sign_voucher() {
+        let mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
+        let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "").unwrap();
+
+        let tmp = hex::encode(extended_key.private_key.0);
+
+        //        assert_eq!(tmp, "");
+
+        let voucher = create_voucher(
+            "t24acjqhdetck7irsvmn2p6jpuwnouzjxuoa22rva".to_string(),
+            0,
+            0,
+            "10000".to_string(),
+            1,
+            1,
+            0,
+        )
+        .unwrap();
+
+        let signed_voucher = sign_voucher(voucher, &extended_key.private_key).unwrap();
+
+        assert_eq!(signed_voucher, "ZEPtUQzGHPmFZaDocdXBEzp1GZ2RBaOxFfrz5Y/PrNJmBwqftyItNZooaAF6CR+vixe2HCmqSLub4ySOoFiuawE=");
+    }
 
     #[test]
     fn support_multisig_create() {

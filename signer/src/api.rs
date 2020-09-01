@@ -363,7 +363,7 @@ impl Serialize for SpecsActorsCryptoSignature {
     {
         let mut v = Vec::<u8>::new();
         v.push(self.typ);
-        v.extend(self.data.iter().map(|x| x.clone()));
+        v.extend(self.data.iter().copied());
         serde_bytes::Serialize::serialize(&v, serializer)
     }
 }
