@@ -1563,10 +1563,6 @@ mod tests {
         let mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
         let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "").unwrap();
 
-        let tmp = hex::encode(extended_key.private_key.0);
-
-        //        assert_eq!(tmp, "");
-
         let voucher = create_voucher(
             "t24acjqhdetck7irsvmn2p6jpuwnouzjxuoa22rva".to_string(),
             0,
@@ -1580,7 +1576,7 @@ mod tests {
 
         let signed_voucher = sign_voucher(voucher, &extended_key.private_key).unwrap();
 
-        assert_eq!(signed_voucher, "ZEPtUQzGHPmFZaDocdXBEzp1GZ2RBaOxFfrz5Y/PrNJmBwqftyItNZooaAF6CR+vixe2HCmqSLub4ySOoFiuawE=");
+        assert_eq!(signed_voucher, "i1UC4ASYHGSYlfRGVWN0/yX0s11MpvQAAED2AQFDACcQAIBYQgFRD/3a1fsyc7TLRUgeQ5BAPhB1rDuVt1qvDuwccTODWCJ+OAe4R/+HIGH9pgBYjrghhA4JdgJugTWfzFflbOGSAA==");
     }
 
     #[test]

@@ -35,7 +35,7 @@ fn main() {
 
     let blob_to_sign = Message::parse_slice(&digest).unwrap();
 
-    let (signature_rs, recovery_id) = sign(&blob_to_sign, &secret_key);
+    let (signature_rs, _recovery_id) = sign(&blob_to_sign, &secret_key);
 
     println!("{:?}", base64::encode(signature_rs.serialize().to_vec()));
 

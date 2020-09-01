@@ -87,7 +87,7 @@ Arguments :
 use signer::transaction_serialize;
 use signer::api::UnsignedMessageAPI;
 
-const transaction: &str = r#"
+const TRANSACTION: &str = r#"
     {
         "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
         "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
@@ -148,7 +148,7 @@ Arguments:
 use signer::{transaction_sign_raw, PrivateKey};
 use signer::api::UnsignedMessageAPI;
 
-const transaction: &str = r#"
+const TRANSACTION: &str = r#"
     {
         "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
         "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
@@ -194,7 +194,7 @@ Arguments:
 use signer::{transaction_sign, PrivateKey};
 use signer::api::UnsignedMessageAPI;
 
-const transaction: &str = r#"
+const TRANSACTION: &str = r#"
     {
         "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
         "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
@@ -230,7 +230,7 @@ let cbor_data = CborBuffer(hex::decode("885501fd1d0f4dfcd7e99afcb99a8326b7dc459d
 
 let private_key = PrivateKey::try_from("8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=".to_string()).unwrap();
 
-const transaction: &str = r#"
+const TRANSACTION: &str = r#"
     {
         "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
         "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
