@@ -232,7 +232,7 @@ async function main () {
   
   console.log("##### CREATE VOUCHER #####")
 
-  let voucher = filecoin_signer.createVoucher(PAYMENT_CHANNEL_ADDRESS, BigInt(0), BigInt(0), "100000", BigInt(0), BigInt(1), BigInt(1))
+  let voucher = filecoin_signer.createVoucher(PAYMENT_CHANNEL_ADDRESS, BigInt(0), BigInt(0), "100000", BigInt(0), BigInt(1), BigInt(0))
   
   console.log(voucher)
   
@@ -255,7 +255,7 @@ async function main () {
   
   console.log("##### CREATE VOUCHER 2 #####")
 
-  let voucher2 = filecoin_signer.createVoucher("t2pxeooadvarjycy467xos5yufeymxehnkolyfhwi", BigInt(0), BigInt(0), "200000", BigInt(0), BigInt(2), BigInt(1))
+  let voucher2 = filecoin_signer.createVoucher(PAYMENT_CHANNEL_ADDRESS, BigInt(0), BigInt(0), "200000", BigInt(0), BigInt(2), BigInt(0))
   
   console.log(voucher2)
   
@@ -267,18 +267,9 @@ async function main () {
   
   console.log(signedVoucher2)
   
-  let deserialized_voucher = cbor.deserialize(Buffer.from(signedVoucher2, 'base64'));
+  let tmp = cbor.deserialize(Buffer.from(signedVoucher2, 'base64'))
   
-  console.log(deserialized_voucher)
-  
-  let signature = deserialized_voucher[10]
-  
-  signature = signature.slice(1,-1);
-  console.log(signature.length)
-      
-  const messageDigest = getDigest(Buffer.from(voucher2, 'base64'));    
-      
-  assert(secp256k1.ecdsaVerify(signature, messageDigest, recoveredKey.public_raw));
+  console.log(tmp)
 
   /* Create update voucher message */
   
