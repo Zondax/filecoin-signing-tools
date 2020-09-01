@@ -227,6 +227,7 @@ async function main () {
     PAYMENT_CHANNEL_ADDRESS = PCH
   }
 
+  const VOUCHER_SIGNER = "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo="
   
   /* Create Voucher */
   
@@ -243,11 +244,18 @@ async function main () {
 
   console.log(recoveredKey.address)
   
+  /* Recover address */
+  console.log("##### RECOVER ADDRESS 2 #####")
+  
+  let recoveredKey = filecoin_signer.keyRecover(VOUCHER_SIGNER, true);
+
+  console.log(recoveredKey.address)
+  
   /* Sign Voucher */
   
   console.log("##### SIGN VOUCHER #####")
 
-  let signedVoucher = filecoin_signer.signVoucher(voucher, privateKeyBase64)
+  let signedVoucher = filecoin_signer.signVoucher(voucher, VOUCHER_SIGNER)
   
   console.log(signedVoucher)
   
@@ -263,13 +271,13 @@ async function main () {
 
   console.log("##### SIGN VOUCHER 2 #####")
 
-  let signedVoucher2 = filecoin_signer.signVoucher(voucher2, privateKeyBase64)
+  let signedVoucher2 = filecoin_signer.signVoucher(voucher2, VOUCHER_SIGNER)
   
   console.log(signedVoucher2)
   
-  let tmp = cbor.deserialize(Buffer.from(signedVoucher2, 'base64'))
+  let tmp = cbor.deserialize(Buffer.from(signedVoucher2, 'base64'))[10]
   
-  console.log(tmp)
+  console.log(Buffer.from(tmp).slice(1).toString('base64'))
 
   /* Create update voucher message */
   
