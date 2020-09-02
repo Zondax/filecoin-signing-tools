@@ -244,13 +244,6 @@ async function main () {
 
   console.log(recoveredKey.address)
   
-  /* Recover address */
-  console.log("##### RECOVER ADDRESS 2 #####")
-  
-  let recoveredKey = filecoin_signer.keyRecover(VOUCHER_SIGNER, true);
-
-  console.log(recoveredKey.address)
-  
   /* Sign Voucher */
   
   console.log("##### SIGN VOUCHER #####")
@@ -330,6 +323,19 @@ async function main () {
 
   console.log(response.data)
   
+  /* Read payment channel state */
+  
+  console.log("##### READ PAYMENT CHANNEL STATE #####")
+  
+  response = await axios.post(URL, {
+    jsonrpc: "2.0",
+    method: "Filecoin.StateReadState",
+    id: 1,
+    params: [PAYMENT_CHANNEL_ADDRESS, null]
+  }, { headers })
+
+  console.log(response.data)
+  
   /* Settle payment channel */
   
   /* Get nonce */
@@ -353,7 +359,7 @@ async function main () {
   
   console.log(signedMessage)
   
-  console.log("##### SEND PAYMENT CHANNEL #####")
+  console.log("##### SETTLE PAYMENT CHANNEL #####")
   
   response = await axios.post(URL, {
     jsonrpc: "2.0",
@@ -367,6 +373,71 @@ async function main () {
   cid = response.data.result
 
   /* Wait for message */
+  
+  console.log("##### WAIT FOR PAYMENT CHANNEL STATE #####")
+
+  response = await axios.post(URL, {
+    jsonrpc: "2.0",
+    method: "Filecoin.StateWaitMsg",
+    id: 1,
+    params: [cid, null]
+  }, { headers })
+
+  console.log(response.data)
+  
+  console.log("##### READ PAYMENT CHANNEL STATE #####")
+  
+  response = await axios.post(URL, {
+    jsonrpc: "2.0",
+    method: "Filecoin.StateReadState",
+    id: 1,
+    params: [PAYMENT_CHANNEL_ADDRESS, null]
+  }, { headers })
+
+  console.log(response.data)
+  
+  /* 
+    IMPORTANT !!
+    Wait until block `settling_at` block height reach before collect
+  */
+
+  /* Collect channel payment */
+  
+  console.log("##### COLLECT CHANNEL MESSAGE  #####")
+
+  /* Get nonce */
+  console.log("##### GET NONCE #####")
+
+  response = await axios.post(URL, {
+    jsonrpc: "2.0",
+    method: "Filecoin.MpoolGetNonce",
+    id: 1,
+    params: ["t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"]
+  }, {headers})
+
+  console.log(response.data)
+  nonce = response.data.result
+  
+  update_paych_message = filecoin_signer.collectPymtChan(PAYMENT_CHANNEL_ADDRESS, "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy", nonce)
+
+  console.log(update_paych_message)
+
+  signedMessage = JSON.parse(filecoin_signer.transactionSignLotus(update_paych_message, privateKey));
+  
+  console.log(signedMessage)
+  
+  console.log("##### COLLECTE PAYMENT CHANNEL #####")
+  
+  response = await axios.post(URL, {
+    jsonrpc: "2.0",
+    method: "Filecoin.MpoolPush",
+    id: 1,
+    params: [signedMessage]
+  }, { headers })
+
+  console.log(response.data)
+
+  cid = response.data.result
   
   console.log("##### WAIT FOR PAYMENT CHANNEL STATE #####")
 
