@@ -432,10 +432,10 @@ test("send_sign", async () => {
     to: "t1ojyfm5btrqq63zquewexr4hecynvq6yjyk5xv6q",
     from: keyAddressResponse.result.address,
     nonce,
-    value: "1",
+    value: "1000000000",
     gaslimit: 1000000,
-    gasfeecap: "1",
-    gaspremium: "1",
+    gasfeecap: "2500",
+    gaspremium: "2500",
     method: 0,
     params: "",
   };
