@@ -343,10 +343,10 @@ test("send_signed_tx", async () => {
     to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
     from: keyAddressResponse.result.address,
     nonce,
-    value: "1",
+    value: "1000000000",
     gaslimit: 1000000,
-    gasfeecap: "1",
-    gaspremium: "1",
+    gasfeecap: "2500",
+    gaspremium: "2500",
     method: 0,
     params: "",
   };
