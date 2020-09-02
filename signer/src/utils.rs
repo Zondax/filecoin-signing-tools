@@ -21,6 +21,17 @@ pub fn get_digest(message: &[u8]) -> Result<[u8; 32], TryFromSliceError> {
     cid_hashed.as_bytes().try_into()
 }
 
+/// transform a voucher into a hashed message ready to be signed and following Filecoin standard
+pub fn get_digest_voucher(message: &[u8]) -> Result<[u8; 32], TryFromSliceError> {
+    let message_hashed = Params::new()
+        .hash_length(32)
+        .to_state()
+        .update(message)
+        .finalize();
+
+    message_hashed.as_bytes().try_into()
+}
+
 #[cfg(test)]
 mod tests {
     use crate::utils::get_digest;
@@ -28,7 +39,6 @@ mod tests {
 
     #[test]
     fn test_digest_message() {
-        // TODO
         const EXAMPLE_CBOR_DATA: &str =
             "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a0430009c4430061a80040";
 

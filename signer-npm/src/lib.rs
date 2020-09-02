@@ -279,7 +279,7 @@ pub fn verify_signature(signature_js: JsValue, message_js: JsValue) -> Result<bo
 
     let message_bytes = extract_bytes(
         message_js,
-        "Message must be encoced as hexstring, base64 or a buffer",
+        "Message must be encoded as hexstring, base64 or a buffer",
     )?;
 
     filecoin_signer::verify_signature(&sig, &CborBuffer(message_bytes))
@@ -423,6 +423,133 @@ pub fn cancel_multisig(
     Ok(multisig_transaction_js)
 }
 
+#[wasm_bindgen(js_name = createPymtChan)]
+pub fn create_pymtchan(
+    from_address: String,
+    to_address: String,
+    amount: String,
+    nonce: u32,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let pch_transaction =
+        filecoin_signer::create_pymtchan(from_address, to_address, amount, nonce as u64).map_err(
+            |e| JsValue::from_str(format!("Error creating payment channel: {}", e).as_str()),
+        )?;
+
+    let pch_transaction_js = JsValue::from_serde(&pch_transaction)
+        .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(pch_transaction_js)
+}
+
+#[wasm_bindgen(js_name = settlePymtChan)]
+pub fn settle_pymtchan(
+    pch_address: String,
+    from_address: String,
+    nonce: u32,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let pch_transaction = filecoin_signer::settle_pymtchan(pch_address, from_address, nonce as u64)
+        .map_err(|e| {
+            JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str())
+        })?;
+
+    let pch_transaction_js = JsValue::from_serde(&pch_transaction)
+        .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(pch_transaction_js)
+}
+
+#[wasm_bindgen(js_name = collectPymtChan)]
+pub fn collect_pymtchan(
+    pch_address: String,
+    from_address: String,
+    nonce: u32,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let pch_transaction =
+        filecoin_signer::collect_pymtchan(pch_address, from_address, nonce as u64).map_err(
+            |e| JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str()),
+        )?;
+
+    let pch_transaction_js = JsValue::from_serde(&pch_transaction)
+        .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(pch_transaction_js)
+}
+
+#[wasm_bindgen(js_name = updatePymtChan)]
+pub fn update_pymtchan(
+    pch_address: String,
+    from_address: String,
+    signed_voucher: String,
+    nonce: u32,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    // TODO: verify if `pch_address` is an actor address. Not needed but good improvement.
+
+    let pch_transaction =
+        filecoin_signer::update_pymtchan(pch_address, from_address, signed_voucher, nonce as u64)
+            .map_err(|e| {
+            JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str())
+        })?;
+
+    let pch_transaction_js = JsValue::from_serde(&pch_transaction)
+        .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(pch_transaction_js)
+}
+
+#[wasm_bindgen(js_name = signVoucher)]
+pub fn sign_voucher(voucher: String, private_key_js: JsValue) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let private_key_bytes = extract_private_key(private_key_js)?;
+
+    let voucher = filecoin_signer::sign_voucher(voucher, &private_key_bytes)
+        .map_err(|e| JsValue::from_str(format!("Error signing voucher: {}", e).as_str()))?;
+
+    let voucher_js = JsValue::from_serde(&voucher)
+        .map_err(|e| JsValue::from(format!("Error converting voucher: {}", e)))?;
+
+    Ok(voucher_js)
+}
+
+#[wasm_bindgen(js_name = createVoucher)]
+pub fn create_voucher(
+    payment_channel_address: String,
+    time_lock_min: i64,
+    time_lock_max: i64,
+    amount: String,
+    lane: u64,
+    nonce: u64,
+    min_settle_height: i64,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let voucher = filecoin_signer::create_voucher(
+        payment_channel_address,
+        time_lock_min,
+        time_lock_max,
+        amount,
+        lane,
+        nonce,
+        min_settle_height,
+    )
+    .map_err(|e| {
+        JsValue::from_str(format!("Error creating payment channel voucher: {}", e).as_str())
+    })?;
+
+    let voucher_js = JsValue::from_serde(&voucher)
+        .map_err(|e| JsValue::from(format!("Error converting payment channel voucher: {}", e)))?;
+
+    Ok(voucher_js)
+}
+
 #[wasm_bindgen(js_name = serializeParams)]
 pub fn serialize_params(params_value: JsValue) -> Result<Vec<u8>, JsValue> {
     set_panic_hook();
@@ -435,47 +562,4 @@ pub fn serialize_params(params_value: JsValue) -> Result<Vec<u8>, JsValue> {
         .map_err(|e| JsValue::from(format!("Error serializing parameters: {}", e)))?;
 
     Ok(params_cbor.as_ref().to_vec())
-}
-
-#[cfg(target_arch = "wasm32")]
-#[cfg(test)]
-mod tests_wasm {
-    use wasm_bindgen::prelude::*;
-
-    use crate::{transaction_sign, verify_signature};
-
-    const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
-        {
-            "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-            "from": "t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka",
-            "nonce": 1,
-            "value": "100000",
-            "gasprice": "2500",
-            "gaslimit": 25000,
-            "method": 0,
-            "params": ""
-        }"#;
-
-    const EXAMPLE_PRIVATE_KEY: &str = "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=";
-
-    #[test]
-    fn check_signature() {
-        let tx = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040";
-        let signature = "646fa7e159c263289b7852c88ecfbd553c2bc0ef612630f20a851226b1ef5c7f65a6699066960eaa4796594acb26c5e13bb1335ce9bacb44ad9574723ff5623f01";
-
-        let ret = verify_signature(JsValue::from_str(signature), JsValue::from_str(tx));
-        assert_eq!(ret.is_ok(), true);
-        assert_eq!(ret.unwrap(), true);
-    }
-
-    #[test]
-    fn signature() {
-        let signed_tx = transaction_sign(
-            JsValue::from(EXAMPLE_UNSIGNED_MESSAGE),
-            JsValue::from_str(EXAMPLE_PRIVATE_KEY),
-        )
-        .unwrap();
-
-        println!("{:?}", signed_tx);
-    }
 }
