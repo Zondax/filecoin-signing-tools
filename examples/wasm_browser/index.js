@@ -1,13 +1,10 @@
-//import * as wasm from "@zondax/filecoin-signing-tools/js";
-import * as wasm from "../../signer-npm/pkg/browser/filecoin_signer_wasm.js";
-//import * as wasm from "../../signer-npm/pkg/browser/filecoin_signer_wasm_bg.js";
-//import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
+import * as wasm from "@zondax/filecoin-signing-tools/js";	//import * as wasm from "@zondax/filecoin-signing-tools/js";
+import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 
 function log(text) {
   document.getElementById("output").innerHTML += text + "\n";
 }
 
-/*
 async function example_ledger() {
   log("\n...Trying to connect to ledger...\n");
   let transport;
@@ -30,7 +27,6 @@ async function example_ledger() {
   }
   log(`version = ${JSON.stringify(version, 0, 4)}`);
 }
-*/
 
 /////////////////////////////////
 // Generate Mnemonic
