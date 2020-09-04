@@ -27,7 +27,7 @@ use signer::key_derive;
 use bip39::{Mnemonic, MnemonicType, Language};
 
 let mnemonic = Mnemonic::new(MnemonicType::Words12, Language::English);
-let path = "m/44'/461'/0/0/1";
+let path = "m/44'/461'/0'/0/1";
 
 let extended_key = key_derive(mnemonic.phrase(), path, "").unwrap();
 
@@ -47,7 +47,7 @@ use signer::key_derive_from_seed;
 use bip39::{Mnemonic, MnemonicType, Language, Seed};
 
 let mnemonic = Mnemonic::new(MnemonicType::Words12, Language::English);
-let path = "m/44'/461'/0/0/1".to_string();
+let path = "m/44'/461'/0'/0/1".to_string();
 
 let mnemonic = Mnemonic::from_phrase(&mnemonic.0, Language::English).unwrap();
 

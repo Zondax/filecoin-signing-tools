@@ -52,7 +52,7 @@ const params = [
   // mnemonic
   "equip will roof matter pink blind book anxiety banner elbow sun young",
   // path
-  "m/44'/461'/0/0/0"
+  "m/44'/461'/0'/0/0"
 ];
 
 const response = await await axios.post(
@@ -99,7 +99,7 @@ const params = [
   // seed
   seed,
   // path
-  "m/44'/461'/0/0/0"
+  "m/44'/461'/0'/0/0"
 ];
 
 const response = await await axios.post(
