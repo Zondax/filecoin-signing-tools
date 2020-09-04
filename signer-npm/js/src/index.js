@@ -8,7 +8,7 @@ const { MethodInit, MethodPaych } = require("./methods");
 const ExtendedKey = require("./extendedkey");
 const {
   getDigest,
-  getAccountFromPath,
+  getCoinTypeFromPath,
   addressAsBytes,
   bytesToAddress,
   tryToPrivateKeyBuffer,
@@ -30,7 +30,7 @@ function keyDeriveFromSeed(seed, path) {
   const childKey = masterKey.derivePath(path);
 
   let testnet = false;
-  if (getAccountFromPath(path) === "1") {
+  if (getCoinTypeFromPath(path) === "1") {
     testnet = true;
   }
 
