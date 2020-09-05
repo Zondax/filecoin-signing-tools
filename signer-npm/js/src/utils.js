@@ -43,7 +43,7 @@ function getChecksum(payload) {
   return Buffer.from(blake.blake2bFinal(blakeCtx));
 }
 
-function getAccountFromPath(path) {
+function getCoinTypeFromPath(path) {
   return path.split("/")[2].slice(0, -1);
 }
 
@@ -159,7 +159,7 @@ module.exports = {
   getDigest,
   getPayloadSECP256K1,
   getChecksum,
-  getAccountFromPath,
+  getCoinTypeFromPath,
   addressAsBytes,
   bytesToAddress,
   tryToPrivateKeyBuffer,
