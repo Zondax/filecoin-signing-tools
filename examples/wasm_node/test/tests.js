@@ -253,8 +253,7 @@ describe("transactionParse", function() {
       assert.deepStrictEqual(EXAMPLE_TRANSACTION_MAINNET, filecoin_signer.transactionParse(EXAMPLE_CBOR_TX, false));
   });
 
-  /*
-  FIXME: cbor lib broken ?
+  // FIXME: cbor lib broken ?
   it("should fail to parse because of extra bytes", function () {
       let cbor_transaction_extra_bytes = EXAMPLE_CBOR_TX + "00";
 
@@ -271,7 +270,7 @@ describe("transactionParse", function() {
           () => filecoin_signer.transactionParse(cbor_transaction_extra_bytes, false),
           /(CBOR error: 'trailing data at offset 62'|Failed to parse)/
       );
-  });*/
+  });
 })
 
 describe("transactionSign", function() {
