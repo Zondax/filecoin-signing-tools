@@ -8,9 +8,9 @@ Wasm api for filecoin signer service.
 Generate a 24 english words mnemonic.
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer');
+const signer_wasm = require('@zondax/filecoin-signing-tools');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer";
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
 
 const mnemonic = signer_wasm.generateMnemonic();
 
@@ -28,13 +28,13 @@ Arguments :
 * **password**: for encrypted seed if none use an empty string (e.g "")
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer');
+const signer_wasm = require('@zondax/filecoin-signing-tools');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer";
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
 
 const mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
 
-const path = "m/44'/461'/0/0/1";
+const path = "m/44'/461'/0'/0/1";
 
 const keypair = signer_wasm.keyDerive(mnemonic, path, "");
 
@@ -50,18 +50,18 @@ Arguments :
 * **path**: a BIP44 path;
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer');
+const signer_wasm = require('@zondax/filecoin-signing-tools');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer";
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
 const bip39 = require('bip39');
 
 const mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
 
 const seed = bip39.mnemonicToSeedSync(mnemonic).toString('hex');
 
-const path = "m/44'/461'/0/0/1";
+const path = "m/44'/461'/0'/0/1";
 
-const keypair = signer_wasm.keyDeriveFromSeed(seed, "m/44'/461'/0/0/1");
+const keypair = signer_wasm.keyDeriveFromSeed(seed, "m/44'/461'/0'/0/1");
 
 console.log(keypair);
 ```
@@ -75,9 +75,9 @@ Arguments :
 * **testnet**: a boolean value. Indicate if you want testnet or mainnet address;
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer');
+const signer_wasm = require('@zondax/filecoin-signing-tools');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer";
+// import * as signer_wasm from "@zondax/filecoin-signing-tools;
 
 let privateKey = "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=";
 
@@ -96,9 +96,9 @@ Arguments :
 * **transaction**: a filecoin transaction;
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer');
+const signer_wasm = require('@zondax/filecoin-signing-tools');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer";
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
 
 const transaction = {
     "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
@@ -125,9 +125,9 @@ Arguments :
 * **transaction**: a filecoin transaction;
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer');
+const signer_wasm = require('@zondax/filecoin-signing-tools');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer";
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
 
 const transaction = {
     "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
@@ -155,9 +155,9 @@ Arguments:
 * **testnet**: boolean value `true` if testnet or `false` for mainnet;
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer');
+const signer_wasm = require('@zondax/filecoin-signing-tools');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer";
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
 
 const cbor_transaction = "885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040";
 
@@ -178,16 +178,16 @@ Arguments:
 * **privatekey**: a private key (base64 string or buffer);
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer');
+const signer_wasm = require('@zondax/filecoin-signing-tools');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer";
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
 const bip32 = require('bip32');
 
 // Use your private key
 const MASTER_KEY = "xprv424242424242424242";
 
 let MASTER_NODE = bip32.fromBase58(MASTER_KEY);
-const example_key = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+const example_key = MASTER_NODE.derivePath("m/44'/461'/0'/0/0");
 
 const signed_tx = signer_wasm.transactionSign(EXAMPLE_TRANSACTION, example_key.privateKey.toString("base64"));
 
@@ -203,16 +203,16 @@ Arguments:
 * **privatekey**: a private key (hexstring or buffer);
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer');
+const signer_wasm = require('@zondax/filecoin-signing-tools');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer";
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
 const bip32 = require('bip32');
 
 // Use your private key
 const MASTER_KEY = "xprv424242424242424242";
 
 let MASTER_NODE = bip32.fromBase58(MASTER_KEY);
-const example_key = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+const example_key = MASTER_NODE.derivePath("m/44'/461'/0'/0/0");
 
 const signed_tx_json = signer_wasm.transactionSignLotus(EXAMPLE_TRANSACTION, example_key.privateKey.toString("base64"));
 
@@ -228,16 +228,16 @@ Arguments:
 * **privatekey**: a private key (base64 string or buffer);
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer');
+const signer_wasm = require('@zondax/filecoin-signing-tools');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer";
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
 const bip32 = require('bip32');
 
 // Use your private key
 const MASTER_KEY = "xprv424242424242424242";
 
 let MASTER_NODE = bip32.fromBase58(MASTER_KEY);
-const example_key = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+const example_key = MASTER_NODE.derivePath("m/44'/461'/0'/0/0");
 
 const buffer_signature = signer_wasm.transactionSignRaw(EXAMPLE_TRANSACTION, example_key.privateKey.toString("base64"));
 
@@ -253,9 +253,9 @@ Arguments :
 * **CBOR transaction**: the CBOR transaction;
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer');
+const signer_wasm = require('@zondax/filecoin-signing-tools');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer";
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
 
 
 // RSV format signature
@@ -286,9 +286,9 @@ Arguments :
 * **Duration**: Unlock duration value, `-1` if no unlocking duration;
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer');
+const signer_wasm = require('@zondax/filecoin-signing-tools');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer";
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
 
 
 let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
@@ -311,9 +311,9 @@ Arguments :
 * **Nonce**: nonce of transaction;
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer');
+const signer_wasm = require('@zondax/filecoin-signing-tools');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer";
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
 
 
 let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
@@ -338,9 +338,9 @@ Arguments :
 * **Nonce**: nonce of transaction;
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer');
+const signer_wasm = require('@zondax/filecoin-signing-tools');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer";
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
 
 
 let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
@@ -367,9 +367,9 @@ Arguments :
 
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer');
+const signer_wasm = require('@zondax/filecoin-signing-tools');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer";
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
 
 
 let to_address = "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy";
@@ -389,9 +389,9 @@ Arguments :
 * **params**: params object;
 
 ```javascript
-const signer_wasm = require('@zondax/filecoin-signer');
+const signer_wasm = require('@zondax/filecoin-signing-tools');
 // or for browser
-// import * as signer_wasm from "@zondax/filecoin-signer";
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
 
 let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
 
