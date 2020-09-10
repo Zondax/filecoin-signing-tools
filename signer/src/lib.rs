@@ -567,7 +567,7 @@ fn approve_or_cancel_multisig_message(
 
     let params_txnid = multisig::TxnIDParams {
         id: multisig::TxnID(message_id),
-        proposal_hash,
+        proposal_hash: proposal_hash.to_vec(),
     };
 
     let params = forest_vm::Serialized::serialize::<multisig::TxnIDParams>(params_txnid)

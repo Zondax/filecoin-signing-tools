@@ -56,7 +56,10 @@ pub struct ProposalHashData {
 #[derive(Serialize_tuple, Deserialize_tuple)]
 pub struct TxnIDParams {
     pub id: TxnID,
-    pub proposal_hash: [u8; 32],
+    /// Optional hash of proposal to ensure an operation can only apply to a
+    /// specific proposal.
+    #[serde(with = "serde_bytes")]
+    pub proposal_hash: Vec<u8>,
 }
 
 /// Add signer params
