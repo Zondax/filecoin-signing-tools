@@ -329,7 +329,6 @@ test("send_signed_tx", async () => {
 
   console.log("-----------------------------------------------------------------------------------");
   let nonce = nonceResponse.result;
-  nonce++;
   console.log("Nonce: ", nonce);
   console.log("Nonce: ", !isNaN(nonce));
 
@@ -424,7 +423,6 @@ test("send_sign", async () => {
   const nonceResponse = await callMethod(URL, "get_nonce", [keyAddressResponse.result.address], 1);
 
   let nonce = nonceResponse.result;
-  nonce+=1;
   console.log("Nonce: ", nonce);
   console.log(keyAddressResponse.result.address)
 
@@ -433,9 +431,9 @@ test("send_sign", async () => {
     from: keyAddressResponse.result.address,
     nonce,
     value: "1000000000",
-    gaslimit: 1000000,
-    gasfeecap: "2500",
-    gaspremium: "2500",
+    gaslimit: 539085,
+    gasfeecap: "131941",
+    gaspremium: "130964",
     method: 0,
     params: "",
   };
