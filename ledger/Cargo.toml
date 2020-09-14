@@ -25,8 +25,8 @@ futures = "0.3.4"
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0.16"
 
-ledger-transport = { git = "https://github.com/Zondax/ledger-rs", rev="f7f7affe989ba6a30049637fa92486071bc75df9" }
-ledger-zondax-generic = { git = "https://github.com/Zondax/ledger-rs", rev="f7f7affe989ba6a30049637fa92486071bc75df9" }
+ledger-transport = "0.4.0"
+ledger-zondax-generic = "0.4.0"
 
 zx-bip44 = "0.1.0"
 
