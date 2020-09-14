@@ -344,9 +344,9 @@ test("send_signed_tx", async () => {
     from: keyAddressResponse.result.address,
     nonce,
     value: "1000000000",
-    gaslimit: 1000000,
-    gasfeecap: "2500",
-    gaspremium: "2500",
+    gaslimit: 539085,
+    gasfeecap: "131941",
+    gaspremium: "130964",
     method: 0,
     params: "",
   };
