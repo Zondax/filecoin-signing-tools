@@ -1019,13 +1019,6 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
-"@babel/runtime@^7.11.2":
-  version "7.11.2"
-  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.11.2.tgz#f549c13c754cc40b87644b9fa9f09a6a95fe0736"
-  integrity sha512-TeWkU52so0mPtDcaCTxNBI/IHiz0pZgr8VEFqXFtZWpYD08ZB6FaSwVAS8MKRQAP3bYKiVjwysOJgMFY28o6Tw==
-  dependencies:
-    regenerator-runtime "^0.13.4"
-
 "@babel/runtime@^7.8.4":
   version "7.9.2"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.9.2.tgz#d90df0583a3a252f09aaa619665367bae518db06"
@@ -1112,7 +1105,7 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@grpc/grpc-js@^1.1.5":
+"@grpc/grpc-js@^1.1.3":
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.1.6.tgz#43ab7bcb1aec071e18d7b45f8920afc0c9fcfb8e"
   integrity sha512-bUeaMN/dHTkt9AqU0Tc1xdHMB3jVLyPNfg8gZ5cMyhFyMeCwoJbFcJrNBgYqRCbvYhvtaEgzQwkw91NnY4Oktg==
@@ -1423,7 +1416,7 @@
   resolved "https://registry.yarnpkg.com/@ledgerhq/errors/-/errors-5.23.0.tgz#30a0338dafba8264556011604abed08bf24979f3"
   integrity sha512-qtpX8aFrUUlYfOMu7BxTvxqUa8CniE+tEBpVEjYUhVbFdVJjM4ouwJD++RtQkMAU2c5jE7xb12WnUnf5BlAgLQ==
 
-"@ledgerhq/hw-transport-http@^5.23.0":
+"@ledgerhq/hw-transport-http@^5.19.1":
   version "5.23.0"
   resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport-http/-/hw-transport-http-5.23.0.tgz#9ad58820abef3b3233fe15d9a10ecd3791cf3ef3"
   integrity sha512-jF9w4d68RasQynSo2CDPH6zVHaRo4Up1x+HyNIk4U8DROgmmkLFTVDRudjB32+9E7N3uIvhbLyVlwCv6zoxp5w==
@@ -1434,7 +1427,7 @@
     axios "^0.19.0"
     ws "6"
 
-"@ledgerhq/hw-transport@^5.23.0":
+"@ledgerhq/hw-transport@^5.19.1", "@ledgerhq/hw-transport@^5.23.0":
   version "5.23.0"
   resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-5.23.0.tgz#ed3445b9579c43a58cd959610ad7e464b36b87ca"
   integrity sha512-ICTG3Bst62SkC+lYYFgpKk5G4bAOxeIvptXnTLOhf6VqeN7gdHfiRzZwNPnKzI2pxmcEVbBitgsxEIEQJmDKVA==
@@ -1698,16 +1691,16 @@
   resolved "https://registry.yarnpkg.com/@zondax/filecoin-signer-wasm/-/filecoin-signer-wasm-0.3.1.tgz#e66e707c114b4ed77569f8a6cdbf2ff604c07580"
   integrity sha512-N9LvQWdURh82d8vNdPB4EvCZXsnQO/6RH7X1z5emjiL5wNmgyecidW8oHY4qt3XbLizsJGWT0KvYJmFT3TTr3w==
 
-"@zondax/zemu@^0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@zondax/zemu/-/zemu-0.7.0.tgz#6e88a3fcfb4f7b67cf2212e7ff5aaa2807feeb5e"
-  integrity sha512-Ukglb2E2iW6X292vxF7ZlgfKBoYOv16vptl3CWepho2eXAABQZRmDa2OkD0n20Pd0/VmXHTsDpMKuFPvCwtBIA==
+"@zondax/zemu@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@zondax/zemu/-/zemu-0.6.0.tgz#ab3cb0de114c9a8c375b4bf66783d6a0a976c028"
+  integrity sha512-HiTfxLZoKq4kTvG1MmBMQO3v7KOdcnRYgeX5fAlEjp/Qk0WsT78on91Qq/iTutNQxDLSGBq69a5xrVBogH54Cw==
   dependencies:
-    "@babel/runtime" "^7.11.2"
-    "@grpc/grpc-js" "^1.1.5"
+    "@babel/runtime" "^7.10.5"
+    "@grpc/grpc-js" "^1.1.3"
     "@grpc/proto-loader" "^0.5.5"
-    "@ledgerhq/hw-transport" "^5.23.0"
-    "@ledgerhq/hw-transport-http" "^5.23.0"
+    "@ledgerhq/hw-transport" "^5.19.1"
+    "@ledgerhq/hw-transport-http" "^5.19.1"
     dockerode "^3.2.0"
     fs-extra "^9.0.1"
     json-rpc2 "^2.0.0"
