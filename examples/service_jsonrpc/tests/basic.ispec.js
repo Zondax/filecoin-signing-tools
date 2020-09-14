@@ -318,7 +318,7 @@ test("verify_invalid_signature", async () => {
 var messageCID
 
 test("send_signed_tx", async () => {
-  jest.setTimeout(10000);
+  jest.setTimeout(25000);
   const path = "m/44'/1'/0/0/0";
   const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path], 1);
 
@@ -330,7 +330,6 @@ test("send_signed_tx", async () => {
   console.log("-----------------------------------------------------------------------------------");
   let nonce = nonceResponse.result;
   console.log("Nonce: ", nonce);
-  console.log("Nonce: ", !isNaN(nonce));
 
   if (isNaN(nonce)) {
     nonce = 1;
@@ -404,6 +403,8 @@ test("get_status fail", async () => {
 });
 
 test("get_nonce", async () => {
+  jest.setTimeout(25000);
+
   const account = "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba";
 
   const response = await callMethod(URL, "get_nonce", [account], 1);
@@ -414,6 +415,8 @@ test("get_nonce", async () => {
 });
 
 test("send_sign", async () => {
+  jest.setTimeout(25000);
+
   const path = "m/44'/1'/0/0/0";
   const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path], 1);
 
