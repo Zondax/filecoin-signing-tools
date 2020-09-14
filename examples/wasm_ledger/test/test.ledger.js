@@ -35,7 +35,7 @@ describe("LEDGER TEST", function () {
         logging: true,
         custom: `-s "${APP_SEED}"`,
         press_delay: 150
-        //,X11: true
+        ,X11: true
     };
 
     await sim.start(sim_options);
@@ -183,7 +183,7 @@ describe("LEDGER TEST", function () {
   });
 
   it("#transactionSignRawWithDevice()", async function() {
-    this.timeout(40000);
+    this.timeout(50000);
 
     const path = "m/44'/461'/0/0/0";
     const message = Buffer.from(
