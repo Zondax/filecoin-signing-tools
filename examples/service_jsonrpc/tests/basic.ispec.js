@@ -318,7 +318,7 @@ test("verify_invalid_signature", async () => {
 var messageCID
 
 test("send_signed_tx", async () => {
-  jest.setTimeout(10000);
+  jest.setTimeout(25000);
   const path = "m/44'/1'/0/0/0";
   const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path], 1);
 
@@ -329,9 +329,7 @@ test("send_signed_tx", async () => {
 
   console.log("-----------------------------------------------------------------------------------");
   let nonce = nonceResponse.result;
-  nonce++;
   console.log("Nonce: ", nonce);
-  console.log("Nonce: ", !isNaN(nonce));
 
   if (isNaN(nonce)) {
     nonce = 1;
@@ -343,10 +341,10 @@ test("send_signed_tx", async () => {
     to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
     from: keyAddressResponse.result.address,
     nonce,
-    value: "1000000000",
-    gaslimit: 1000000,
-    gasfeecap: "2500",
-    gaspremium: "2500",
+    value: "10000",
+    gaslimit: 539085,
+    gasfeecap: "131941",
+    gaspremium: "130964",
     method: 0,
     params: "",
   };
@@ -405,6 +403,8 @@ test("get_status fail", async () => {
 });
 
 test("get_nonce", async () => {
+  jest.setTimeout(25000);
+
   const account = "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba";
 
   const response = await callMethod(URL, "get_nonce", [account], 1);
@@ -415,6 +415,8 @@ test("get_nonce", async () => {
 });
 
 test("send_sign", async () => {
+  jest.setTimeout(25000);
+
   const path = "m/44'/1'/0/0/0";
   const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path], 1);
 
@@ -424,7 +426,6 @@ test("send_sign", async () => {
   const nonceResponse = await callMethod(URL, "get_nonce", [keyAddressResponse.result.address], 1);
 
   let nonce = nonceResponse.result;
-  nonce+=1;
   console.log("Nonce: ", nonce);
   console.log(keyAddressResponse.result.address)
 
@@ -432,10 +433,10 @@ test("send_sign", async () => {
     to: "t1ojyfm5btrqq63zquewexr4hecynvq6yjyk5xv6q",
     from: keyAddressResponse.result.address,
     nonce,
-    value: "1000000000",
-    gaslimit: 1000000,
-    gasfeecap: "2500",
-    gaspremium: "2500",
+    value: "10000",
+    gaslimit: 539085,
+    gasfeecap: "131941",
+    gaspremium: "130964",
     method: 0,
     params: "",
   };
