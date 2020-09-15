@@ -676,7 +676,7 @@ describeCall("approveMultisig", function() {
     let from_address = recoveredKey.address;
     let proposer_address = recoveredKey.address;
 
-    let expected = "8a004300ec075501dfe49184d46adc8f89d44638beb45f78fcad259001401a000f4240430009c4430009c4035842821904d2982018fa18b418c218e2187218e30f18d118de188b18ed183618c31896183718c118be1894181e1618dd189218ed18ae0f185418b606187c18ff184218ff";
+    let expected = "8a004300ec075501dfe49184d46adc8f89d44638beb45f78fcad259001401a000f4240430009c4430009c4035826821904d25820fab4c2e272e30fd1de8bed36c39637c1be941e16dd92edae0f54b6067cff42ff";
 
     let approve_multisig_transaction = filecoin_signer.approveMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address, 1);
 
@@ -707,12 +707,12 @@ describeCall("approveMultisig", function() {
         "GasPremium":"2500",
         "Method":3,
         "Nonce":1,
-        "Params":"ghkE0pggGPoYtBjCGOIYchjjDxjRGN4YixjtGDYYwxiWGDcYwRi+GJQYHhYY3RiSGO0Yrg8YVBi2Bhh8GP8YQhj/",
+        "Params":"ghkE0lgg+rTC4nLjD9Hei+02w5Y3wb6UHhbdku2uD1S2Bnz/Qv8=",
         "To":"t01004",
         "Value":"0"
       },
       "Signature":{
-        "Data":"/Zsjx5hBMUoxTSsPl3Xl1ejNwYEjGbdgAFR85hC8Cy4AAp4zgCu1S7X6Udl7B1N6qmUPZCPv4Qfau7pToHiYHQA=",
+        "Data":"mIo6gwU4DmW39/GGIeFbT64r5V6E3tkdpCmYUsdI3mFlJczRHn/Qqm1XJXHuJqxkdP9GcnOEBmN69vML76QESAE=",
         "Type":1
       }
     }
@@ -784,7 +784,7 @@ describeCall("cancelMultisig", function() {
     let from_address = recoveredKey.address;
     let proposer_address = recoveredKey.address;
 
-    let expected = "8a004300ec075501dfe49184d46adc8f89d44638beb45f78fcad259001401a000f4240430009c4430009c4045842821904d2982018fa18b418c218e2187218e30f18d118de188b18ed183618c31896183718c118be1894181e1618dd189218ed18ae0f185418b606187c18ff184218ff";
+    let expected = "8a004300ec075501dfe49184d46adc8f89d44638beb45f78fcad259001401a000f4240430009c4430009c4045826821904d25820fab4c2e272e30fd1de8bed36c39637c1be941e16dd92edae0f54b6067cff42ff";
 
     let cancel_multisig_transaction = filecoin_signer.cancelMultisig("t01004", 1234, proposer_address, to_address, "1000", to_address, 1);
 
@@ -815,12 +815,12 @@ describeCall("cancelMultisig", function() {
         "GasFeeCap":"2500",
         "Method":4,
         "Nonce":1,
-        "Params":"ghkE0pggGPoYtBjCGOIYchjjDxjRGN4YixjtGDYYwxiWGDcYwRi+GJQYHhYY3RiSGO0Yrg8YVBi2Bhh8GP8YQhj/",
+        "Params":"ghkE0lgg+rTC4nLjD9Hei+02w5Y3wb6UHhbdku2uD1S2Bnz/Qv8=",
         "To":"t01004",
         "Value":"0"
       },
       "Signature":{
-        "Data":"UYVNvKAbGqF4TE02Y4/7dXOM123y/w3QzZY0dwM4YG1F85Lb/ZeiqxbNXmcTnMo1dkuGCKG856A17AscbqBMkgE=",
+        "Data":"+9MLw/DXhDGESG6rYiWuhoEvzLT0GUEg8aQE1GFxX6JO6pyGQDSshPOLv8h9Ox9tWKVUK1JXipUba5wxI7SJ8wA=",
         "Type":1
       }
     }

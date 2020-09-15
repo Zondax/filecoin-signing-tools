@@ -181,12 +181,15 @@ impl TryFrom<TxnIDParamsMultisig> for multisig::TxnIDParams {
         let proposal_hash = base64::decode(params.proposal_hash_data)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-        let mut array = [0; 32];
-        array.copy_from_slice(&proposal_hash);
+        if proposal_hash.len() != 32 {
+            return Err(SignerError::GenericString(
+                "Invalid proposal_hash length (should 32 bytes).".to_string(),
+            ));
+        }
 
         Ok(multisig::TxnIDParams {
             id: multisig::TxnID(params.txn_id),
-            proposal_hash: array,
+            proposal_hash,
         })
     }
 }
