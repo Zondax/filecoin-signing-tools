@@ -78,6 +78,7 @@ pub fn signature_to_object(signature: &Signature) -> Result<Object, JsValue> {
     )?;
     js_sys::Reflect::set(&obj, &"r".into(), &Buffer::from(&signature.r))?;
     js_sys::Reflect::set(&obj, &"s".into(), &Buffer::from(&signature.s))?;
+    js_sys::Reflect::set(&obj, &"v".into(), &JsValue::from(signature.v))?;
     Ok(obj)
 }
 

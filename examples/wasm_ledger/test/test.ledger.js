@@ -15,7 +15,7 @@ const catchExit = async () => {
 
 
 describe("LEDGER TEST", function () {
-  this.timeout(40000);
+  this.timeout(80000);
 
   var sim,
       transport;
@@ -35,7 +35,7 @@ describe("LEDGER TEST", function () {
         logging: true,
         custom: `-s "${APP_SEED}"`,
         press_delay: 150
-        //,X11: true
+        ,X11: true
     };
 
     await sim.start(sim_options);
@@ -154,22 +154,6 @@ describe("LEDGER TEST", function () {
     );
   });
 
-  it("#appInfo()", async function() {
-    const resp = await signer.appInfo(transport);
-
-    // eslint-disable-next-line no-console
-    console.log(resp);
-
-    assert("appName" in resp);
-    assert("appVersion" in resp);
-    assert("flagLen" in resp);
-    assert("flagsValue" in resp);
-    assert("flag_recovery" in resp );
-    assert("flag_signed_mcu_code" in resp);
-    assert("flag_onboarded" in resp);
-    assert("flag_pin_validated" in resp);
-  });
-
   it("deviceInfo", async function() {
     const resp = await signer.deviceInfo(transport);
 
@@ -182,8 +166,8 @@ describe("LEDGER TEST", function () {
     assert("mcuVersion" in resp);
   });
 
-  it("#transactionSignRawWithDevice()", async function() {
-    this.timeout(40000);
+  it.skip("#transactionSignRawWithDevice()", async function() {
+    this.timeout(50000);
 
     const path = "m/44'/461'/0/0/0";
     const message = Buffer.from(
