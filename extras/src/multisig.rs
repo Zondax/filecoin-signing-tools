@@ -6,7 +6,6 @@ use num_bigint::bigint_ser;
 use serde::{Deserialize, Serialize};
 
 /// Transaction ID type
-// TODO change to uvarint encoding
 #[derive(Clone, Copy, Default, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct TxnID(pub i64);
