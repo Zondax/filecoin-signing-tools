@@ -17,10 +17,7 @@ use secp256k1::util::{
 use secp256k1::{recover, sign, verify, Message, RecoveryId};
 use zx_bip44::BIP44Path;
 
-use extras::{
-    ConstructorParams, ExecParams, MethodInit, MethodMultisig, ProposalHashData, ProposeParams,
-    TxnID, TxnIDParams, INIT_ACTOR_ADDR,
-};
+use extras::{multisig, paych, ExecParams, MethodInit, INIT_ACTOR_ADDR};
 
 use crate::api::{
     MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
@@ -467,15 +464,16 @@ pub fn create_multisig(
         ));
     };
 
-    let constructor_params_multisig = ConstructorParams {
+    let constructor_params_multisig = multisig::ConstructorParams {
         signers,
         num_approvals_threshold: required,
         unlock_duration: duration,
     };
 
-    let serialized_constructor_params =
-        forest_vm::Serialized::serialize::<ConstructorParams>(constructor_params_multisig)
-            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+    let serialized_constructor_params = forest_vm::Serialized::serialize::<
+        multisig::ConstructorParams,
+    >(constructor_params_multisig)
+    .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_multisig = ExecParams {
         code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),
@@ -517,15 +515,16 @@ pub fn proposal_multisig_message(
     amount: String,
     nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
-    let propose_params_multisig = ProposeParams {
+    let propose_params_multisig = multisig::ProposeParams {
         to: Address::from_str(&to_address)?,
         value: BigInt::from_str(&amount)?,
         method: 0,
         params: forest_vm::Serialized::new(Vec::new()),
     };
 
-    let params = forest_vm::Serialized::serialize::<ProposeParams>(propose_params_multisig)
-        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+    let params =
+        forest_vm::Serialized::serialize::<multisig::ProposeParams>(propose_params_multisig)
+            .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let multisig_propose_message_api = UnsignedMessageAPI {
         to: multisig_address,
@@ -535,7 +534,7 @@ pub fn proposal_multisig_message(
         gas_limit: 1000000,
         gas_fee_cap: "2500".to_string(),
         gas_premium: "2500".to_string(),
-        method: MethodMultisig::Propose as u64,
+        method: multisig::MethodMultisig::Propose as u64,
         params: base64::encode(params.bytes()),
     };
 
@@ -553,7 +552,7 @@ fn approve_or_cancel_multisig_message(
     from_address: String,
     nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
-    let proposal_parameter = ProposalHashData {
+    let proposal_parameter = multisig::ProposalHashData {
         requester: Address::from_str(&proposer_address)?,
         to: Address::from_str(&to_address)?,
         value: BigInt::from_str(&amount)?,
@@ -562,16 +561,16 @@ fn approve_or_cancel_multisig_message(
     };
 
     let serialize_proposal_parameter =
-        forest_vm::Serialized::serialize::<ProposalHashData>(proposal_parameter)
+        forest_vm::Serialized::serialize::<multisig::ProposalHashData>(proposal_parameter)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
     let proposal_hash = blake2b_256(&serialize_proposal_parameter);
 
-    let params_txnid = TxnIDParams {
-        id: TxnID(message_id),
-        proposal_hash,
+    let params_txnid = multisig::TxnIDParams {
+        id: multisig::TxnID(message_id),
+        proposal_hash: proposal_hash.to_vec(),
     };
 
-    let params = forest_vm::Serialized::serialize::<TxnIDParams>(params_txnid)
+    let params = forest_vm::Serialized::serialize::<multisig::TxnIDParams>(params_txnid)
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let multisig_unsigned_message_api = UnsignedMessageAPI {
@@ -611,7 +610,7 @@ pub fn approve_multisig_message(
     nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     approve_or_cancel_multisig_message(
-        MethodMultisig::Approve as u64,
+        multisig::MethodMultisig::Approve as u64,
         multisig_address,
         message_id,
         proposer_address,
@@ -644,7 +643,7 @@ pub fn cancel_multisig_message(
     nonce: u64,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     approve_or_cancel_multisig_message(
-        MethodMultisig::Cancel as u64,
+        multisig::MethodMultisig::Cancel as u64,
         multisig_address,
         message_id,
         proposer_address,
@@ -667,27 +666,271 @@ pub fn serialize_params(params: MessageParams) -> Result<CborBuffer, SignerError
     Ok(message_cbor)
 }
 
+/// Utility function to create a payment channel creation message.  Returns unsigned message.
+///
+/// # Arguments
+///
+/// * `from_address` - A string address
+/// * `to_address` - A string address
+/// * `value` - Amount to put in the payment channel initially
+/// * `nonce` - Nonce of the message; should be from_address's MpoolGetNonce() value
+///
+pub fn create_pymtchan(
+    from_address: String,
+    to_address: String,
+    value: String,
+    nonce: u64,
+) -> Result<UnsignedMessageAPI, SignerError> {
+    let create_payment_channel_params = paych::ConstructorParams {
+        from: Address::from_str(&from_address)?,
+        to: Address::from_str(&to_address)?,
+    };
+
+    let serialized_constructor_params =
+        forest_vm::Serialized::serialize::<paych::ConstructorParams>(create_payment_channel_params)
+            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
+    let message_params_create_pymtchan = ExecParams {
+        code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/paymentchannel")),
+        constructor_params: serialized_constructor_params,
+    };
+
+    let serialized_params =
+        forest_vm::Serialized::serialize::<ExecParams>(message_params_create_pymtchan)
+            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
+    // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
+    let pch_create_message_api = UnsignedMessageAPI {
+        to: "t01".to_owned(), // INIT_ACTOR_ADDR
+        from: from_address,
+        nonce,
+        value,
+        gas_limit: 200000000,
+        gas_fee_cap: "2500".to_string(),
+        gas_premium: "2500".to_string(),
+        method: MethodInit::Exec as u64,
+        params: base64::encode(serialized_params.bytes()),
+    };
+
+    Ok(pch_create_message_api)
+}
+
+/// Utility function to update the state of a payment channel.  Returns unsigned message.
+///
+/// # Arguments
+///
+/// * `pch_address` - A string address
+/// * `from_address` - A string address
+/// * `signed_voucher` - A SignedVoucher to be associated with the payment channel
+/// * `nonce` - Nonce of the message; should be from_address's MpoolGetNonce() value
+///
+pub fn update_pymtchan(
+    pch_address: String,
+    from_address: String,
+    signed_voucher: String,
+    nonce: u64,
+) -> Result<UnsignedMessageAPI, SignerError> {
+    let sv_cbor = base64::decode(signed_voucher)?;
+
+    let sv: paych::SignedVoucher = forest_encoding::from_slice(sv_cbor.as_ref())?;
+
+    let update_payment_channel_params = paych::UpdateChannelStateParams {
+        sv,
+        secret: vec![],
+        proof: vec![],
+    };
+
+    let serialized_params = forest_vm::Serialized::serialize::<paych::UpdateChannelStateParams>(
+        update_payment_channel_params,
+    )
+    .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
+    // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
+    let pch_update_message_api = UnsignedMessageAPI {
+        to: pch_address, // INIT_ACTOR_ADDR
+        from: from_address,
+        nonce,
+        value: "0".to_string(),
+        gas_limit: 200000000,
+        gas_fee_cap: "2500".to_string(),
+        gas_premium: "2500".to_string(),
+        method: paych::MethodsPaych::UpdateChannelState as u64,
+        params: base64::encode(serialized_params.bytes()),
+    };
+
+    Ok(pch_update_message_api)
+}
+
+/// Utility function to generate a payment channel settle message.  Returns unsigned message.
+///
+/// # Arguments
+///
+/// * `pch_address` - A string address
+/// * `from_address` - A string address
+/// * `nonce` - Nonce of the message; should be from_address's MpoolGetNonce() value
+///
+pub fn settle_pymtchan(
+    pch_address: String,
+    from_address: String,
+    nonce: u64,
+) -> Result<UnsignedMessageAPI, SignerError> {
+    // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
+    let pch_settle_message_api = UnsignedMessageAPI {
+        to: pch_address,
+        from: from_address,
+        nonce,
+        value: "0".to_string(),
+        gas_limit: 20000000,
+        gas_fee_cap: "2500".to_string(),
+        gas_premium: "2500".to_string(),
+        method: paych::MethodsPaych::Settle as u64,
+        params: base64::encode(Vec::new()),
+    };
+
+    Ok(pch_settle_message_api)
+}
+
+/// Utility function to generate a payment channel collect message.  Returns unsigned message.
+///
+/// # Arguments
+///
+/// * `pch_address` - A string address
+/// * `from_address` - A string address
+/// * `nonce` - Nonce of the message; should be from_address's MpoolGetNonce() value
+///
+pub fn collect_pymtchan(
+    pch_address: String,
+    from_address: String,
+    nonce: u64,
+) -> Result<UnsignedMessageAPI, SignerError> {
+    // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
+    let pch_collect_message_api = UnsignedMessageAPI {
+        to: pch_address,
+        from: from_address,
+        nonce,
+        value: "0".to_string(),
+        gas_limit: 20000000,
+        gas_fee_cap: "2500".to_string(),
+        gas_premium: "2500".to_string(),
+        method: paych::MethodsPaych::Collect as u64,
+        params: base64::encode(Vec::new()),
+    };
+
+    Ok(pch_collect_message_api)
+}
+
+/// Sign a voucher for payment channel
+///
+/// # Arguments
+///
+/// * `voucher_string` - Voucher as base64 string;
+/// * `private_key` - Private key as base64 string;
+///
+pub fn sign_voucher(
+    voucher_string: String,
+    private_key: &PrivateKey,
+) -> Result<String, SignerError> {
+    let decoded_voucher = base64::decode(voucher_string)?;
+    let mut voucher: paych::SignedVoucher = from_slice(&decoded_voucher)?;
+
+    let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
+
+    let svb = voucher.signing_bytes()?;
+    let digest = utils::get_digest_voucher(&svb)?;
+
+    let blob_to_sign = Message::parse_slice(&digest)?;
+
+    let (signature_rs, recovery_id) = sign(&blob_to_sign, &secret_key);
+
+    let mut signature = SignatureSECP256K1 { 0: [0; 65] };
+    signature.0[..64].copy_from_slice(&signature_rs.serialize()[..]);
+    signature.0[64] = recovery_id.serialize();
+
+    voucher.signature = Some(forest_crypto::signature::Signature::new_secp256k1(
+        signature.0.to_vec(),
+    ));
+
+    let binary_voucher = to_vec(&voucher)?;
+    let cbor_voucher = base64::encode(binary_voucher);
+
+    Ok(cbor_voucher)
+}
+
+/// Create a voucher for payment channel
+///
+/// # Arguments
+///
+/// * `payment_channel_address` - The payment channel address;
+/// * `time_lock_min` - Time lock min;
+/// * `time_lock_maax` - Time lock max;
+/// * `amount` - Amount in the voucher;
+/// * `lane` - Lane of the voucher;
+/// * `nonce` - Next nonce of the voucher;
+///
+pub fn create_voucher(
+    payment_channel_address: String,
+    time_lock_min: i64,
+    time_lock_max: i64,
+    amount: String,
+    lane: u64,
+    nonce: u64,
+    min_settle_height: i64,
+) -> Result<String, SignerError> {
+    let pch = Address::from_str(&payment_channel_address)?;
+    let amount = match BigInt::parse_bytes(amount.as_bytes(), 10) {
+        Some(value) => value,
+        None => {
+            return Err(SignerError::GenericString(
+                "`amount` couldn't be parsed.".to_string(),
+            ))
+        }
+    };
+
+    let voucher = paych::SignedVoucher {
+        channel_addr: pch,
+        time_lock_min,
+        time_lock_max,
+        secret_pre_image: Vec::new(),
+        extra: None,
+        lane,
+        nonce,
+        amount,
+        min_settle_height,
+        merges: Vec::new(),
+        signature: None,
+    };
+
+    let cbor_voucher = base64::encode(to_vec(&voucher)?);
+
+    Ok(cbor_voucher)
+}
+
 #[cfg(test)]
 mod tests {
     use std::convert::TryFrom;
+    use std::str::FromStr;
 
     use bip39::{Language, Seed};
     use bls_signatures::Serialize;
     use forest_address::Address;
     use forest_encoding::blake2b_256;
     use forest_encoding::to_vec;
+    use num_bigint_chainsafe::BigInt;
     use rand::SeedableRng;
     use rand_chacha::ChaCha8Rng;
     use rayon::prelude::*;
 
+    use extras::paych;
+
     use crate::api::{MessageParams, MessageTxAPI, UnsignedMessageAPI};
     use crate::signature::{Signature, SignatureBLS};
     use crate::{
-        approve_multisig_message, cancel_multisig_message, create_multisig, key_derive,
-        key_derive_from_seed, key_generate_mnemonic, key_recover, proposal_multisig_message,
-        serialize_params, transaction_parse, transaction_serialize, transaction_sign_bls_raw,
-        transaction_sign_raw, verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic,
-        PrivateKey,
+        approve_multisig_message, cancel_multisig_message, collect_pymtchan, create_multisig,
+        create_pymtchan, create_voucher, key_derive, key_derive_from_seed, key_generate_mnemonic,
+        key_recover, proposal_multisig_message, serialize_params, settle_pymtchan, sign_voucher,
+        transaction_parse, transaction_serialize, transaction_sign, transaction_sign_bls_raw,
+        transaction_sign_raw, update_pymtchan, verify_aggregated_signature, verify_signature,
+        CborBuffer, Mnemonic, PrivateKey,
     };
 
     const BLS_PUBKEY: &str = "ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc07904";
@@ -1064,6 +1307,279 @@ mod tests {
     }
 
     #[test]
+    fn payment_channel_creation_bls_signing() {
+        let from_key = "8niW4fUBoKNo3GMDVfWu0oari11js4t1QpwXVBpEpFA=".to_string();
+        let _from_address = "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq";
+        let bls_key = PrivateKey::try_from(from_key).unwrap();
+        let from_pkey = "93079ccf450c7205b0a8ec64a16e62f59f61275909b14e91a684d4acc6f321b4ec41f4543313c205ae60019fec9c304e";
+
+        let pch_create = serde_json::json!(
+        {
+            "to": "t01",           // INIT_ACTOR_ADDR
+            "from": "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq",
+            "nonce": 1,
+            "value": "1",
+            "gaslimit": 200000000,
+            "gasfeecap": "2500",
+            "gaspremium": "2500",
+            "method": 2,           // extras::MethodInit::Exec
+            "params": "gtgqWBkAAVUAFGZpbC8xL3BheW1lbnRjaGFubmVsWEqCWDEDkwecz0UMcgWwqOxkoW5i9Z9hJ1kJsU6RpoTUrMbzIbTsQfRUMxPCBa5gAZ/snDBOVQElRUfDOAbbTJ6ACbjr2cTS5fIBgg=="
+        });
+
+        let pch_create_message_api = create_pymtchan(
+            "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq".to_string(),
+            "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy".to_string(),
+            "1".to_string(),
+            1,
+        )
+            .unwrap();
+
+        let pch_create_message_expected: UnsignedMessageAPI =
+            serde_json::from_value(pch_create).unwrap();
+
+        assert_eq!(
+            serde_json::to_string(&pch_create_message_expected).unwrap(),
+            serde_json::to_string(&pch_create_message_api).unwrap()
+        );
+
+        // First check transaction_serialize() in creating an unsigned message
+        let result = transaction_serialize(&pch_create_message_api).unwrap();
+
+        // Now check that we can generate a correct signature
+        let raw_sig = transaction_sign_bls_raw(&pch_create_message_api, &bls_key).unwrap();
+        let sig = bls_signatures::Signature::from_bytes(&raw_sig.0).expect("FIX ME");
+
+        let bls_pkey =
+            bls_signatures::PublicKey::from_bytes(&hex::decode(from_pkey).unwrap()).unwrap();
+
+        assert!(bls_pkey.verify(sig, &result));
+    }
+
+    // This example reverses the to/from addresses compared with
+    // previous test.
+    const PYMTCHAN_EXAMPLE_UNSIGNED_MSG: &str = r#"
+        {
+            "to": "t01",
+            "from": "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy",
+            "nonce": 1,
+            "value": "1",
+            "gaslimit": 1000000,
+            "gasfeecap": "2500",
+            "gaspremium": "2500",
+            "method": 2,
+            "params": "gtgqWBkAAVUAFGZpbC8xL3BheW1lbnRjaGFubmVsWEqCVQElRUfDOAbbTJ6ACbjr2cTS5fIBglgxA5MHnM9FDHIFsKjsZKFuYvWfYSdZCbFOkaaE1KzG8yG07EH0VDMTwgWuYAGf7JwwTg=="
+        }"#;
+
+    #[test]
+    fn payment_channel_creation_secp256k1_signing() {
+        let from_key = "+UXJi0663hCExYMxZVb9J+wKyFWhhX51jnG7WXkeAw0=".to_string();
+        let _from_pkey = "254547c33806db4c9e8009b8ebd9c4d2e5f20182";
+        let privkey = PrivateKey::try_from(from_key).unwrap();
+
+        let _pch_create_message_unsigned = serde_json::json!(PYMTCHAN_EXAMPLE_UNSIGNED_MSG);
+        let pch_create_message_api: UnsignedMessageAPI =
+            serde_json::from_str(PYMTCHAN_EXAMPLE_UNSIGNED_MSG)
+                .expect("Could not serialize unsigned message");
+        // TODO:  ^^^ this is an error, these lines are duplicated.  First one should have called create_pymtchan()
+
+        let signed_message_result = transaction_sign(&pch_create_message_api, &privkey).unwrap();
+        // TODO:  how do I check the signature of a transaction_sign() result
+
+        // Check the raw bytes match the test vector cbor
+        let _cbor_result_unsigned_msg =
+            transaction_serialize(&signed_message_result.message).unwrap();
+    }
+
+    const PYMTCHAN_UPDATE_EXAMPLE_UNSIGNED_MSG: &str = r#"
+    {
+        "to": "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq",
+        "from": "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq",
+        "nonce": 1,
+        "value": "0",
+        "gaslimit": 200000000,
+        "gasfeecap": "2500",
+        "gaspremium": "2500",
+        "method": 2,
+        "params": "g4tVAnASWJkpWtoqhvfkj5DfG2tIaUWtAABA9gABQgABAIBYQwEBchH8MsS6EHe1a9/gW2lb30YbwD++F+2BRIUTUykZz9U6nt+nGfb41Yf0sy2NfaToz8Il/GmDtnGCepu/ns7nNwFAQA=="
+    }"#;
+
+    #[test]
+    fn payment_channel_update() {
+        use forest_crypto::signature::Signature;
+
+        let from_key = "Is8RE05W1aR6Xyk4IbpVA71sU2ibVQQgle80rjs8U8E=".to_string();
+        let _from_pkey = "34a9e12cd978a29b89681365507433c6e3ee9daa"; // from base32decode("gsu6clgzpcrjxclicnsva5bty3r65hnk")
+        let _pch_addr_hex = "70125899295ada2a86f7e48f90df1b6b486945ad"; // from base32decode("oajfrgjjllncvbxx4shzbxy3nnegsrnn")
+        let privkey = PrivateKey::try_from(from_key).unwrap();
+
+        let sig_decoded = hex::decode("017211fc32c4ba1077b56bdfe05b695bdf461bc03fbe17ed81448513532919cfd53a9edfa719f6f8d587f4b32d8d7da4e8cfc225fc6983b671827a9bbf9ecee73701").unwrap();
+        let sig = Signature::new_secp256k1(sig_decoded);
+
+        let pch = Address::from_str("t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq").unwrap();
+
+        let sv = paych::SignedVoucher {
+            channel_addr: pch,
+            time_lock_min: 0,
+            time_lock_max: 0,
+            secret_pre_image: Vec::new(),
+            extra: Option::<paych::ModVerifyParams>::None,
+            lane: 0,
+            nonce: 1,
+            amount: BigInt::parse_bytes(b"1", 10).unwrap(),
+            min_settle_height: 0,
+            merges: vec![],
+            signature: Some(sig),
+        };
+
+        let sv_base64 = base64::encode(to_vec(&sv).unwrap());
+
+        let pch_update_message_unsigned_api = update_pymtchan(
+            "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq".to_string(),
+            "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq".to_string(),
+            sv_base64,
+            1,
+        )
+        .unwrap();
+
+        let pch_update_message_unsigned_expected: UnsignedMessageAPI =
+            serde_json::from_str(PYMTCHAN_UPDATE_EXAMPLE_UNSIGNED_MSG)
+                .expect("Could not serialize unsigned message");
+
+        assert_eq!(
+            serde_json::to_string(&pch_update_message_unsigned_expected).unwrap(),
+            serde_json::to_string(&pch_update_message_unsigned_api).unwrap()
+        );
+
+        // Sign
+        let signature = transaction_sign_raw(&pch_update_message_unsigned_api, &privkey).unwrap();
+
+        // Verify
+        let message = forest_message::UnsignedMessage::try_from(&pch_update_message_unsigned_api)
+            .expect("Could not serialize unsigned message");
+        let message_cbor = CborBuffer(to_vec(&message).unwrap());
+
+        let valid_signature = verify_signature(&signature, &message_cbor);
+        assert!(valid_signature.unwrap());
+    }
+
+    const PYMTCHAN_SETTLE_EXAMPLE_UNSIGNED_MSG: &str = r#"
+    {
+        "to": "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq",
+        "from": "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq",
+        "nonce": 1,
+        "value": "0",
+        "gaslimit": 20000000,
+        "gasfeecap": "2500",
+        "gaspremium": "2500",
+        "method": 3,
+        "params": ""
+    }"#;
+
+    #[test]
+    fn payment_channel_settle() {
+        let from_key = "Is8RE05W1aR6Xyk4IbpVA71sU2ibVQQgle80rjs8U8E=".to_string();
+        let _from_pkey = "34a9e12cd978a29b89681365507433c6e3ee9daa"; // from base32decode("gsu6clgzpcrjxclicnsva5bty3r65hnk")
+        let _pch_addr_hex = "70125899295ada2a86f7e48f90df1b6b486945ad"; // from base32decode("oajfrgjjllncvbxx4shzbxy3nnegsrnn")
+        let privkey = PrivateKey::try_from(from_key).unwrap();
+
+        let pch_settle_message_unsigned_api = settle_pymtchan(
+            "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq".to_string(),
+            "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq".to_string(),
+            1,
+        )
+        .unwrap();
+
+        let pch_settle_message_unsigned_expected: UnsignedMessageAPI =
+            serde_json::from_str(PYMTCHAN_SETTLE_EXAMPLE_UNSIGNED_MSG)
+                .expect("Could not serialize unsigned message");
+
+        assert_eq!(
+            serde_json::to_string(&pch_settle_message_unsigned_expected).unwrap(),
+            serde_json::to_string(&pch_settle_message_unsigned_api).unwrap()
+        );
+
+        // Sign
+        let signature = transaction_sign_raw(&pch_settle_message_unsigned_api, &privkey).unwrap();
+
+        // Verify
+        let message = forest_message::UnsignedMessage::try_from(&pch_settle_message_unsigned_api)
+            .expect("Could not serialize unsigned message");
+        let message_cbor = CborBuffer(to_vec(&message).unwrap());
+
+        let valid_signature = verify_signature(&signature, &message_cbor);
+        assert!(valid_signature.unwrap());
+    }
+
+    const PYMTCHAN_COLLECT_EXAMPLE_UNSIGNED_MSG: &str = r#"
+    {
+        "to": "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq",
+        "from": "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq",
+        "nonce": 1,
+        "value": "0",
+        "gaslimit": 20000000,
+        "gasfeecap": "2500",
+        "gaspremium": "2500",
+        "method": 4,
+        "params": ""
+    }"#;
+
+    #[test]
+    fn payment_channel_collect() {
+        let from_key = "Is8RE05W1aR6Xyk4IbpVA71sU2ibVQQgle80rjs8U8E=".to_string();
+        let _from_pkey = "34a9e12cd978a29b89681365507433c6e3ee9daa"; // from base32decode("gsu6clgzpcrjxclicnsva5bty3r65hnk")
+        let _pch_addr_hex = "70125899295ada2a86f7e48f90df1b6b486945ad"; // from base32decode("oajfrgjjllncvbxx4shzbxy3nnegsrnn")
+        let privkey = PrivateKey::try_from(from_key.to_string()).unwrap();
+
+        let pch_collect_message_unsigned_api = collect_pymtchan(
+            "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq".to_string(),
+            "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq".to_string(),
+            1,
+        )
+        .unwrap();
+
+        let pch_collect_message_unsigned_expected: UnsignedMessageAPI =
+            serde_json::from_str(PYMTCHAN_COLLECT_EXAMPLE_UNSIGNED_MSG)
+                .expect("Could not serialize unsigned message");
+
+        assert_eq!(
+            serde_json::to_string(&pch_collect_message_unsigned_expected).unwrap(),
+            serde_json::to_string(&pch_collect_message_unsigned_api).unwrap()
+        );
+
+        // Sign
+        let signature = transaction_sign_raw(&pch_collect_message_unsigned_api, &privkey).unwrap();
+
+        // Verify
+        let message = forest_message::UnsignedMessage::try_from(&pch_collect_message_unsigned_api)
+            .expect("Could not serialize unsigned message");
+        let message_cbor = CborBuffer(to_vec(&message).unwrap());
+
+        let valid_signature = verify_signature(&signature, &message_cbor);
+        assert!(valid_signature.unwrap());
+    }
+
+    #[test]
+    fn test_sign_voucher() {
+        let mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
+        let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "").unwrap();
+
+        let voucher = create_voucher(
+            "t24acjqhdetck7irsvmn2p6jpuwnouzjxuoa22rva".to_string(),
+            0,
+            0,
+            "10000".to_string(),
+            1,
+            1,
+            0,
+        )
+        .unwrap();
+
+        let signed_voucher = sign_voucher(voucher, &extended_key.private_key).unwrap();
+
+        assert_eq!(signed_voucher, "i1UC4ASYHGSYlfRGVWN0/yX0s11MpvQAAED2AQFDACcQAIBYQgFRD/3a1fsyc7TLRUgeQ5BAPhB1rDuVt1qvDuwccTODWCJ+OAe4R/+HIGH9pgBYjrghhA4JdgJugTWfzFflbOGSAA==");
+    }
+
+    #[test]
     fn support_multisig_create() {
         let constructor_params = serde_json::json!({
             "signers": ["t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba", "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"],
@@ -1239,7 +1755,7 @@ mod tests {
 
         assert_eq!(
             hex::encode(&result),
-            "8a004300ec0755011eaf1c8a4bbfeeb0870b1745b1f57503470b711601401a000f4240430009c4430009c4035845821904d2982018f818ac18f218651829187218f00918ae18aa181d189b186118cf18cd18861870182b1830189318c1189c183018491860184f181918db188c18b3187818f3"
+            "8a004300ec0755011eaf1c8a4bbfeeb0870b1745b1f57503470b711601401a000f4240430009c4430009c4035826821904d25820f8acf2652972f009aeaa1d9b61cfcd86702b3093c19c3049604f19db8cb378f3"
         );
     }
 
@@ -1304,7 +1820,7 @@ mod tests {
 
         assert_eq!(
             hex::encode(&result),
-            "8a004300ec0755011eaf1c8a4bbfeeb0870b1745b1f57503470b711601401a000f4240430009c4430009c4045845821904d2982018f818ac18f218651829187218f00918ae18aa181d189b186118cf18cd18861870182b1830189318c1189c183018491860184f181918db188c18b3187818f3"
+            "8a004300ec0755011eaf1c8a4bbfeeb0870b1745b1f57503470b711601401a000f4240430009c4430009c4045826821904d25820f8acf2652972f009aeaa1d9b61cfcd86702b3093c19c3049604f19db8cb378f3"
         );
     }
 }

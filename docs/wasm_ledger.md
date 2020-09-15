@@ -12,17 +12,17 @@ Hardware supported functionalities.
 Get the public key information from a device using a given path.
 
 Arguments:
-* **path**: the BIP44 path as a string (e.g "m/44'/461'/0/0/1");
+* **path**: the BIP44 path as a string (e.g "m/44'/461'/0'/0/1");
 * **transport**: the ledger transport;
 
 
 ```javascript
-import { keyRetrieveFromDevice } from '@zondax/filecoin-signer';
+import { keyRetrieveFromDevice } from '@zondax/filecoin-signing-tools';
 import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
 
 const transport = await TransportNodeHid.create();
 
-const path = "m/44'/461'/0/0/1";
+const path = "m/44'/461'/0'/0/1";
 
 const keys = await keyRetrieveFromDevice(path, transport);
 
@@ -34,17 +34,17 @@ console.log(keys);
 Show the key on the device.
 
 Arguments:
-* **path**: the BIP44 path as a string (e.g "m/44'/461'/0/0/1");
+* **path**: the BIP44 path as a string (e.g "m/44'/461'/0'/0/1");
 * **transport**: the ledger transport;
 
 
 ```javascript
-import { showKeyOnDevice } from '@zondax/filecoin-signer';
+import { showKeyOnDevice } from '@zondax/filecoin-signing-tools';
 import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
 
 const transport = await TransportNodeHid.create();
 
-const path = "m/44'/461'/0/0/1";
+const path = "m/44'/461'/0'/0/1";
 
 const keys = await showKeyOnDevice(path, transport);
 
@@ -58,7 +58,7 @@ Sign the transaction using a device using a given path. Return a ready to send t
 
 Arguments:
 * **transaction**: the filecoin transaction to sign;
-* **path**: the BIP44 path as a string (e.g "m/44'/461'/0/0/1");
+* **path**: the BIP44 path as a string (e.g "m/44'/461'/0'/0/1");
 * **transport**: the transport initialized;
 
 REMOVED
@@ -69,11 +69,11 @@ Sign the transaction using a device using a given path. Return only the signatur
 
 Arguments:
 * **transaction**: the filecoin transaction to sign;
-* **path**: the BIP44 path as a string (e.g "m/44'/461'/0/0/1");
+* **path**: the BIP44 path as a string (e.g "m/44'/461'/0'/0/1");
 * **transport**: the ledger transport;
 
 ```javascript
-import { transactionSignRawWithDevice } from '@zondax/filecoin-signer';
+import { transactionSignRawWithDevice } from '@zondax/filecoin-signing-tools';
 import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
 
 const transport = await TransportNodeHid.create();
@@ -89,7 +89,7 @@ const transaction = {
     "params": ""
 };
 
-const path = "m/44'/461'/0/0/1";
+const path = "m/44'/461'/0'/0/1";
 
 const signature = await transactionSignRawWithDevice(transaction, path, transport);
 
@@ -104,7 +104,7 @@ Arguments:
 * **transport**: the ledger transport;
 
 ```javascript
-import { appInfo } from '@zondax/filecoin-signer';
+import { appInfo } from '@zondax/filecoin-signing-tools';
 import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
 
 const transport = await TransportNodeHid.create();
@@ -122,7 +122,7 @@ Arguments:
 * **transport**: the ledger transport;
 
 ```javascript
-import { deviceInfo } from '@zondax/filecoin-signer';
+import { deviceInfo } from '@zondax/filecoin-signing-tools';
 import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
 
 const transport = await TransportNodeHid.create();
@@ -140,7 +140,7 @@ Arguments:
 * **transport**: the ledger transport;
 
 ```javascript
-import { getVersion } from '@zondax/filecoin-signer';
+import { getVersion } from '@zondax/filecoin-signing-tools';
 import TransportNodeHid from '@ledgerhq/hw-transport-node-hid';
 
 const transport = await TransportNodeHid.create();

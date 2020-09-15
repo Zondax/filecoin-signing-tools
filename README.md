@@ -92,14 +92,14 @@ cargo test -p filecoin-signer
 Build WASM and link it locally so examples are linked to the local version:
 
 ```bash
-make build_wasm
+make build_npm
 ```
 
 After this, you can run the following tests / examples:
 
 | Command                  | Description               |
 |--------------------------|---------------------------|
-| `make test_wasm_unit`    | Unit tests                |
-| `make test_wasm_node`    | Node integration tests    |
-| `make test_wasm_browser` | Browser integration tests |
-| `make test_wasm_ledger`  | Ledger integration tests  |
+| `make test_npm_unit`     | Unit tests                |
+| `make test_npm_node`     | Node integration tests    |
+| `make test_npm_browser`  | Browser integration tests |
+| `make test_npm_ledger`   | Ledger integration tests  |

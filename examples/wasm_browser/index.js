@@ -1,4 +1,4 @@
-import * as wasm from "@zondax/filecoin-signing-tools/js";
+import * as wasm from "@zondax/filecoin-signing-tools/js";	//import * as wasm from "@zondax/filecoin-signing-tools/js";
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 
 function log(text) {
@@ -73,9 +73,13 @@ const unsigned_tx = {
   "value": "100000",
   "gasprice": "2500",
   "gaslimit": 25000,
-  "method": 0,
+  "method": 4,
   "params": ""
 };
+
+console.log("About to call wasm.transactionSignLotus():")
+wasm.transactionSignLotus(unsigned_tx,key.private_hexstring);
+console.log("Done calling wasm.transactionSignLotus()")
 
 log(`unsigned_tx = ${JSON.stringify(unsigned_tx, 0, 4)}`);
 
@@ -84,4 +88,3 @@ let signed_tx = wasm.transactionSign(unsigned_tx, key.private_hexstring);
 log("\n...sign...\n");
 log(`signed_tx = ${JSON.stringify(signed_tx, 0, 4)}`);
 
-example_ledger();
