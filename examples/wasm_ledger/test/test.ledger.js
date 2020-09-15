@@ -15,7 +15,7 @@ const catchExit = async () => {
 
 
 describe("LEDGER TEST", function () {
-  this.timeout(40000);
+  this.timeout(80000);
 
   var sim,
       transport;
