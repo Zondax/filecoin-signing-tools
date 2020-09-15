@@ -182,7 +182,9 @@ impl TryFrom<TxnIDParamsMultisig> for multisig::TxnIDParams {
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
         if proposal_hash.len() != 32 {
-            return Err(SignerError::GenericString("Invalid proposal_hash length (should 32 bytes).".to_string()));
+            return Err(SignerError::GenericString(
+                "Invalid proposal_hash length (should 32 bytes).".to_string(),
+            ));
         }
 
         Ok(multisig::TxnIDParams {
