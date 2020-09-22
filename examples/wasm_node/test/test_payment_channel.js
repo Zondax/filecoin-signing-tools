@@ -13,6 +13,16 @@ const fs = require('fs');
 const assert = require('assert');
 const cbor = require("ipld-dag-cbor").util;
 
+const { 
+  EXAMPLE_MNEMONIC,
+  EXAMPLE_CBOR_TX,
+  EXAMPLE_ADDRESS_MAINNET,
+  EXAMPLE_TRANSACTION,
+  EXAMPLE_TRANSACTION_MAINNET,
+  MASTER_KEY,
+  MASTER_NODE,
+} = require('./constants.js');
+
 let describeCall = describe;
 if (process.env.PURE_JS) { describeCall = describe.skip }
 
