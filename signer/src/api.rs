@@ -1,4 +1,4 @@
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 use std::str::FromStr;
 
 use extras::{multisig, paych, ExecParams};
@@ -55,6 +55,18 @@ impl TryFrom<ConstructorParamsMultisig> for multisig::ConstructorParams {
             num_approvals_threshold: constructor_params.num_approvals_threshold,
             unlock_duration: constructor_params.unlock_duration,
         })
+    }
+}
+
+impl TryInto<ConstructorParamsMultisig> for  multisig::ConstructorParams {
+    type Error = SignerError;
+    
+    fn try_into(self) -> Result<ConstructorParamsMultisig, Self::Error> {
+        let signers_tmp : Vec<String> = self.signers
+            .into_iter()
+            .map(|a| a.to_string())
+            .collect();
+        
     }
 }
 

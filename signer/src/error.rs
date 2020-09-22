@@ -38,6 +38,9 @@ pub enum SignerError {
     /// Base64 decode Error
     #[error("Base64 decode error | {0}")]
     DecodeError(#[from] base64::DecodeError),
+    // Deserialize error
+    #[error("Cannot deserilaize parameters | {0}")]
+    DeserializeError(#[from] forest_encoding::Error),
 }
 
 #[cfg(feature = "with-ffi-support")]
