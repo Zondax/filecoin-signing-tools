@@ -19,9 +19,9 @@ use filecoin_signer::{
     approve_multisig_message, cancel_multisig_message, collect_pymtchan, create_multisig,
     create_pymtchan, create_voucher, key_derive, key_derive_from_seed, key_generate_mnemonic,
     key_recover, proposal_multisig_message, serialize_params, settle_pymtchan, sign_voucher,
-    transaction_parse, transaction_serialize, transaction_sign,
-    transaction_sign_raw, update_pymtchan, verify_aggregated_signature, verify_signature,
-    CborBuffer, Mnemonic, PrivateKey,
+    transaction_parse, transaction_serialize, transaction_sign, transaction_sign_raw,
+    update_pymtchan, verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic,
+    PrivateKey,
 };
 
 const BLS_PUBKEY: &str = "ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc07904";
@@ -107,8 +107,7 @@ fn derive_key_password() {
 
     let seed = Seed::new(&m, "password");
 
-    let extended_key_expected =
-        key_derive_from_seed(seed.as_bytes(), "m/44'/461'/0/0/0").unwrap();
+    let extended_key_expected = key_derive_from_seed(seed.as_bytes(), "m/44'/461'/0/0/0").unwrap();
 
     let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "password").unwrap();
 
@@ -329,8 +328,7 @@ fn sign_bls_transaction() {
     let raw_sig = transaction_sign_raw(&message, &bls_key).unwrap();
     let sig = bls_signatures::Signature::from_bytes(&raw_sig.as_bytes()).expect("FIX ME");
 
-    let bls_pk =
-        bls_signatures::PublicKey::from_bytes(&hex::decode(BLS_PUBKEY).unwrap()).unwrap();
+    let bls_pk = bls_signatures::PublicKey::from_bytes(&hex::decode(BLS_PUBKEY).unwrap()).unwrap();
 
     let message_cbor = transaction_serialize(&message).expect("FIX ME");
 
@@ -400,7 +398,8 @@ fn test_verify_aggregated_signature() {
 #[test]
 fn payment_channel_creation_bls_signing() {
     let from_key = "8niW4fUBoKNo3GMDVfWu0oari11js4t1QpwXVBpEpFA=".to_string();
-    let _from_address = "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq";
+    let _from_address =
+        "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq";
     let bls_key = PrivateKey::try_from(from_key).unwrap();
     let from_pkey = "93079ccf450c7205b0a8ec64a16e62f59f61275909b14e91a684d4acc6f321b4ec41f4543313c205ae60019fec9c304e";
 
@@ -418,12 +417,13 @@ fn payment_channel_creation_bls_signing() {
     });
 
     let pch_create_message_api = create_pymtchan(
-        "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq".to_string(),
+        "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq"
+            .to_string(),
         "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy".to_string(),
         "1".to_string(),
         1,
     )
-        .unwrap();
+    .unwrap();
 
     let pch_create_message_expected: UnsignedMessageAPI =
         serde_json::from_value(pch_create).unwrap();
@@ -439,8 +439,7 @@ fn payment_channel_creation_bls_signing() {
     // Now check that we can generate a correct signature
     let sig = transaction_sign_raw(&pch_create_message_api, &bls_key).unwrap();
 
-    let bls_pkey =
-        bls_signatures::PublicKey::from_bytes(&hex::decode(from_pkey).unwrap()).unwrap();
+    let bls_pkey = bls_signatures::PublicKey::from_bytes(&hex::decode(from_pkey).unwrap()).unwrap();
 
     let bls_sig = bls_signatures::Serialize::from_bytes(&sig.as_bytes()).expect("FIX ME");
 
@@ -478,8 +477,7 @@ fn payment_channel_creation_secp256k1_signing() {
     // TODO:  how do I check the signature of a transaction_sign() result
 
     // Check the raw bytes match the test vector cbor
-    let _cbor_result_unsigned_msg =
-        transaction_serialize(&signed_message_result.message).unwrap();
+    let _cbor_result_unsigned_msg = transaction_serialize(&signed_message_result.message).unwrap();
 }
 
 const PYMTCHAN_UPDATE_EXAMPLE_UNSIGNED_MSG: &str = r#"
@@ -742,8 +740,7 @@ fn support_multisig_propose_message() {
         "params": "",
     });
 
-    let proposal_params_expected: MessageParams =
-        serde_json::from_value(proposal_params).unwrap();
+    let proposal_params_expected: MessageParams = serde_json::from_value(proposal_params).unwrap();
 
     let multisig_proposal = serde_json::json!(
     {
@@ -795,19 +792,16 @@ fn support_multisig_approve_message() {
         "params": "",
     });
 
-    let proposal_params_expected: MessageParams =
-        serde_json::from_value(proposal_params).unwrap();
+    let proposal_params_expected: MessageParams = serde_json::from_value(proposal_params).unwrap();
 
-    let proposal_hash =
-        blake2b_256(serialize_params(proposal_params_expected).unwrap().as_ref());
+    let proposal_hash = blake2b_256(serialize_params(proposal_params_expected).unwrap().as_ref());
 
     let approval_params = serde_json::json!({
         "txn_id": 1234,
         "proposal_hash_data": base64::encode(proposal_hash),
     });
 
-    let approval_params_expected: MessageParams =
-        serde_json::from_value(approval_params).unwrap();
+    let approval_params_expected: MessageParams = serde_json::from_value(approval_params).unwrap();
 
     let multisig_approval = serde_json::json!(
     {
@@ -861,11 +855,9 @@ fn support_multisig_cancel_message() {
         "params": "",
     });
 
-    let proposal_params_expected: MessageParams =
-        serde_json::from_value(proposal_params).unwrap();
+    let proposal_params_expected: MessageParams = serde_json::from_value(proposal_params).unwrap();
 
-    let proposal_hash =
-        blake2b_256(serialize_params(proposal_params_expected).unwrap().as_ref());
+    let proposal_hash = blake2b_256(serialize_params(proposal_params_expected).unwrap().as_ref());
 
     let cancel_params = serde_json::json!({
         "txn_id": 1234,

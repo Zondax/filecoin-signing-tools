@@ -918,14 +918,14 @@ pub fn deserialize_params(
     _method: u64,
 ) -> Result<MessageParams, SignerError> {
     let params_decode = base64::decode(params_b64_string)?;
-    
+
     match actor_type.as_str() {
         "fil/1/multisig" | "fil/1/paych" => {
             let serialized_params = forest_vm::Serialized::new(params_decode);
             Ok(MessageParams::deserialize(serialized_params)?)
-        },
-        _ => {
-            Err(SignerError::GenericString("Actor type not supported.".to_string()))
         }
+        _ => Err(SignerError::GenericString(
+            "Actor type not supported.".to_string(),
+        )),
     }
 }

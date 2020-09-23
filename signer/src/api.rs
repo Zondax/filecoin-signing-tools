@@ -66,14 +66,11 @@ impl TryFrom<ConstructorParamsMultisig> for multisig::ConstructorParams {
     }
 }
 
-impl Into<ConstructorParamsMultisig> for  multisig::ConstructorParams {    
+impl Into<ConstructorParamsMultisig> for multisig::ConstructorParams {
     fn into(self) -> ConstructorParamsMultisig {
-        let signers : Vec<String> = self.signers
-            .into_iter()
-            .map(|a| a.to_string())
-            .collect();
-            
-        ConstructorParamsMultisig{
+        let signers: Vec<String> = self.signers.into_iter().map(|a| a.to_string()).collect();
+
+        ConstructorParamsMultisig {
             signers,
             num_approvals_threshold: self.num_approvals_threshold,
             unlock_duration: self.num_approvals_threshold,
@@ -83,7 +80,7 @@ impl Into<ConstructorParamsMultisig> for  multisig::ConstructorParams {
 
 impl DeserializeParams for multisig::ConstructorParams {
     fn deserialize_params(self) -> Result<MessageParams, SignerError> {
-        let p : ConstructorParamsMultisig = self.into();
+        let p: ConstructorParamsMultisig = self.into();
         Ok(MessageParams::ConstructorParamsMultisig(p))
     }
 }
@@ -125,10 +122,10 @@ impl TryFrom<ExecParamsAPI> for ExecParams {
     }
 }
 
-impl Into<ExecParamsAPI> for  ExecParams {    
-    fn into(self) -> ExecParamsAPI {         
-        ExecParamsAPI{
-            code_cid : self.code_cid.to_string(),
+impl Into<ExecParamsAPI> for ExecParams {
+    fn into(self) -> ExecParamsAPI {
+        ExecParamsAPI {
+            code_cid: self.code_cid.to_string(),
             constructor_params: base64::encode(self.constructor_params.bytes()),
         }
     }
@@ -172,9 +169,9 @@ impl TryFrom<ProposeParamsMultisig> for multisig::ProposeParams {
     }
 }
 
-impl Into<ProposeParamsMultisig> for  multisig::ProposeParams {    
-    fn into(self) -> ProposeParamsMultisig {         
-        ProposeParamsMultisig{
+impl Into<ProposeParamsMultisig> for multisig::ProposeParams {
+    fn into(self) -> ProposeParamsMultisig {
+        ProposeParamsMultisig {
             to: self.to.to_string(),
             value: self.value.to_str_radix(10),
             method: self.method,
@@ -219,9 +216,9 @@ impl TryFrom<PropoposalHashDataParamsMultisig> for multisig::ProposalHashData {
     }
 }
 
-impl Into<PropoposalHashDataParamsMultisig> for  multisig::ProposalHashData  {    
-    fn into(self) -> PropoposalHashDataParamsMultisig {         
-        PropoposalHashDataParamsMultisig{
+impl Into<PropoposalHashDataParamsMultisig> for multisig::ProposalHashData {
+    fn into(self) -> PropoposalHashDataParamsMultisig {
+        PropoposalHashDataParamsMultisig {
             requester: self.requester.to_string(),
             to: self.to.to_string(),
             value: self.value.to_str_radix(10),
@@ -262,9 +259,9 @@ impl TryFrom<TxnIDParamsMultisig> for multisig::TxnIDParams {
     }
 }
 
-impl Into<TxnIDParamsMultisig> for  multisig::TxnIDParams  {    
-    fn into(self) -> TxnIDParamsMultisig {         
-        TxnIDParamsMultisig{
+impl Into<TxnIDParamsMultisig> for multisig::TxnIDParams {
+    fn into(self) -> TxnIDParamsMultisig {
+        TxnIDParamsMultisig {
             txn_id: self.id.0,
             proposal_hash_data: base64::encode(self.proposal_hash),
         }
@@ -293,9 +290,9 @@ impl TryFrom<AddSignerMultisigParams> for multisig::AddSignerParams {
     }
 }
 
-impl Into<AddSignerMultisigParams> for  multisig::AddSignerParams  {    
-    fn into(self) -> AddSignerMultisigParams {         
-        AddSignerMultisigParams{
+impl Into<AddSignerMultisigParams> for multisig::AddSignerParams {
+    fn into(self) -> AddSignerMultisigParams {
+        AddSignerMultisigParams {
             signer: self.signer.to_string(),
             increase: self.increase,
         }
@@ -326,9 +323,9 @@ impl TryFrom<RemoveSignerMultisigParams> for multisig::RemoveSignerParams {
     }
 }
 
-impl Into<RemoveSignerMultisigParams> for  multisig::RemoveSignerParams  {    
-    fn into(self) -> RemoveSignerMultisigParams {         
-        RemoveSignerMultisigParams{
+impl Into<RemoveSignerMultisigParams> for multisig::RemoveSignerParams {
+    fn into(self) -> RemoveSignerMultisigParams {
+        RemoveSignerMultisigParams {
             signer: self.signer.to_string(),
             decrease: self.decrease,
         }
@@ -359,9 +356,9 @@ impl TryFrom<SwapSignerMultisigParams> for multisig::SwapSignerParams {
     }
 }
 
-impl Into<SwapSignerMultisigParams> for  multisig::SwapSignerParams   {    
-    fn into(self) -> SwapSignerMultisigParams {         
-        SwapSignerMultisigParams{
+impl Into<SwapSignerMultisigParams> for multisig::SwapSignerParams {
+    fn into(self) -> SwapSignerMultisigParams {
+        SwapSignerMultisigParams {
             from: self.from.to_string(),
             to: self.to.to_string(),
         }
@@ -391,9 +388,11 @@ impl TryFrom<ChangeNumApprovalsThresholdMultisigParams>
     }
 }
 
-impl Into<ChangeNumApprovalsThresholdMultisigParams> for  multisig::ChangeNumApprovalsThresholdParams {    
-    fn into(self) -> ChangeNumApprovalsThresholdMultisigParams {         
-        ChangeNumApprovalsThresholdMultisigParams{
+impl Into<ChangeNumApprovalsThresholdMultisigParams>
+    for multisig::ChangeNumApprovalsThresholdParams
+{
+    fn into(self) -> ChangeNumApprovalsThresholdMultisigParams {
+        ChangeNumApprovalsThresholdMultisigParams {
             new_threshold: self.new_threshold,
         }
     }
@@ -423,9 +422,9 @@ impl TryFrom<PaymentChannelCreateParams> for paych::ConstructorParams {
     }
 }
 
-impl Into<PaymentChannelCreateParams> for  paych::ConstructorParams {    
-    fn into(self) -> PaymentChannelCreateParams {         
-        PaymentChannelCreateParams{
+impl Into<PaymentChannelCreateParams> for paych::ConstructorParams {
+    fn into(self) -> PaymentChannelCreateParams {
+        PaymentChannelCreateParams {
             from: self.from.to_string(),
             to: self.to.to_string(),
         }
@@ -463,10 +462,10 @@ impl TryFrom<PaymentChannelUpdateStateParams> for paych::UpdateChannelStateParam
 
 impl TryInto<PaymentChannelUpdateStateParams> for paych::UpdateChannelStateParams {
     type Error = SignerError;
-       
+
     fn try_into(self) -> Result<PaymentChannelUpdateStateParams, self::SignerError> {
-        let sv_base64 = base64::encode(self.sv.signing_bytes()?);       
-        Ok(PaymentChannelUpdateStateParams{
+        let sv_base64 = base64::encode(self.sv.signing_bytes()?);
+        Ok(PaymentChannelUpdateStateParams {
             sv: sv_base64,
             secret: self.secret,
             proof: self.proof,
@@ -607,13 +606,17 @@ impl MessageParams {
 
         Ok(params_serialized)
     }
-    
-    pub fn deserialize(serialized_params: forest_vm::Serialized) -> Result<MessageParams, SignerError> {
+
+    pub fn deserialize(
+        serialized_params: forest_vm::Serialized,
+    ) -> Result<MessageParams, SignerError> {
         let params = serialized_params.deserialize()?;
-        
+
         match params {
-            ExecParams => { todo!() },
-            _ => { Err(SignerError::GenericString("Type paramets not supported".to_string())) }
+            ExecParams => todo!(),
+            _ => Err(SignerError::GenericString(
+                "Type paramets not supported".to_string(),
+            )),
         }
     }
 }
