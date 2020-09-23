@@ -911,22 +911,18 @@ pub fn create_voucher(
 ///
 /// * `params_b64_string` - The base64 params string;
 /// * `actor_type` - The string that tell the actor type;
-/// * `method` - Method for which we want to deserialize the params;
+/// * `_method` - Method for which we want to deserialize the params;
 pub fn deserialize_params(
     params_b64_string: String,
     actor_type: String,
-    method: u64,
+    _method: u64,
 ) -> Result<MessageParams, SignerError> {
     let params_decode = base64::decode(params_b64_string)?;
     
     match actor_type.as_str() {
-        "fil/1/multisig" => {
+        "fil/1/multisig" | "fil/1/paych" => {
             let serialized_params = forest_vm::Serialized::new(params_decode);
-            let params = serialized_params.deserialize::<multisig::ConstructorParams>()?;
-            Ok(MessageParams::MessageParamsSerialized("lol".to_string()))            
-        },
-        "fil/1/paych" => {
-            Ok(MessageParams::MessageParamsSerialized("lol".to_string()))
+            Ok(MessageParams::deserialize(serialized_params)?)
         },
         _ => {
             Err(SignerError::GenericString("Actor type not supported.".to_string()))
