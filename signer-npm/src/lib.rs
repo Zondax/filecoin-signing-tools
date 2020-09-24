@@ -580,3 +580,19 @@ pub fn deserialize_params(
 
     Ok(params_value)
 }
+
+#[wasm_bindgen(js_name = deserializeConstructorParams)]
+pub fn deserialize_constructor_params(
+    params_base64: String,
+    code_cid: String,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let params = filecoin_signer::deserialize_constructor_params(params_base64, code_cid)
+        .map_err(|e| JsValue::from(format!("Error deserializing constructor parameters: {}", e)))?;
+
+    let params_value = JsValue::from_serde(&params)
+        .map_err(|e| JsValue::from(format!("Error converting constructor parameters to json object: {}", e)))?;
+
+    Ok(params_value)
+}
