@@ -4,6 +4,7 @@ use forest_encoding::tuple::*;
 use forest_vm::{MethodNum, Serialized, TokenAmount, METHOD_CONSTRUCTOR};
 use num_bigint::bigint_ser;
 use serde::{Deserialize, Serialize};
+use num_derive::FromPrimitive;
 
 /// Transaction ID type
 #[derive(Clone, Copy, Default, Serialize, Deserialize)]
@@ -90,6 +91,7 @@ pub struct ChangeNumApprovalsThresholdParams {
 
 /// Multisig actor methods available
 #[repr(u64)]
+#[derive(FromPrimitive)]
 pub enum MethodMultisig {
     Constructor = METHOD_CONSTRUCTOR,
     Propose = 2,

@@ -7,9 +7,12 @@ use forest_encoding::tuple::*;
 use forest_vm::Serialized;
 use lazy_static::lazy_static;
 
+use num_derive::FromPrimitive;
+
 /// Methods init
 /// https://github.com/filecoin-project/specs-actors/blob/master/actors/builtin/methods.go#L21
 #[repr(u64)]
+#[derive(FromPrimitive)]
 pub enum MethodInit {
     Constructor = 1,
     Exec = 2,

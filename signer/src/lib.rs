@@ -1,6 +1,7 @@
 #![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used,))]
 
 use std::convert::TryFrom;
+use std::convert::TryInto;
 use std::str::FromStr;
 
 use bip39::{Language, MnemonicType, Seed};
@@ -18,6 +19,7 @@ use secp256k1::{recover, sign, verify, Message, RecoveryId};
 use zx_bip44::BIP44Path;
 
 use extras::{multisig, paych, ExecParams, MethodInit, INIT_ACTOR_ADDR};
+use num_traits::FromPrimitive;
 
 use crate::api::{
     MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
@@ -915,15 +917,78 @@ pub fn create_voucher(
 pub fn deserialize_params(
     params_b64_string: String,
     actor_type: String,
-    _method: u64,
+    method: u64,
 ) -> Result<MessageParams, SignerError> {
     let params_decode = base64::decode(params_b64_string)?;
+    let serialized_params = forest_vm::Serialized::new(params_decode);
+
 
     match actor_type.as_str() {
-        "fil/1/multisig" | "fil/1/paych" => {
-            let serialized_params = forest_vm::Serialized::new(params_decode);
-            Ok(MessageParams::deserialize(serialized_params)?)
-        }
+        "fil/1/init" => {
+            match FromPrimitive::from_u64(method) {
+                Some(MethodInit::Exec) => {
+                    let params = serialized_params.deserialize::<ExecParams>()?;
+                    
+                    Ok(MessageParams::MessageParamsMultisig(params.into()))
+                },
+                _ => Err(SignerError::GenericString(
+                    "Unknown method fo actor 'fil/1/init'.".to_string(),
+                ))
+            }
+        },
+        "fil/1/multisig" => {
+            match FromPrimitive::from_u64(method) {
+                Some(multisig::MethodMultisig::Propose) => {
+                    let params = serialized_params.deserialize::<multisig::ProposeParams>()?;
+                    
+                    Ok(MessageParams::ProposeParamsMultisig(params.into()))
+                },
+                Some(multisig::MethodMultisig::Approve) | Some(multisig::MethodMultisig::Cancel) => {
+                    let params = serialized_params.deserialize::<multisig::TxnIDParams>()?;
+                    
+                    Ok(MessageParams::TxnIDParamsMultisig(params.into()))
+                },
+                Some(multisig::MethodMultisig::AddSigner) => {
+                    let params = serialized_params.deserialize::<multisig::AddSignerParams>()?;
+                    
+                    Ok(MessageParams::AddSignerMultisigParams(params.into()))
+                },
+                Some(multisig::MethodMultisig::RemoveSigner) => {
+                    let params = serialized_params.deserialize::<multisig::RemoveSignerParams>()?;
+                    
+                    Ok(MessageParams::RemoveSignerMultisigParams(params.into()))
+                },
+                Some(multisig::MethodMultisig::SwapSigner) => {
+                    let params = serialized_params.deserialize::<multisig::SwapSignerParams>()?;
+                    
+                    Ok(MessageParams::SwapSignerMultisigParams(params.into()))
+                },
+                Some(multisig::MethodMultisig::ChangeNumApprovalsThreshold) => {
+                    let params = serialized_params.deserialize::<multisig::ChangeNumApprovalsThresholdParams>()?;
+                    
+                    Ok(MessageParams::ChangeNumApprovalsThresholdMultisigParams(params.into()))
+                },
+                _ => Err(SignerError::GenericString(
+                    "Unknown method fo actor 'fil/1/multisig'.".to_string(),
+                ))
+            }
+        },
+        "fil/1/paymentchannel" => {
+            match FromPrimitive::from_u64(method) {
+                Some(paych::MethodsPaych::UpdateChannelState) => {
+                    let params = serialized_params.deserialize::<paych::UpdateChannelStateParams>()?;
+                    
+                    Ok(MessageParams::PaymentChannelUpdateStateParams(params.try_into()?))
+                },
+                Some(paych::MethodsPaych::Settle) | Some(paych::MethodsPaych::Collect) => {
+                    /* Note : those method doesn't have params to decode */                    
+                    Ok(MessageParams::MessageParamsSerialized("".to_string()))
+                },
+                _ => Err(SignerError::GenericString(
+                    "Unknown method fo actor 'fil/1/paymentchannel'.".to_string(),
+                ))
+            }
+        },
         _ => Err(SignerError::GenericString(
             "Actor type not supported.".to_string(),
         )),

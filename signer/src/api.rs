@@ -17,14 +17,6 @@ pub enum SigTypes {
     SigTypeBLS = 0x02,
 }
 
-/*macro_rules! deserialize_value {
-    ($e:expr) => { Ok(DeserializeParams::deserialize_params($e)?) };
-}*/
-
-trait DeserializeParams {
-    fn deserialize_params(self) -> Result<MessageParams, SignerError>;
-}
-
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -78,13 +70,6 @@ impl Into<ConstructorParamsMultisig> for multisig::ConstructorParams {
     }
 }
 
-impl DeserializeParams for multisig::ConstructorParams {
-    fn deserialize_params(self) -> Result<MessageParams, SignerError> {
-        let p: ConstructorParamsMultisig = self.into();
-        Ok(MessageParams::ConstructorParamsMultisig(p))
-    }
-}
-
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -128,12 +113,6 @@ impl Into<ExecParamsAPI> for ExecParams {
             code_cid: self.code_cid.to_string(),
             constructor_params: base64::encode(self.constructor_params.bytes()),
         }
-    }
-}
-
-impl DeserializeParams for ExecParams {
-    fn deserialize_params(self) -> Result<MessageParams, SignerError> {
-        Ok(MessageParams::MessageParamsMultisig(self.into()))
     }
 }
 
@@ -463,7 +442,7 @@ impl TryFrom<PaymentChannelUpdateStateParams> for paych::UpdateChannelStateParam
 impl TryInto<PaymentChannelUpdateStateParams> for paych::UpdateChannelStateParams {
     type Error = SignerError;
 
-    fn try_into(self) -> Result<PaymentChannelUpdateStateParams, self::SignerError> {
+    fn try_into(self) -> Result<PaymentChannelUpdateStateParams, SignerError> {
         let sv_base64 = base64::encode(self.sv.signing_bytes()?);
         Ok(PaymentChannelUpdateStateParams {
             sv: sv_base64,
@@ -605,19 +584,6 @@ impl MessageParams {
         };
 
         Ok(params_serialized)
-    }
-
-    pub fn deserialize(
-        serialized_params: forest_vm::Serialized,
-    ) -> Result<MessageParams, SignerError> {
-        let params = serialized_params.deserialize()?;
-
-        match params {
-            ExecParams => todo!(),
-            _ => Err(SignerError::GenericString(
-                "Type paramets not supported".to_string(),
-            )),
-        }
     }
 }
 
