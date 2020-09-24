@@ -1008,16 +1008,16 @@ pub fn deserialize_constructor_params(
 ) -> Result<MessageParams, SignerError> {
     let params_decode = base64::decode(params_b64_string)?;
     let serialized_params = forest_vm::Serialized::new(params_decode);
-    
+
     match code_cid.as_str() {
         "fil/1/multisig" => {
             let params = serialized_params.deserialize::<multisig::ConstructorParams>()?;
             Ok(MessageParams::ConstructorParamsMultisig(params.into()))
-        },
+        }
         "fil/1/paymentchannel" => {
             let params = serialized_params.deserialize::<paych::ConstructorParams>()?;
             Ok(MessageParams::PaymentChannelCreateParams(params.into()))
-        },
+        }
         _ => Err(SignerError::GenericString(
             "Code CID not supported.".to_string(),
         )),

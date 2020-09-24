@@ -591,8 +591,12 @@ pub fn deserialize_constructor_params(
     let params = filecoin_signer::deserialize_constructor_params(params_base64, code_cid)
         .map_err(|e| JsValue::from(format!("Error deserializing constructor parameters: {}", e)))?;
 
-    let params_value = JsValue::from_serde(&params)
-        .map_err(|e| JsValue::from(format!("Error converting constructor parameters to json object: {}", e)))?;
+    let params_value = JsValue::from_serde(&params).map_err(|e| {
+        JsValue::from(format!(
+            "Error converting constructor parameters to json object: {}",
+            e
+        ))
+    })?;
 
     Ok(params_value)
 }
