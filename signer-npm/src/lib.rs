@@ -563,3 +563,40 @@ pub fn serialize_params(params_value: JsValue) -> Result<Vec<u8>, JsValue> {
 
     Ok(params_cbor.as_ref().to_vec())
 }
+
+#[wasm_bindgen(js_name = deserializeParams)]
+pub fn deserialize_params(
+    params_base64: String,
+    actor_type: String,
+    method: u32,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let params = filecoin_signer::deserialize_params(params_base64, actor_type, method as u64)
+        .map_err(|e| JsValue::from(format!("Error deserializing parameters: {}", e)))?;
+
+    let params_value = JsValue::from_serde(&params)
+        .map_err(|e| JsValue::from(format!("Error converting parameters to json object: {}", e)))?;
+
+    Ok(params_value)
+}
+
+#[wasm_bindgen(js_name = deserializeConstructorParams)]
+pub fn deserialize_constructor_params(
+    params_base64: String,
+    code_cid: String,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let params = filecoin_signer::deserialize_constructor_params(params_base64, code_cid)
+        .map_err(|e| JsValue::from(format!("Error deserializing constructor parameters: {}", e)))?;
+
+    let params_value = JsValue::from_serde(&params).map_err(|e| {
+        JsValue::from(format!(
+            "Error converting constructor parameters to json object: {}",
+            e
+        ))
+    })?;
+
+    Ok(params_value)
+}

@@ -48,6 +48,7 @@ num_bigint_chainsafe = { package = "forest_bigint", version = "0.1.0"}
 zx-bip44 = "0.1.0"
 
 extras = { path = "../extras"}
+num-traits = "0.2"
 
 [dev-dependencies]
 rand_chacha = "0.2.2"
