@@ -4,6 +4,7 @@ use forest_crypto::signature::Signature;
 use forest_encoding::{error::Error, serde_bytes, to_vec, tuple::*, Cbor};
 use forest_vm::{MethodNum, Serialized, TokenAmount, METHOD_CONSTRUCTOR};
 use num_bigint::{bigint_ser, BigInt};
+use num_derive::FromPrimitive;
 
 /// Maximum number of lanes in a channel
 pub const LANE_LIMIT: usize = 256;
@@ -175,6 +176,7 @@ pub struct UpdateChannelStateParams {
 /// Methods payment channel
 /// https://github.com/filecoin-project/specs-actors/blob/master/actors/builtin/methods.go#L49
 #[repr(u64)]
+#[derive(FromPrimitive)]
 pub enum MethodsPaych {
     Constructor = METHOD_CONSTRUCTOR,
     UpdateChannelState = 2,

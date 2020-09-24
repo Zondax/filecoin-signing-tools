@@ -443,6 +443,64 @@ describeCall('SerializeParams', function () {
   })
 })
 
+describeCall('DeserializeParams', function () {
+  it('deserialize cbor base64 string parameters (Swap parameters)', function () {
+    let cbor_base64 = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
+    let swap_params_expected = {
+        from: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        to: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+    }
+    
+    let params = filecoin_signer.deserializeParams(cbor_base64, "fil/1/multisig", 7)
+    
+    assert.deepStrictEqual(swap_params_expected, params)
+  })
+  
+  it('deserialize params should fail with wrong actor type for method', function () {
+    let cbor_base64 = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
+
+    assert.throws(() => {
+          filecoin_signer.deserializeParams(cbor_base64, "fil/1/paymentchannel", 7)
+        },
+        /Unknown method fo actor 'fil\/1\/paymentchannel'./
+    );
+  })
+  
+  it('deserialize params should fail with unknown actor type', function () {
+    let cbor_base64 = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
+
+    assert.throws(() => {
+          filecoin_signer.deserializeParams(cbor_base64, "fil/2/paymentchannel", 7)
+        },
+        /Actor type not supported./
+    );
+  })
+})
+
+describeCall('DeserializeConstructorParams', function () {
+  it('deserialize cbor base64 string parameters (Swap parameters)', function () {
+    let cbor_base64 = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
+    let constructor_params_expected = {
+        from: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        to: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+    }
+    
+    let params = filecoin_signer.deserializeConstructorParams(cbor_base64, "fil/1/paymentchannel")
+    
+    assert.deepStrictEqual(constructor_params_expected, params)
+  })
+  
+  it('deserialize params should fail with wrong code cid', function () {
+    let cbor_base64 = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
+
+    assert.throws(() => {
+          filecoin_signer.deserializeConstructorParams(cbor_base64, "fil/2/multisig")
+        },
+        /Code CID not supported./
+    );
+  })
+})
+
 /* ------------------------------------------------------------------------------------------------- */
 
 const bls_tests_vectors_path = "../generated_test_cases.json";

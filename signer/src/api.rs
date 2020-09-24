@@ -1,4 +1,4 @@
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 use std::str::FromStr;
 
 use extras::{multisig, paych, ExecParams};
@@ -58,6 +58,18 @@ impl TryFrom<ConstructorParamsMultisig> for multisig::ConstructorParams {
     }
 }
 
+impl Into<ConstructorParamsMultisig> for multisig::ConstructorParams {
+    fn into(self) -> ConstructorParamsMultisig {
+        let signers: Vec<String> = self.signers.into_iter().map(|a| a.to_string()).collect();
+
+        ConstructorParamsMultisig {
+            signers,
+            num_approvals_threshold: self.num_approvals_threshold,
+            unlock_duration: self.num_approvals_threshold,
+        }
+    }
+}
+
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -95,6 +107,15 @@ impl TryFrom<ExecParamsAPI> for ExecParams {
     }
 }
 
+impl Into<ExecParamsAPI> for ExecParams {
+    fn into(self) -> ExecParamsAPI {
+        ExecParamsAPI {
+            code_cid: self.code_cid.to_string(),
+            constructor_params: base64::encode(self.constructor_params.bytes()),
+        }
+    }
+}
+
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -124,6 +145,17 @@ impl TryFrom<ProposeParamsMultisig> for multisig::ProposeParams {
             method: propose_params.method,
             params: forest_vm::Serialized::new(params),
         })
+    }
+}
+
+impl Into<ProposeParamsMultisig> for multisig::ProposeParams {
+    fn into(self) -> ProposeParamsMultisig {
+        ProposeParamsMultisig {
+            to: self.to.to_string(),
+            value: self.value.to_str_radix(10),
+            method: self.method,
+            params: base64::encode(self.params.bytes()),
+        }
     }
 }
 
@@ -163,6 +195,18 @@ impl TryFrom<PropoposalHashDataParamsMultisig> for multisig::ProposalHashData {
     }
 }
 
+impl Into<PropoposalHashDataParamsMultisig> for multisig::ProposalHashData {
+    fn into(self) -> PropoposalHashDataParamsMultisig {
+        PropoposalHashDataParamsMultisig {
+            requester: self.requester.to_string(),
+            to: self.to.to_string(),
+            value: self.value.to_str_radix(10),
+            method: self.method,
+            params: base64::encode(self.params.bytes()),
+        }
+    }
+}
+
 /// Data to approve
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -194,6 +238,15 @@ impl TryFrom<TxnIDParamsMultisig> for multisig::TxnIDParams {
     }
 }
 
+impl Into<TxnIDParamsMultisig> for multisig::TxnIDParams {
+    fn into(self) -> TxnIDParamsMultisig {
+        TxnIDParamsMultisig {
+            txn_id: self.id.0,
+            proposal_hash_data: base64::encode(self.proposal_hash),
+        }
+    }
+}
+
 /// Add signer params
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -213,6 +266,15 @@ impl TryFrom<AddSignerMultisigParams> for multisig::AddSignerParams {
             signer: Address::from_str(&params.signer)?,
             increase: params.increase,
         })
+    }
+}
+
+impl Into<AddSignerMultisigParams> for multisig::AddSignerParams {
+    fn into(self) -> AddSignerMultisigParams {
+        AddSignerMultisigParams {
+            signer: self.signer.to_string(),
+            increase: self.increase,
+        }
     }
 }
 
@@ -240,6 +302,15 @@ impl TryFrom<RemoveSignerMultisigParams> for multisig::RemoveSignerParams {
     }
 }
 
+impl Into<RemoveSignerMultisigParams> for multisig::RemoveSignerParams {
+    fn into(self) -> RemoveSignerMultisigParams {
+        RemoveSignerMultisigParams {
+            signer: self.signer.to_string(),
+            decrease: self.decrease,
+        }
+    }
+}
+
 /// Swap signer multisig method params
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -261,6 +332,15 @@ impl TryFrom<SwapSignerMultisigParams> for multisig::SwapSignerParams {
             from: Address::from_str(&params.from)?,
             to: Address::from_str(&params.to)?,
         })
+    }
+}
+
+impl Into<SwapSignerMultisigParams> for multisig::SwapSignerParams {
+    fn into(self) -> SwapSignerMultisigParams {
+        SwapSignerMultisigParams {
+            from: self.from.to_string(),
+            to: self.to.to_string(),
+        }
     }
 }
 
@@ -287,6 +367,16 @@ impl TryFrom<ChangeNumApprovalsThresholdMultisigParams>
     }
 }
 
+impl Into<ChangeNumApprovalsThresholdMultisigParams>
+    for multisig::ChangeNumApprovalsThresholdParams
+{
+    fn into(self) -> ChangeNumApprovalsThresholdMultisigParams {
+        ChangeNumApprovalsThresholdMultisigParams {
+            new_threshold: self.new_threshold,
+        }
+    }
+}
+
 /// Payment channel create params
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -308,6 +398,15 @@ impl TryFrom<PaymentChannelCreateParams> for paych::ConstructorParams {
             from: Address::from_str(&params.from)?,
             to: Address::from_str(&params.to)?,
         })
+    }
+}
+
+impl Into<PaymentChannelCreateParams> for paych::ConstructorParams {
+    fn into(self) -> PaymentChannelCreateParams {
+        PaymentChannelCreateParams {
+            from: self.from.to_string(),
+            to: self.to.to_string(),
+        }
     }
 }
 
@@ -336,6 +435,19 @@ impl TryFrom<PaymentChannelUpdateStateParams> for paych::UpdateChannelStateParam
             sv,
             secret: vec![],
             proof: vec![],
+        })
+    }
+}
+
+impl TryInto<PaymentChannelUpdateStateParams> for paych::UpdateChannelStateParams {
+    type Error = SignerError;
+
+    fn try_into(self) -> Result<PaymentChannelUpdateStateParams, SignerError> {
+        let sv_base64 = base64::encode(self.sv.signing_bytes()?);
+        Ok(PaymentChannelUpdateStateParams {
+            sv: sv_base64,
+            secret: self.secret,
+            proof: self.proof,
         })
     }
 }

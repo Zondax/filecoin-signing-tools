@@ -38,6 +38,9 @@ pub enum SignerError {
     /// Base64 decode Error
     #[error("Base64 decode error | {0}")]
     DecodeError(#[from] base64::DecodeError),
+    // Deserialize error
+    #[error("Cannot deserilaize parameters | {0}")]
+    DeserializeError(#[from] forest_encoding::Error),
 }
 
 #[cfg(feature = "with-ffi-support")]
@@ -55,6 +58,7 @@ impl From<SignerError> for ffi_support::ExternError {
             SignerError::InvalidBIP44Path(_) => 8,
             SignerError::TryFromSlice(_) => 10,
             SignerError::DecodeError(_) => 11,
+            SignerError::DeserializeError(_) => 12,
         };
         Self::new_error(ffi_support::ErrorCode::new(code), e.to_string())
     }
