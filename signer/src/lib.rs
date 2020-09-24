@@ -913,7 +913,7 @@ pub fn create_voucher(
 ///
 /// * `params_b64_string` - The base64 params string;
 /// * `actor_type` - The string that tell the actor type;
-/// * `_method` - Method for which we want to deserialize the params;
+/// * `method` - Method for which we want to deserialize the params;
 pub fn deserialize_params(
     params_b64_string: String,
     actor_type: String,

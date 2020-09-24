@@ -455,6 +455,26 @@ describeCall('DeserializeParams', function () {
     
     assert.deepStrictEqual(swap_params_expected, params)
   })
+  
+  it('deserialize params should fail with wrong actor type for method', function () {
+    let cbor_base64 = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
+
+    assert.throws(() => {
+          filecoin_signer.deserializeParams(cbor_base64, "fil/1/paymentchannel", 7)
+        },
+        /Unknown method fo actor 'fil\/1\/paymentchannel'./
+    );
+  })
+  
+  it('deserialize params should fail with unknown actor type', function () {
+    let cbor_base64 = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
+
+    assert.throws(() => {
+          filecoin_signer.deserializeParams(cbor_base64, "fil/2/paymentchannel", 7)
+        },
+        /Actor type not supported./
+    );
+  })
 })
 
 describeCall('DeserializeConstructorParams', function () {
@@ -468,6 +488,16 @@ describeCall('DeserializeConstructorParams', function () {
     let params = filecoin_signer.deserializeConstructorParams(cbor_base64, "fil/1/paymentchannel")
     
     assert.deepStrictEqual(constructor_params_expected, params)
+  })
+  
+  it('deserialize params should fail with wrong code cid', function () {
+    let cbor_base64 = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
+
+    assert.throws(() => {
+          filecoin_signer.deserializeConstructorParams(cbor_base64, "fil/2/multisig")
+        },
+        /Code CID not supported./
+    );
   })
 })
 

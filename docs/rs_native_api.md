@@ -252,6 +252,67 @@ let result = verify_signature(&signature, &cbor_data).unwrap()
 println!("{}", result);
 ```
 
+## serialize_params
+
+Utilitary function to serialize parameters of a message. Return CBOR encoded bytes.
+
+Arguments
+* **message_params**: A MessageParams
+
+```rust
+use signer::serialize_params;
+
+let constructor_params = serde_json::json!({
+    "signers": ["t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba", "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"],
+    "num_approvals_threshold": 1,
+    "unlock_duration": 0
+});
+
+let result = serialize_params(constructor_params_expected).unwrap()
+
+println!("{}", result);
+
+```
+
+## deserialize_params
+
+Utilitary function to deserialize parameters of a message. Return decode MessageParams.
+
+Arguments
+* **params_b64_string**: Base64 string of the encoded parameters;
+* **actor_type**: String defining the actor type (e.g "fil/1/multisig")
+* **method**: Method number that indicate the method the parameters has been encoded for.
+
+```rust
+use signer::deserialize_params;
+
+let base64_params = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW".to_string();
+
+let result = deserialize_params(base64_params, "fil/1/multisig", 7).unwrap()
+
+println!("{}", result);
+
+```
+
+## deserialize_constructor_params
+
+Utilitary function to deserialize specificaly constructor parameters. Return decode MessageParams.
+
+Arguments
+* **params_b64_string**: Base64 string of the encoded parameters;
+* **code_cid**: String defining the actor type (e.g "fil/1/multisig")
+
+```rust
+use signer::deserialize_constructor_params;
+
+let base64_params = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW".to_string();
+
+let result = deserialize_constructor_params(base64_params, "fil/1/multisig").unwrap()
+
+println!("{}", result);
+
+```
+
 ## create_multisig
 
 Utilitary function to create a create multisig message. Return an unsigned message.

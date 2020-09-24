@@ -406,3 +406,44 @@ let serialized_params = filecoin_signer.serializeParams(params);
 
 console.log(serialized_params);
 ```
+
+## deserializeParams
+
+Deserialize parameters into javascript object given and actor type and a method nuber associated with the parameter.
+
+Arguments :
+* **params**: base64 cbor encoded parameters;
+* **actoType**: a string giving the actor type (e.g "fil/1/multisig");
+* **method**: method associated with encoded parameters (e.g 7 -> SwapSigners);
+
+```javascript
+const signer_wasm = require('@zondax/filecoin-signing-tools');
+// or for browser
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
+
+let cbor_base64 = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
+
+let params = filecoin_signer.deserializeParams(cbor_base64, "fil/1/multisig", 7)
+
+console.log(params);
+```
+
+## deserializeConstructorParams
+
+Deserialize specificaly constructor parameters into javascript object given the code CID associated with the parameter.
+
+Arguments :
+* **params**: base64 cbor encoded constructor parameters;
+* **codeCID**: a string giving the actor type (e.g "fil/1/paymentchannel");
+
+```javascript
+const signer_wasm = require('@zondax/filecoin-signing-tools');
+// or for browser
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
+
+let cbor_base64 = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
+
+let params = filecoin_signer.deserializeConstructorParams(cbor_base64, "fil/1/paymentchannel")
+
+console.log(params);
+```
