@@ -922,73 +922,74 @@ pub fn deserialize_params(
     let params_decode = base64::decode(params_b64_string)?;
     let serialized_params = forest_vm::Serialized::new(params_decode);
 
-
     match actor_type.as_str() {
-        "fil/1/init" => {
-            match FromPrimitive::from_u64(method) {
-                Some(MethodInit::Exec) => {
-                    let params = serialized_params.deserialize::<ExecParams>()?;
-                    
-                    Ok(MessageParams::MessageParamsMultisig(params.into()))
-                },
-                _ => Err(SignerError::GenericString(
-                    "Unknown method fo actor 'fil/1/init'.".to_string(),
-                ))
+        "fil/1/init" => match FromPrimitive::from_u64(method) {
+            Some(MethodInit::Exec) => {
+                let params = serialized_params.deserialize::<ExecParams>()?;
+
+                Ok(MessageParams::MessageParamsMultisig(params.into()))
             }
+            _ => Err(SignerError::GenericString(
+                "Unknown method fo actor 'fil/1/init'.".to_string(),
+            )),
         },
-        "fil/1/multisig" => {
-            match FromPrimitive::from_u64(method) {
-                Some(multisig::MethodMultisig::Propose) => {
-                    let params = serialized_params.deserialize::<multisig::ProposeParams>()?;
-                    
-                    Ok(MessageParams::ProposeParamsMultisig(params.into()))
-                },
-                Some(multisig::MethodMultisig::Approve) | Some(multisig::MethodMultisig::Cancel) => {
-                    let params = serialized_params.deserialize::<multisig::TxnIDParams>()?;
-                    
-                    Ok(MessageParams::TxnIDParamsMultisig(params.into()))
-                },
-                Some(multisig::MethodMultisig::AddSigner) => {
-                    let params = serialized_params.deserialize::<multisig::AddSignerParams>()?;
-                    
-                    Ok(MessageParams::AddSignerMultisigParams(params.into()))
-                },
-                Some(multisig::MethodMultisig::RemoveSigner) => {
-                    let params = serialized_params.deserialize::<multisig::RemoveSignerParams>()?;
-                    
-                    Ok(MessageParams::RemoveSignerMultisigParams(params.into()))
-                },
-                Some(multisig::MethodMultisig::SwapSigner) => {
-                    let params = serialized_params.deserialize::<multisig::SwapSignerParams>()?;
-                    
-                    Ok(MessageParams::SwapSignerMultisigParams(params.into()))
-                },
-                Some(multisig::MethodMultisig::ChangeNumApprovalsThreshold) => {
-                    let params = serialized_params.deserialize::<multisig::ChangeNumApprovalsThresholdParams>()?;
-                    
-                    Ok(MessageParams::ChangeNumApprovalsThresholdMultisigParams(params.into()))
-                },
-                _ => Err(SignerError::GenericString(
-                    "Unknown method fo actor 'fil/1/multisig'.".to_string(),
+        "fil/1/multisig" => match FromPrimitive::from_u64(method) {
+            Some(multisig::MethodMultisig::Propose) => {
+                let params = serialized_params.deserialize::<multisig::ProposeParams>()?;
+
+                Ok(MessageParams::ProposeParamsMultisig(params.into()))
+            }
+            Some(multisig::MethodMultisig::Approve) | Some(multisig::MethodMultisig::Cancel) => {
+                let params = serialized_params.deserialize::<multisig::TxnIDParams>()?;
+
+                Ok(MessageParams::TxnIDParamsMultisig(params.into()))
+            }
+            Some(multisig::MethodMultisig::AddSigner) => {
+                let params = serialized_params.deserialize::<multisig::AddSignerParams>()?;
+
+                Ok(MessageParams::AddSignerMultisigParams(params.into()))
+            }
+            Some(multisig::MethodMultisig::RemoveSigner) => {
+                let params = serialized_params.deserialize::<multisig::RemoveSignerParams>()?;
+
+                Ok(MessageParams::RemoveSignerMultisigParams(params.into()))
+            }
+            Some(multisig::MethodMultisig::SwapSigner) => {
+                let params = serialized_params.deserialize::<multisig::SwapSignerParams>()?;
+
+                Ok(MessageParams::SwapSignerMultisigParams(params.into()))
+            }
+            Some(multisig::MethodMultisig::ChangeNumApprovalsThreshold) => {
+                let params = serialized_params
+                    .deserialize::<multisig::ChangeNumApprovalsThresholdParams>()?;
+
+                Ok(MessageParams::ChangeNumApprovalsThresholdMultisigParams(
+                    params.into(),
                 ))
             }
+            _ => Err(SignerError::GenericString(
+                "Unknown method fo actor 'fil/1/multisig'.".to_string(),
+            )),
         },
         "fil/1/paymentchannel" => {
             match FromPrimitive::from_u64(method) {
                 Some(paych::MethodsPaych::UpdateChannelState) => {
-                    let params = serialized_params.deserialize::<paych::UpdateChannelStateParams>()?;
-                    
-                    Ok(MessageParams::PaymentChannelUpdateStateParams(params.try_into()?))
-                },
+                    let params =
+                        serialized_params.deserialize::<paych::UpdateChannelStateParams>()?;
+
+                    Ok(MessageParams::PaymentChannelUpdateStateParams(
+                        params.try_into()?,
+                    ))
+                }
                 Some(paych::MethodsPaych::Settle) | Some(paych::MethodsPaych::Collect) => {
-                    /* Note : those method doesn't have params to decode */                    
+                    /* Note : those method doesn't have params to decode */
                     Ok(MessageParams::MessageParamsSerialized("".to_string()))
-                },
+                }
                 _ => Err(SignerError::GenericString(
                     "Unknown method fo actor 'fil/1/paymentchannel'.".to_string(),
-                ))
+                )),
             }
-        },
+        }
         _ => Err(SignerError::GenericString(
             "Actor type not supported.".to_string(),
         )),

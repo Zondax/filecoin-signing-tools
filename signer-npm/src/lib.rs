@@ -565,12 +565,16 @@ pub fn serialize_params(params_value: JsValue) -> Result<Vec<u8>, JsValue> {
 }
 
 #[wasm_bindgen(js_name = deserializeParams)]
-pub fn deserialize_params(params_base64: String, actor_type: String, method: u32) -> Result<JsValue, JsValue> {
+pub fn deserialize_params(
+    params_base64: String,
+    actor_type: String,
+    method: u32,
+) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
     let params = filecoin_signer::deserialize_params(params_base64, actor_type, method as u64)
         .map_err(|e| JsValue::from(format!("Error deserializing parameters: {}", e)))?;
-        
+
     let params_value = JsValue::from_serde(&params)
         .map_err(|e| JsValue::from(format!("Error converting parameters to json object: {}", e)))?;
 
