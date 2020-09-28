@@ -202,6 +202,15 @@ jobs:
             npm --no-git-tag-version version $CIRCLE_TAG
             npm publish
 
+  devnet:
+    docker:
+      - image: golang:1.14
+    steps:
+      - checkout
+      - run: make install_wasmpack SILENT=true
+      - run: make link_npm
+      - run: make start_devnet.sh
+
   rust_publish:
     docker:
       - image: zondax/rust-ci:latest
