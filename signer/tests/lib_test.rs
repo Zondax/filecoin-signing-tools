@@ -13,7 +13,9 @@ use rayon::prelude::*;
 
 use extras::paych;
 
-use filecoin_signer::api::{MessageParams, MessageTxAPI, UnsignedMessageAPI, SignatureAPI, SignedMessageAPI};
+use filecoin_signer::api::{
+    MessageParams, MessageTxAPI, SignatureAPI, SignedMessageAPI, UnsignedMessageAPI,
+};
 use filecoin_signer::signature::{Signature, SignatureBLS};
 use filecoin_signer::{
     approve_multisig_message, cancel_multisig_message, collect_pymtchan, create_multisig,
@@ -944,7 +946,7 @@ fn test_verify_voucher_signature() {
 
 fn test_get_cid() {
     let expected_cid = "bafy2bzacebaiinljwwctblf7czp4zxwhz4747z6tpricgn5cumd4xhebftcvu".to_string();
-    let message = UnsignedMessageAPI{
+    let message = UnsignedMessageAPI {
         to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
         from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
         nonce: 1,
@@ -959,16 +961,10 @@ fn test_get_cid() {
         sig_type: 1,
         data: base64::decode("0wRrFJZFIVh8m0JD+f5C55YrxD6YAWtCXWYihrPTKdMfgMhYAy86MVhs43hSLXnV+47UReRIe8qFdHRJqFlreAE=".to_string()).unwrap(),
     };
-    
-    let signed_message_api = SignedMessageAPI{
-        message,
-        signature,
-    };
-    
+
+    let signed_message_api = SignedMessageAPI { message, signature };
+
     let cid = get_cid(signed_message_api).unwrap();
-    
-    assert_eq!(
-        cid,
-        expected_cid
-    );
+
+    assert_eq!(cid, expected_cid);
 }

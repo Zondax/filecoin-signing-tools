@@ -1117,8 +1117,8 @@ pub fn verify_voucher_signature(
 pub fn get_cid(signed_message_api: SignedMessageAPI) -> Result<String, SignerError> {
     let signed_message = SignedMessage::try_from(&signed_message_api)?;
     let cbor_signed_message = to_vec(&signed_message)?;
-    
+
     let cid = Cid::new_from_cbor(&cbor_signed_message, Blake2b256);
-    
+
     Ok(cid.to_string())
 }

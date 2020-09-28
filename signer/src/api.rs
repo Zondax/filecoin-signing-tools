@@ -4,11 +4,11 @@ use std::str::FromStr;
 use extras::{multisig, paych, ExecParams};
 use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
+use forest_crypto::signature;
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
 use num_bigint_chainsafe::BigInt;
 use serde::{Deserialize, Serialize, Serializer};
-use forest_crypto::signature;
 
 use crate::error::SignerError;
 use crate::signature::Signature;
@@ -695,12 +695,16 @@ impl From<&Signature> for SignatureAPI {
 
 impl TryFrom<&SignatureAPI> for signature::Signature {
     type Error = SignerError;
-    
+
     fn try_from(sig: &SignatureAPI) -> Result<signature::Signature, Self::Error> {
         match sig.sig_type {
             2 => (Ok(signature::Signature::new_bls(sig.data.to_vec()))),
             1 => (Ok(signature::Signature::new_secp256k1(sig.data.to_vec()))),
-            _ => (Err(SignerError::GenericString("Unknown signature type.".to_string())))
+            _ => {
+                (Err(SignerError::GenericString(
+                    "Unknown signature type.".to_string(),
+                )))
+            }
         }
     }
 }
@@ -857,19 +861,15 @@ impl From<SignedMessage> for SignedMessageAPI {
     }
 }
 
-impl TryFrom<&SignedMessageAPI> for SignedMessage
-{
+impl TryFrom<&SignedMessageAPI> for SignedMessage {
     type Error = SignerError;
 
     fn try_from(signed_message_api: &SignedMessageAPI) -> Result<SignedMessage, Self::Error> {
         let unsigned_message = UnsignedMessage::try_from(&signed_message_api.message)?;
         let signature = signature::Signature::try_from(&signed_message_api.signature)?;
-        let signed_message = SignedMessage::new_from_parts(
-            unsigned_message,
-            signature,
-        )
-        .map_err(|err| SignerError::GenericString(err.to_string()))?;
-        
+        let signed_message = SignedMessage::new_from_parts(unsigned_message, signature)
+            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
         Ok(signed_message)
     }
 }
