@@ -248,6 +248,8 @@ workflows:
           <<: *no-tags
       - tests_ledger:
           <<: *no-tags
+      - devnet:
+          <<: *no-tags
 
   release:
     jobs:
@@ -262,6 +264,8 @@ workflows:
       - tests_service:
           <<: *only-release-tags
       - tests_ledger:
+          <<: *only-release-tags
+      - devnet:
           <<: *only-release-tags
 
       - npm_publish:
