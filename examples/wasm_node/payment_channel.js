@@ -15,7 +15,7 @@ const privateKey = Buffer.from(privateKeyBase64, 'base64')
 
 const headers = { "Authorization": `Bearer ${TOKEN}` }
 
-const skip = false
+const skip = true
 
 async function main () {
   let response

@@ -204,12 +204,12 @@ jobs:
 
   devnet:
     docker:
-      - image: golang:1.14
+      - image: zondax/rust-ci:latest
     steps:
       - checkout
-      - run: make install_wasmpack SILENT=true
-      - run: make link_npm
-      - run: make start_devnet.sh
+      - restore-sccache-cache
+      - make link_npm
+      - node examples/wasm_node/payment_channel.js
 
   rust_publish:
     docker:
