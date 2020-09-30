@@ -208,8 +208,10 @@ jobs:
     steps:
       - checkout
       - restore-sccache-cache
+      - run: make install_wasmpack SILENT=true
       - run: make link_npm
       - run: node examples/wasm_node/payment_channel.js
+      - save-sccache-cache
 
   rust_publish:
     docker:
