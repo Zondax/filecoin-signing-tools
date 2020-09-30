@@ -6,12 +6,14 @@ use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
 use forest_crypto::signature;
 use forest_message::{Message, SignedMessage, UnsignedMessage};
+use forest_encoding::{to_vec, blake2b_256};
 use forest_vm::Serialized;
 use num_bigint_chainsafe::BigInt;
 use serde::{Deserialize, Serialize, Serializer};
 
 use crate::error::SignerError;
 use crate::signature::Signature;
+use crate::utils;
 
 pub enum SigTypes {
     SigTypeSecp256k1 = 0x01,
@@ -867,6 +869,16 @@ impl TryFrom<&SignedMessageAPI> for SignedMessage {
     fn try_from(signed_message_api: &SignedMessageAPI) -> Result<SignedMessage, Self::Error> {
         let unsigned_message = UnsignedMessage::try_from(&signed_message_api.message)?;
         let signature = signature::Signature::try_from(&signed_message_api.signature)?;
+        println!("{:?}", unsigned_message.from());
+        let hash = blake2b_256(&to_vec(&unsigned_message).unwrap());
+        println!("{:?}", hash);
+        let cid_hashed = utils::get_digest(&to_vec(&unsigned_message).unwrap())?;
+        println!("{:?}", cid_hashed);
+        let mut sig = [0u8; 65];
+        sig[..].clone_from_slice(&signature.bytes());
+        let rec_addr = signature::ecrecover(&hash, &sig).unwrap();
+        println!("{:?}", rec_addr);
+        //signature.verify(&to_vec(&unsigned_message).unwrap(), &unsigned_message.from()).unwrap();
         let signed_message = SignedMessage::new_from_parts(unsigned_message, signature)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
