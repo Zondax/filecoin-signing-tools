@@ -208,8 +208,8 @@ jobs:
     steps:
       - checkout
       - restore-sccache-cache
-      - make link_npm
-      - node examples/wasm_node/payment_channel.js
+      - run: make link_npm
+      - run: node examples/wasm_node/payment_channel.js
 
   rust_publish:
     docker:
