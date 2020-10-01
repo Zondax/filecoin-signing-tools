@@ -13,7 +13,7 @@ const fs = require('fs');
 const assert = require('assert');
 const cbor = require("ipld-dag-cbor").util;
 
-const { 
+const {
   EXAMPLE_MNEMONIC,
   EXAMPLE_CBOR_TX,
   EXAMPLE_ADDRESS_MAINNET,
@@ -69,7 +69,7 @@ describeCall('createPymtChan', function () {
       },
     }
 
-    let create_pymtchan = filecoin_signer.createPymtChan(from, to, "10000000000", 1);
+    let create_pymtchan = filecoin_signer.createPymtChan(from, to, "10000000000", 1, "200000000", "2500", "2500");
 
     console.log(create_pymtchan)
 
@@ -132,7 +132,7 @@ describeCall('createPymtChan', function () {
       }
     }
 
-    let create_pymtchan = filecoin_signer.createPymtChan(from, to, "10000000000", 1)
+    let create_pymtchan = filecoin_signer.createPymtChan(from, to, "10000000000", 1, "200000000", "2500", "2500")
 
     console.log(create_pymtchan)
 
