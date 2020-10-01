@@ -422,6 +422,9 @@ fn payment_channel_creation_bls_signing() {
         "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy".to_string(),
         "1".to_string(),
         1,
+        200000000,
+        "2500".to_string(),
+        "2500".to_string(),
     )
     .unwrap();
 

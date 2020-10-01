@@ -429,13 +429,22 @@ pub fn create_pymtchan(
     to_address: String,
     amount: String,
     nonce: u32,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let pch_transaction =
-        filecoin_signer::create_pymtchan(from_address, to_address, amount, nonce as u64).map_err(
-            |e| JsValue::from_str(format!("Error creating payment channel: {}", e).as_str()),
-        )?;
+    let pch_transaction = filecoin_signer::create_pymtchan(
+        from_address,
+        to_address,
+        amount,
+        nonce as u64,
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
+    )
+    .map_err(|e| JsValue::from_str(format!("Error creating payment channel: {}", e).as_str()))?;
 
     let pch_transaction_js = JsValue::from_serde(&pch_transaction)
         .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;

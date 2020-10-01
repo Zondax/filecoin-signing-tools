@@ -682,6 +682,9 @@ pub fn create_pymtchan(
     to_address: String,
     value: String,
     nonce: u64,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     let create_payment_channel_params = paych::ConstructorParams {
         from: Address::from_str(&from_address)?,
@@ -701,15 +704,14 @@ pub fn create_pymtchan(
         forest_vm::Serialized::serialize::<ExecParams>(message_params_create_pymtchan)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-    // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
     let pch_create_message_api = UnsignedMessageAPI {
         to: "t01".to_owned(), // INIT_ACTOR_ADDR
         from: from_address,
         nonce,
         value,
-        gas_limit: 200000000,
-        gas_fee_cap: "2500".to_string(),
-        gas_premium: "2500".to_string(),
+        gas_limit: gas_limit,
+        gas_fee_cap: gas_fee_cap,
+        gas_premium: gas_premium,
         method: MethodInit::Exec as u64,
         params: base64::encode(serialized_params.bytes()),
     };
