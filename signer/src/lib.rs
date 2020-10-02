@@ -1040,38 +1040,40 @@ pub fn verify_voucher_signature(
     let signed_voucher: paych::SignedVoucher = from_slice(&decoded_voucher)?;
 
     let address = Address::from_str(&address_signer)?;
-        
+
     let sv_bytes = signed_voucher.signing_bytes()?;
     let digest = utils::get_digest_voucher(&sv_bytes)?;
-    
+
     match &signed_voucher.signature {
-        Some(signature) => {
-            match address.protocol() {
-                Protocol::Secp256k1 => {
-                    let sig = secp256k1::Signature::parse_slice(&signature.bytes()[..64])?;
-                    let recovery_id = RecoveryId::parse(signature.bytes()[64])?;
-                    let message = secp256k1::Message::parse(&digest);
-                    let public_key = recover(&message, &sig, &recovery_id)?;
-                    let mut signer = Address::new_secp256k1(&public_key.serialize().to_vec())?;
-                    signer.set_network(address.network());
+        Some(signature) => match address.protocol() {
+            Protocol::Secp256k1 => {
+                let sig = secp256k1::Signature::parse_slice(&signature.bytes()[..64])?;
+                let recovery_id = RecoveryId::parse(signature.bytes()[64])?;
+                let message = secp256k1::Message::parse(&digest);
+                let public_key = recover(&message, &sig, &recovery_id)?;
+                let mut signer = Address::new_secp256k1(&public_key.serialize().to_vec())?;
+                signer.set_network(address.network());
 
-                    if signer.to_string() != address.to_string() {
-                        Err(SignerError::GenericString("Address recovered doesn't match address given".to_string()))
-                    } else {
-                        Ok(verify(&message, &sig, &public_key))
-                    }
-                },
-                Protocol::BLS => {
-                    let pk = bls_signatures::PublicKey::from_bytes(&address.payload_bytes())?;
-                    let sig = bls_signatures::Signature::from_bytes(signature.bytes())?;
-
-                    Ok(pk.verify(sig, digest))
-                },
-                _ => Err(SignerError::GenericString(
-                    "Address should BLS or Secp256k1.".to_string(),
-                )),
+                if signer.to_string() != address.to_string() {
+                    Err(SignerError::GenericString(
+                        "Address recovered doesn't match address given".to_string(),
+                    ))
+                } else {
+                    Ok(verify(&message, &sig, &public_key))
+                }
             }
+            Protocol::BLS => {
+                let pk = bls_signatures::PublicKey::from_bytes(&address.payload_bytes())?;
+                let sig = bls_signatures::Signature::from_bytes(signature.bytes())?;
+
+                Ok(pk.verify(sig, digest))
+            }
+            _ => Err(SignerError::GenericString(
+                "Address should BLS or Secp256k1.".to_string(),
+            )),
         },
-        None => Err(SignerError::GenericString("Voucher not signed.".to_string())),
+        None => Err(SignerError::GenericString(
+            "Voucher not signed.".to_string(),
+        )),
     }
 }
