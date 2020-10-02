@@ -360,3 +360,12 @@ describeCall('signVoucher', function () {
   })
 
 })
+
+describeCall('verifyVoucherSignature', function () {
+  it('should return true', function () {
+    const signedVoucher = "i0MA8gcAAED2AAFEAAGGoACAWEIBayRmYQQCatrELBc2rwfu0jJk0EmVr+eVccDsThtM1ZVzkrC53a6qVgrgFkB8OHoiZSlNmW/nmCU7G2POhEeo2gE=";
+    const signerAddress = "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba";
+    
+    assert(filecoin_signer.verifyVoucherSignature(signedVoucher, signerAddress));
+  })
+})
