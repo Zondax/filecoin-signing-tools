@@ -20,8 +20,8 @@ use filecoin_signer::{
     create_pymtchan, create_voucher, key_derive, key_derive_from_seed, key_generate_mnemonic,
     key_recover, proposal_multisig_message, serialize_params, settle_pymtchan, sign_voucher,
     transaction_parse, transaction_serialize, transaction_sign, transaction_sign_raw,
-    update_pymtchan, verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic,
-    PrivateKey,
+    update_pymtchan, verify_aggregated_signature, verify_signature, verify_voucher_signature,
+    CborBuffer, Mnemonic, PrivateKey,
 };
 
 const BLS_PUBKEY: &str = "ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc07904";
@@ -909,4 +909,14 @@ fn support_multisig_cancel_message() {
         hex::encode(&result),
         "8a004300ec0755011eaf1c8a4bbfeeb0870b1745b1f57503470b711601401a000f4240430009c4430009c4045826821904d25820f8acf2652972f009aeaa1d9b61cfcd86702b3093c19c3049604f19db8cb378f3"
     );
+}
+
+#[test]
+fn test_verify_voucher_signature() {
+    let voucher_base64_string = "i0MA8gcAAED2AAFEAAGGoACAWEIBayRmYQQCatrELBc2rwfu0jJk0EmVr+eVccDsThtM1ZVzkrC53a6qVgrgFkB8OHoiZSlNmW/nmCU7G2POhEeo2gE=".to_string();
+    let address_signer = "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string();
+
+    let result = verify_voucher_signature(voucher_base64_string, address_signer).expect("FIX ME");
+
+    assert!(result);
 }

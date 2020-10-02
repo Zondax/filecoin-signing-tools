@@ -609,3 +609,16 @@ pub fn deserialize_constructor_params(
 
     Ok(params_value)
 }
+
+#[wasm_bindgen(js_name = verifyVoucherSignature)]
+pub fn verify_voucher_signature(
+    voucher_base64: String,
+    address_signer: String,
+) -> Result<bool, JsValue> {
+    set_panic_hook();
+
+    let result = filecoin_signer::verify_voucher_signature(voucher_base64, address_signer)
+        .map_err(|e| JsValue::from(format!("Error verifying voucher signature: {}", e)))?;
+
+    Ok(result)
+}
