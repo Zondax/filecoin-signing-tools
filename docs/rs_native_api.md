@@ -499,3 +499,22 @@ let sig = SignatureBLS::try_from(aggregated_signature.as_bytes()).unwrap();
 
 assert!(verify_aggregated_signature(&sig, &cbor_messages[..]).unwrap());
 ```
+
+## verify_voucher_signature
+
+Verify a voucher signature. Return a boolean. Now support `Secp256k1` and `BLS` scheme.
+
+Arguments :
+* **voucher base64**: Voucher base64;
+* **signer address**: The address string of the signer;
+
+```rust
+use signer::{verify_voucher_signature};
+
+let voucher_base64_string = "i0MA8gcAAED2AAFEAAGGoACAWEIBayRmYQQCatrELBc2rwfu0jJk0EmVr+eVccDsThtM1ZVzkrC53a6qVgrgFkB8OHoiZSlNmW/nmCU7G2POhEeo2gE=".to_string();
+let address_signer = "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string();
+
+let result = verify_voucher_signature(voucher_base64_string, address_signer).unwrap();
+
+println!("{}", result);
+```
