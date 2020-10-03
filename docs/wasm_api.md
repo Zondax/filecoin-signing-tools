@@ -447,3 +447,26 @@ let params = filecoin_signer.deserializeConstructorParams(cbor_base64, "fil/1/pa
 
 console.log(params);
 ```
+
+## verifyVoucherSignature
+
+Verify a voucher signature.
+
+Arguments :
+* **signed voucher**: the base64 string representing the signed voucher;
+* **signer address**: the signer address;
+
+```javascript
+const signer_wasm = require('@zondax/filecoin-signing-tools');
+// or for browser
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
+
+
+const signedVoucher = "i0MA8gcAAED2AAFEAAGGoACAWEIBayRmYQQCatrELBc2rwfu0jJk0EmVr+eVccDsThtM1ZVzkrC53a6qVgrgFkB8OHoiZSlNmW/nmCU7G2POhEeo2gE=";
+const signerAddress = "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba";
+
+const result = filecoin_signer.verifyVoucherSignature(signedVoucher, signerAddress);
+
+// true
+console.log(result);
+```
