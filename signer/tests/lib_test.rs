@@ -410,8 +410,8 @@ fn payment_channel_creation_bls_signing() {
         "nonce": 1,
         "value": "1",
         "gaslimit": 200000000,
-        "gasfeecap": "2500",
-        "gaspremium": "2500",
+        "gasfeecap": "99999999",
+        "gaspremium": "99999999",
         "method": 2,           // extras::MethodInit::Exec
         "params": "gtgqWBkAAVUAFGZpbC8xL3BheW1lbnRjaGFubmVsWEqCWDEDkwecz0UMcgWwqOxkoW5i9Z9hJ1kJsU6RpoTUrMbzIbTsQfRUMxPCBa5gAZ/snDBOVQElRUfDOAbbTJ6ACbjr2cTS5fIBgg=="
     });
@@ -423,8 +423,8 @@ fn payment_channel_creation_bls_signing() {
         "1".to_string(),
         1,
         200000000,
-        "2500".to_string(),
-        "2500".to_string(),
+        "99999999".to_string(),
+        "99999999".to_string(),
     )
     .unwrap();
 
@@ -457,9 +457,9 @@ const PYMTCHAN_EXAMPLE_UNSIGNED_MSG: &str = r#"
         "from": "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy",
         "nonce": 1,
         "value": "1",
-        "gaslimit": 1000000,
-        "gasfeecap": "2500",
-        "gaspremium": "2500",
+        "gaslimit": 200000000,
+        "gasfeecap": "99999999",
+        "gaspremium": "99999999",
         "method": 2,
         "params": "gtgqWBkAAVUAFGZpbC8xL3BheW1lbnRjaGFubmVsWEqCVQElRUfDOAbbTJ6ACbjr2cTS5fIBglgxA5MHnM9FDHIFsKjsZKFuYvWfYSdZCbFOkaaE1KzG8yG07EH0VDMTwgWuYAGf7JwwTg=="
     }"#;
@@ -490,8 +490,8 @@ const PYMTCHAN_UPDATE_EXAMPLE_UNSIGNED_MSG: &str = r#"
     "nonce": 1,
     "value": "0",
     "gaslimit": 200000000,
-    "gasfeecap": "2500",
-    "gaspremium": "2500",
+    "gasfeecap": "99999999",
+    "gaspremium": "99999999",
     "method": 2,
     "params": "g4tVAnASWJkpWtoqhvfkj5DfG2tIaUWtAABA9gABQgABAIBYQwEBchH8MsS6EHe1a9/gW2lb30YbwD++F+2BRIUTUykZz9U6nt+nGfb41Yf0sy2NfaToz8Il/GmDtnGCepu/ns7nNwFAQA=="
 }"#;
@@ -531,6 +531,9 @@ fn payment_channel_update() {
         "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq".to_string(),
         sv_base64,
         1,
+        200000000,
+        "99999999".to_string(),
+        "99999999".to_string(),
     )
     .unwrap();
 
@@ -561,9 +564,9 @@ const PYMTCHAN_SETTLE_EXAMPLE_UNSIGNED_MSG: &str = r#"
     "from": "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq",
     "nonce": 1,
     "value": "0",
-    "gaslimit": 20000000,
-    "gasfeecap": "2500",
-    "gaspremium": "2500",
+    "gaslimit": 200000000,
+    "gasfeecap": "99999999",
+    "gaspremium": "99999999",
     "method": 3,
     "params": ""
 }"#;
@@ -579,6 +582,9 @@ fn payment_channel_settle() {
         "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq".to_string(),
         "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq".to_string(),
         1,
+        200000000,
+        "99999999".to_string(),
+        "99999999".to_string(),
     )
     .unwrap();
 
@@ -609,9 +615,9 @@ const PYMTCHAN_COLLECT_EXAMPLE_UNSIGNED_MSG: &str = r#"
     "from": "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq",
     "nonce": 1,
     "value": "0",
-    "gaslimit": 20000000,
-    "gasfeecap": "2500",
-    "gaspremium": "2500",
+    "gaslimit": 200000000,
+    "gasfeecap": "99999999",
+    "gaspremium": "99999999",
     "method": 4,
     "params": ""
 }"#;
