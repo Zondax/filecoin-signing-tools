@@ -303,6 +303,9 @@ pub fn create_multisig(
     required: i32,
     nonce: u32,
     duration: i64,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
@@ -323,6 +326,9 @@ pub fn create_multisig(
         required as i64,
         nonce as u64,
         duration,
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
     )
     .map_err(|e| {
         JsValue::from_str(format!("Error creating multisig transaction: {}", e).as_str())
@@ -341,6 +347,9 @@ pub fn propose_multisig(
     from_address: String,
     amount: String,
     nonce: u32,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
@@ -350,6 +359,9 @@ pub fn propose_multisig(
         from_address,
         amount,
         nonce as u64,
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
     )
     .map_err(|e| {
         JsValue::from_str(format!("Error porposing multisig transaction: {}", e).as_str())
@@ -370,6 +382,9 @@ pub fn approve_multisig(
     amount: String,
     from_address: String,
     nonce: u32,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
@@ -381,6 +396,9 @@ pub fn approve_multisig(
         amount,
         from_address,
         nonce as u64,
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
     )
     .map_err(|e| {
         JsValue::from_str(format!("Error approving multisig transaction: {}", e).as_str())
@@ -401,6 +419,9 @@ pub fn cancel_multisig(
     amount: String,
     from_address: String,
     nonce: u32,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
@@ -412,6 +433,9 @@ pub fn cancel_multisig(
         amount,
         from_address,
         nonce as u64,
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
     )
     .map_err(|e| {
         JsValue::from_str(format!("Error canceling multisig transaction: {}", e).as_str())
@@ -457,10 +481,13 @@ pub fn settle_pymtchan(
     pch_address: String,
     from_address: String,
     nonce: u32,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let pch_transaction = filecoin_signer::settle_pymtchan(pch_address, from_address, nonce as u64)
+    let pch_transaction = filecoin_signer::settle_pymtchan(pch_address, from_address, nonce as u64, gas_limit, gas_fee_cap, gas_premium)
         .map_err(|e| {
             JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str())
         })?;
@@ -476,11 +503,14 @@ pub fn collect_pymtchan(
     pch_address: String,
     from_address: String,
     nonce: u32,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
     let pch_transaction =
-        filecoin_signer::collect_pymtchan(pch_address, from_address, nonce as u64).map_err(
+        filecoin_signer::collect_pymtchan(pch_address, from_address, nonce as u64, gas_limit, gas_fee_cap, gas_premium).map_err(
             |e| JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str()),
         )?;
 
@@ -496,13 +526,16 @@ pub fn update_pymtchan(
     from_address: String,
     signed_voucher: String,
     nonce: u32,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
     // TODO: verify if `pch_address` is an actor address. Not needed but good improvement.
 
     let pch_transaction =
-        filecoin_signer::update_pymtchan(pch_address, from_address, signed_voucher, nonce as u64)
+        filecoin_signer::update_pymtchan(pch_address, from_address, signed_voucher, nonce as u64, gas_limit, gas_fee_cap, gas_premium)
             .map_err(|e| {
             JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str())
         })?;

@@ -531,6 +531,9 @@ fn payment_channel_update() {
         "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq".to_string(),
         sv_base64,
         1,
+        200000000,
+        "2500".to_string(),
+        "2500".to_string(),
     )
     .unwrap();
 
@@ -579,6 +582,9 @@ fn payment_channel_settle() {
         "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq".to_string(),
         "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq".to_string(),
         1,
+        20000000,
+        "2500".to_string(),
+        "2500".to_string(),
     )
     .unwrap();
 
@@ -627,6 +633,9 @@ fn payment_channel_collect() {
         "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq".to_string(),
         "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq".to_string(),
         1,
+        20000000,
+        "2500".to_string(),
+        "2500".to_string(),
     )
     .unwrap();
 
@@ -713,6 +722,9 @@ fn support_multisig_create() {
         1,
         1,
         0,
+        1000000,
+        "2500".to_string(),
+        "2500".to_string(),
     )
     .unwrap();
 
@@ -764,6 +776,9 @@ fn support_multisig_propose_message() {
         "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
         "1000".to_string(),
         1,
+        1000000,
+        "2500".to_string(),
+        "2500".to_string(),
     )
     .unwrap();
 
@@ -827,6 +842,9 @@ fn support_multisig_approve_message() {
         "1000".to_string(),
         "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
         1,
+        1000000,
+        "2500".to_string(),
+        "2500".to_string(),
     )
     .unwrap();
 
@@ -890,6 +908,9 @@ fn support_multisig_cancel_message() {
         "1000".to_string(),
         "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
         1,
+        1000000,
+        "2500".to_string(),
+        "2500".to_string(),
     )
     .unwrap();
 

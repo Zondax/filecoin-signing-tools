@@ -188,7 +188,7 @@ describeCall('updatePymtChan', function () {
       }
     }
 
-    let update_pymtchan = filecoin_signer.updatePymtChan("t01003", recoveredKey.address, signedVoucherBase64, 1)
+    let update_pymtchan = filecoin_signer.updatePymtChan("t01003", recoveredKey.address, signedVoucherBase64, 1, "200000000", "2500", "2500")
 
     console.log(update_pymtchan)
 
@@ -228,7 +228,7 @@ describeCall('settlePymtChan', function () {
         Value: '0'
       }
     }
-    let settle_pymtchan = filecoin_signer.settlePymtChan("t01003", recoveredKey.address, 1)
+    let settle_pymtchan = filecoin_signer.settlePymtChan("t01003", recoveredKey.address, 1, "20000000", "2500", "2500")
 
     console.log(settle_pymtchan)
 
@@ -267,7 +267,7 @@ describeCall('collectPymtChan', function () {
       }
     }
 
-    let collect_pymtchan = filecoin_signer.collectPymtChan("t01003", recoveredKey.address, 1)
+    let collect_pymtchan = filecoin_signer.collectPymtChan("t01003", recoveredKey.address, 1, "20000000", "2500", "2500")
     let signedMessage = filecoin_signer.transactionSignLotus(collect_pymtchan, privateKey);
     signedMessage = JSON.parse(signedMessage);
 

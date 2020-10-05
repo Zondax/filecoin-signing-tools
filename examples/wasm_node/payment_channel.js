@@ -252,6 +252,10 @@ async function main () {
   
   console.log(signedVoucher)
   
+  /* Verify voucher signature */
+  
+  console.log(filecoin_signer.verifyVoucherSignature(signedVoucher, "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"))
+  
   /*  Create Voucher 2 */
   
   console.log("##### CREATE VOUCHER 2 #####")
@@ -267,6 +271,8 @@ async function main () {
   let signedVoucher2 = filecoin_signer.signVoucher(voucher2, VOUCHER_SIGNER)
   
   console.log(signedVoucher2)
+  
+  console.log(filecoin_signer.verifyVoucherSignature(signedVoucher2, "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"))
   
   let tmp = cbor.deserialize(Buffer.from(signedVoucher2, 'base64'))[10]
   
