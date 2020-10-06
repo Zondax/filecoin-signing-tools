@@ -627,7 +627,7 @@ fn payment_channel_collect() {
     let from_key = "Is8RE05W1aR6Xyk4IbpVA71sU2ibVQQgle80rjs8U8E=".to_string();
     let _from_pkey = "34a9e12cd978a29b89681365507433c6e3ee9daa"; // from base32decode("gsu6clgzpcrjxclicnsva5bty3r65hnk")
     let _pch_addr_hex = "70125899295ada2a86f7e48f90df1b6b486945ad"; // from base32decode("oajfrgjjllncvbxx4shzbxy3nnegsrnn")
-    let privkey = PrivateKey::try_from(from_key.to_string()).unwrap();
+    let privkey = PrivateKey::try_from(from_key).unwrap();
 
     let pch_collect_message_unsigned_api = collect_pymtchan(
         "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq".to_string(),

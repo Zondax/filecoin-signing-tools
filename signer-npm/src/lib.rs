@@ -296,6 +296,7 @@ fn signer_value_to_string(address_value: JsValue) -> Result<String, JsValue> {
 }
 
 #[wasm_bindgen(js_name = createMultisigWithFee)]
+#[allow(clippy::too_many_arguments)]
 pub fn create_multisig_with_fee(
     sender_address: String,
     addresses: Vec<JsValue>,
@@ -383,6 +384,7 @@ pub fn create_multisig(
 }
 
 #[wasm_bindgen(js_name = proposeMultisigWithFee)]
+#[allow(clippy::too_many_arguments)]
 pub fn propose_multisig_with_fee(
     multisig_address: String,
     to_address: String,
@@ -446,6 +448,7 @@ pub fn propose_multisig(
 }
 
 #[wasm_bindgen(js_name = approveMultisigWithFee)]
+#[allow(clippy::too_many_arguments)]
 pub fn approve_multisig_with_fee(
     multisig_address: String,
     message_id: i32,
@@ -517,6 +520,7 @@ pub fn approve_multisig(
 }
 
 #[wasm_bindgen(js_name = cancelMultisigWithFee)]
+#[allow(clippy::too_many_arguments)]
 pub fn cancel_multisig_with_fee(
     multisig_address: String,
     message_id: i32,
