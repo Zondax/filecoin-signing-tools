@@ -69,7 +69,7 @@ describeCall('createPymtChan', function () {
       },
     }
 
-    let create_pymtchan = filecoin_signer.createPymtChan(from, to, "10000000000", 1, "200000000", "2500", "2500");
+    let create_pymtchan = filecoin_signer.createPymtChanWithFee(from, to, "10000000000", 1, "200000000", "2500", "2500");
 
     console.log(create_pymtchan)
 
@@ -132,7 +132,7 @@ describeCall('createPymtChan', function () {
       }
     }
 
-    let create_pymtchan = filecoin_signer.createPymtChan(from, to, "10000000000", 1, "200000000", "2500", "2500")
+    let create_pymtchan = filecoin_signer.createPymtChanWithFee(from, to, "10000000000", 1, "200000000", "2500", "2500")
 
     console.log(create_pymtchan)
 
@@ -188,7 +188,7 @@ describeCall('updatePymtChan', function () {
       }
     }
 
-    let update_pymtchan = filecoin_signer.updatePymtChan("t01003", recoveredKey.address, signedVoucherBase64, 1, "200000000", "2500", "2500")
+    let update_pymtchan = filecoin_signer.updatePymtChanWithFee("t01003", recoveredKey.address, signedVoucherBase64, 1, "200000000", "2500", "2500")
 
     console.log(update_pymtchan)
 
@@ -228,7 +228,7 @@ describeCall('settlePymtChan', function () {
         Value: '0'
       }
     }
-    let settle_pymtchan = filecoin_signer.settlePymtChan("t01003", recoveredKey.address, 1, "20000000", "2500", "2500")
+    let settle_pymtchan = filecoin_signer.settlePymtChanWithFee("t01003", recoveredKey.address, 1, "20000000", "2500", "2500")
 
     console.log(settle_pymtchan)
 
@@ -267,7 +267,7 @@ describeCall('collectPymtChan', function () {
       }
     }
 
-    let collect_pymtchan = filecoin_signer.collectPymtChan("t01003", recoveredKey.address, 1, "20000000", "2500", "2500")
+    let collect_pymtchan = filecoin_signer.collectPymtChanWithFee("t01003", recoveredKey.address, 1, "20000000", "2500", "2500")
     let signedMessage = filecoin_signer.transactionSignLotus(collect_pymtchan, privateKey);
     signedMessage = JSON.parse(signedMessage);
 
