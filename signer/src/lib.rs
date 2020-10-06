@@ -445,6 +445,9 @@ pub fn create_multisig(
     required: i64,
     nonce: u64,
     duration: i64,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     let signers_tmp: Result<Vec<Address>, _> = addresses
         .into_iter()
@@ -490,9 +493,9 @@ pub fn create_multisig(
         from: sender_address,
         nonce,
         value,
-        gas_limit: 1000000,
-        gas_fee_cap: "2500".to_string(),
-        gas_premium: "2500".to_string(),
+        gas_limit: gas_limit,
+        gas_fee_cap: gas_fee_cap,
+        gas_premium: gas_premium,
         method: MethodInit::Exec as u64,
         params: base64::encode(serialized_params.bytes()),
     };
@@ -516,6 +519,9 @@ pub fn proposal_multisig_message(
     from_address: String,
     amount: String,
     nonce: u64,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     let propose_params_multisig = multisig::ProposeParams {
         to: Address::from_str(&to_address)?,
@@ -533,9 +539,9 @@ pub fn proposal_multisig_message(
         from: from_address,
         nonce,
         value: "0".to_string(),
-        gas_limit: 1000000,
-        gas_fee_cap: "2500".to_string(),
-        gas_premium: "2500".to_string(),
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
         method: multisig::MethodMultisig::Propose as u64,
         params: base64::encode(params.bytes()),
     };
@@ -553,6 +559,9 @@ fn approve_or_cancel_multisig_message(
     amount: String,
     from_address: String,
     nonce: u64,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     let proposal_parameter = multisig::ProposalHashData {
         requester: Address::from_str(&proposer_address)?,
@@ -580,9 +589,9 @@ fn approve_or_cancel_multisig_message(
         from: from_address,
         nonce,
         value: "0".to_string(),
-        gas_limit: 1000000,
-        gas_fee_cap: "2500".to_string(),
-        gas_premium: "2500".to_string(),
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
         method,
         params: base64::encode(params.bytes()),
     };
@@ -610,6 +619,9 @@ pub fn approve_multisig_message(
     amount: String,
     from_address: String,
     nonce: u64,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     approve_or_cancel_multisig_message(
         multisig::MethodMultisig::Approve as u64,
@@ -620,6 +632,9 @@ pub fn approve_multisig_message(
         amount,
         from_address,
         nonce,
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
     )
 }
 
@@ -643,6 +658,9 @@ pub fn cancel_multisig_message(
     amount: String,
     from_address: String,
     nonce: u64,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     approve_or_cancel_multisig_message(
         multisig::MethodMultisig::Cancel as u64,
@@ -653,6 +671,9 @@ pub fn cancel_multisig_message(
         amount,
         from_address,
         nonce,
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
     )
 }
 
@@ -709,9 +730,9 @@ pub fn create_pymtchan(
         from: from_address,
         nonce,
         value,
-        gas_limit: gas_limit,
-        gas_fee_cap: gas_fee_cap,
-        gas_premium: gas_premium,
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
         method: MethodInit::Exec as u64,
         params: base64::encode(serialized_params.bytes()),
     };
@@ -733,6 +754,9 @@ pub fn update_pymtchan(
     from_address: String,
     signed_voucher: String,
     nonce: u64,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     let sv_cbor = base64::decode(signed_voucher)?;
 
@@ -755,9 +779,9 @@ pub fn update_pymtchan(
         from: from_address,
         nonce,
         value: "0".to_string(),
-        gas_limit: 200000000,
-        gas_fee_cap: "2500".to_string(),
-        gas_premium: "2500".to_string(),
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
         method: paych::MethodsPaych::UpdateChannelState as u64,
         params: base64::encode(serialized_params.bytes()),
     };
@@ -777,6 +801,9 @@ pub fn settle_pymtchan(
     pch_address: String,
     from_address: String,
     nonce: u64,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
     let pch_settle_message_api = UnsignedMessageAPI {
@@ -784,9 +811,9 @@ pub fn settle_pymtchan(
         from: from_address,
         nonce,
         value: "0".to_string(),
-        gas_limit: 20000000,
-        gas_fee_cap: "2500".to_string(),
-        gas_premium: "2500".to_string(),
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
         method: paych::MethodsPaych::Settle as u64,
         params: base64::encode(Vec::new()),
     };
@@ -806,6 +833,9 @@ pub fn collect_pymtchan(
     pch_address: String,
     from_address: String,
     nonce: u64,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
     let pch_collect_message_api = UnsignedMessageAPI {
@@ -813,9 +843,9 @@ pub fn collect_pymtchan(
         from: from_address,
         nonce,
         value: "0".to_string(),
-        gas_limit: 20000000,
-        gas_fee_cap: "2500".to_string(),
-        gas_premium: "2500".to_string(),
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
         method: paych::MethodsPaych::Collect as u64,
         params: base64::encode(Vec::new()),
     };

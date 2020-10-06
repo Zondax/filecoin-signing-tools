@@ -9,7 +9,7 @@ use forest_message::{SignedMessage, UnsignedMessage};
 struct DummySigner;
 
 impl Signer for DummySigner {
-    fn sign_bytes(&self, _: Vec<u8>, _: &Address) -> Result<Signature, Box<dyn std::error::Error>> {
+    fn sign_bytes(&self, _: &[u8], _: &Address) -> Result<Signature, Box<dyn std::error::Error>> {
         Ok(Signature::new_secp256k1([0u8].to_vec()))
     }
 }

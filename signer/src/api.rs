@@ -590,29 +590,37 @@ impl MessageParams {
 /// Unsigned message api structure
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
-#[serde(deny_unknown_fields)]
 pub struct UnsignedMessageAPI {
+    #[serde(alias = "To")]
     pub to: String,
+    #[serde(alias = "From")]
     pub from: String,
+    #[serde(alias = "Nonce")]
     pub nonce: u64,
+    #[serde(alias = "Value")]
     pub value: String,
 
     #[serde(rename = "gaslimit")]
     #[serde(alias = "gasLimit")]
     #[serde(alias = "gas_limit")]
+    #[serde(alias = "GasLimit")]
     pub gas_limit: i64,
 
     #[serde(rename = "gasfeecap")]
     #[serde(alias = "gasFeeCap")]
     #[serde(alias = "gas_fee_cap")]
+    #[serde(alias = "GasFeeCap")]
     pub gas_fee_cap: String,
 
     #[serde(rename = "gaspremium")]
     #[serde(alias = "gasPremium")]
     #[serde(alias = "gas_premium")]
+    #[serde(alias = "GasPremium")]
     pub gas_premium: String,
 
+    #[serde(alias = "Method")]
     pub method: u64,
+    #[serde(alias = "Params")]
     pub params: String,
 }
 
