@@ -59,16 +59,16 @@ class FilecoinRPC {
 
     return response.data;
   }
-  
+
   async readState(address) {
     let response = await this.requester.post("", {
-        jsonrpc: "2.0",
-        method: "Filecoin.StateReadState",
-        id: 1,
-        params: [address, null]
-      });
+      jsonrpc: "2.0",
+      method: "Filecoin.StateReadState",
+      id: 1,
+      params: [address, null],
+    });
 
-      return response.data;
+    return response.data;
   }
 }
 
