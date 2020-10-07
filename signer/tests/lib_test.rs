@@ -944,6 +944,7 @@ fn test_verify_voucher_signature() {
     assert!(result);
 }
 
+#[test]
 fn test_get_cid() {
     let expected_cid = "bafy2bzacebaiinljwwctblf7czp4zxwhz4747z6tpricgn5cumd4xhebftcvu".to_string();
     let message = UnsignedMessageAPI {
