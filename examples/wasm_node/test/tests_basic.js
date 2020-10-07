@@ -501,6 +501,36 @@ describeCall('DeserializeConstructorParams', function () {
   })
 })
 
+describeCall('GetCid', function () {
+  it('get cid from signed message', function () {
+    let signedMessage = {
+      message: {
+        to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+        nonce: 1,
+        value: "100000",
+        gas_limit: 2500000,
+        gas_fee_cap: "1",
+        gas_premium: "1",
+        method: 0,
+        params: "",
+      },
+      signature: {
+        type: 1,
+        data: "0wRrFJZFIVh8m0JD+f5C55YrxD6YAWtCXWYihrPTKdMfgMhYAy86MVhs43hSLXnV+47UReRIe8qFdHRJqFlreAE=",
+      }
+    }
+    
+    let cid = filecoin_signer.getCid(signedMessage)
+    
+    assert.strictEqual(
+      "bafy2bzacebaiinljwwctblf7czp4zxwhz4747z6tpricgn5cumd4xhebftcvu",
+      cid
+    )
+    
+  })
+})
+
 /* ------------------------------------------------------------------------------------------------- */
 
 const bls_tests_vectors_path = "../generated_test_cases.json";
