@@ -4,7 +4,7 @@ use std::convert::TryFrom;
 
 use wasm_bindgen::prelude::*;
 
-use filecoin_signer::api::{MessageParams, UnsignedMessageAPI, SignedMessageAPI};
+use filecoin_signer::api::{MessageParams, SignedMessageAPI, UnsignedMessageAPI};
 use filecoin_signer::signature::Signature;
 use filecoin_signer::{CborBuffer, PrivateKey};
 
@@ -918,9 +918,7 @@ pub fn verify_voucher_signature(
 }
 
 #[wasm_bindgen(js_name = getCid)]
-pub fn get_cid(
-    signed_message: JsValue
-) -> Result<String, JsValue> {
+pub fn get_cid(signed_message: JsValue) -> Result<String, JsValue> {
     set_panic_hook();
 
     let signed_message_api: SignedMessageAPI = signed_message
