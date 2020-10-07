@@ -34,7 +34,7 @@ class FilecoinRPC {
     });
 
     if ("error" in response.data) {
-      throw new Error(response.data.error);
+      throw new Error(response.data.error.message);
     }
 
     let cid = response.data.result;

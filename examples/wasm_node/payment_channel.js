@@ -38,7 +38,9 @@ async function main () {
   /* Get nonce */
   console.log("##### GET NONCE #####")
 
-  nonce = await getNonce(recoveredKey.address)
+  nonce = await filRPC.getNonce(recoveredKey.address)
+  nonce = nonce.result
+  console.log(nonce)
 
   /* Create payment channel */
   
@@ -128,7 +130,8 @@ async function main () {
   /* Get nonce */
   console.log("##### GET NONCE #####")
 
-  nonce = await getNonce("t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy")
+  nonce = await filRPC.getNonce("t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy")
+  nonce = nonce.result
 
   let update_paych_message = filecoin_signer.updatePymtChan(PAYMENT_CHANNEL_ADDRESS, "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy", signedVoucher, nonce, "0", "0", "0")
 
@@ -171,6 +174,7 @@ async function main () {
   console.log("##### GET NONCE #####")
 
   nonce = await filRPC.getNonce("t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy")
+  nonce = nonce.result
   
   let settle_paych_message = filecoin_signer.settlePymtChan(PAYMENT_CHANNEL_ADDRESS, "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy", nonce, "0", "0", "0")
 
@@ -195,7 +199,7 @@ async function main () {
 
   console.log("##### READ PAYMENT CHANNEL STATE #####")
   
-  response = await filRPC.sendSignedMessage(PAYMENT_CHANNEL_ADDRESS)
+  response = await filRPC.readState(PAYMENT_CHANNEL_ADDRESS)
 
   console.log(response)
   
@@ -212,6 +216,7 @@ async function main () {
   console.log("##### GET NONCE #####")
 
   nonce = await filRPC.getNonce("t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy")
+  nonce = nonce.result
   
   let collect_paych_message = filecoin_signer.collectPymtChan(PAYMENT_CHANNEL_ADDRESS, "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy", nonce, "0", "0", "0")
 
@@ -299,7 +304,7 @@ async function init() {
 
     /* Send signed tx */
 
-    result = await sendSignedMessage(signedMessage)
+    result = await filRPC.sendSignedMessage(signedMessage)
 
     console.log(result)
 }
