@@ -13,15 +13,17 @@ use rayon::prelude::*;
 
 use extras::paych;
 
-use filecoin_signer::api::{MessageParams, MessageTxAPI, UnsignedMessageAPI};
+use filecoin_signer::api::{
+    MessageParams, MessageTxAPI, SignatureAPI, SignedMessageAPI, UnsignedMessageAPI,
+};
 use filecoin_signer::signature::{Signature, SignatureBLS};
 use filecoin_signer::{
     approve_multisig_message, cancel_multisig_message, collect_pymtchan, create_multisig,
-    create_pymtchan, create_voucher, key_derive, key_derive_from_seed, key_generate_mnemonic,
-    key_recover, proposal_multisig_message, serialize_params, settle_pymtchan, sign_voucher,
-    transaction_parse, transaction_serialize, transaction_sign, transaction_sign_raw,
-    update_pymtchan, verify_aggregated_signature, verify_signature, verify_voucher_signature,
-    CborBuffer, Mnemonic, PrivateKey,
+    create_pymtchan, create_voucher, get_cid, key_derive, key_derive_from_seed,
+    key_generate_mnemonic, key_recover, proposal_multisig_message, serialize_params,
+    settle_pymtchan, sign_voucher, transaction_parse, transaction_serialize, transaction_sign,
+    transaction_sign_raw, update_pymtchan, verify_aggregated_signature, verify_signature,
+    verify_voucher_signature, CborBuffer, Mnemonic, PrivateKey,
 };
 
 const BLS_PUBKEY: &str = "ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc07904";
@@ -940,4 +942,30 @@ fn test_verify_voucher_signature() {
     let result = verify_voucher_signature(voucher_base64_string, address_signer).expect("FIX ME");
 
     assert!(result);
+}
+
+#[test]
+fn test_get_cid() {
+    let expected_cid = "bafy2bzacebaiinljwwctblf7czp4zxwhz4747z6tpricgn5cumd4xhebftcvu".to_string();
+    let message = UnsignedMessageAPI {
+        to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
+        from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+        nonce: 1,
+        value: "100000".to_string(),
+        gas_limit: 2500000,
+        gas_fee_cap: "1".to_string(),
+        gas_premium: "1".to_string(),
+        method: 0,
+        params: "".to_string(),
+    };
+    let signature = SignatureAPI{
+        sig_type: 1,
+        data: base64::decode("0wRrFJZFIVh8m0JD+f5C55YrxD6YAWtCXWYihrPTKdMfgMhYAy86MVhs43hSLXnV+47UReRIe8qFdHRJqFlreAE=".to_string()).unwrap(),
+    };
+
+    let signed_message_api = SignedMessageAPI { message, signature };
+
+    let cid = get_cid(signed_message_api).unwrap();
+
+    assert_eq!(cid, expected_cid);
 }

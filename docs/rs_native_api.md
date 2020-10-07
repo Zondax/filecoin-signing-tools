@@ -518,3 +518,36 @@ let result = verify_voucher_signature(voucher_base64_string, address_signer).unw
 
 println!("{}", result);
 ```
+
+## get_cid
+
+Get CID hash of a signed message.
+
+Arguments :
+* **signed message**: SignedMessageAPI object;
+
+```rust
+use signer::{get_cid};
+
+let message = UnsignedMessageAPI {
+    to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
+    from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+    nonce: 1,
+    value: "100000".to_string(),
+    gas_limit: 2500000,
+    gas_fee_cap: "1".to_string(),
+    gas_premium: "1".to_string(),
+    method: 0,
+    params: "".to_string(),
+};
+let signature = SignatureAPI{
+    sig_type: 1,
+    data: base64::decode("0wRrFJZFIVh8m0JD+f5C55YrxD6YAWtCXWYihrPTKdMfgMhYAy86MVhs43hSLXnV+47UReRIe8qFdHRJqFlreAE=".to_string()).unwrap(),
+};
+
+let signed_message_api = SignedMessageAPI { message, signature };
+
+let cid = get_cid(signed_message_api).unwrap();
+
+println!("{}", cid);
+```

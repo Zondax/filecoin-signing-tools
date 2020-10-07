@@ -7,9 +7,10 @@ use std::str::FromStr;
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
 use forest_address::{Address, Network, Protocol};
-use forest_cid::{multihash::Identity, Cid, Codec};
+use forest_cid::{multihash::Blake2b256, multihash::Identity, Cid, Codec};
 use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
+use forest_message::SignedMessage;
 use num_bigint_chainsafe::BigInt;
 use rayon::prelude::*;
 use secp256k1::util::{
@@ -493,9 +494,9 @@ pub fn create_multisig(
         from: sender_address,
         nonce,
         value,
-        gas_limit: gas_limit,
-        gas_fee_cap: gas_fee_cap,
-        gas_premium: gas_premium,
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
         method: MethodInit::Exec as u64,
         params: base64::encode(serialized_params.bytes()),
     };
@@ -1106,4 +1107,18 @@ pub fn verify_voucher_signature(
             "Voucher not signed.".to_string(),
         )),
     }
+}
+
+/// Return the CID of a signed message
+///
+/// # Arguments
+///
+/// * `signed_message_api` - The signed message;
+pub fn get_cid(signed_message_api: SignedMessageAPI) -> Result<String, SignerError> {
+    let signed_message = SignedMessage::try_from(&signed_message_api)?;
+    let cbor_signed_message = to_vec(&signed_message)?;
+
+    let cid = Cid::new_from_cbor(&cbor_signed_message, Blake2b256);
+
+    Ok(cid.to_string())
 }
