@@ -7,7 +7,7 @@ use std::str::FromStr;
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
 use forest_address::{Address, Network, Protocol};
-use forest_cid::{multihash::Identity, multihash::Blake2b256, Cid, Codec};
+use forest_cid::{multihash::Blake2b256, multihash::Identity, Cid, Codec};
 use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
 use forest_message::SignedMessage;
