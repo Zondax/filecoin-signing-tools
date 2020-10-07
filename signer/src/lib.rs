@@ -494,9 +494,9 @@ pub fn create_multisig(
         from: sender_address,
         nonce,
         value,
-        gas_limit: gas_limit,
-        gas_fee_cap: gas_fee_cap,
-        gas_premium: gas_premium,
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
         method: MethodInit::Exec as u64,
         params: base64::encode(serialized_params.bytes()),
     };

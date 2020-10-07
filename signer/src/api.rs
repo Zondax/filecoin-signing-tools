@@ -5,7 +5,6 @@ use extras::{multisig, paych, ExecParams};
 use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
 use forest_crypto::signature;
-use forest_encoding::{blake2b_256, to_vec};
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
 use num_bigint_chainsafe::BigInt;
@@ -13,7 +12,6 @@ use serde::{Deserialize, Serialize, Serializer};
 
 use crate::error::SignerError;
 use crate::signature::Signature;
-use crate::utils;
 
 pub enum SigTypes {
     SigTypeSecp256k1 = 0x01,
@@ -702,11 +700,9 @@ impl TryFrom<&SignatureAPI> for signature::Signature {
         match sig.sig_type {
             2 => (Ok(signature::Signature::new_bls(sig.data.to_vec()))),
             1 => (Ok(signature::Signature::new_secp256k1(sig.data.to_vec()))),
-            _ => {
-                (Err(SignerError::GenericString(
+            _ => (Err(SignerError::GenericString(
                     "Unknown signature type.".to_string(),
                 )))
-            }
         }
     }
 }
