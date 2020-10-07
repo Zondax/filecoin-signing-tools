@@ -4,7 +4,7 @@ use std::convert::TryFrom;
 
 use wasm_bindgen::prelude::*;
 
-use filecoin_signer::api::{MessageParams, UnsignedMessageAPI};
+use filecoin_signer::api::{MessageParams, UnsignedMessageAPI, SignedMessageAPI};
 use filecoin_signer::signature::Signature;
 use filecoin_signer::{CborBuffer, PrivateKey};
 
@@ -913,6 +913,22 @@ pub fn verify_voucher_signature(
 
     let result = filecoin_signer::verify_voucher_signature(voucher_base64, address_signer)
         .map_err(|e| JsValue::from(format!("Error verifying voucher signature: {}", e)))?;
+
+    Ok(result)
+}
+
+#[wasm_bindgen(js_name = getCid)]
+pub fn get_cid(
+    signed_message: JsValue
+) -> Result<String, JsValue> {
+    set_panic_hook();
+
+    let signed_message_api: SignedMessageAPI = signed_message
+        .into_serde()
+        .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
+
+    let result = filecoin_signer::get_cid(signed_message_api)
+        .map_err(|e| JsValue::from(format!("Error getting the cid: {}", e)))?;
 
     Ok(result)
 }
