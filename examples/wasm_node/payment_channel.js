@@ -1,4 +1,5 @@
 const filecoin_signer = require('@zondax/filecoin-signing-tools');
+const FilecoinRPC = require('@zondax/filecoin-signing-tools/utils');
 const bip39 = require('bip39');
 const bip32 = require('bip32');
 const axios = require('axios');
@@ -9,6 +10,7 @@ const cbor = require("ipld-dag-cbor").util;
 
 const URL = process.env.URL
 const TOKEN = process.env.TOKEN
+const filRPC = new FilecoinRPC({url: URL, token: TOKEN})
 
 const VOUCHER_SIGNER = "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo="
 const privateKeyBase64 = "YbDPh1vq3fBClzbiwDt6WjniAdZn8tNcCwcBO2hDwyk="
@@ -17,142 +19,6 @@ const privateKey = Buffer.from(privateKeyBase64, 'base64')
 const headers = { "Authorization": `Bearer ${TOKEN}` }
 
 const skip = true
-
-async function init() {
-  /* Prepare node for when you start with a fresh devnet node */
-  
-    /* Import private key */
-    response = await axios.post(URL, {
-      jsonrpc: "2.0",
-      method: "Filecoin.WalletImport",
-      id: 1,
-      params: [{ Type: "secp256k1", PrivateKey: privateKeyBase64}]
-    }, {headers})
-
-    console.log(response.data)
-
-    /* Get miner address with funds */
-    response = await axios.post(URL, {
-      jsonrpc: "2.0",
-      method: "Filecoin.WalletList",
-      id: 1,
-      params: []
-    }, {headers})
-
-    let address
-    for (i in response.data.result) {
-      if (response.data.result[i].startsWith("t3")) {
-        address = response.data.result[i]
-      }
-    }
-    console.log(address)
-
-    /* Get nonce */
-
-    let nonce = await getNonce(address)
-
-    response = await axios.post(URL, {
-      jsonrpc: "2.0",
-      method: "Filecoin.WalletSignMessage",
-      id: 1,
-      params: [address, {
-        From: address,
-        To: "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
-        Nonce: nonce,
-        GasPremium: "2500",
-        GasFeeCap: "2500",
-        GasLimit: 2500000,
-        Method: 0,
-        Value: "10000000000000",
-        Params: ""
-      }]
-    }, {headers})
-
-    console.log(response.data)
-    let signedMessage = response.data.result
-
-    /* Send signed tx */
-
-    let result = await sendSignedMessage(signedMessage)
-
-    console.log(result)
-    
-    /* Get nonce */
-    nonce = await getNonce(address)
-
-    response = await axios.post(URL, {
-      jsonrpc: "2.0",
-      method: "Filecoin.WalletSignMessage",
-      id: 1,
-      params: [address, {
-        From: address,
-        To: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-        Nonce: nonce,
-        GasFeeCap: "2500",
-        GasPremium: "2500",
-        GasLimit: 2500000,
-        Method: 0,
-        Value: "10000000000000",
-        Params: ""
-      }]
-    }, {headers})
-
-    console.log(response.data)
-    signedMessage = response.data.result
-
-    /* Send signed tx */
-
-    result = await sendSignedMessage(signedMessage)
-
-    console.log(result)
-}
-
-async function getNonce(address) {
-  /* Get Nonce */
-  let response = await axios.post(URL, {
-    jsonrpc: "2.0",
-    method: "Filecoin.MpoolGetNonce",
-    id: 1,
-    params: [address]
-  }, {headers})
-
-  return response.data.result
-}
-
-async function getGasEstimation(message) {  
-  /* Gas Estimation */
-  let response = await axios.post(URL, {
-    jsonrpc: "2.0",
-    method: "Filecoin.GasEstimateMessageGas",
-    id: 1,
-    params: [message, {MaxFee: "0"}, null]
-  }, {headers})
-    
-  return response.data
-}
-
-async function sendSignedMessage(signedMessage) {
-  /*  Send signed tx */
-  let response = await axios.post(URL, {
-    jsonrpc: "2.0",
-    method: "Filecoin.MpoolPush",
-    id: 1,
-    params: [signedMessage]
-  }, { headers })
-
-  let cid = response.data.result
-
-  /* Wait for message */
-
-  response = await axios.post(URL, {
-    jsonrpc: "2.0",
-    method: "Filecoin.StateWaitMsg",
-    id: 1,
-    params: [cid, null]
-  }, { headers })
-
-  return response.data
-}
 
 async function main () {
   let response
@@ -172,7 +38,9 @@ async function main () {
   /* Get nonce */
   console.log("##### GET NONCE #####")
 
-  nonce = await getNonce(recoveredKey.address)
+  nonce = await filRPC.getNonce(recoveredKey.address)
+  nonce = nonce.result
+  console.log(nonce)
 
   /* Create payment channel */
   
@@ -180,7 +48,7 @@ async function main () {
   
   let create_pymtchan = filecoin_signer.createPymtChan(recoveredKey.address, "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba", "10000000000", nonce, "0", "0", "0")
   
-  create_pymtchan = await getGasEstimation(create_pymtchan)
+  create_pymtchan = await filRPC.getGasEstimation(create_pymtchan)
   
   if ('result' in create_pymtchan) {
     create_pymtchan = create_pymtchan.result
@@ -197,7 +65,7 @@ async function main () {
   
   console.log("##### SEND PAYMENT CHANNEL #####")
   
-  result = await sendSignedMessage(signedMessage)
+  result = await filRPC.sendSignedMessage(signedMessage)
 
   console.log(result)
   PCH = result.result.ReturnDec.IDAddress
@@ -262,11 +130,12 @@ async function main () {
   /* Get nonce */
   console.log("##### GET NONCE #####")
 
-  nonce = await getNonce("t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy")
+  nonce = await filRPC.getNonce("t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy")
+  nonce = nonce.result
 
   let update_paych_message = filecoin_signer.updatePymtChan(PAYMENT_CHANNEL_ADDRESS, "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy", signedVoucher, nonce, "0", "0", "0")
 
-  update_paych_message = await getGasEstimation(update_paych_message)
+  update_paych_message = await filRPC.getGasEstimation(update_paych_message)
   
   if ('result' in update_paych_message) {
     update_paych_message = update_paych_message.result
@@ -282,7 +151,7 @@ async function main () {
   
   console.log("##### SEND PAYMENT CHANNEL #####")
   
-  result = await sendSignedMessage(signedMessage)
+  result = await filRPC.sendSignedMessage(signedMessage)
 
   console.log(result)
   
@@ -304,11 +173,12 @@ async function main () {
   /* Get nonce */
   console.log("##### GET NONCE #####")
 
-  nonce = await getNonce("t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy")
+  nonce = await filRPC.getNonce("t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy")
+  nonce = nonce.result
   
   let settle_paych_message = filecoin_signer.settlePymtChan(PAYMENT_CHANNEL_ADDRESS, "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy", nonce, "0", "0", "0")
 
-  settle_paych_message = await getGasEstimation(settle_paych_message)
+  settle_paych_message = await filRPC.getGasEstimation(settle_paych_message)
   
   if ('result' in settle_paych_message) {
     settle_paych_message = settle_paych_message.result
@@ -323,20 +193,15 @@ async function main () {
   
   console.log("##### SETTLE PAYMENT CHANNEL #####")
   
-  result = await sendSignedMessage(signedMessage)
+  result = await filRPC.sendSignedMessage(signedMessage)
 
   console.log(result)
 
   console.log("##### READ PAYMENT CHANNEL STATE #####")
   
-  response = await axios.post(URL, {
-    jsonrpc: "2.0",
-    method: "Filecoin.StateReadState",
-    id: 1,
-    params: [PAYMENT_CHANNEL_ADDRESS, null]
-  }, { headers })
+  response = await filRPC.readState(PAYMENT_CHANNEL_ADDRESS)
 
-  console.log(response.data)
+  console.log(response)
   
   /* 
     IMPORTANT !!
@@ -350,11 +215,12 @@ async function main () {
   /* Get nonce */
   console.log("##### GET NONCE #####")
 
-  nonce = await getNonce("t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy")
+  nonce = await filRPC.getNonce("t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy")
+  nonce = nonce.result
   
   let collect_paych_message = filecoin_signer.collectPymtChan(PAYMENT_CHANNEL_ADDRESS, "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy", nonce, "0", "0", "0")
 
-  collect_paych_message = await getGasEstimation(collect_paych_message)
+  collect_paych_message = await filRPC.getGasEstimation(collect_paych_message)
 
   /* Error on gas estimation call because not ready to collect. Expected behavior. */ 
   console.log(collect_paych_message)
@@ -369,6 +235,78 @@ async function main () {
 
   console.log(result)*/
   
+}
+
+async function init() {
+  /* Prepare node for when you start with a fresh devnet node */
+  
+    /* Import private key */
+    response = await axios.post(URL, {
+      jsonrpc: "2.0",
+      method: "Filecoin.WalletImport",
+      id: 1,
+      params: [{ Type: "secp256k1", PrivateKey: privateKeyBase64}]
+    }, {headers})
+
+    console.log(response.data)
+
+    /* Get miner address with funds */
+    response = await axios.post(URL, {
+      jsonrpc: "2.0",
+      method: "Filecoin.WalletList",
+      id: 1,
+      params: []
+    }, {headers})
+
+    let address
+    for (i in response.data.result) {
+      if (response.data.result[i].startsWith("t3")) {
+        address = response.data.result[i]
+      }
+    }
+    console.log(address)
+
+    response = await axios.post(URL, {
+      jsonrpc: "2.0",
+      method: "Filecoin.MpoolPushMessage",
+      id: 1,
+      params: [{
+        From: address,
+        To: "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+        Method: 0,
+        Value: "10000000000000",
+        Params: ""
+      }, { MaxFee: "0" }]
+    }, {headers})
+
+    console.log(response.data)
+    let signedMessage = response.data.result
+
+    /* Send signed tx */
+
+    let result = await filRPC.sendSignedMessage(signedMessage)
+
+    response = await axios.post(URL, {
+      jsonrpc: "2.0",
+      method: "Filecoin.MpoolPushMessage",
+      id: 1,
+      params: [{
+        From: address,
+        To: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+        Method: 0,
+        Value: "10000000000000",
+        Params: ""
+      }, { MaxFee : "0"}]
+    }, {headers})
+
+    console.log(response.data)
+    signedMessage = response.data.result
+
+    /* Send signed tx */
+
+    result = await filRPC.sendSignedMessage(signedMessage)
+
+    console.log(result)
 }
 
 main()
