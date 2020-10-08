@@ -4,7 +4,7 @@ use std::convert::TryFrom;
 
 use wasm_bindgen::prelude::*;
 
-use filecoin_signer::api::{MessageParams, UnsignedMessageAPI};
+use filecoin_signer::api::{MessageParams, SignedMessageAPI, UnsignedMessageAPI};
 use filecoin_signer::signature::Signature;
 use filecoin_signer::{CborBuffer, PrivateKey};
 
@@ -295,6 +295,52 @@ fn signer_value_to_string(address_value: JsValue) -> Result<String, JsValue> {
     }
 }
 
+#[wasm_bindgen(js_name = createMultisigWithFee)]
+#[allow(clippy::too_many_arguments)]
+pub fn create_multisig_with_fee(
+    sender_address: String,
+    addresses: Vec<JsValue>,
+    value: String,
+    required: i32,
+    nonce: u32,
+    duration: i64,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let addresses_strings_tmp: Result<Vec<String>, _> =
+        addresses.into_iter().map(signer_value_to_string).collect();
+
+    let addresses_strings = match addresses_strings_tmp {
+        Ok(addresses_strings) => addresses_strings,
+        Err(_) => {
+            return Err(JsValue::from_str("Error while parsing addresses"));
+        }
+    };
+
+    let multisig_transaction = filecoin_signer::create_multisig(
+        sender_address,
+        addresses_strings,
+        value,
+        required as i64,
+        nonce as u64,
+        duration,
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
+    )
+    .map_err(|e| {
+        JsValue::from_str(format!("Error creating multisig transaction: {}", e).as_str())
+    })?;
+
+    let multisig_transaction_js = JsValue::from_serde(&multisig_transaction)
+        .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(multisig_transaction_js)
+}
+
 #[wasm_bindgen(js_name = createMultisig)]
 pub fn create_multisig(
     sender_address: String,
@@ -323,6 +369,9 @@ pub fn create_multisig(
         required as i64,
         nonce as u64,
         duration,
+        0,
+        "0".to_string(),
+        "0".to_string(),
     )
     .map_err(|e| {
         JsValue::from_str(format!("Error creating multisig transaction: {}", e).as_str())
@@ -330,6 +379,40 @@ pub fn create_multisig(
 
     let multisig_transaction_js = JsValue::from_serde(&multisig_transaction)
         .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(multisig_transaction_js)
+}
+
+#[wasm_bindgen(js_name = proposeMultisigWithFee)]
+#[allow(clippy::too_many_arguments)]
+pub fn propose_multisig_with_fee(
+    multisig_address: String,
+    to_address: String,
+    from_address: String,
+    amount: String,
+    nonce: u32,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let multisig_transaction = filecoin_signer::proposal_multisig_message(
+        multisig_address,
+        to_address,
+        from_address,
+        amount,
+        nonce as u64,
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
+    )
+    .map_err(|e| {
+        JsValue::from_str(format!("Error porposing multisig transaction: {}", e).as_str())
+    })?;
+
+    let multisig_transaction_js = JsValue::from_serde(&multisig_transaction)
+        .map_err(|e| JsValue::from(format!("Error porposing transaction: {}", e)))?;
 
     Ok(multisig_transaction_js)
 }
@@ -350,6 +433,9 @@ pub fn propose_multisig(
         from_address,
         amount,
         nonce as u64,
+        0,
+        "0".to_string(),
+        "0".to_string(),
     )
     .map_err(|e| {
         JsValue::from_str(format!("Error porposing multisig transaction: {}", e).as_str())
@@ -357,6 +443,44 @@ pub fn propose_multisig(
 
     let multisig_transaction_js = JsValue::from_serde(&multisig_transaction)
         .map_err(|e| JsValue::from(format!("Error porposing transaction: {}", e)))?;
+
+    Ok(multisig_transaction_js)
+}
+
+#[wasm_bindgen(js_name = approveMultisigWithFee)]
+#[allow(clippy::too_many_arguments)]
+pub fn approve_multisig_with_fee(
+    multisig_address: String,
+    message_id: i32,
+    proposer_address: String,
+    to_address: String,
+    amount: String,
+    from_address: String,
+    nonce: u32,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let multisig_transaction = filecoin_signer::approve_multisig_message(
+        multisig_address,
+        message_id as i64,
+        proposer_address,
+        to_address,
+        amount,
+        from_address,
+        nonce as u64,
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
+    )
+    .map_err(|e| {
+        JsValue::from_str(format!("Error approving multisig transaction: {}", e).as_str())
+    })?;
+
+    let multisig_transaction_js = JsValue::from_serde(&multisig_transaction)
+        .map_err(|e| JsValue::from(format!("Error approving transaction: {}", e)))?;
 
     Ok(multisig_transaction_js)
 }
@@ -381,6 +505,9 @@ pub fn approve_multisig(
         amount,
         from_address,
         nonce as u64,
+        0,
+        "0".to_string(),
+        "0".to_string(),
     )
     .map_err(|e| {
         JsValue::from_str(format!("Error approving multisig transaction: {}", e).as_str())
@@ -388,6 +515,44 @@ pub fn approve_multisig(
 
     let multisig_transaction_js = JsValue::from_serde(&multisig_transaction)
         .map_err(|e| JsValue::from(format!("Error approving transaction: {}", e)))?;
+
+    Ok(multisig_transaction_js)
+}
+
+#[wasm_bindgen(js_name = cancelMultisigWithFee)]
+#[allow(clippy::too_many_arguments)]
+pub fn cancel_multisig_with_fee(
+    multisig_address: String,
+    message_id: i32,
+    proposer_address: String,
+    to_address: String,
+    amount: String,
+    from_address: String,
+    nonce: u32,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let multisig_transaction = filecoin_signer::cancel_multisig_message(
+        multisig_address,
+        message_id as i64,
+        proposer_address,
+        to_address,
+        amount,
+        from_address,
+        nonce as u64,
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
+    )
+    .map_err(|e| {
+        JsValue::from_str(format!("Error canceling multisig transaction: {}", e).as_str())
+    })?;
+
+    let multisig_transaction_js = JsValue::from_serde(&multisig_transaction)
+        .map_err(|e| JsValue::from(format!("Error canceling transaction: {}", e)))?;
 
     Ok(multisig_transaction_js)
 }
@@ -412,6 +577,9 @@ pub fn cancel_multisig(
         amount,
         from_address,
         nonce as u64,
+        0,
+        "0".to_string(),
+        "0".to_string(),
     )
     .map_err(|e| {
         JsValue::from_str(format!("Error canceling multisig transaction: {}", e).as_str())
@@ -423,8 +591,8 @@ pub fn cancel_multisig(
     Ok(multisig_transaction_js)
 }
 
-#[wasm_bindgen(js_name = createPymtChan)]
-pub fn create_pymtchan(
+#[wasm_bindgen(js_name = createPymtChanWithFee)]
+pub fn create_pymtchan_with_fee(
     from_address: String,
     to_address: String,
     amount: String,
@@ -452,6 +620,59 @@ pub fn create_pymtchan(
     Ok(pch_transaction_js)
 }
 
+#[wasm_bindgen(js_name = createPymtChan)]
+pub fn create_pymtchan(
+    from_address: String,
+    to_address: String,
+    amount: String,
+    nonce: u32,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let pch_transaction = filecoin_signer::create_pymtchan(
+        from_address,
+        to_address,
+        amount,
+        nonce as u64,
+        0,
+        "0".to_string(),
+        "0".to_string(),
+    )
+    .map_err(|e| JsValue::from_str(format!("Error creating payment channel: {}", e).as_str()))?;
+
+    let pch_transaction_js = JsValue::from_serde(&pch_transaction)
+        .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(pch_transaction_js)
+}
+
+#[wasm_bindgen(js_name = settlePymtChanWithFee)]
+pub fn settle_pymtchan_with_fee(
+    pch_address: String,
+    from_address: String,
+    nonce: u32,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let pch_transaction = filecoin_signer::settle_pymtchan(
+        pch_address,
+        from_address,
+        nonce as u64,
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
+    )
+    .map_err(|e| JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str()))?;
+
+    let pch_transaction_js = JsValue::from_serde(&pch_transaction)
+        .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(pch_transaction_js)
+}
+
 #[wasm_bindgen(js_name = settlePymtChan)]
 pub fn settle_pymtchan(
     pch_address: String,
@@ -460,10 +681,42 @@ pub fn settle_pymtchan(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let pch_transaction = filecoin_signer::settle_pymtchan(pch_address, from_address, nonce as u64)
-        .map_err(|e| {
-            JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str())
-        })?;
+    let pch_transaction = filecoin_signer::settle_pymtchan(
+        pch_address,
+        from_address,
+        nonce as u64,
+        0,
+        "0".to_string(),
+        "0".to_string(),
+    )
+    .map_err(|e| JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str()))?;
+
+    let pch_transaction_js = JsValue::from_serde(&pch_transaction)
+        .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(pch_transaction_js)
+}
+
+#[wasm_bindgen(js_name = collectPymtChanWithFee)]
+pub fn collect_pymtchan_with_fee(
+    pch_address: String,
+    from_address: String,
+    nonce: u32,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let pch_transaction = filecoin_signer::collect_pymtchan(
+        pch_address,
+        from_address,
+        nonce as u64,
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
+    )
+    .map_err(|e| JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str()))?;
 
     let pch_transaction_js = JsValue::from_serde(&pch_transaction)
         .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
@@ -479,10 +732,46 @@ pub fn collect_pymtchan(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let pch_transaction =
-        filecoin_signer::collect_pymtchan(pch_address, from_address, nonce as u64).map_err(
-            |e| JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str()),
-        )?;
+    let pch_transaction = filecoin_signer::collect_pymtchan(
+        pch_address,
+        from_address,
+        nonce as u64,
+        0,
+        "0".to_string(),
+        "0".to_string(),
+    )
+    .map_err(|e| JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str()))?;
+
+    let pch_transaction_js = JsValue::from_serde(&pch_transaction)
+        .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
+
+    Ok(pch_transaction_js)
+}
+
+#[wasm_bindgen(js_name = updatePymtChanWithFee)]
+pub fn update_pymtchan_with_fee(
+    pch_address: String,
+    from_address: String,
+    signed_voucher: String,
+    nonce: u32,
+    gas_limit: i64,
+    gas_fee_cap: String,
+    gas_premium: String,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    // TODO: verify if `pch_address` is an actor address. Not needed but good improvement.
+
+    let pch_transaction = filecoin_signer::update_pymtchan(
+        pch_address,
+        from_address,
+        signed_voucher,
+        nonce as u64,
+        gas_limit,
+        gas_fee_cap,
+        gas_premium,
+    )
+    .map_err(|e| JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str()))?;
 
     let pch_transaction_js = JsValue::from_serde(&pch_transaction)
         .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
@@ -501,11 +790,16 @@ pub fn update_pymtchan(
 
     // TODO: verify if `pch_address` is an actor address. Not needed but good improvement.
 
-    let pch_transaction =
-        filecoin_signer::update_pymtchan(pch_address, from_address, signed_voucher, nonce as u64)
-            .map_err(|e| {
-            JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str())
-        })?;
+    let pch_transaction = filecoin_signer::update_pymtchan(
+        pch_address,
+        from_address,
+        signed_voucher,
+        nonce as u64,
+        0,
+        "0".to_string(),
+        "0".to_string(),
+    )
+    .map_err(|e| JsValue::from_str(format!("Error collecting payment channel: {}", e).as_str()))?;
 
     let pch_transaction_js = JsValue::from_serde(&pch_transaction)
         .map_err(|e| JsValue::from(format!("Error creating transaction: {}", e)))?;
@@ -608,4 +902,31 @@ pub fn deserialize_constructor_params(
     })?;
 
     Ok(params_value)
+}
+
+#[wasm_bindgen(js_name = verifyVoucherSignature)]
+pub fn verify_voucher_signature(
+    voucher_base64: String,
+    address_signer: String,
+) -> Result<bool, JsValue> {
+    set_panic_hook();
+
+    let result = filecoin_signer::verify_voucher_signature(voucher_base64, address_signer)
+        .map_err(|e| JsValue::from(format!("Error verifying voucher signature: {}", e)))?;
+
+    Ok(result)
+}
+
+#[wasm_bindgen(js_name = getCid)]
+pub fn get_cid(signed_message: JsValue) -> Result<String, JsValue> {
+    set_panic_hook();
+
+    let signed_message_api: SignedMessageAPI = signed_message
+        .into_serde()
+        .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
+
+    let result = filecoin_signer::get_cid(signed_message_api)
+        .map_err(|e| JsValue::from(format!("Error getting the cid: {}", e)))?;
+
+    Ok(result)
 }

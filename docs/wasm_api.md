@@ -447,3 +447,62 @@ let params = filecoin_signer.deserializeConstructorParams(cbor_base64, "fil/1/pa
 
 console.log(params);
 ```
+
+## verifyVoucherSignature
+
+Verify a voucher signature.
+
+Arguments :
+* **signed voucher**: the base64 string representing the signed voucher;
+* **signer address**: the signer address;
+
+```javascript
+const signer_wasm = require('@zondax/filecoin-signing-tools');
+// or for browser
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
+
+
+const signedVoucher = "i0MA8gcAAED2AAFEAAGGoACAWEIBayRmYQQCatrELBc2rwfu0jJk0EmVr+eVccDsThtM1ZVzkrC53a6qVgrgFkB8OHoiZSlNmW/nmCU7G2POhEeo2gE=";
+const signerAddress = "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba";
+
+const result = filecoin_signer.verifyVoucherSignature(signedVoucher, signerAddress);
+
+// true
+console.log(result);
+```
+
+## getCid
+
+Get the cid hash of a signed message.
+
+Arguments :
+* **signed message**: json object of the sign message;
+
+```javascript
+const signer_wasm = require('@zondax/filecoin-signing-tools');
+// or for browser
+// import * as signer_wasm from "@zondax/filecoin-signing-tools";
+
+
+const signedMessage = {
+  message: {
+    to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+    from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+    nonce: 1,
+    value: "100000",
+    gas_limit: 2500000,
+    gas_fee_cap: "1",
+    gas_premium: "1",
+    method: 0,
+    params: "",
+  },
+  signature: {
+    type: 1,
+    data: "0wRrFJZFIVh8m0JD+f5C55YrxD6YAWtCXWYihrPTKdMfgMhYAy86MVhs43hSLXnV+47UReRIe8qFdHRJqFlreAE=",
+  }
+}
+
+const cid = filecoin_signer.getCid(signedMessage)
+
+console.log(cid);
+```

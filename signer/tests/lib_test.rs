@@ -13,15 +13,17 @@ use rayon::prelude::*;
 
 use extras::paych;
 
-use filecoin_signer::api::{MessageParams, MessageTxAPI, UnsignedMessageAPI};
+use filecoin_signer::api::{
+    MessageParams, MessageTxAPI, SignatureAPI, SignedMessageAPI, UnsignedMessageAPI,
+};
 use filecoin_signer::signature::{Signature, SignatureBLS};
 use filecoin_signer::{
     approve_multisig_message, cancel_multisig_message, collect_pymtchan, create_multisig,
-    create_pymtchan, create_voucher, key_derive, key_derive_from_seed, key_generate_mnemonic,
-    key_recover, proposal_multisig_message, serialize_params, settle_pymtchan, sign_voucher,
-    transaction_parse, transaction_serialize, transaction_sign, transaction_sign_raw,
-    update_pymtchan, verify_aggregated_signature, verify_signature, CborBuffer, Mnemonic,
-    PrivateKey,
+    create_pymtchan, create_voucher, get_cid, key_derive, key_derive_from_seed,
+    key_generate_mnemonic, key_recover, proposal_multisig_message, serialize_params,
+    settle_pymtchan, sign_voucher, transaction_parse, transaction_serialize, transaction_sign,
+    transaction_sign_raw, update_pymtchan, verify_aggregated_signature, verify_signature,
+    verify_voucher_signature, CborBuffer, Mnemonic, PrivateKey,
 };
 
 const BLS_PUBKEY: &str = "ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc07904";
@@ -531,6 +533,9 @@ fn payment_channel_update() {
         "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq".to_string(),
         sv_base64,
         1,
+        200000000,
+        "2500".to_string(),
+        "2500".to_string(),
     )
     .unwrap();
 
@@ -579,6 +584,9 @@ fn payment_channel_settle() {
         "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq".to_string(),
         "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq".to_string(),
         1,
+        20000000,
+        "2500".to_string(),
+        "2500".to_string(),
     )
     .unwrap();
 
@@ -621,12 +629,15 @@ fn payment_channel_collect() {
     let from_key = "Is8RE05W1aR6Xyk4IbpVA71sU2ibVQQgle80rjs8U8E=".to_string();
     let _from_pkey = "34a9e12cd978a29b89681365507433c6e3ee9daa"; // from base32decode("gsu6clgzpcrjxclicnsva5bty3r65hnk")
     let _pch_addr_hex = "70125899295ada2a86f7e48f90df1b6b486945ad"; // from base32decode("oajfrgjjllncvbxx4shzbxy3nnegsrnn")
-    let privkey = PrivateKey::try_from(from_key.to_string()).unwrap();
+    let privkey = PrivateKey::try_from(from_key).unwrap();
 
     let pch_collect_message_unsigned_api = collect_pymtchan(
         "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq".to_string(),
         "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq".to_string(),
         1,
+        20000000,
+        "2500".to_string(),
+        "2500".to_string(),
     )
     .unwrap();
 
@@ -713,6 +724,9 @@ fn support_multisig_create() {
         1,
         1,
         0,
+        1000000,
+        "2500".to_string(),
+        "2500".to_string(),
     )
     .unwrap();
 
@@ -764,6 +778,9 @@ fn support_multisig_propose_message() {
         "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
         "1000".to_string(),
         1,
+        1000000,
+        "2500".to_string(),
+        "2500".to_string(),
     )
     .unwrap();
 
@@ -827,6 +844,9 @@ fn support_multisig_approve_message() {
         "1000".to_string(),
         "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
         1,
+        1000000,
+        "2500".to_string(),
+        "2500".to_string(),
     )
     .unwrap();
 
@@ -890,6 +910,9 @@ fn support_multisig_cancel_message() {
         "1000".to_string(),
         "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
         1,
+        1000000,
+        "2500".to_string(),
+        "2500".to_string(),
     )
     .unwrap();
 
@@ -909,4 +932,40 @@ fn support_multisig_cancel_message() {
         hex::encode(&result),
         "8a004300ec0755011eaf1c8a4bbfeeb0870b1745b1f57503470b711601401a000f4240430009c4430009c4045826821904d25820f8acf2652972f009aeaa1d9b61cfcd86702b3093c19c3049604f19db8cb378f3"
     );
+}
+
+#[test]
+fn test_verify_voucher_signature() {
+    let voucher_base64_string = "i0MA8gcAAED2AAFEAAGGoACAWEIBayRmYQQCatrELBc2rwfu0jJk0EmVr+eVccDsThtM1ZVzkrC53a6qVgrgFkB8OHoiZSlNmW/nmCU7G2POhEeo2gE=".to_string();
+    let address_signer = "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string();
+
+    let result = verify_voucher_signature(voucher_base64_string, address_signer).expect("FIX ME");
+
+    assert!(result);
+}
+
+#[test]
+fn test_get_cid() {
+    let expected_cid = "bafy2bzacebaiinljwwctblf7czp4zxwhz4747z6tpricgn5cumd4xhebftcvu".to_string();
+    let message = UnsignedMessageAPI {
+        to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
+        from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
+        nonce: 1,
+        value: "100000".to_string(),
+        gas_limit: 2500000,
+        gas_fee_cap: "1".to_string(),
+        gas_premium: "1".to_string(),
+        method: 0,
+        params: "".to_string(),
+    };
+    let signature = SignatureAPI{
+        sig_type: 1,
+        data: base64::decode("0wRrFJZFIVh8m0JD+f5C55YrxD6YAWtCXWYihrPTKdMfgMhYAy86MVhs43hSLXnV+47UReRIe8qFdHRJqFlreAE=".to_string()).unwrap(),
+    };
+
+    let signed_message_api = SignedMessageAPI { message, signature };
+
+    let cid = get_cid(signed_message_api).unwrap();
+
+    assert_eq!(cid, expected_cid);
 }

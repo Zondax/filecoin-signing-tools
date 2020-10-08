@@ -4,6 +4,7 @@ use std::str::FromStr;
 use extras::{multisig, paych, ExecParams};
 use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
+use forest_crypto::signature;
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
 use num_bigint_chainsafe::BigInt;
@@ -590,29 +591,37 @@ impl MessageParams {
 /// Unsigned message api structure
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
-#[serde(deny_unknown_fields)]
 pub struct UnsignedMessageAPI {
+    #[serde(alias = "To")]
     pub to: String,
+    #[serde(alias = "From")]
     pub from: String,
+    #[serde(alias = "Nonce")]
     pub nonce: u64,
+    #[serde(alias = "Value")]
     pub value: String,
 
     #[serde(rename = "gaslimit")]
     #[serde(alias = "gasLimit")]
     #[serde(alias = "gas_limit")]
+    #[serde(alias = "GasLimit")]
     pub gas_limit: i64,
 
     #[serde(rename = "gasfeecap")]
     #[serde(alias = "gasFeeCap")]
     #[serde(alias = "gas_fee_cap")]
+    #[serde(alias = "GasFeeCap")]
     pub gas_fee_cap: String,
 
     #[serde(rename = "gaspremium")]
     #[serde(alias = "gasPremium")]
     #[serde(alias = "gas_premium")]
+    #[serde(alias = "GasPremium")]
     pub gas_premium: String,
 
+    #[serde(alias = "Method")]
     pub method: u64,
+    #[serde(alias = "Params")]
     pub params: String,
 }
 
@@ -680,6 +689,22 @@ impl From<&Signature> for SignatureAPI {
                 sig_type: SigTypes::SigTypeBLS as u8,
                 data: sig_bls.0.to_vec(),
             },
+        }
+    }
+}
+
+impl TryFrom<&SignatureAPI> for signature::Signature {
+    type Error = SignerError;
+
+    fn try_from(sig: &SignatureAPI) -> Result<signature::Signature, Self::Error> {
+        match sig.sig_type {
+            2 => (Ok(signature::Signature::new_bls(sig.data.to_vec()))),
+            1 => (Ok(signature::Signature::new_secp256k1(sig.data.to_vec()))),
+            _ => {
+                (Err(SignerError::GenericString(
+                    "Unknown signature type.".to_string(),
+                )))
+            }
         }
     }
 }
@@ -833,6 +858,20 @@ impl From<SignedMessage> for SignedMessageAPI {
                 data: signed_message.signature().bytes().to_vec(),
             },
         }
+    }
+}
+
+impl TryFrom<&SignedMessageAPI> for SignedMessage {
+    type Error = SignerError;
+
+    fn try_from(signed_message_api: &SignedMessageAPI) -> Result<SignedMessage, Self::Error> {
+        let unsigned_message = UnsignedMessage::try_from(&signed_message_api.message)?;
+        let signature = signature::Signature::try_from(&signed_message_api.signature)?;
+
+        let signed_message = SignedMessage::new_from_parts(unsigned_message, signature)
+            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
+        Ok(signed_message)
     }
 }
 
