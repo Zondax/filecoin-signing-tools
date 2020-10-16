@@ -328,9 +328,9 @@ fn sign_bls_transaction() {
     };
 
     let raw_sig = transaction_sign_raw(&message, &bls_key).unwrap();
-    
+
     println!("{}", hex::encode(raw_sig.as_bytes()));
-    
+
     let sig = bls_signatures::Signature::from_bytes(&raw_sig.as_bytes()).expect("FIX ME");
 
     let bls_pk = bls_signatures::PublicKey::from_bytes(&hex::decode(BLS_PUBKEY).unwrap()).unwrap();
@@ -346,9 +346,9 @@ fn sign_bls_transaction() {
 fn test_verify_bls_signature() {
     let sig = Signature::try_from("a0e8380977d2ccc5dd4d5ebd823406ed22fde880a3bd0fa8426c16b34013c487c51107f5e2808031b680ff200aa16f770a12a82022cc0fd2a7b0302baacee87862fed11be087609d3b0daf90869558574e15b94b375a0f34bce9478e975bb02c".to_string()).unwrap();
     let message = CborBuffer(hex::decode("8a005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c628583103ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc079040144000186a01961a8430009c4430009c40040".to_string()).unwrap());
-    
+
     let result = verify_signature(&sig, &message).unwrap();
-    
+
     assert!(result);
 }
 
