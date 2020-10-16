@@ -351,6 +351,57 @@ describe("verifySignature", function() {
 
     assert.strictEqual(filecoin_signer.verifySignature(signatureRSV, EXAMPLE_CBOR_TX), true);
   })
+  
+  it("verify BLS signature (1)", function() {
+    const sig = "a0e8380977d2ccc5dd4d5ebd823406ed22fde880a3bd0fa8426c16b34013c487c51107f5e2808031b680ff200aa16f770a12a82022cc0fd2a7b0302baacee87862fed11be087609d3b0daf90869558574e15b94b375a0f34bce9478e975bb02c";
+    const message = {
+      to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+      from: "t3vxrizeiel2e2bxg3jhk62dlcutyc26fjnw6ua2sptu32dtjpwxbjawg666nqdngrkvvn45h7yb4qiya6ls7q",
+      nonce: 1,
+      value: "100000",
+      gaslimit: 25000,
+      gasfeecap: "2500",
+      gaspremium: "2500",
+      method: 0,
+      params: ""
+    }
+    const tx = filecoin_signer.transactionSerialize(message)
+    console.log(tx)
+    const v = filecoin_signer.verifySignature(sig, "8a005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c628583103ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc079040144000186a01961a8430009c4430009c40040")
+
+    assert.strictEqual(v, true);
+  })
+  
+  it("verify BLS signature (2)", function() {
+    const tc = {
+        "pk": "af2f1d46d7f618997f43fbc3b7e4d4fb6ca8bc290e161e1f8643f0d894509814da5a5ff8729fc8935086a334469a3702",
+        "sk": "9c26a653e3f6feed763fee9e163a4863252fd3ca38bfeeaa83dab2799b5cf10c",
+        "sig": "b6b660b9557b722f2b20770511aa1761836c4352313002030ab4229273eb3f9ea09ca8490176f361dabec4c64cc62e130ce1bb2d0a9fe143b4e844de20e311b842b465900f4c3f861d46755c2dcca5f2effb97c0da379fbf7a4e046f909a0fa5",
+        "message": {
+            "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+            "from": "t3v4xr2rwx6ymjs72d7pb3pzgu7nwkrpbjbylb4h4gipynrfcqtaknuws77bzj7setkcdkgncgti3qfa4n7seq",
+            "nonce": 1,
+            "value": "100000",
+            "gaslimit": 25000,
+            "gasfeecap": "1",
+            "gaspremium": "1",
+            "method": 0,
+            "params": ""
+        }
+    }
+    const signed_tx = filecoin_signer.transactionSign(tc.message, Buffer.from(tc.sk, "hex").toString("base64"));
+    console.log(signed_tx);
+    const raw_signature = filecoin_signer.transactionSignRaw(tc.message, Buffer.from(tc.sk, "hex").toString("base64"));
+    console.log(Buffer.from(raw_signature).toString('hex'));
+    const signature = Buffer.from(signed_tx.signature.data, 'base64');
+    console.log(signature.toString('hex'));
+    const tx = filecoin_signer.transactionSerialize(tc.message)
+    const v = filecoin_signer.verifySignature(signature.toString('hex'), tx)
+    console.log('v', v)
+    
+    assert.strictEqual(v, true);
+  })
+  
 })
 
 describeCall('SerializeParams', function () {
