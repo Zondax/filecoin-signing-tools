@@ -90,10 +90,10 @@ impl TryFrom<ExecParamsAPI> for ExecParams {
                 .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
         if exec_constructor.code_cid != "fil/1/multisig"
-            && exec_constructor.code_cid != "fil/1/paymentchannel"
+            && exec_constructor.code_cid != "fil/2/paymentchannel"
         {
             return Err(SignerError::GenericString(
-                "Only support `fil/1/multisig` and `fil/1/paymentchannel` code for now."
+                "Only support `fil/1/multisig` and `fil/2/paymentchannel` code for now."
                     .to_string(),
             ));
         }
@@ -420,8 +420,7 @@ pub struct PaymentChannelUpdateStateParams {
     pub sv: String,
     #[serde(alias = "Secret")]
     pub secret: Vec<u8>,
-    #[serde(alias = "Proof")]
-    pub proof: Vec<u8>,
+    // "Proof" removed in v2 specs-actors
 }
 
 impl TryFrom<PaymentChannelUpdateStateParams> for paych::UpdateChannelStateParams {
@@ -435,7 +434,6 @@ impl TryFrom<PaymentChannelUpdateStateParams> for paych::UpdateChannelStateParam
         Ok(paych::UpdateChannelStateParams {
             sv,
             secret: vec![],
-            proof: vec![],
         })
     }
 }
@@ -448,7 +446,6 @@ impl TryInto<PaymentChannelUpdateStateParams> for paych::UpdateChannelStateParam
         Ok(PaymentChannelUpdateStateParams {
             sv: sv_base64,
             secret: self.secret,
-            proof: self.proof,
         })
     }
 }

@@ -46,7 +46,7 @@ describeCall('createPymtChan', function () {
       serializedParams = Buffer.from(filecoin_signer.serializeParams(createParams));
 
       let execParams = {
-          CodeCid: 'fil/1/paymentchannel',
+          CodeCid: 'fil/2/paymentchannel',
           ConstructorParams: serializedParams.toString('base64')
       }
 
@@ -106,7 +106,7 @@ describeCall('createPymtChan', function () {
       serializedParams = Buffer.from(filecoin_signer.serializeParams(createParams));
 
       let execParams = {
-          CodeCid: 'fil/1/paymentchannel',
+          CodeCid: 'fil/2/paymentchannel',
           ConstructorParams: serializedParams.toString('base64')
       }
 
@@ -127,7 +127,7 @@ describeCall('createPymtChan', function () {
         Method: 2,
         Nonce: 1,
         Params: serializedParams,
-        To: 't01',
+        To: 'f01',
         Value: '10000000000'
       }
     }
