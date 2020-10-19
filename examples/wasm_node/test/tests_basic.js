@@ -353,7 +353,7 @@ describe("verifySignature", function() {
   })
   
   let itCall = it
-  if (!process.env.PURE_JS) { itCall = it.skip }
+  if (process.env.PURE_JS) { itCall = it.skip }
   
   itCall("verify BLS signature (1)", function() {
     const sig = "a0e8380977d2ccc5dd4d5ebd823406ed22fde880a3bd0fa8426c16b34013c487c51107f5e2808031b680ff200aa16f770a12a82022cc0fd2a7b0302baacee87862fed11be087609d3b0daf90869558574e15b94b375a0f34bce9478e975bb02c";
