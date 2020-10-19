@@ -352,7 +352,10 @@ describe("verifySignature", function() {
     assert.strictEqual(filecoin_signer.verifySignature(signatureRSV, EXAMPLE_CBOR_TX), true);
   })
   
-  it("verify BLS signature (1)", function() {
+  let itCall = it
+  if (!process.env.PURE_JS) { itCall = it.skip }
+  
+  itCall("verify BLS signature (1)", function() {
     const sig = "a0e8380977d2ccc5dd4d5ebd823406ed22fde880a3bd0fa8426c16b34013c487c51107f5e2808031b680ff200aa16f770a12a82022cc0fd2a7b0302baacee87862fed11be087609d3b0daf90869558574e15b94b375a0f34bce9478e975bb02c";
     const message = {
       to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
@@ -372,7 +375,7 @@ describe("verifySignature", function() {
     assert.strictEqual(v, true);
   })
   
-  it("verify BLS signature (2)", function() {
+  itCall("verify BLS signature (2)", function() {
     const tc = {
         "pk": "af2f1d46d7f618997f43fbc3b7e4d4fb6ca8bc290e161e1f8643f0d894509814da5a5ff8729fc8935086a334469a3702",
         "sk": "9c26a653e3f6feed763fee9e163a4863252fd3ca38bfeeaa83dab2799b5cf10c",
