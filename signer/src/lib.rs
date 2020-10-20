@@ -6,7 +6,7 @@ use std::str::FromStr;
 
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
-use forest_address::{Address, Network, Protocol, BLSPublicKey};
+use forest_address::{Address, BLSPublicKey, Network, Protocol};
 use forest_cid::{multihash::Blake2b256, multihash::Identity, Cid, Codec};
 use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
@@ -116,14 +116,18 @@ pub fn key_generate_mnemonic() -> Result<Mnemonic, SignerError> {
     Ok(Mnemonic(mnemonic.to_string()))
 }
 
-fn derive_extended_secret_key(seed: &[u8], path: &str) -> Result<ExtendedSecretKey,SignerError> {
+fn derive_extended_secret_key(seed: &[u8], path: &str) -> Result<ExtendedSecretKey, SignerError> {
     let master = ExtendedSecretKey::try_from(seed)?;
     let bip44_path = BIP44Path::from_string(path)?;
     let esk = master.derive_bip44(&bip44_path)?;
     return Ok(esk);
 }
 
-fn derive_extended_secret_key_from_mnemonic(mnemonic: &str, path: &str, password: &str) -> Result<ExtendedSecretKey,SignerError> {
+fn derive_extended_secret_key_from_mnemonic(
+    mnemonic: &str,
+    path: &str,
+    password: &str,
+) -> Result<ExtendedSecretKey, SignerError> {
     let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic, Language::English)
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
@@ -165,7 +169,11 @@ pub fn key_derive(mnemonic: &str, path: &str, password: &str) -> Result<Extended
 /// * `mnemonic` - A string containing a 24-words English mnemonic
 /// * `path` - A string containing a derivation path
 /// * `password` - Password to decrypt seed, if none use and empty string (e.g "")
-pub fn key_derive_bls(mnemonic: &str, path: &str, password: &str) -> Result<ExtendedKey, SignerError> {
+pub fn key_derive_bls(
+    mnemonic: &str,
+    path: &str,
+    password: &str,
+) -> Result<ExtendedKey, SignerError> {
     let esk = derive_extended_secret_key_from_mnemonic(mnemonic, path, password)?;
 
     let bls_secret_key = bls_signatures::PrivateKey::from_bytes(&esk.secret_key().to_vec())?;
@@ -178,10 +186,14 @@ pub fn key_derive_bls(mnemonic: &str, path: &str, password: &str) -> Result<Exte
     if bip44_path.is_testnet() {
         address.set_network(Network::Testnet);
     }
-    
-    let mut public_key = BLSPublicKey{ 0 : [0; forest_address::BLS_PUB_LEN]};
-    public_key.0.copy_from_slice(&bls_secret_key.public_key().as_bytes());
-    
+
+    let mut public_key = BLSPublicKey {
+        0: [0; forest_address::BLS_PUB_LEN],
+    };
+    public_key
+        .0
+        .copy_from_slice(&bls_secret_key.public_key().as_bytes());
+
     Ok(ExtendedKey {
         private_key: PrivateKey(esk.secret_key()),
         public_key: PublicKey::BLSPublicKey(public_key),
@@ -236,8 +248,12 @@ pub fn key_derive_bls_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, 
         address.set_network(Network::Testnet);
     }
 
-    let mut public_key = BLSPublicKey{ 0 : [0; forest_address::BLS_PUB_LEN]};
-    public_key.0.copy_from_slice(&bls_secret_key.public_key().as_bytes());
+    let mut public_key = BLSPublicKey {
+        0: [0; forest_address::BLS_PUB_LEN],
+    };
+    public_key
+        .0
+        .copy_from_slice(&bls_secret_key.public_key().as_bytes());
 
     Ok(ExtendedKey {
         private_key: PrivateKey(esk.secret_key()),
@@ -278,7 +294,10 @@ pub fn key_recover(private_key: &PrivateKey, testnet: bool) -> Result<ExtendedKe
 /// * `private_key` - A `bls_signatures::PrivateKey`
 /// * `testnet` - specify the network, `true` if testnet else `false` for mainnet
 ///
-pub fn key_recover_bls(private_key: &bls_signatures::PrivateKey, testnet: bool) -> Result<ExtendedKey, SignerError> {
+pub fn key_recover_bls(
+    private_key: &bls_signatures::PrivateKey,
+    testnet: bool,
+) -> Result<ExtendedKey, SignerError> {
     let mut address = Address::new_bls(&private_key.public_key().as_bytes())?;
 
     if testnet {
@@ -287,10 +306,16 @@ pub fn key_recover_bls(private_key: &bls_signatures::PrivateKey, testnet: bool) 
         address.set_network(Network::Mainnet);
     }
 
-    let mut public_key = BLSPublicKey{ 0 : [0; forest_address::BLS_PUB_LEN]};
-    public_key.0.copy_from_slice(&private_key.public_key().as_bytes());
+    let mut public_key = BLSPublicKey {
+        0: [0; forest_address::BLS_PUB_LEN],
+    };
+    public_key
+        .0
+        .copy_from_slice(&private_key.public_key().as_bytes());
 
-    let mut secret_key = PrivateKey{ 0 : [0; SECRET_KEY_SIZE]};
+    let mut secret_key = PrivateKey {
+        0: [0; SECRET_KEY_SIZE],
+    };
     secret_key.0.copy_from_slice(&private_key.as_bytes());
 
     Ok(ExtendedKey {
