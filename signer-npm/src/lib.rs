@@ -39,7 +39,7 @@ pub struct ExtendedKey(filecoin_signer::ExtendedKey);
 impl ExtendedKey {
     #[wasm_bindgen(getter)]
     pub fn public_raw(&self) -> Vec<u8> {
-        self.0.public_key.0.to_vec()
+        self.0.public_key.to_vec()
     }
 
     #[wasm_bindgen(getter)]
@@ -134,6 +134,20 @@ pub fn key_derive(
     Ok(ExtendedKey { 0: key_address })
 }
 
+#[wasm_bindgen(js_name = keyDeriveBLS)]
+pub fn key_derive_bls(
+    mnemonic: String,
+    path: String,
+    password: String,
+) -> Result<ExtendedKey, JsValue> {
+    set_panic_hook();
+
+    let key_address = filecoin_signer::key_derive_bls(&mnemonic, &path, &password)
+        .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
+
+    Ok(ExtendedKey { 0: key_address })
+}
+
 #[wasm_bindgen(js_name = keyDeriveFromSeed)]
 pub fn key_derive_from_seed(seed: JsValue, path: String) -> Result<ExtendedKey, JsValue> {
     set_panic_hook();
@@ -141,6 +155,18 @@ pub fn key_derive_from_seed(seed: JsValue, path: String) -> Result<ExtendedKey, 
     let seed_bytes = extract_bytes(seed, "Seed must be a valid hexstring, base64 or a buffer")?;
 
     let key_address = filecoin_signer::key_derive_from_seed(&seed_bytes, &path)
+        .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
+
+    Ok(ExtendedKey { 0: key_address })
+}
+
+#[wasm_bindgen(js_name = keyDeriveBLSFromSeed)]
+pub fn key_derive_bls_from_seed(seed: JsValue, path: String) -> Result<ExtendedKey, JsValue> {
+    set_panic_hook();
+
+    let seed_bytes = extract_bytes(seed, "Seed must be a valid hexstring, base64 or a buffer")?;
+
+    let key_address = filecoin_signer::key_derive_bls_from_seed(&seed_bytes, &path)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
 
     Ok(ExtendedKey { 0: key_address })
