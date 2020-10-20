@@ -355,7 +355,9 @@ fn verify_bls_signature(
     // TODO: need a function to extract from public key from cbor buffer directly
     let message = transaction_parse(cbor_buffer, true)?;
 
-    let pk = bls_signatures::PublicKey::from_bytes(message.get_message().from.as_bytes())?;
+    let address = Address::from_str(&message.get_message().from)?;
+
+    let pk = bls_signatures::PublicKey::from_bytes(&address.payload_bytes())?;
 
     let sig = bls_signatures::Signature::from_bytes(signature.as_ref())?;
 
