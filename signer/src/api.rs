@@ -1,7 +1,6 @@
 use std::convert::{TryFrom, TryInto};
 use std::str::FromStr;
 
-use extras::{multisig, paych, ExecParams};
 use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
 use forest_crypto::signature;
@@ -9,6 +8,8 @@ use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
 use num_bigint_chainsafe::BigInt;
 use serde::{Deserialize, Serialize, Serializer};
+
+use extras::{multisig, paych, ExecParams};
 
 use crate::error::SignerError;
 use crate::signature::Signature;
@@ -431,10 +432,7 @@ impl TryFrom<PaymentChannelUpdateStateParams> for paych::UpdateChannelStateParam
     ) -> Result<paych::UpdateChannelStateParams, Self::Error> {
         let cbor_sv = base64::decode(params.sv)?;
         let sv: paych::SignedVoucher = forest_encoding::from_slice(cbor_sv.as_ref())?;
-        Ok(paych::UpdateChannelStateParams {
-            sv,
-            secret: vec![],
-        })
+        Ok(paych::UpdateChannelStateParams { sv, secret: vec![] })
     }
 }
 

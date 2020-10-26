@@ -12,6 +12,7 @@ use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
 use forest_message::SignedMessage;
 use num_bigint_chainsafe::BigInt;
+use num_traits::FromPrimitive;
 use rayon::prelude::*;
 use secp256k1::util::{
     COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
@@ -20,7 +21,6 @@ use secp256k1::{recover, sign, verify, Message, RecoveryId};
 use zx_bip44::BIP44Path;
 
 use extras::{multisig, paych, ExecParams, MethodInit, INIT_ACTOR_ADDR};
-use num_traits::FromPrimitive;
 
 use crate::api::{
     MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
@@ -763,10 +763,7 @@ pub fn update_pymtchan(
 
     let sv: paych::SignedVoucher = forest_encoding::from_slice(sv_cbor.as_ref())?;
 
-    let update_payment_channel_params = paych::UpdateChannelStateParams {
-        sv,
-        secret: vec![],
-    };
+    let update_payment_channel_params = paych::UpdateChannelStateParams { sv, secret: vec![] };
 
     let serialized_params = forest_vm::Serialized::serialize::<paych::UpdateChannelStateParams>(
         update_payment_channel_params,
@@ -916,7 +913,7 @@ pub fn create_voucher(
         None => {
             return Err(SignerError::GenericString(
                 "`amount` couldn't be parsed.".to_string(),
-            ))
+            ));
         }
     };
 
