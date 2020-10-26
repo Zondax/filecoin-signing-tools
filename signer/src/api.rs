@@ -700,11 +700,7 @@ impl TryFrom<&SignatureAPI> for signature::Signature {
         match sig.sig_type {
             2 => (Ok(signature::Signature::new_bls(sig.data.to_vec()))),
             1 => (Ok(signature::Signature::new_secp256k1(sig.data.to_vec()))),
-            _ => {
-                (Err(SignerError::GenericString(
-                    "Unknown signature type.".to_string(),
-                )))
-            }
+            _ => (Err(SignerError::GenericString("Unknown signature type.".to_string())))
         }
     }
 }
