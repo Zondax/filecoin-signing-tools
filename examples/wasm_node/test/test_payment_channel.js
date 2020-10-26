@@ -46,7 +46,7 @@ describeCall('createPymtChan', function () {
       serializedParams = Buffer.from(filecoin_signer.serializeParams(createParams));
 
       let execParams = {
-          CodeCid: 'fil/1/paymentchannel',
+          CodeCid: 'fil/2/paymentchannel',
           ConstructorParams: serializedParams.toString('base64')
       }
 
@@ -64,7 +64,7 @@ describeCall('createPymtChan', function () {
         Method: 2,
         Nonce: 1,
         Params: serializedParams,
-        To: 't01',
+        To: 'f01',
         Value: '10000000000'
       },
     }
@@ -106,7 +106,7 @@ describeCall('createPymtChan', function () {
       serializedParams = Buffer.from(filecoin_signer.serializeParams(createParams));
 
       let execParams = {
-          CodeCid: 'fil/1/paymentchannel',
+          CodeCid: 'fil/2/paymentchannel',
           ConstructorParams: serializedParams.toString('base64')
       }
 
@@ -127,7 +127,7 @@ describeCall('createPymtChan', function () {
         Method: 2,
         Nonce: 1,
         Params: serializedParams,
-        To: 't01',
+        To: 'f01',
         Value: '10000000000'
       }
     }
@@ -365,7 +365,7 @@ describeCall('verifyVoucherSignature', function () {
   it('should return true', function () {
     const signedVoucher = "i0MA8gcAAED2AAFEAAGGoACAWEIBayRmYQQCatrELBc2rwfu0jJk0EmVr+eVccDsThtM1ZVzkrC53a6qVgrgFkB8OHoiZSlNmW/nmCU7G2POhEeo2gE=";
     const signerAddress = "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba";
-    
+
     assert(filecoin_signer.verifyVoucherSignature(signedVoucher, signerAddress));
   })
 })
