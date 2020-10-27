@@ -695,11 +695,9 @@ impl TryFrom<&SignatureAPI> for signature::Signature {
         match sig.sig_type {
             2 => (Ok(signature::Signature::new_bls(sig.data.to_vec()))),
             1 => (Ok(signature::Signature::new_secp256k1(sig.data.to_vec()))),
-            _ => {
-                (Err(SignerError::GenericString(
-                    "Unknown signature type.".to_string(),
-                )))
-            }
+            _ => Err(SignerError::GenericString(
+                "Unknown signature type.".to_string(),
+            )),
         }
     }
 }
@@ -864,7 +862,7 @@ impl TryFrom<&SignedMessageAPI> for SignedMessage {
         let signature = signature::Signature::try_from(&signed_message_api.signature)?;
 
         let signed_message = SignedMessage::new_from_parts(unsigned_message, signature)
-            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+            .map_err(|err| SignerError::GenericString(err))?;
 
         Ok(signed_message)
     }

@@ -15,7 +15,7 @@ create_fn!(filecoin_signer_extended_key_public_key|Java_ch_zondax_FilecoinSigner
     error: &mut ExternError
 ) -> str_ret_ty!(), |etc| {
     call_with_result(error, || -> Result<str_ret_ty!(), ExternError> {
-        create_string!(etc, hex::encode(&ek.public_key.0[..]))
+        create_string!(etc, hex::encode(&ek.public_key.to_vec()))
     })
 });
 

@@ -27,7 +27,7 @@ pub enum SignerError {
     #[error("Cannot parse integer")]
     ParseIntError(#[from] ParseIntError),
     /// BLS error
-    #[error("BLS error : `{0}`")]
+    #[error("BLS error | {0}")]
     BLS(#[from] bls_signatures::Error),
     /// Invalid BIP44Path
     #[error("Invalid BIP44 path : `{0}`")]
