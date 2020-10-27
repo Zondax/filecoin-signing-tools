@@ -172,7 +172,7 @@ describe("keyRecover", function() {
   });
 })
 
-describe("keyRecoverBLS", function() {
+describeCall("keyRecoverBLS", function() {
   it("should derive the key and return a BLS address", function() {
     let recoveredKey = filecoin_signer.keyRecoverBLS("P2pSgkvsZSgi0LOczuHmSXT1+l/hvSs3fVBb4y8OgVo=", true);
 
