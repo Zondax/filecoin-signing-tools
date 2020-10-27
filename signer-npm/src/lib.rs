@@ -134,19 +134,6 @@ pub fn key_derive(
     Ok(ExtendedKey { 0: key_address })
 }
 
-#[wasm_bindgen(js_name = keyDeriveBLS)]
-pub fn key_derive_bls(
-    mnemonic: String,
-    path: String,
-    password: String,
-) -> Result<ExtendedKey, JsValue> {
-    set_panic_hook();
-
-    let key_address = filecoin_signer::key_derive_bls(&mnemonic, &path, &password)
-        .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
-
-    Ok(ExtendedKey { 0: key_address })
-}
 
 #[wasm_bindgen(js_name = keyDeriveFromSeed)]
 pub fn key_derive_from_seed(seed: JsValue, path: String) -> Result<ExtendedKey, JsValue> {
@@ -160,18 +147,6 @@ pub fn key_derive_from_seed(seed: JsValue, path: String) -> Result<ExtendedKey, 
     Ok(ExtendedKey { 0: key_address })
 }
 
-#[wasm_bindgen(js_name = keyDeriveBLSFromSeed)]
-pub fn key_derive_bls_from_seed(seed: JsValue, path: String) -> Result<ExtendedKey, JsValue> {
-    set_panic_hook();
-
-    let seed_bytes = extract_bytes(seed, "Seed must be a valid hexstring, base64 or a buffer")?;
-
-    let key_address = filecoin_signer::key_derive_bls_from_seed(&seed_bytes, &path)
-        .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
-
-    Ok(ExtendedKey { 0: key_address })
-}
-
 #[wasm_bindgen(js_name = keyRecover)]
 pub fn key_recover(private_key_js: JsValue, testnet: bool) -> Result<ExtendedKey, JsValue> {
     set_panic_hook();
@@ -179,6 +154,18 @@ pub fn key_recover(private_key_js: JsValue, testnet: bool) -> Result<ExtendedKey
     let private_key_bytes = extract_private_key(private_key_js)?;
 
     let key_address = filecoin_signer::key_recover(&private_key_bytes, testnet)
+        .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
+
+    Ok(ExtendedKey { 0: key_address })
+}
+
+#[wasm_bindgen(js_name = keyRecoverBLS)]
+pub fn key_recover_bls(private_key_js: JsValue, testnet: bool) -> Result<ExtendedKey, JsValue> {
+    set_panic_hook();
+
+    let private_key_bytes = extract_private_key(private_key_js)?;
+
+    let key_address = filecoin_signer::key_recover_bls(&private_key_bytes, testnet)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
 
     Ok(ExtendedKey { 0: key_address })

@@ -162,45 +162,6 @@ pub fn key_derive(mnemonic: &str, path: &str, password: &str) -> Result<Extended
     })
 }
 
-/// Returns a BLS public key, BLS private key and BLS address given a mnemonic, derivation path and a password
-///
-/// # Arguments
-///
-/// * `mnemonic` - A string containing a 24-words English mnemonic
-/// * `path` - A string containing a derivation path
-/// * `password` - Password to decrypt seed, if none use and empty string (e.g "")
-pub fn key_derive_bls(
-    mnemonic: &str,
-    path: &str,
-    password: &str,
-) -> Result<ExtendedKey, SignerError> {
-    let esk = derive_extended_secret_key_from_mnemonic(mnemonic, path, password)?;
-
-    let bls_secret_key = bls_signatures::PrivateKey::from_bytes(&esk.secret_key().to_vec())?;
-
-    let mut address = Address::new_bls(&bls_secret_key.public_key().as_bytes())?;
-
-    let bip44_path = BIP44Path::from_string(path)?;
-
-    address.set_network(Network::Mainnet);
-    if bip44_path.is_testnet() {
-        address.set_network(Network::Testnet);
-    }
-
-    let mut public_key = BLSPublicKey {
-        0: [0; forest_address::BLS_PUB_LEN],
-    };
-    public_key
-        .0
-        .copy_from_slice(&bls_secret_key.public_key().as_bytes());
-
-    Ok(ExtendedKey {
-        private_key: PrivateKey(esk.secret_key()),
-        public_key: PublicKey::BLSPublicKey(public_key),
-        address: address.to_string(),
-    })
-}
-
 /// Returns a public key, private key and address given a seed and derivation path
 ///
 /// # Arguments
@@ -223,41 +184,6 @@ pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, Sign
     Ok(ExtendedKey {
         private_key: PrivateKey(esk.secret_key()),
         public_key: PublicKey::PublicKeySECP256K1(PublicKeySECP256K1(esk.public_key())),
-        address: address.to_string(),
-    })
-}
-
-/// Returns a BLS public key, BLS private key and a BLS address given a seed and derivation path
-///
-/// # Arguments
-///
-/// * `seed` - A seed as bytes array
-/// * `path` - A string containing a derivation path
-///
-pub fn key_derive_bls_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, SignerError> {
-    let esk = derive_extended_secret_key(seed, path)?;
-
-    let bls_secret_key = bls_signatures::PrivateKey::from_bytes(&esk.secret_key().to_vec())?;
-
-    let mut address = Address::new_bls(&esk.public_key().to_vec())?;
-
-    let bip44_path = BIP44Path::from_string(path)?;
-
-    address.set_network(Network::Mainnet);
-    if bip44_path.is_testnet() {
-        address.set_network(Network::Testnet);
-    }
-
-    let mut public_key = BLSPublicKey {
-        0: [0; forest_address::BLS_PUB_LEN],
-    };
-    public_key
-        .0
-        .copy_from_slice(&bls_secret_key.public_key().as_bytes());
-
-    Ok(ExtendedKey {
-        private_key: PrivateKey(esk.secret_key()),
-        public_key: PublicKey::BLSPublicKey(public_key),
         address: address.to_string(),
     })
 }
@@ -295,10 +221,12 @@ pub fn key_recover(private_key: &PrivateKey, testnet: bool) -> Result<ExtendedKe
 /// * `testnet` - specify the network, `true` if testnet else `false` for mainnet
 ///
 pub fn key_recover_bls(
-    private_key: &bls_signatures::PrivateKey,
+    private_key: &PrivateKey,
     testnet: bool,
 ) -> Result<ExtendedKey, SignerError> {
-    let mut address = Address::new_bls(&private_key.public_key().as_bytes())?;
+    let sk = bls_signatures::PrivateKey::from_bytes(&private_key.0)?;
+
+    let mut address = Address::new_bls(&sk.public_key().as_bytes())?;
 
     if testnet {
         address.set_network(Network::Testnet);
@@ -311,12 +239,12 @@ pub fn key_recover_bls(
     };
     public_key
         .0
-        .copy_from_slice(&private_key.public_key().as_bytes());
+        .copy_from_slice(&sk.public_key().as_bytes());
 
     let mut secret_key = PrivateKey {
         0: [0; SECRET_KEY_SIZE],
     };
-    secret_key.0.copy_from_slice(&private_key.as_bytes());
+    secret_key.0.copy_from_slice(&sk.as_bytes());
 
     Ok(ExtendedKey {
         private_key: secret_key,

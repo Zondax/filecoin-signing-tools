@@ -172,6 +172,19 @@ describe("keyRecover", function() {
   });
 })
 
+describe("keyRecoverBLS", function() {
+  it("should derive the key and return a BLS address", function() {
+    let recoveredKey = filecoin_signer.keyRecoverBLS("P2pSgkvsZSgi0LOczuHmSXT1+l/hvSs3fVBb4y8OgVo=", true);
+
+    console.log("Public Key Raw         :", recoveredKey.public_raw);
+    console.log("Public Key             :", recoveredKey.public_hexstring);
+    console.log("Private                :", recoveredKey.private_hexstring);
+    console.log("Address                :", recoveredKey.address);
+
+    assert.strictEqual(recoveredKey.address, "t3uxb75vcy3ilwbsaavao52v7gfnfh6aics4a7nj26dwpcmj4mxxgnzholkupuplafdrbd55frpoolfnm7wlda");
+  })
+})
+
 describe("transactionSerialize", function() {
   it("should serialize transaction", function() {
     assert.strictEqual(EXAMPLE_CBOR_TX, filecoin_signer.transactionSerialize(EXAMPLE_TRANSACTION));
