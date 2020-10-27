@@ -120,7 +120,8 @@ fn derive_extended_secret_key(seed: &[u8], path: &str) -> Result<ExtendedSecretK
     let master = ExtendedSecretKey::try_from(seed)?;
     let bip44_path = BIP44Path::from_string(path)?;
     let esk = master.derive_bip44(&bip44_path)?;
-    return Ok(esk);
+    
+    Ok(esk)
 }
 
 fn derive_extended_secret_key_from_mnemonic(
@@ -133,7 +134,7 @@ fn derive_extended_secret_key_from_mnemonic(
 
     let seed = Seed::new(&mnemonic, password);
 
-    return derive_extended_secret_key(seed.as_bytes(), path);
+    derive_extended_secret_key(seed.as_bytes(), path)
 }
 
 /// Returns a public key, private key and address given a mnemonic, derivation path and a password
@@ -504,6 +505,7 @@ pub fn verify_aggregated_signature(
 /// * `nonce` - Nonce of the message
 /// * `duration` - Duration of the multisig
 ///
+#[allow(clippy::too_many_arguments)]
 pub fn create_multisig(
     sender_address: String,
     addresses: Vec<String>,
@@ -579,6 +581,7 @@ pub fn create_multisig(
 /// * `amount` - Amount of the transaction
 /// * `nonce` - Nonce of the message
 ///
+#[allow(clippy::too_many_arguments)]
 pub fn proposal_multisig_message(
     multisig_address: String,
     to_address: String,
@@ -677,6 +680,7 @@ fn approve_or_cancel_multisig_message(
 /// * `from_address` - A string address
 /// * `nonce` - Nonce of the message
 ///
+#[allow(clippy::too_many_arguments)]
 pub fn approve_multisig_message(
     multisig_address: String,
     message_id: i64,
@@ -716,6 +720,7 @@ pub fn approve_multisig_message(
 /// * `from_address` - A string address
 /// * `nonce` - Nonce of the message
 ///
+#[allow(clippy::too_many_arguments)]
 pub fn cancel_multisig_message(
     multisig_address: String,
     message_id: i64,

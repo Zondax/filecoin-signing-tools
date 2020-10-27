@@ -867,7 +867,7 @@ impl TryFrom<&SignedMessageAPI> for SignedMessage {
         let signature = signature::Signature::try_from(&signed_message_api.signature)?;
 
         let signed_message = SignedMessage::new_from_parts(unsigned_message, signature)
-            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+            .map_err(|err| SignerError::GenericString(err))?;
 
         Ok(signed_message)
     }
