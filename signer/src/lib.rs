@@ -12,6 +12,7 @@ use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
 use forest_message::SignedMessage;
 use num_bigint_chainsafe::BigInt;
+use num_traits::FromPrimitive;
 use rayon::prelude::*;
 use secp256k1::util::{
     COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
@@ -20,7 +21,6 @@ use secp256k1::{recover, sign, verify, Message, RecoveryId};
 use zx_bip44::BIP44Path;
 
 use extras::{multisig, paych, ExecParams, MethodInit, INIT_ACTOR_ADDR};
-use num_traits::FromPrimitive;
 
 use crate::api::{
     MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
@@ -421,7 +421,9 @@ fn verify_bls_signature(
     // TODO: need a function to extract from public key from cbor buffer directly
     let message = transaction_parse(cbor_buffer, true)?;
 
-    let pk = bls_signatures::PublicKey::from_bytes(message.get_message().from.as_bytes())?;
+    let address = Address::from_str(&message.get_message().from)?;
+
+    let pk = bls_signatures::PublicKey::from_bytes(&address.payload_bytes())?;
 
     let sig = bls_signatures::Signature::from_bytes(signature.as_ref())?;
 
@@ -788,7 +790,7 @@ pub fn create_pymtchan(
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_create_pymtchan = ExecParams {
-        code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/paymentchannel")),
+        code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/2/paymentchannel")),
         constructor_params: serialized_constructor_params,
     };
 
@@ -797,7 +799,7 @@ pub fn create_pymtchan(
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let pch_create_message_api = UnsignedMessageAPI {
-        to: "t01".to_owned(), // INIT_ACTOR_ADDR
+        to: "f01".to_owned(), // INIT_ACTOR_ADDR
         from: from_address,
         nonce,
         value,
@@ -833,11 +835,7 @@ pub fn update_pymtchan(
 
     let sv: paych::SignedVoucher = forest_encoding::from_slice(sv_cbor.as_ref())?;
 
-    let update_payment_channel_params = paych::UpdateChannelStateParams {
-        sv,
-        secret: vec![],
-        proof: vec![],
-    };
+    let update_payment_channel_params = paych::UpdateChannelStateParams { sv, secret: vec![] };
 
     let serialized_params = forest_vm::Serialized::serialize::<paych::UpdateChannelStateParams>(
         update_payment_channel_params,
@@ -987,7 +985,7 @@ pub fn create_voucher(
         None => {
             return Err(SignerError::GenericString(
                 "`amount` couldn't be parsed.".to_string(),
-            ))
+            ));
         }
     };
 
@@ -1033,7 +1031,7 @@ pub fn deserialize_params(
                 Ok(MessageParams::MessageParamsMultisig(params.into()))
             }
             _ => Err(SignerError::GenericString(
-                "Unknown method fo actor 'fil/1/init'.".to_string(),
+                "Unknown method fo actor 'fil/2/init'.".to_string(),
             )),
         },
         "fil/1/multisig" => match FromPrimitive::from_u64(method) {
@@ -1074,7 +1072,7 @@ pub fn deserialize_params(
                 "Unknown method fo actor 'fil/1/multisig'.".to_string(),
             )),
         },
-        "fil/1/paymentchannel" => {
+        "fil/2/paymentchannel" => {
             match FromPrimitive::from_u64(method) {
                 Some(paych::MethodsPaych::UpdateChannelState) => {
                     let params =
@@ -1089,7 +1087,7 @@ pub fn deserialize_params(
                     Ok(MessageParams::MessageParamsSerialized("".to_string()))
                 }
                 _ => Err(SignerError::GenericString(
-                    "Unknown method fo actor 'fil/1/paymentchannel'.".to_string(),
+                    "Unknown method fo actor 'fil/2/paymentchannel'.".to_string(),
                 )),
             }
         }
@@ -1117,7 +1115,7 @@ pub fn deserialize_constructor_params(
             let params = serialized_params.deserialize::<multisig::ConstructorParams>()?;
             Ok(MessageParams::ConstructorParamsMultisig(params.into()))
         }
-        "fil/1/paymentchannel" => {
+        "fil/2/paymentchannel" => {
             let params = serialized_params.deserialize::<paych::ConstructorParams>()?;
             Ok(MessageParams::PaymentChannelCreateParams(params.into()))
         }

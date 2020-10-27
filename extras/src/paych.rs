@@ -169,8 +169,7 @@ pub struct UpdateChannelStateParams {
     pub sv: SignedVoucher,
     #[serde(with = "serde_bytes")]
     pub secret: Vec<u8>,
-    #[serde(with = "serde_bytes")]
-    pub proof: Vec<u8>,
+    // "proof" removed in v2 actros
 }
 
 /// Methods payment channel
