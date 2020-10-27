@@ -237,9 +237,7 @@ pub fn key_recover_bls(
     let mut public_key = BLSPublicKey {
         0: [0; forest_address::BLS_PUB_LEN],
     };
-    public_key
-        .0
-        .copy_from_slice(&sk.public_key().as_bytes());
+    public_key.0.copy_from_slice(&sk.public_key().as_bytes());
 
     let mut secret_key = PrivateKey {
         0: [0; SECRET_KEY_SIZE],

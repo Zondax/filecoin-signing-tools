@@ -134,7 +134,6 @@ pub fn key_derive(
     Ok(ExtendedKey { 0: key_address })
 }
 
-
 #[wasm_bindgen(js_name = keyDeriveFromSeed)]
 pub fn key_derive_from_seed(seed: JsValue, path: String) -> Result<ExtendedKey, JsValue> {
     set_panic_hook();
