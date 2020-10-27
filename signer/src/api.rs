@@ -1,7 +1,6 @@
 use std::convert::{TryFrom, TryInto};
 use std::str::FromStr;
 
-use extras::{multisig, paych, ExecParams};
 use forest_address::{Address, Network};
 use forest_cid::{multihash::Identity, Cid, Codec};
 use forest_crypto::signature;
@@ -9,6 +8,8 @@ use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
 use num_bigint_chainsafe::BigInt;
 use serde::{Deserialize, Serialize, Serializer};
+
+use extras::{multisig, paych, ExecParams};
 
 use crate::error::SignerError;
 use crate::signature::Signature;
@@ -90,10 +91,10 @@ impl TryFrom<ExecParamsAPI> for ExecParams {
                 .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
         if exec_constructor.code_cid != "fil/1/multisig"
-            && exec_constructor.code_cid != "fil/1/paymentchannel"
+            && exec_constructor.code_cid != "fil/2/paymentchannel"
         {
             return Err(SignerError::GenericString(
-                "Only support `fil/1/multisig` and `fil/1/paymentchannel` code for now."
+                "Only support `fil/1/multisig` and `fil/2/paymentchannel` code for now."
                     .to_string(),
             ));
         }
@@ -420,8 +421,7 @@ pub struct PaymentChannelUpdateStateParams {
     pub sv: String,
     #[serde(alias = "Secret")]
     pub secret: Vec<u8>,
-    #[serde(alias = "Proof")]
-    pub proof: Vec<u8>,
+    // "Proof" removed in v2 specs-actors
 }
 
 impl TryFrom<PaymentChannelUpdateStateParams> for paych::UpdateChannelStateParams {
@@ -432,11 +432,7 @@ impl TryFrom<PaymentChannelUpdateStateParams> for paych::UpdateChannelStateParam
     ) -> Result<paych::UpdateChannelStateParams, Self::Error> {
         let cbor_sv = base64::decode(params.sv)?;
         let sv: paych::SignedVoucher = forest_encoding::from_slice(cbor_sv.as_ref())?;
-        Ok(paych::UpdateChannelStateParams {
-            sv,
-            secret: vec![],
-            proof: vec![],
-        })
+        Ok(paych::UpdateChannelStateParams { sv, secret: vec![] })
     }
 }
 
@@ -448,7 +444,6 @@ impl TryInto<PaymentChannelUpdateStateParams> for paych::UpdateChannelStateParam
         Ok(PaymentChannelUpdateStateParams {
             sv: sv_base64,
             secret: self.secret,
-            proof: self.proof,
         })
     }
 }
@@ -700,11 +695,9 @@ impl TryFrom<&SignatureAPI> for signature::Signature {
         match sig.sig_type {
             2 => (Ok(signature::Signature::new_bls(sig.data.to_vec()))),
             1 => (Ok(signature::Signature::new_secp256k1(sig.data.to_vec()))),
-            _ => {
-                (Err(SignerError::GenericString(
-                    "Unknown signature type.".to_string(),
-                )))
-            }
+            _ => Err(SignerError::GenericString(
+                "Unknown signature type.".to_string(),
+            )),
         }
     }
 }
@@ -869,7 +862,7 @@ impl TryFrom<&SignedMessageAPI> for SignedMessage {
         let signature = signature::Signature::try_from(&signed_message_api.signature)?;
 
         let signed_message = SignedMessage::new_from_parts(unsigned_message, signature)
-            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+            .map_err(|err| SignerError::GenericString(err))?;
 
         Ok(signed_message)
     }

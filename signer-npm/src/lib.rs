@@ -39,7 +39,7 @@ pub struct ExtendedKey(filecoin_signer::ExtendedKey);
 impl ExtendedKey {
     #[wasm_bindgen(getter)]
     pub fn public_raw(&self) -> Vec<u8> {
-        self.0.public_key.0.to_vec()
+        self.0.public_key.to_vec()
     }
 
     #[wasm_bindgen(getter)]
@@ -153,6 +153,18 @@ pub fn key_recover(private_key_js: JsValue, testnet: bool) -> Result<ExtendedKey
     let private_key_bytes = extract_private_key(private_key_js)?;
 
     let key_address = filecoin_signer::key_recover(&private_key_bytes, testnet)
+        .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
+
+    Ok(ExtendedKey { 0: key_address })
+}
+
+#[wasm_bindgen(js_name = keyRecoverBLS)]
+pub fn key_recover_bls(private_key_js: JsValue, testnet: bool) -> Result<ExtendedKey, JsValue> {
+    set_panic_hook();
+
+    let private_key_bytes = extract_private_key(private_key_js)?;
+
+    let key_address = filecoin_signer::key_recover_bls(&private_key_bytes, testnet)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
 
     Ok(ExtendedKey { 0: key_address })

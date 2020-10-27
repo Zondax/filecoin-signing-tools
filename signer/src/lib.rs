@@ -6,12 +6,13 @@ use std::str::FromStr;
 
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
-use forest_address::{Address, Network, Protocol};
+use forest_address::{Address, BLSPublicKey, Network, Protocol};
 use forest_cid::{multihash::Blake2b256, multihash::Identity, Cid, Codec};
 use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
 use forest_message::SignedMessage;
 use num_bigint_chainsafe::BigInt;
+use num_traits::FromPrimitive;
 use rayon::prelude::*;
 use secp256k1::util::{
     COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
@@ -20,7 +21,6 @@ use secp256k1::{recover, sign, verify, Message, RecoveryId};
 use zx_bip44::BIP44Path;
 
 use extras::{multisig, paych, ExecParams, MethodInit, INIT_ACTOR_ADDR};
-use num_traits::FromPrimitive;
 
 use crate::api::{
     MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
@@ -50,11 +50,27 @@ impl AsRef<[u8]> for CborBuffer {
 
 pub const SIGNATURE_RECOVERY_SIZE: usize = SIGNATURE_SIZE + 1;
 
+pub const BLS_PUB_LEN: usize = 48;
+
 /// Private key buffer
 pub struct PrivateKey(pub [u8; SECRET_KEY_SIZE]);
 
-/// Public key buffer
-pub struct PublicKey(pub [u8; FULL_PUBLIC_KEY_SIZE]);
+/// Public key secp256k1 buffer
+pub struct PublicKeySECP256K1(pub [u8; FULL_PUBLIC_KEY_SIZE]);
+
+pub enum PublicKey {
+    PublicKeySECP256K1(PublicKeySECP256K1),
+    BLSPublicKey(BLSPublicKey),
+}
+
+impl PublicKey {
+    pub fn to_vec(&self) -> Vec<u8> {
+        match self {
+            PublicKey::PublicKeySECP256K1(pk) => pk.0.to_vec(),
+            PublicKey::BLSPublicKey(pk) => pk.0.to_vec(),
+        }
+    }
+}
 
 /// Compressed public key buffer
 pub struct PublicKeyCompressed(pub [u8; COMPRESSED_PUBLIC_KEY_SIZE]);
@@ -100,6 +116,27 @@ pub fn key_generate_mnemonic() -> Result<Mnemonic, SignerError> {
     Ok(Mnemonic(mnemonic.to_string()))
 }
 
+fn derive_extended_secret_key(seed: &[u8], path: &str) -> Result<ExtendedSecretKey, SignerError> {
+    let master = ExtendedSecretKey::try_from(seed)?;
+    let bip44_path = BIP44Path::from_string(path)?;
+    let esk = master.derive_bip44(&bip44_path)?;
+
+    Ok(esk)
+}
+
+fn derive_extended_secret_key_from_mnemonic(
+    mnemonic: &str,
+    path: &str,
+    password: &str,
+) -> Result<ExtendedSecretKey, SignerError> {
+    let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic, Language::English)
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+
+    let seed = Seed::new(&mnemonic, password);
+
+    derive_extended_secret_key(seed.as_bytes(), path)
+}
+
 /// Returns a public key, private key and address given a mnemonic, derivation path and a password
 ///
 /// # Arguments
@@ -108,18 +145,11 @@ pub fn key_generate_mnemonic() -> Result<Mnemonic, SignerError> {
 /// * `path` - A string containing a derivation path
 /// * `password` - Password to decrypt seed, if none use and empty string (e.g "")
 pub fn key_derive(mnemonic: &str, path: &str, password: &str) -> Result<ExtendedKey, SignerError> {
-    let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic, Language::English)
-        .map_err(|err| SignerError::GenericString(err.to_string()))?;
-
-    let seed = Seed::new(&mnemonic, password);
-
-    let master = ExtendedSecretKey::try_from(seed.as_bytes())?;
-
-    let bip44_path = BIP44Path::from_string(path)?;
-
-    let esk = master.derive_bip44(&bip44_path)?;
+    let esk = derive_extended_secret_key_from_mnemonic(mnemonic, path, password)?;
 
     let mut address = Address::new_secp256k1(&esk.public_key().to_vec())?;
+
+    let bip44_path = BIP44Path::from_string(path)?;
 
     address.set_network(Network::Mainnet);
     if bip44_path.is_testnet() {
@@ -128,7 +158,7 @@ pub fn key_derive(mnemonic: &str, path: &str, password: &str) -> Result<Extended
 
     Ok(ExtendedKey {
         private_key: PrivateKey(esk.secret_key()),
-        public_key: PublicKey(esk.public_key()),
+        public_key: PublicKey::PublicKeySECP256K1(PublicKeySECP256K1(esk.public_key())),
         address: address.to_string(),
     })
 }
@@ -141,13 +171,11 @@ pub fn key_derive(mnemonic: &str, path: &str, password: &str) -> Result<Extended
 /// * `path` - A string containing a derivation path
 ///
 pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, SignerError> {
-    let master = ExtendedSecretKey::try_from(seed)?;
-
-    let bip44_path = BIP44Path::from_string(path)?;
-
-    let esk = master.derive_bip44(&bip44_path)?;
+    let esk = derive_extended_secret_key(seed, path)?;
 
     let mut address = Address::new_secp256k1(&esk.public_key().to_vec())?;
+
+    let bip44_path = BIP44Path::from_string(path)?;
 
     address.set_network(Network::Mainnet);
     if bip44_path.is_testnet() {
@@ -156,7 +184,7 @@ pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, Sign
 
     Ok(ExtendedKey {
         private_key: PrivateKey(esk.secret_key()),
-        public_key: PublicKey(esk.public_key()),
+        public_key: PublicKey::PublicKeySECP256K1(PublicKeySECP256K1(esk.public_key())),
         address: address.to_string(),
     })
 }
@@ -181,7 +209,45 @@ pub fn key_recover(private_key: &PrivateKey, testnet: bool) -> Result<ExtendedKe
 
     Ok(ExtendedKey {
         private_key: PrivateKey(secret_key.serialize()),
-        public_key: PublicKey(public_key.serialize()),
+        public_key: PublicKey::PublicKeySECP256K1(PublicKeySECP256K1(public_key.serialize())),
+        address: address.to_string(),
+    })
+}
+
+/// Get extended key from BLS private key
+///
+/// # Arguments
+///
+/// * `private_key` - A `bls_signatures::PrivateKey`
+/// * `testnet` - specify the network, `true` if testnet else `false` for mainnet
+///
+pub fn key_recover_bls(
+    private_key: &PrivateKey,
+    testnet: bool,
+) -> Result<ExtendedKey, SignerError> {
+    let sk = bls_signatures::PrivateKey::from_bytes(&private_key.0)?;
+
+    let mut address = Address::new_bls(&sk.public_key().as_bytes())?;
+
+    if testnet {
+        address.set_network(Network::Testnet);
+    } else {
+        address.set_network(Network::Mainnet);
+    }
+
+    let mut public_key = BLSPublicKey {
+        0: [0; forest_address::BLS_PUB_LEN],
+    };
+    public_key.0.copy_from_slice(&sk.public_key().as_bytes());
+
+    let mut secret_key = PrivateKey {
+        0: [0; SECRET_KEY_SIZE],
+    };
+    secret_key.0.copy_from_slice(&sk.as_bytes());
+
+    Ok(ExtendedKey {
+        private_key: secret_key,
+        public_key: PublicKey::BLSPublicKey(public_key),
         address: address.to_string(),
     })
 }
@@ -355,7 +421,9 @@ fn verify_bls_signature(
     // TODO: need a function to extract from public key from cbor buffer directly
     let message = transaction_parse(cbor_buffer, true)?;
 
-    let pk = bls_signatures::PublicKey::from_bytes(message.get_message().from.as_bytes())?;
+    let address = Address::from_str(&message.get_message().from)?;
+
+    let pk = bls_signatures::PublicKey::from_bytes(&address.payload_bytes())?;
 
     let sig = bls_signatures::Signature::from_bytes(signature.as_ref())?;
 
@@ -439,6 +507,7 @@ pub fn verify_aggregated_signature(
 /// * `nonce` - Nonce of the message
 /// * `duration` - Duration of the multisig
 ///
+#[allow(clippy::too_many_arguments)]
 pub fn create_multisig(
     sender_address: String,
     addresses: Vec<String>,
@@ -514,6 +583,7 @@ pub fn create_multisig(
 /// * `amount` - Amount of the transaction
 /// * `nonce` - Nonce of the message
 ///
+#[allow(clippy::too_many_arguments)]
 pub fn proposal_multisig_message(
     multisig_address: String,
     to_address: String,
@@ -612,6 +682,7 @@ fn approve_or_cancel_multisig_message(
 /// * `from_address` - A string address
 /// * `nonce` - Nonce of the message
 ///
+#[allow(clippy::too_many_arguments)]
 pub fn approve_multisig_message(
     multisig_address: String,
     message_id: i64,
@@ -651,6 +722,7 @@ pub fn approve_multisig_message(
 /// * `from_address` - A string address
 /// * `nonce` - Nonce of the message
 ///
+#[allow(clippy::too_many_arguments)]
 pub fn cancel_multisig_message(
     multisig_address: String,
     message_id: i64,
@@ -718,7 +790,7 @@ pub fn create_pymtchan(
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_create_pymtchan = ExecParams {
-        code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/paymentchannel")),
+        code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/2/paymentchannel")),
         constructor_params: serialized_constructor_params,
     };
 
@@ -727,7 +799,7 @@ pub fn create_pymtchan(
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let pch_create_message_api = UnsignedMessageAPI {
-        to: "t01".to_owned(), // INIT_ACTOR_ADDR
+        to: "f01".to_owned(), // INIT_ACTOR_ADDR
         from: from_address,
         nonce,
         value,
@@ -763,11 +835,7 @@ pub fn update_pymtchan(
 
     let sv: paych::SignedVoucher = forest_encoding::from_slice(sv_cbor.as_ref())?;
 
-    let update_payment_channel_params = paych::UpdateChannelStateParams {
-        sv,
-        secret: vec![],
-        proof: vec![],
-    };
+    let update_payment_channel_params = paych::UpdateChannelStateParams { sv, secret: vec![] };
 
     let serialized_params = forest_vm::Serialized::serialize::<paych::UpdateChannelStateParams>(
         update_payment_channel_params,
@@ -917,7 +985,7 @@ pub fn create_voucher(
         None => {
             return Err(SignerError::GenericString(
                 "`amount` couldn't be parsed.".to_string(),
-            ))
+            ));
         }
     };
 
@@ -963,7 +1031,7 @@ pub fn deserialize_params(
                 Ok(MessageParams::MessageParamsMultisig(params.into()))
             }
             _ => Err(SignerError::GenericString(
-                "Unknown method fo actor 'fil/1/init'.".to_string(),
+                "Unknown method fo actor 'fil/2/init'.".to_string(),
             )),
         },
         "fil/1/multisig" => match FromPrimitive::from_u64(method) {
@@ -1004,7 +1072,7 @@ pub fn deserialize_params(
                 "Unknown method fo actor 'fil/1/multisig'.".to_string(),
             )),
         },
-        "fil/1/paymentchannel" => {
+        "fil/2/paymentchannel" => {
             match FromPrimitive::from_u64(method) {
                 Some(paych::MethodsPaych::UpdateChannelState) => {
                     let params =
@@ -1019,7 +1087,7 @@ pub fn deserialize_params(
                     Ok(MessageParams::MessageParamsSerialized("".to_string()))
                 }
                 _ => Err(SignerError::GenericString(
-                    "Unknown method fo actor 'fil/1/paymentchannel'.".to_string(),
+                    "Unknown method fo actor 'fil/2/paymentchannel'.".to_string(),
                 )),
             }
         }
@@ -1047,7 +1115,7 @@ pub fn deserialize_constructor_params(
             let params = serialized_params.deserialize::<multisig::ConstructorParams>()?;
             Ok(MessageParams::ConstructorParamsMultisig(params.into()))
         }
-        "fil/1/paymentchannel" => {
+        "fil/2/paymentchannel" => {
             let params = serialized_params.deserialize::<paych::ConstructorParams>()?;
             Ok(MessageParams::PaymentChannelCreateParams(params.into()))
         }
