@@ -514,9 +514,9 @@ describeCall('DeserializeParams', function () {
     let cbor_base64 = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
 
     assert.throws(() => {
-          filecoin_signer.deserializeParams(cbor_base64, "fil/1/paymentchannel", 7)
+          filecoin_signer.deserializeParams(cbor_base64, "fil/2/paymentchannel", 7)
         },
-        /Unknown method fo actor 'fil\/1\/paymentchannel'./
+        /Unknown method fo actor 'fil\/2\/paymentchannel'./
     );
   })
   
@@ -524,7 +524,7 @@ describeCall('DeserializeParams', function () {
     let cbor_base64 = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
 
     assert.throws(() => {
-          filecoin_signer.deserializeParams(cbor_base64, "fil/2/paymentchannel", 7)
+          filecoin_signer.deserializeParams(cbor_base64, "fil/1/paymentchannel", 7)
         },
         /Actor type not supported./
     );
@@ -539,7 +539,7 @@ describeCall('DeserializeConstructorParams', function () {
         to: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
     }
     
-    let params = filecoin_signer.deserializeConstructorParams(cbor_base64, "fil/1/paymentchannel")
+    let params = filecoin_signer.deserializeConstructorParams(cbor_base64, "fil/2/paymentchannel")
     
     assert.deepStrictEqual(constructor_params_expected, params)
   })

@@ -484,7 +484,7 @@ pub fn create_multisig(
     .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_multisig = ExecParams {
-        code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/2/multisig")),
+        code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),
         constructor_params: serialized_constructor_params,
     };
 
@@ -954,7 +954,7 @@ pub fn deserialize_params(
     let serialized_params = forest_vm::Serialized::new(params_decode);
 
     match actor_type.as_str() {
-        "fil/2/init" => match FromPrimitive::from_u64(method) {
+        "fil/1/init" => match FromPrimitive::from_u64(method) {
             Some(MethodInit::Exec) => {
                 let params = serialized_params.deserialize::<ExecParams>()?;
 
@@ -964,7 +964,7 @@ pub fn deserialize_params(
                 "Unknown method fo actor 'fil/2/init'.".to_string(),
             )),
         },
-        "fil/2/multisig" => match FromPrimitive::from_u64(method) {
+        "fil/1/multisig" => match FromPrimitive::from_u64(method) {
             Some(multisig::MethodMultisig::Propose) => {
                 let params = serialized_params.deserialize::<multisig::ProposeParams>()?;
 
@@ -999,7 +999,7 @@ pub fn deserialize_params(
                 ))
             }
             _ => Err(SignerError::GenericString(
-                "Unknown method fo actor 'fil/2/multisig'.".to_string(),
+                "Unknown method fo actor 'fil/1/multisig'.".to_string(),
             )),
         },
         "fil/2/paymentchannel" => {
@@ -1041,7 +1041,7 @@ pub fn deserialize_constructor_params(
     let serialized_params = forest_vm::Serialized::new(params_decode);
 
     match code_cid.as_str() {
-        "fil/2/multisig" => {
+        "fil/1/multisig" => {
             let params = serialized_params.deserialize::<multisig::ConstructorParams>()?;
             Ok(MessageParams::ConstructorParamsMultisig(params.into()))
         }

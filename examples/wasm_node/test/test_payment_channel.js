@@ -165,8 +165,7 @@ describeCall('updatePymtChan', function () {
 
       let updateChannelStateParams = {
         Sv: signedVoucherBase64,
-        Secret: [],
-        Proof: [],
+        Secret: []
       }
 
       serializedParams = Buffer.from(filecoin_signer.serializeParams(updateChannelStateParams)).toString('base64');
