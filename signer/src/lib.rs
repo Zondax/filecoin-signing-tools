@@ -120,7 +120,7 @@ fn derive_extended_secret_key(seed: &[u8], path: &str) -> Result<ExtendedSecretK
     let master = ExtendedSecretKey::try_from(seed)?;
     let bip44_path = BIP44Path::from_string(path)?;
     let esk = master.derive_bip44(&bip44_path)?;
-    
+
     Ok(esk)
 }
 
