@@ -53,6 +53,7 @@ num-traits = "0.2"
 [dev-dependencies]
 rand_chacha = "0.2.2"
 rand = "0.7"
+rustc-serialize = "0.3.24"
 
 [features]
 default = []

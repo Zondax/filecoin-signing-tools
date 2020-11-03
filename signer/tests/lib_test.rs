@@ -26,6 +26,9 @@ use filecoin_signer::{
     verify_voucher_signature, CborBuffer, Mnemonic, PrivateKey,
 };
 
+mod common;
+
+
 const BLS_PUBKEY: &str = "ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc07904";
 const BLS_PRIVATEKEY: &str = "0x7Y0GGX92MeWBF9mcWuR5EYPxe2dy60r8XIQOD31BI=";
 
@@ -76,8 +79,9 @@ const EXAMPLE_PRIVATE_KEY: &str = "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo="
 
 #[test]
 fn decode_key() {
-    let pk = PrivateKey::try_from(EXAMPLE_PRIVATE_KEY.to_string()).unwrap();
-    assert_eq!(base64::encode(&pk.0), EXAMPLE_PRIVATE_KEY);
+        
+    let pk = PrivateKey::try_from(private_key.to_string()).unwrap();
+    assert_eq!(base64::encode(&pk.0), private_key.to_string());
 }
 
 #[test]

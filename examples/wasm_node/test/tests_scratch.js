@@ -5,6 +5,8 @@ const secp256k1 = require('secp256k1');
 const assert = require('assert');
 const utils = require('./utils');
 
+/* TODO: rename as a generate file and not test */
+
 it("hex to base64", function() {
   const hex =
     "8855016055f878cce452b68cb0b78baaa8a683a7124b655501e14734e92a0aa6239432259006c3858f387dd475004800038d7ea4c68000420001430003e80040";

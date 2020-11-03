@@ -1,0 +1,30 @@
+{
+  "mnemonic": "equip will roof matter pink blind book anxiety banner elbow sun young",
+  "master_key": "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5",
+  "childs": [{
+    "path": "m/44'/461'/0/0/1",
+    "password": "",
+    "testnet": false,
+    "address": "f1rovwtiuo5ncslpmpjftzu5akswbgsgighjazxoi"
+  }, 
+  {
+    "path": "m/44'/1'/0/0/1",
+    "testnet": true,
+    "password": ""
+  },
+  {
+    "path": "m/44'/1'/0/0/0",
+    "testnet": true,
+    "password": "",
+    "address": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"
+  },
+  {
+    "path": "m/44'/461'/0/0/0",
+    "testnet": false,
+    "password": "",
+    "address": "f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"
+  }],
+  "bls_private_key": "P2pSgkvsZSgi0LOczuHmSXT1+l/hvSs3fVBb4y8OgVo=",
+  "bls_address": "t3uxb75vcy3ilwbsaavao52v7gfnfh6aics4a7nj26dwpcmj4mxxgnzholkupuplafdrbd55frpoolfnm7wlda",
+  "private_key": "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo="
+}
