@@ -78,6 +78,9 @@ const EXAMPLE_PRIVATE_KEY: &str = "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo="
 
 #[test]
 fn decode_key() {
+    let test_value = common::load_test_vectors("../test_vectors/wallet.json").unwrap();
+    let private_key = test_value["private_key"].as_str().unwrap();
+
     let pk = PrivateKey::try_from(private_key.to_string()).unwrap();
     assert_eq!(base64::encode(&pk.0), private_key.to_string());
 }
@@ -93,27 +96,32 @@ fn generate_mnemonic() {
 
 #[test]
 fn derive_key() {
-    let mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
+    let test_value = common::load_test_vectors("../test_vectors/wallet.json").unwrap();
+    let mnemonic = test_value["mnemonic"].as_str().unwrap();
+    let private_key = test_value["private_key"].as_str().unwrap();
 
-    let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "").unwrap();
+    let extended_key = key_derive(&mnemonic, "m/44'/461'/0/0/0", "").unwrap();
 
     assert_eq!(
         base64::encode(&extended_key.private_key.0),
-        EXAMPLE_PRIVATE_KEY
+        private_key.to_string()
     );
 }
 
 #[test]
 fn derive_key_password() {
-    let mnemonic = "equip will roof matter pink blind book anxiety banner elbow sun young";
+    let test_value = common::load_test_vectors("../test_vectors/wallet.json").unwrap();
+    let mnemonic = test_value["mnemonic"].as_str().unwrap();
+    let password = "password".to_string();
+    let path = "m/44'/461'/0/0/0".to_string();
 
-    let m = bip39::Mnemonic::from_phrase(&mnemonic.to_string(), Language::English).unwrap();
+    let m = bip39::Mnemonic::from_phrase(&mnemonic, Language::English).unwrap();
 
-    let seed = Seed::new(&m, "password");
+    let seed = Seed::new(&m, &password);
 
-    let extended_key_expected = key_derive_from_seed(seed.as_bytes(), "m/44'/461'/0/0/0").unwrap();
+    let extended_key_expected = key_derive_from_seed(seed.as_bytes(), &path).unwrap();
 
-    let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "password").unwrap();
+    let extended_key = key_derive(&mnemonic, &path, &password).unwrap();
 
     assert_eq!(
         base64::encode(&extended_key.private_key.0),
@@ -123,9 +131,9 @@ fn derive_key_password() {
 
 #[test]
 fn derive_key_from_seed() {
-    let mnemonic = Mnemonic(
-        "equip will roof matter pink blind book anxiety banner elbow sun young".to_string(),
-    );
+    let test_value = common::load_test_vectors("../test_vectors/wallet.json").unwrap();
+    let mnemonic = Mnemonic(test_value["mnemonic"].as_str().unwrap().to_string());
+    let private_key = test_value["private_key"].as_str().unwrap();
 
     let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic.0, Language::English).unwrap();
 
@@ -135,20 +143,23 @@ fn derive_key_from_seed() {
 
     assert_eq!(
         base64::encode(&extended_key.private_key.0),
-        EXAMPLE_PRIVATE_KEY
+        private_key.to_string()
     );
 }
 
 #[test]
 fn test_key_recover_testnet() {
-    let private_key = PrivateKey::try_from(EXAMPLE_PRIVATE_KEY.to_string()).unwrap();
+    let test_value = common::load_test_vectors("../test_vectors/wallet.json").unwrap();
+    let private_key = test_value["private_key"].as_str().unwrap();
+
+    let pk = PrivateKey::try_from(private_key.to_string()).unwrap();
     let testnet = true;
 
-    let recovered_key = key_recover(&private_key, testnet).unwrap();
+    let recovered_key = key_recover(&pk, testnet).unwrap();
 
     assert_eq!(
         base64::encode(&recovered_key.private_key.0),
-        EXAMPLE_PRIVATE_KEY
+        private_key.to_string()
     );
 
     assert_eq!(
@@ -159,25 +170,30 @@ fn test_key_recover_testnet() {
 
 #[test]
 fn test_key_recover_mainnet() {
-    let private_key = PrivateKey::try_from(EXAMPLE_PRIVATE_KEY.to_string()).unwrap();
+    let test_value = common::load_test_vectors("../test_vectors/wallet.json").unwrap();
+    let private_key = test_value["private_key"].as_str().unwrap();
+    let address = test_value["childs"][3]["address"].as_str().unwrap();
+
+    let pk = PrivateKey::try_from(private_key.to_string()).unwrap();
     let testnet = false;
 
-    let recovered_key = key_recover(&private_key, testnet).unwrap();
+    let recovered_key = key_recover(&pk, testnet).unwrap();
 
     assert_eq!(
         base64::encode(&recovered_key.private_key.0),
-        EXAMPLE_PRIVATE_KEY
+        private_key.to_string()
     );
 
-    assert_eq!(
-        &recovered_key.address,
-        "f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"
-    );
+    assert_eq!(&recovered_key.address, &address);
 }
 
 #[test]
 fn parse_unsigned_transaction() {
-    let cbor_data = CborBuffer(hex::decode(EXAMPLE_CBOR_DATA).unwrap());
+    let test_value = common::load_test_vectors("../test_vectors/txs.json").unwrap();
+    let cbor = test_value[0]["cbor"].as_str().unwrap();
+    let to_expected = test_value[0]["transaction"]["to"].as_str().unwrap();
+
+    let cbor_data = CborBuffer(hex::decode(&cbor).unwrap());
 
     let unsigned_tx = transaction_parse(&cbor_data, true).expect("FIX ME");
     let to = match unsigned_tx {
@@ -185,12 +201,12 @@ fn parse_unsigned_transaction() {
         MessageTxAPI::SignedMessageAPI(_) => panic!("Should be a Unsigned Message!"),
     };
 
-    println!("{}", to);
-    assert_eq!(to, "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
+    assert_eq!(to, to_expected.to_string());
 }
 
 #[test]
 fn parse_signed_transaction() {
+    // TODO: new test vector
     let cbor_data = CborBuffer(hex::decode(SIGNED_MESSAGE_CBOR).unwrap());
 
     let signed_tx = transaction_parse(&cbor_data, true).expect("Could not parse");
@@ -207,42 +223,49 @@ fn parse_signed_transaction() {
 
 #[test]
 fn parse_transaction_with_network() {
-    let cbor_data = CborBuffer(hex::decode(EXAMPLE_CBOR_DATA).unwrap());
+    let test_value = common::load_test_vectors("../test_vectors/txs.json").unwrap();
+    let tc = test_value[1].to_owned();
+    let cbor = tc["cbor"].as_str().unwrap();
+    let testnet = tc["testnet"].as_bool().unwrap();
+    let to_expected = tc["transaction"]["to"].as_str().unwrap();
+    let from_expected = tc["transaction"]["from"].as_str().unwrap();
 
-    let unsigned_tx_mainnet = transaction_parse(&cbor_data, false).expect("Could not parse");
+    let cbor_data = CborBuffer(hex::decode(&cbor).unwrap());
+
+    let unsigned_tx_mainnet = transaction_parse(&cbor_data, testnet).expect("Could not parse");
     let (to, from) = match unsigned_tx_mainnet {
         MessageTxAPI::UnsignedMessageAPI(tx) => (tx.to, tx.from),
         MessageTxAPI::SignedMessageAPI(_) => panic!("Should be a Unsigned Message!"),
     };
 
-    println!("{}", to);
-    assert_eq!(to, "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
-    assert_eq!(
-        from,
-        "f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string()
-    );
+    assert_eq!(to, to_expected.to_string());
+    assert_eq!(from, from_expected.to_string());
 }
 
 #[test]
 fn parse_transaction_with_network_testnet() {
-    let cbor_data = CborBuffer(hex::decode(EXAMPLE_CBOR_DATA).unwrap());
+    let test_value = common::load_test_vectors("../test_vectors/txs.json").unwrap();
+    let tc = test_value[0].to_owned();
+    let cbor = tc["cbor"].as_str().unwrap();
+    let testnet = tc["testnet"].as_bool().unwrap();
+    let to_expected = tc["transaction"]["to"].as_str().unwrap();
+    let from_expected = tc["transaction"]["from"].as_str().unwrap();
 
-    let unsigned_tx_testnet = transaction_parse(&cbor_data, true).expect("Could not parse");
+    let cbor_data = CborBuffer(hex::decode(&cbor).unwrap());
+
+    let unsigned_tx_testnet = transaction_parse(&cbor_data, testnet).expect("Could not parse");
     let (to, from) = match unsigned_tx_testnet {
         MessageTxAPI::UnsignedMessageAPI(tx) => (tx.to, tx.from),
         MessageTxAPI::SignedMessageAPI(_) => panic!("Should be a Unsigned Message!"),
     };
 
-    println!("{}", to);
-    assert_eq!(to, "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string());
-    assert_eq!(
-        from,
-        "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string()
-    );
+    assert_eq!(to, to_expected.to_string());
+    assert_eq!(from, from_expected.to_string());
 }
 
 #[test]
 fn parse_transaction_signed_with_network() {
+    // TODO: test vector for signed message
     let cbor_data = CborBuffer(hex::decode(SIGNED_MESSAGE_CBOR).unwrap());
 
     let signed_tx_mainnet = transaction_parse(&cbor_data, false).expect("Could not parse");
@@ -261,6 +284,7 @@ fn parse_transaction_signed_with_network() {
 
 #[test]
 fn parse_transaction_signed_with_network_testnet() {
+    // TODO: test vector for signed message
     let cbor_data = CborBuffer(hex::decode(SIGNED_MESSAGE_CBOR).unwrap());
 
     let signed_tx_testnet = transaction_parse(&cbor_data, true).expect("Could not parse");
@@ -278,13 +302,17 @@ fn parse_transaction_signed_with_network_testnet() {
 
 #[test]
 fn verify_invalid_signature() {
+    let test_tx_value = common::load_test_vectors("../test_vectors/txs.json").unwrap();
+    let private_key = test_tx_value[4]["pk"].as_str().unwrap();
+    let message = test_tx_value[4]["message"].as_str().unwrap();
+
     // Path 44'/461'/0/0/0
-    let private_key = PrivateKey::try_from(EXAMPLE_PRIVATE_KEY.to_string()).unwrap();
-    let message_user_api: UnsignedMessageAPI = serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE)
-        .expect("Could not serialize unsigned message");
+    let pk = PrivateKey::try_from(private_key.to_string()).unwrap();
+    let message_user_api: UnsignedMessageAPI =
+        serde_json::from_str(&message).expect("Could not serialize unsigned message");
 
     // Sign
-    let signature = transaction_sign_raw(&message_user_api, &private_key).unwrap();
+    let signature = transaction_sign_raw(&message_user_api, &pk).unwrap();
 
     // Verify
     let message = forest_message::UnsignedMessage::try_from(&message_user_api)

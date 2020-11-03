@@ -1,13 +1,14 @@
-use rustc_serialize::json::Json;
+use serde_json::{Result, Value};
 use std::fs::File;
 use std::io::Read;
 
-fn load_test_vectors() {
-    /* Load test */
-    let mut file = File::open("../test_vectors/wallet.json").unwrap();
+pub fn load_test_vectors(path: &str) -> Result<Value> {
+    /* Load test vectors */
+    let mut file = File::open(path).unwrap();
     let mut data = String::new();
     file.read_to_string(&mut data).unwrap();
 
-    let json = Json::from_str(&data).unwrap();
-    let private_key = json.find_path(&["private_key"]).unwrap();
+    let v: Value = serde_json::from_str(&data)?;
+
+    Ok(v)
 }
