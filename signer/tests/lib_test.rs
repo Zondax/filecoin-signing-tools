@@ -304,12 +304,12 @@ fn parse_transaction_signed_with_network_testnet() {
 fn verify_invalid_signature() {
     let test_tx_value = common::load_test_vectors("../test_vectors/txs.json").unwrap();
     let private_key = test_tx_value[4]["pk"].as_str().unwrap();
-    let message = test_tx_value[4]["message"].as_str().unwrap();
+    let message = test_tx_value[4]["message"].to_owned();
 
     // Path 44'/461'/0/0/0
     let pk = PrivateKey::try_from(private_key.to_string()).unwrap();
     let message_user_api: UnsignedMessageAPI =
-        serde_json::from_str(&message).expect("Could not serialize unsigned message");
+        serde_json::from_value(message).expect("Could not serialize unsigned message");
 
     // Sign
     let signature = transaction_sign_raw(&message_user_api, &pk).unwrap();
@@ -335,12 +335,14 @@ fn verify_invalid_signature() {
 
 #[test]
 fn sign_bls_transaction() {
+    let test_value = common::load_test_vectors("../test_vectors/bls_wallet.json").unwrap();
+
     // Get address
-    let bls_pubkey = hex::decode(BLS_PUBKEY).unwrap();
+    let bls_pubkey = hex::decode(test_value["bls_public_key"].as_str().unwrap()).unwrap();
     let bls_address = Address::new_bls(bls_pubkey.as_slice()).unwrap();
 
     // Get BLS private key
-    let bls_key = PrivateKey::try_from(BLS_PRIVATEKEY.to_string()).unwrap();
+    let bls_key = PrivateKey::try_from(test_value["bls_private_key"].as_str().unwrap().to_string()).unwrap();
 
     println!("{}", bls_address.to_string());
 
@@ -363,7 +365,7 @@ fn sign_bls_transaction() {
 
     let sig = bls_signatures::Signature::from_bytes(&raw_sig.as_bytes()).expect("FIX ME");
 
-    let bls_pk = bls_signatures::PublicKey::from_bytes(&hex::decode(BLS_PUBKEY).unwrap()).unwrap();
+    let bls_pk = bls_signatures::PublicKey::from_bytes(&bls_pubkey).unwrap();
 
     let message_cbor = transaction_serialize(&message).expect("FIX ME");
 
@@ -374,8 +376,10 @@ fn sign_bls_transaction() {
 
 #[test]
 fn test_verify_bls_signature() {
-    let sig = Signature::try_from("a0e8380977d2ccc5dd4d5ebd823406ed22fde880a3bd0fa8426c16b34013c487c51107f5e2808031b680ff200aa16f770a12a82022cc0fd2a7b0302baacee87862fed11be087609d3b0daf90869558574e15b94b375a0f34bce9478e975bb02c".to_string()).unwrap();
-    let message = CborBuffer(hex::decode("8a005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c628583103ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc079040144000186a01961a8430009c4430009c40040".to_string()).unwrap());
+    let test_value = common::load_test_vectors("../test_vectors/bls_signature.json").unwrap();
+
+    let sig = Signature::try_from(test_value["sig"].as_str().unwrap().to_string()).unwrap();
+    let message = CborBuffer(hex::decode(test_value["cbor"].as_str().unwrap().to_string()).unwrap());
 
     let result = verify_signature(&sig, &message).unwrap();
 
@@ -444,39 +448,26 @@ fn test_verify_aggregated_signature() {
 
 #[test]
 fn payment_channel_creation_bls_signing() {
-    let from_key = "8niW4fUBoKNo3GMDVfWu0oari11js4t1QpwXVBpEpFA=".to_string();
-    let _from_address =
-        "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq";
-    let bls_key = PrivateKey::try_from(from_key).unwrap();
-    let from_pkey = "93079ccf450c7205b0a8ec64a16e62f59f61275909b14e91a684d4acc6f321b4ec41f4543313c205ae60019fec9c304e";
+    let test_value = common::load_test_vectors("../test_vectors/payment_channel.json").unwrap();
+    let tc_creation_bls = test_value["creation"]["bls"].to_owned();
 
-    let pch_create = serde_json::json!(
-    {
-        "to": "t01",           // INIT_ACTOR_ADDR
-        "from": "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq",
-        "nonce": 1,
-        "value": "1",
-        "gaslimit": 200000000,
-        "gasfeecap": "2500",
-        "gaspremium": "2500",
-        "method": 2,           // extras::MethodInit::Exec
-        "params": "gtgqWBkAAVUAFGZpbC8xL3BheW1lbnRjaGFubmVsWEqCWDEDkwecz0UMcgWwqOxkoW5i9Z9hJ1kJsU6RpoTUrMbzIbTsQfRUMxPCBa5gAZ/snDBOVQElRUfDOAbbTJ6ACbjr2cTS5fIBgg=="
-    });
+    let from_key = tc_creation_bls["private_key"].as_str().unwrap();
+    let bls_key = PrivateKey::try_from(from_key.to_string()).unwrap();
+    let from_pkey = tc_creation_bls["public_key"].as_str().unwrap();
 
     let pch_create_message_api = create_pymtchan(
-        "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq"
-            .to_string(),
-        "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy".to_string(),
-        "1".to_string(),
-        1,
-        200000000,
-        "2500".to_string(),
-        "2500".to_string(),
+        tc_creation_bls["message"]["from"].as_str().unwrap().to_string(),
+        tc_creation_bls["message"]["to"].as_str().unwrap().to_string(),
+        tc_creation_bls["message"]["value"].as_str().unwrap().to_string(),
+        tc_creation_bls["message"]["nonce"].as_u64().unwrap(),
+        tc_creation_bls["message"]["gaslimit"].as_i64().unwrap(),
+        tc_creation_bls["message"]["gasfeecap"].as_str().unwrap().to_string(),
+        tc_creation_bls["message"]["gaspremium"].as_str().unwrap().to_string(),
     )
     .unwrap();
 
     let pch_create_message_expected: UnsignedMessageAPI =
-        serde_json::from_value(pch_create).unwrap();
+        serde_json::from_value(tc_creation_bls["message"].to_owned()).unwrap();
 
     assert_eq!(
         serde_json::to_string(&pch_create_message_expected).unwrap(),
@@ -496,30 +487,17 @@ fn payment_channel_creation_bls_signing() {
     assert!(bls_pkey.verify(bls_sig, &result));
 }
 
-// This example reverses the to/from addresses compared with
-// previous test.
-const PYMTCHAN_EXAMPLE_UNSIGNED_MSG: &str = r#"
-    {
-        "to": "t01",
-        "from": "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy",
-        "nonce": 1,
-        "value": "1",
-        "gaslimit": 1000000,
-        "gasfeecap": "2500",
-        "gaspremium": "2500",
-        "method": 2,
-        "params": "gtgqWBkAAVUAFGZpbC8xL3BheW1lbnRjaGFubmVsWEqCVQElRUfDOAbbTJ6ACbjr2cTS5fIBglgxA5MHnM9FDHIFsKjsZKFuYvWfYSdZCbFOkaaE1KzG8yG07EH0VDMTwgWuYAGf7JwwTg=="
-    }"#;
-
 #[test]
 fn payment_channel_creation_secp256k1_signing() {
-    let from_key = "+UXJi0663hCExYMxZVb9J+wKyFWhhX51jnG7WXkeAw0=".to_string();
-    let _from_pkey = "254547c33806db4c9e8009b8ebd9c4d2e5f20182";
+    let test_value = common::load_test_vectors("../test_vectors/payment_channel.json").unwrap();
+    let tc_creation_secp256k1 = test_value["creation"]["secp256k1"].to_owned();
+    
+    let from_key = tc_creation_secp256k1["private_key"].as_str().unwrap().to_string();
+    let _from_pkey = tc_creation_secp256k1["public_key"].as_str().unwrap().to_string();
     let privkey = PrivateKey::try_from(from_key).unwrap();
 
-    let _pch_create_message_unsigned = serde_json::json!(PYMTCHAN_EXAMPLE_UNSIGNED_MSG);
     let pch_create_message_api: UnsignedMessageAPI =
-        serde_json::from_str(PYMTCHAN_EXAMPLE_UNSIGNED_MSG)
+        serde_json::from_value(tc_creation_secp256k1["message"].to_owned())
             .expect("Could not serialize unsigned message");
     // TODO:  ^^^ this is an error, these lines are duplicated.  First one should have called create_pymtchan()
 
@@ -545,47 +523,29 @@ const PYMTCHAN_UPDATE_EXAMPLE_UNSIGNED_MSG: &str = r#"
 
 #[test]
 fn payment_channel_update() {
-    use forest_crypto::signature::Signature;
+    let test_value = common::load_test_vectors("../test_vectors/payment_channel.json").unwrap();
+    let tc_update_secp256k1 = test_value["update"]["secp256k1"].to_owned();
 
-    let from_key = "Is8RE05W1aR6Xyk4IbpVA71sU2ibVQQgle80rjs8U8E=".to_string();
-    let _from_pkey = "34a9e12cd978a29b89681365507433c6e3ee9daa"; // from base32decode("gsu6clgzpcrjxclicnsva5bty3r65hnk")
-    let _pch_addr_hex = "70125899295ada2a86f7e48f90df1b6b486945ad"; // from base32decode("oajfrgjjllncvbxx4shzbxy3nnegsrnn")
+    let from_key = tc_update_secp256k1["private_key"].as_str().unwrap().to_string();
     let privkey = PrivateKey::try_from(from_key).unwrap();
 
-    let sig_decoded = hex::decode("017211fc32c4ba1077b56bdfe05b695bdf461bc03fbe17ed81448513532919cfd53a9edfa719f6f8d587f4b32d8d7da4e8cfc225fc6983b671827a9bbf9ecee73701").unwrap();
-    let sig = Signature::new_secp256k1(sig_decoded);
-
-    let pch = Address::from_str("t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq").unwrap();
-
-    let sv = paych::SignedVoucher {
-        channel_addr: pch,
-        time_lock_min: 0,
-        time_lock_max: 0,
-        secret_pre_image: Vec::new(),
-        extra: Option::<paych::ModVerifyParams>::None,
-        lane: 0,
-        nonce: 1,
-        amount: BigInt::parse_bytes(b"1", 10).unwrap(),
-        min_settle_height: 0,
-        merges: vec![],
-        signature: Some(sig),
-    };
+    let sv : paych::SignedVoucher = serde_json::from_value(tc_update_secp256k1["voucher"].to_owned()).expect("Could not serialize voucher");
 
     let sv_base64 = base64::encode(to_vec(&sv).unwrap());
 
     let pch_update_message_unsigned_api = update_pymtchan(
-        "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq".to_string(),
-        "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq".to_string(),
+        tc_update_secp256k1["message"]["to"].as_str().unwrap().to_string(),
+        tc_update_secp256k1["message"]["from"].as_str().unwrap().to_string(),
         sv_base64,
-        1,
-        200000000,
-        "2500".to_string(),
-        "2500".to_string(),
+        tc_update_secp256k1["message"]["nonce"].as_u64().unwrap(),
+        tc_update_secp256k1["message"]["gaslimit"].as_i64().unwrap(),
+        tc_update_secp256k1["message"]["gasfeecap"].as_str().unwrap().to_string(),
+        tc_update_secp256k1["message"]["gaspremium"].as_str().unwrap().to_string(),
     )
     .unwrap();
 
     let pch_update_message_unsigned_expected: UnsignedMessageAPI =
-        serde_json::from_str(PYMTCHAN_UPDATE_EXAMPLE_UNSIGNED_MSG)
+        serde_json::from_value(tc_update_secp256k1["message"].to_owned())
             .expect("Could not serialize unsigned message");
 
     assert_eq!(
@@ -620,23 +580,24 @@ const PYMTCHAN_SETTLE_EXAMPLE_UNSIGNED_MSG: &str = r#"
 
 #[test]
 fn payment_channel_settle() {
-    let from_key = "Is8RE05W1aR6Xyk4IbpVA71sU2ibVQQgle80rjs8U8E=".to_string();
-    let _from_pkey = "34a9e12cd978a29b89681365507433c6e3ee9daa"; // from base32decode("gsu6clgzpcrjxclicnsva5bty3r65hnk")
-    let _pch_addr_hex = "70125899295ada2a86f7e48f90df1b6b486945ad"; // from base32decode("oajfrgjjllncvbxx4shzbxy3nnegsrnn")
+    let test_value = common::load_test_vectors("../test_vectors/payment_channel.json").unwrap();
+    let tc_settle_secp256k1 = test_value["settle"]["secp256k1"].to_owned();
+    
+    let from_key = tc_settle_secp256k1["private_key"].as_str().unwrap().to_string();
     let privkey = PrivateKey::try_from(from_key).unwrap();
 
     let pch_settle_message_unsigned_api = settle_pymtchan(
-        "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq".to_string(),
-        "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq".to_string(),
-        1,
-        20000000,
-        "2500".to_string(),
-        "2500".to_string(),
+        tc_settle_secp256k1["message"]["to"].as_str().unwrap().to_string(),
+        tc_settle_secp256k1["message"]["from"].as_str().unwrap().to_string(),
+        tc_settle_secp256k1["message"]["nonce"].as_u64().unwrap(),
+        tc_settle_secp256k1["message"]["gaslimit"].as_i64().unwrap(),
+        tc_settle_secp256k1["message"]["gasfeecap"].as_str().unwrap().to_string(),
+        tc_settle_secp256k1["message"]["gaspremium"].as_str().unwrap().to_string().to_string(),
     )
     .unwrap();
 
     let pch_settle_message_unsigned_expected: UnsignedMessageAPI =
-        serde_json::from_str(PYMTCHAN_SETTLE_EXAMPLE_UNSIGNED_MSG)
+        serde_json::from_value(tc_settle_secp256k1["message"].to_owned())
             .expect("Could not serialize unsigned message");
 
     assert_eq!(
@@ -671,18 +632,19 @@ const PYMTCHAN_COLLECT_EXAMPLE_UNSIGNED_MSG: &str = r#"
 
 #[test]
 fn payment_channel_collect() {
-    let from_key = "Is8RE05W1aR6Xyk4IbpVA71sU2ibVQQgle80rjs8U8E=".to_string();
-    let _from_pkey = "34a9e12cd978a29b89681365507433c6e3ee9daa"; // from base32decode("gsu6clgzpcrjxclicnsva5bty3r65hnk")
-    let _pch_addr_hex = "70125899295ada2a86f7e48f90df1b6b486945ad"; // from base32decode("oajfrgjjllncvbxx4shzbxy3nnegsrnn")
+    let test_value = common::load_test_vectors("../test_vectors/payment_channel.json").unwrap();
+    let tc_collect_secp256k1 = test_value["collect"]["secp256k1"].to_owned();
+    
+    let from_key = tc_collect_secp256k1["private_key"].as_str().unwrap().to_string();
     let privkey = PrivateKey::try_from(from_key).unwrap();
 
     let pch_collect_message_unsigned_api = collect_pymtchan(
-        "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq".to_string(),
-        "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq".to_string(),
-        1,
-        20000000,
-        "2500".to_string(),
-        "2500".to_string(),
+        tc_collect_secp256k1["message"]["to"].as_str().unwrap().to_string(),
+        tc_collect_secp256k1["message"]["from"].as_str().unwrap().to_string(),
+        tc_collect_secp256k1["message"]["nonce"].as_u64().unwrap(),
+        tc_collect_secp256k1["message"]["gaslimit"].as_i64().unwrap(),
+        tc_collect_secp256k1["message"]["gasfeecap"].as_str().unwrap().to_string(),
+        tc_collect_secp256k1["message"]["gaspremium"].as_str().unwrap().to_string(),
     )
     .unwrap();
 

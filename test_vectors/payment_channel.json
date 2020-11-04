@@ -1,0 +1,95 @@
+{
+  "creation": {
+    "bls": {
+      "private_key": "8niW4fUBoKNo3GMDVfWu0oari11js4t1QpwXVBpEpFA=",
+      "public_key" : "93079ccf450c7205b0a8ec64a16e62f59f61275909b14e91a684d4acc6f321b4ec41f4543313c205ae60019fec9c304e",
+      "message": {
+        "to": "t01",
+        "from": "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq",
+        "nonce": 1,
+        "value": "1",
+        "gaslimit": 200000000,
+        "gasfeecap": "2500",
+        "gaspremium": "2500",
+        "method": 2,
+        "params": "gtgqWBkAAVUAFGZpbC8xL3BheW1lbnRjaGFubmVsWEqCWDEDkwecz0UMcgWwqOxkoW5i9Z9hJ1kJsU6RpoTUrMbzIbTsQfRUMxPCBa5gAZ/snDBOVQElRUfDOAbbTJ6ACbjr2cTS5fIBgg=="
+      }
+    },
+    "secp256k1": {
+      "private_key": "+UXJi0663hCExYMxZVb9J+wKyFWhhX51jnG7WXkeAw0=",
+      "public_key": "254547c33806db4c9e8009b8ebd9c4d2e5f20182",
+      "message": {
+        "to": "t01",
+        "from": "t1evcupqzya3nuzhuabg4oxwoe2ls7eamcu3uw4cy",
+        "nonce": 1,
+        "value": "1",
+        "gaslimit": 1000000,
+        "gasfeecap": "2500",
+        "gaspremium": "2500",
+        "method": 2,
+        "params": "gtgqWBkAAVUAFGZpbC8xL3BheW1lbnRjaGFubmVsWEqCVQElRUfDOAbbTJ6ACbjr2cTS5fIBglgxA5MHnM9FDHIFsKjsZKFuYvWfYSdZCbFOkaaE1KzG8yG07EH0VDMTwgWuYAGf7JwwTg=="
+      }
+    }
+  },
+  "update": {
+    "secp256k1": {
+      "private_key": "Is8RE05W1aR6Xyk4IbpVA71sU2ibVQQgle80rjs8U8E=",
+      "voucher": {
+        "channel_addr": "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq",
+        "time_lock_min": 0,
+        "time_lock_max": 0,
+        "secret_pre_image": null,
+        "extra": null,
+        "lane": 0,
+        "nonce": 1,
+        "amount": "1",
+        "min_settle_height": 0,
+        "merges": null,
+        "signature": "017211fc32c4ba1077b56bdfe05b695bdf461bc03fbe17ed81448513532919cfd53a9edfa719f6f8d587f4b32d8d7da4e8cfc225fc6983b671827a9bbf9ecee73701"
+      },
+      "message": {
+        "to": "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq",
+        "from": "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq",
+        "nonce": 1,
+        "value": "0",
+        "gaslimit": 200000000,
+        "gasfeecap": "2500",
+        "gaspremium": "2500",
+        "method": 2,
+        "params": "g4tVAnASWJkpWtoqhvfkj5DfG2tIaUWtAABA9gABQgABAIBYQwEBchH8MsS6EHe1a9/gW2lb30YbwD++F+2BRIUTUykZz9U6nt+nGfb41Yf0sy2NfaToz8Il/GmDtnGCepu/ns7nNwFAQA=="
+      }
+    }
+  },
+  "settle": {
+    "secp256k1": {
+      "private_key": "Is8RE05W1aR6Xyk4IbpVA71sU2ibVQQgle80rjs8U8E=",
+      "message": {
+        "to": "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq",
+        "from": "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq",
+        "nonce": 1,
+        "value": "0",
+        "gaslimit": 20000000,
+        "gasfeecap": "2500",
+        "gaspremium": "2500",
+        "method": 3,
+        "params": ""
+      }
+    }
+  },
+  "collect": {
+    "secp256k1": {
+      "private_key": "Is8RE05W1aR6Xyk4IbpVA71sU2ibVQQgle80rjs8U8E=",
+      "message": {
+        "to": "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq",
+        "from": "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq",
+        "nonce": 1,
+        "value": "0",
+        "gaslimit": 20000000,
+        "gasfeecap": "2500",
+        "gaspremium": "2500",
+        "method": 4,
+        "params": ""
+      }
+    }
+  }
+}
