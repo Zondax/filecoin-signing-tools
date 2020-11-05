@@ -34,19 +34,7 @@
   "update": {
     "secp256k1": {
       "private_key": "Is8RE05W1aR6Xyk4IbpVA71sU2ibVQQgle80rjs8U8E=",
-      "voucher": {
-        "channel_addr": "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq",
-        "time_lock_min": 0,
-        "time_lock_max": 0,
-        "secret_pre_image": null,
-        "extra": null,
-        "lane": 0,
-        "nonce": 1,
-        "amount": "1",
-        "min_settle_height": 0,
-        "merges": null,
-        "signature": "017211fc32c4ba1077b56bdfe05b695bdf461bc03fbe17ed81448513532919cfd53a9edfa719f6f8d587f4b32d8d7da4e8cfc225fc6983b671827a9bbf9ecee73701"
-      },
+      "voucher_base64": "i1UCcBJYmSla2iqG9+SPkN8ba0hpRa0AAED2AAFCAAEAgFhDAQFyEfwyxLoQd7Vr3+BbaVvfRhvAP74X7YFEhRNTKRnP1Tqe36cZ9vjVh/SzLY19pOjPwiX8aYO2cYJ6m7+ezuc3AQ==",
       "message": {
         "to": "t2oajfrgjjllncvbxx4shzbxy3nnegsrnnk3tq2tq",
         "from": "t1gsu6clgzpcrjxclicnsva5bty3r65hnkqpd4jaq",
