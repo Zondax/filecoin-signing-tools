@@ -27,3 +27,4 @@ examples/wasm_browser/yarn.lock
 **/hfuzz_workspace/
 
 examples/private_keys_base64.txt
+test_vectors/NOTES.md
