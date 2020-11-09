@@ -799,6 +799,7 @@ pub fn create_pymtchan(
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let pch_create_message_api = UnsignedMessageAPI {
+        // TODO: add a testnet argument
         to: "f01".to_owned(), // INIT_ACTOR_ADDR
         from: from_address,
         nonce,

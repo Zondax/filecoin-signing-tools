@@ -22,7 +22,6 @@ let rawdataWallet = fs.readFileSync('../../test_vectors/wallet.json')
 let dataWallet = JSON.parse(rawdataWallet)
 
 const MASTER_NODE = bip32.fromBase58(dataWallet.master_key)
-const EXAMPLE_MNEMONIC = dataWallet.mnemonic
 
 let describeCall = describe;
 if (process.env.PURE_JS) { describeCall = describe.skip }
@@ -38,7 +37,7 @@ describe("keyDerive", function() {
   it("should derive key from mnemonic", function() {
     const child = dataWallet.childs[0]
 
-    const keypair = filecoin_signer.keyDerive(EXAMPLE_MNEMONIC, child.path, child.password);
+    const keypair = filecoin_signer.keyDerive(dataWallet.mnemonic, child.path, child.password);
 
     console.log("Public Key Raw         :", keypair.public_raw);
     console.log("Public Key             :", keypair.public_hexstring);
@@ -55,7 +54,7 @@ describe("keyDerive", function() {
       
       assert(child.testnet)
       
-      const keypair = filecoin_signer.keyDerive(EXAMPLE_MNEMONIC, child.path, child.password);
+      const keypair = filecoin_signer.keyDerive(dataWallet.mnemonic, child.path, child.password);
 
       console.log("Public Key Raw         :", keypair.public_raw);
       console.log("Public Key             :", keypair.public_hexstring);
@@ -69,7 +68,7 @@ describe("keyDerive", function() {
 
   it("should not work without password", function() {
     assert.throws(() => {
-            filecoin_signer.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1")
+            filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/0/0/1")
         },
         /argument must be of type string or an instance of Buffer or ArrayBuffer. Received undefined/
     );
@@ -77,21 +76,21 @@ describe("keyDerive", function() {
   
   it('should throw an error because of invalid path', function() {
       assert.throws(
-          () => filecoin_signer.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/a/0/1", ""),
+          () => filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/a/0/1", ""),
           /Expected BIP32Path, got String | Invalid BIP44 path/
       );
   });
 
   it("should derive key with the password", function() {
       const password = "password"
-      const keypair = filecoin_signer.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", password);
+      const keypair = filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/0/0/1", password);
 
       console.log("Public Key Raw         :", keypair.public_raw);
       console.log("Public Key             :", keypair.public_hexstring);
       console.log("Private                :", keypair.private_hexstring);
       console.log("Address                :", keypair.address);
 
-      const seed = bip39.mnemonicToSeedSync(EXAMPLE_MNEMONIC, password);
+      const seed = bip39.mnemonicToSeedSync(dataWallet.mnemonic, password);
       const node = bip32.fromSeed(seed);
 
       const expected_keys = node.derivePath("m/44'/461'/0/0/1");
@@ -99,14 +98,14 @@ describe("keyDerive", function() {
   });
 
   it("should not match the key with the different password", function() {
-      const keypair = filecoin_signer.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "password");
+      const keypair = filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/0/0/1", "password");
 
       console.log("Public Key Raw         :", keypair.public_raw);
       console.log("Public Key             :", keypair.public_hexstring);
       console.log("Private                :", keypair.private_hexstring);
       console.log("Address                :", keypair.address);
 
-      const seed = bip39.mnemonicToSeedSync(EXAMPLE_MNEMONIC, "lol");
+      const seed = bip39.mnemonicToSeedSync(dataWallet.mnemonic, "lol");
       const node = bip32.fromSeed(seed);
 
       const expected_keys = node.derivePath("m/44'/461'/0/0/1");
@@ -118,7 +117,7 @@ describe("keyDerive", function() {
 describe("keyDeriveFromSeed", function() {
   it("should derive key from seed", function() {
     const child = dataWallet.childs[0]
-    const seed = bip39.mnemonicToSeedSync(EXAMPLE_MNEMONIC).toString('hex');
+    const seed = bip39.mnemonicToSeedSync(dataWallet.mnemonic).toString('hex');
 
     const keypair = filecoin_signer.keyDeriveFromSeed(seed, child.path);
 
@@ -134,7 +133,7 @@ describe("keyDeriveFromSeed", function() {
 
   it('should be able to derive from seed buffer', function() {
       const child = dataWallet.childs[0]
-      const seed = bip39.mnemonicToSeedSync(EXAMPLE_MNEMONIC);
+      const seed = bip39.mnemonicToSeedSync(dataWallet.mnemonic);
 
       const keypair = filecoin_signer.keyDeriveFromSeed(seed, child.path);
 

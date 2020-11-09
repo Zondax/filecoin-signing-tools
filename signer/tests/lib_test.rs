@@ -399,11 +399,11 @@ fn payment_channel_creation_bls_signing() {
     let from_pkey = tc_creation_bls["public_key"].as_str().unwrap();
 
     let pch_create_message_api = create_pymtchan(
-        tc_creation_bls["message"]["from"]
+        tc_creation_bls["constructor_params"]["from"]
             .as_str()
             .unwrap()
             .to_string(),
-        tc_creation_bls["message"]["to"]
+        tc_creation_bls["constructor_params"]["to"]
             .as_str()
             .unwrap()
             .to_string(),
@@ -428,8 +428,8 @@ fn payment_channel_creation_bls_signing() {
         serde_json::from_value(tc_creation_bls["message"].to_owned()).unwrap();
 
     assert_eq!(
-        serde_json::to_string(&pch_create_message_expected).unwrap(),
-        serde_json::to_string(&pch_create_message_api).unwrap()
+        serde_json::to_string(&pch_create_message_expected.params).unwrap(),
+        serde_json::to_string(&pch_create_message_api.params).unwrap()
     );
 
     // First check transaction_serialize() in creating an unsigned message
