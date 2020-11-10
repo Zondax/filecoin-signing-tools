@@ -780,9 +780,12 @@ pub fn create_pymtchan(
     gas_fee_cap: String,
     gas_premium: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
+    let from = Address::from_str(&from_address)?;
+    let to = Address::from_str(&to_address)?;
+    
     let create_payment_channel_params = paych::ConstructorParams {
-        from: Address::from_str(&from_address)?,
-        to: Address::from_str(&to_address)?,
+        from,
+        to,
     };
 
     let serialized_constructor_params =
@@ -798,9 +801,11 @@ pub fn create_pymtchan(
         forest_vm::Serialized::serialize::<ExecParams>(message_params_create_pymtchan)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
+    let mut init_actor_address = Address::from_str("f01")?;
+    init_actor_address.set_network(from.network());
+
     let pch_create_message_api = UnsignedMessageAPI {
-        // TODO: add a testnet argument
-        to: "f01".to_owned(), // INIT_ACTOR_ADDR
+        to: init_actor_address.to_string(),
         from: from_address,
         nonce,
         value,
