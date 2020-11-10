@@ -196,7 +196,7 @@ function transactionSign(unsignedMessage, privateKey) {
 
   const signedMessage = {};
 
-  signedMessage.message = unsignedMessage;
+  signedMessage.message = lowercaseKeys(unsignedMessage);
 
   // TODO: support BLS scheme
   signedMessage.signature = {
@@ -209,7 +209,7 @@ function transactionSign(unsignedMessage, privateKey) {
 
 function transactionSignLotus(unsignedMessage, privateKey) {
   const signedMessage = transactionSign(unsignedMessage, privateKey);
-
+  
   return JSON.stringify({
     Message: {
       From: signedMessage.message.from,
@@ -218,9 +218,7 @@ function transactionSignLotus(unsignedMessage, privateKey) {
       GasPremium: signedMessage.message.gaspremium,
       Method: signedMessage.message.method,
       Nonce: signedMessage.message.nonce,
-      Params: Buffer.from(signedMessage.message.params, "hex").toString(
-        "base64"
-      ),
+      Params: signedMessage.message.params,
       To: signedMessage.message.to,
       Value: signedMessage.message.value,
     },

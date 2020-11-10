@@ -295,6 +295,8 @@ describe("transactionSignLotus", function() {
 
     var signed_tx = filecoin_signer.transactionSignLotus(tc.tx.Message, tc.pk);
 
+    console.log(signed_tx)
+
     assert.deepStrictEqual(JSON.parse(signed_tx),tc.tx);
   })
 })
