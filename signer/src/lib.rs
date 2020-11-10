@@ -782,11 +782,8 @@ pub fn create_pymtchan(
 ) -> Result<UnsignedMessageAPI, SignerError> {
     let from = Address::from_str(&from_address)?;
     let to = Address::from_str(&to_address)?;
-    
-    let create_payment_channel_params = paych::ConstructorParams {
-        from,
-        to,
-    };
+
+    let create_payment_channel_params = paych::ConstructorParams { from, to };
 
     let serialized_constructor_params =
         forest_vm::Serialized::serialize::<paych::ConstructorParams>(create_payment_channel_params)
