@@ -58,6 +58,3 @@ rand = "0.7"
 default = []
 with-arbitrary = ["arbitrary"]
 with-ffi-support = ["ffi-support"]
-
-[patch.crates-io]
-multihash = "0.13.0"
