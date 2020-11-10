@@ -209,7 +209,7 @@ function transactionSign(unsignedMessage, privateKey) {
 
 function transactionSignLotus(unsignedMessage, privateKey) {
   const signedMessage = transactionSign(unsignedMessage, privateKey);
-  
+
   return JSON.stringify({
     Message: {
       From: signedMessage.message.from,
