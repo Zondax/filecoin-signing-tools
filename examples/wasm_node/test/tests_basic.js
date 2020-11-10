@@ -291,6 +291,8 @@ describe("transactionSignLotus", function() {
     let data = fs.readFileSync('../../test_vectors/signed_message.json')
     let tc = JSON.parse(data)
 
+    console.log(tc.tx.Message)
+
     var signed_tx = filecoin_signer.transactionSignLotus(tc.tx.Message, tc.pk);
 
     assert.deepStrictEqual(JSON.parse(signed_tx),tc.tx);

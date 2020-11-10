@@ -4,6 +4,7 @@ const cbor = require("ipld-dag-cbor").util;
 const secp256k1 = require("secp256k1");
 const BN = require("bn.js");
 const { MethodInit, MethodPaych } = require("./methods");
+const lowercaseKeys = require('lowercase-keys');
 
 const ExtendedKey = require("./extendedkey");
 const {
@@ -68,6 +69,8 @@ function serializeBigNum(gasprice) {
 }
 
 function transactionSerializeRaw(message) {
+  message = lowercaseKeys(message);
+  
   if (!("to" in message) || typeof message.to !== "string") {
     throw new Error("'to' is a required field and has to be a 'string'");
   }
