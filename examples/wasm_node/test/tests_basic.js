@@ -243,7 +243,7 @@ describe("transactionParse", function() {
 
       assert.throws(
           () => filecoin_signer.transactionParse(cbor_transaction_extra_bytes, false),
-          /(CBOR error: 'trailing data at offset 64'|Extraneous CBOR data found beyond initial top-level object)/
+          /(Encoding error \| trailing data at offset 64|Extraneous CBOR data found beyond initial top-level object)/
       );
   });
 
@@ -253,7 +253,7 @@ describe("transactionParse", function() {
 
       assert.throws(
           () => filecoin_signer.transactionParse(cbor_transaction_extra_bytes, false),
-          /(CBOR error: 'trailing data at offset 64'|Failed to parse)/
+          /(Encoding error \| trailing data at offset 64|Failed to parse)/
       );
   });
 })
