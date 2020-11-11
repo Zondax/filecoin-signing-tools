@@ -41,6 +41,9 @@ pub enum SignerError {
     // Deserialize error
     #[error("Cannot deserilaize parameters | {0}")]
     DeserializeError(#[from] forest_encoding::Error),
+    // forest encoding error
+    #[error("Encoding error | {0}")]
+    EncodingError(#[from] forest_encoding::error::Error),
 }
 
 #[cfg(feature = "with-ffi-support")]
@@ -59,6 +62,7 @@ impl From<SignerError> for ffi_support::ExternError {
             SignerError::TryFromSlice(_) => 10,
             SignerError::DecodeError(_) => 11,
             SignerError::DeserializeError(_) => 12,
+            SignerError::EncodingError(_) => 13,
         };
         Self::new_error(ffi_support::ErrorCode::new(code), e.to_string())
     }
