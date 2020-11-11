@@ -4,6 +4,7 @@ const cbor = require("ipld-dag-cbor").util;
 const secp256k1 = require("secp256k1");
 const BN = require("bn.js");
 const { MethodInit, MethodPaych } = require("./methods");
+const lowercaseKeys = require("lowercase-keys");
 
 const ExtendedKey = require("./extendedkey");
 const {
@@ -68,6 +69,8 @@ function serializeBigNum(gasprice) {
 }
 
 function transactionSerializeRaw(message) {
+  message = lowercaseKeys(message);
+
   if (!("to" in message) || typeof message.to !== "string") {
     throw new Error("'to' is a required field and has to be a 'string'");
   }
@@ -193,7 +196,7 @@ function transactionSign(unsignedMessage, privateKey) {
 
   const signedMessage = {};
 
-  signedMessage.message = unsignedMessage;
+  signedMessage.message = lowercaseKeys(unsignedMessage);
 
   // TODO: support BLS scheme
   signedMessage.signature = {
@@ -215,9 +218,7 @@ function transactionSignLotus(unsignedMessage, privateKey) {
       GasPremium: signedMessage.message.gaspremium,
       Method: signedMessage.message.method,
       Nonce: signedMessage.message.nonce,
-      Params: Buffer.from(signedMessage.message.params, "hex").toString(
-        "base64"
-      ),
+      Params: signedMessage.message.params,
       To: signedMessage.message.to,
       Value: signedMessage.message.value,
     },

@@ -1,0 +1,20 @@
+{
+  "pk": "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=",
+  "tx": {
+    "Message": {
+      "From": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+      "GasLimit": 25000,
+      "GasPremium": "1",
+      "GasFeeCap": "1",
+      "Method": 0,
+      "Nonce": 1,
+      "Params": "",
+      "To": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+      "Value": "100000"
+    },
+    "Signature": {
+      "Data": "nFuTI7MxEXqTQ0QmmQTmqbUsNZfHFXlNjz+susVDkAk1SrRCdJKxlVZZrM4vUtVBSYgtMIeigNfpqdKGIFhoWQA=",
+      "Type": 1
+    }
+  }
+}

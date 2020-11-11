@@ -1,0 +1,17 @@
+{
+  "verify_invalid_signature": {
+    "description": "Tampered signature and look if it is valid",
+    "private_key": "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=",
+    "message": {
+      "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+      "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+      "nonce": 1,
+      "value": "100000",
+      "gaslimit": 1,
+      "gasfeecap": "1",
+      "gaspremium": "1",
+      "method": 0,
+      "params": ""
+    }
+  }
+}

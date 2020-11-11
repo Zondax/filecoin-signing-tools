@@ -7,7 +7,7 @@ use std::str::FromStr;
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
 use forest_address::{Address, BLSPublicKey, Network, Protocol};
-use forest_cid::{multihash::Blake2b256, multihash::Identity, Cid, Codec};
+use forest_cid::{multihash::MultihashDigest, Cid, Code::Blake2b256, Code::Identity, Codec};
 use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
 use forest_message::SignedMessage;
@@ -551,7 +551,7 @@ pub fn create_multisig(
     .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_multisig = ExecParams {
-        code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),
+        code_cid: Cid::new_v1(Codec::Raw, Identity.digest(b"fil/1/multisig")),
         constructor_params: serialized_constructor_params,
     };
 
@@ -790,7 +790,7 @@ pub fn create_pymtchan(
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_create_pymtchan = ExecParams {
-        code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/2/paymentchannel")),
+        code_cid: Cid::new_v1(Codec::Raw, Identity.digest(b"fil/2/paymentchannel")),
         constructor_params: serialized_constructor_params,
     };
 
@@ -799,6 +799,7 @@ pub fn create_pymtchan(
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let pch_create_message_api = UnsignedMessageAPI {
+        // TODO: add a testnet argument
         to: "f01".to_owned(), // INIT_ACTOR_ADDR
         from: from_address,
         nonce,

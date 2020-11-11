@@ -1,0 +1,19 @@
+{
+  "sign": {
+    "voucher": {
+      "payment_channel_address": "t24acjqhdetck7irsvmn2p6jpuwnouzjxuoa22rva",
+      "time_lock_min": 0,
+      "time_lock_max": 0,
+      "amount": "10000",
+      "lane": 1,
+      "nonce": 1,
+      "min_settle_height": 0
+    },
+    "signed_voucher_base64": "i1UC4ASYHGSYlfRGVWN0/yX0s11MpvQAAED2AQFDACcQAIBYQgFRD/3a1fsyc7TLRUgeQ5BAPhB1rDuVt1qvDuwccTODWCJ+OAe4R/+HIGH9pgBYjrghhA4JdgJugTWfzFflbOGSAA=="
+  },
+  "verify": {
+    "signed_voucher_base64": "i0MA8gcAAED2AAFEAAGGoACAWEIBayRmYQQCatrELBc2rwfu0jJk0EmVr+eVccDsThtM1ZVzkrC53a6qVgrgFkB8OHoiZSlNmW/nmCU7G2POhEeo2gE=",
+    "address_signer": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"
+  }
+
+}

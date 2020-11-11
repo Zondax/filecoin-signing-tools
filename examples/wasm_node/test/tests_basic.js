@@ -1,26 +1,27 @@
+const bip39 = require('bip39')
+const bip32 = require('bip32')
+const {getDigest, getDigestVoucher, blake2b256} = require('./utils')
+const secp256k1 = require('secp256k1')
+const fs = require('fs')
+const assert = require('assert')
+const cbor = require("ipld-dag-cbor").util
+
 // Test twice for wasm version and pure js version
 if (process.env.PURE_JS) {
-  var filecoin_signer = require('@zondax/filecoin-signing-tools/js');
+  var filecoin_signer = require('@zondax/filecoin-signing-tools/js')
 } else {
-  var filecoin_signer = require('@zondax/filecoin-signing-tools');
+  var filecoin_signer = require('@zondax/filecoin-signing-tools')
 }
 
-const bip39 = require('bip39');
-const bip32 = require('bip32');
-const {getDigest, getDigestVoucher, blake2b256} = require('./utils');
-const secp256k1 = require('secp256k1');
-const fs = require('fs');
-const assert = require('assert');
-const cbor = require("ipld-dag-cbor").util;
-const { 
-  EXAMPLE_MNEMONIC,
-  EXAMPLE_CBOR_TX,
-  EXAMPLE_ADDRESS_MAINNET,
-  EXAMPLE_TRANSACTION,
-  EXAMPLE_TRANSACTION_MAINNET,
-  MASTER_KEY,
-  MASTER_NODE,
-} = require('./constants.js');
+/* Load Txs test data */
+let rawdataTxs = fs.readFileSync('../../test_vectors/txs.json')
+let dataTxs = JSON.parse(rawdataTxs)
+
+/* Load wallet test data */
+let rawdataWallet = fs.readFileSync('../../test_vectors/wallet.json')
+let dataWallet = JSON.parse(rawdataWallet)
+
+const MASTER_NODE = bip32.fromBase58(dataWallet.master_key)
 
 let describeCall = describe;
 if (process.env.PURE_JS) { describeCall = describe.skip }
@@ -34,48 +35,62 @@ describe("generateMnemonic", function() {
 
 describe("keyDerive", function() {
   it("should derive key from mnemonic", function() {
-    const keypair = filecoin_signer.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "");
+    const child = dataWallet.childs[0]
+
+    const keypair = filecoin_signer.keyDerive(dataWallet.mnemonic, child.path, child.password);
 
     console.log("Public Key Raw         :", keypair.public_raw);
     console.log("Public Key             :", keypair.public_hexstring);
     console.log("Private                :", keypair.private_hexstring);
     console.log("Address                :", keypair.address);
 
-    const expected_keys = MASTER_NODE.derivePath("m/44'/461'/0/0/1");
+    const expected_keys = MASTER_NODE.derivePath(child.path);
     assert.strictEqual(keypair.private_hexstring, expected_keys.privateKey.toString("hex"));
-    assert.strictEqual(keypair.address, EXAMPLE_ADDRESS_MAINNET);
+    assert.strictEqual(keypair.address, child.address);
   });
 
   it("should derive key from mnemonic and return a testnet address", function() {
-      const keypair = filecoin_signer.keyDerive(EXAMPLE_MNEMONIC, "m/44'/1'/0/0/1", "");
+      const child = dataWallet.childs[1]
+      
+      assert(child.testnet)
+      
+      const keypair = filecoin_signer.keyDerive(dataWallet.mnemonic, child.path, child.password);
 
       console.log("Public Key Raw         :", keypair.public_raw);
       console.log("Public Key             :", keypair.public_hexstring);
       console.log("Private                :", keypair.private_hexstring);
       console.log("Address                :", keypair.address);
 
-      const expected_keys = MASTER_NODE.derivePath("m/44'/1'/0/0/1");
+      const expected_keys = MASTER_NODE.derivePath(child.path);
       assert.strictEqual(keypair.private_hexstring, expected_keys.privateKey.toString("hex"));
       assert(keypair.address.startsWith('t'));
   });
 
   it("should not work without password", function() {
     assert.throws(() => {
-            filecoin_signer.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1")
+            filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/0/0/1")
         },
         /argument must be of type string or an instance of Buffer or ArrayBuffer. Received undefined/
     );
   });
+  
+  it('should throw an error because of invalid path', function() {
+      assert.throws(
+          () => filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/a/0/1", ""),
+          /Expected BIP32Path, got String | Invalid BIP44 path/
+      );
+  });
 
   it("should derive key with the password", function() {
-      const keypair = filecoin_signer.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "password");
+      const password = "password"
+      const keypair = filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/0/0/1", password);
 
       console.log("Public Key Raw         :", keypair.public_raw);
       console.log("Public Key             :", keypair.public_hexstring);
       console.log("Private                :", keypair.private_hexstring);
       console.log("Address                :", keypair.address);
 
-      const seed = bip39.mnemonicToSeedSync(EXAMPLE_MNEMONIC, "password");
+      const seed = bip39.mnemonicToSeedSync(dataWallet.mnemonic, password);
       const node = bip32.fromSeed(seed);
 
       const expected_keys = node.derivePath("m/44'/461'/0/0/1");
@@ -83,14 +98,14 @@ describe("keyDerive", function() {
   });
 
   it("should not match the key with the different password", function() {
-      const keypair = filecoin_signer.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/0/0/1", "password");
+      const keypair = filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/0/0/1", "password");
 
       console.log("Public Key Raw         :", keypair.public_raw);
       console.log("Public Key             :", keypair.public_hexstring);
       console.log("Private                :", keypair.private_hexstring);
       console.log("Address                :", keypair.address);
 
-      const seed = bip39.mnemonicToSeedSync(EXAMPLE_MNEMONIC, "lol");
+      const seed = bip39.mnemonicToSeedSync(dataWallet.mnemonic, "lol");
       const node = bip32.fromSeed(seed);
 
       const expected_keys = node.derivePath("m/44'/461'/0/0/1");
@@ -101,64 +116,62 @@ describe("keyDerive", function() {
 
 describe("keyDeriveFromSeed", function() {
   it("should derive key from seed", function() {
-    const seed = bip39.mnemonicToSeedSync(EXAMPLE_MNEMONIC).toString('hex');
+    const child = dataWallet.childs[0]
+    const seed = bip39.mnemonicToSeedSync(dataWallet.mnemonic).toString('hex');
 
-    const keypair = filecoin_signer.keyDeriveFromSeed(seed, "m/44'/461'/0/0/1");
+    const keypair = filecoin_signer.keyDeriveFromSeed(seed, child.path);
 
     console.log("Public Key Raw         :", keypair.public_raw);
     console.log("Public Key             :", keypair.public_hexstring);
     console.log("Private                :", keypair.private_hexstring);
     console.log("Address                :", keypair.address);
 
-    const expected_keys = MASTER_NODE.derivePath("m/44'/461'/0/0/1");
+    const expected_keys = MASTER_NODE.derivePath(child.path);
     assert.strictEqual(keypair.private_hexstring, expected_keys.privateKey.toString("hex"));
-    assert.strictEqual(keypair.address, EXAMPLE_ADDRESS_MAINNET);
+    assert.strictEqual(keypair.address, child.address);
   });
 
   it('should be able to derive from seed buffer', function() {
-      const seed = bip39.mnemonicToSeedSync(EXAMPLE_MNEMONIC);
+      const child = dataWallet.childs[0]
+      const seed = bip39.mnemonicToSeedSync(dataWallet.mnemonic);
 
-      const keypair = filecoin_signer.keyDeriveFromSeed(seed, "m/44'/461'/0/0/1");
+      const keypair = filecoin_signer.keyDeriveFromSeed(seed, child.path);
 
       console.log("Public Key Raw         :", keypair.public_raw);
       console.log("Public Key             :", keypair.public_hexstring);
       console.log("Private                :", keypair.private_hexstring);
       console.log("Address                :", keypair.address);
 
-      const expected_keys = MASTER_NODE.derivePath("m/44'/461'/0/0/1");
+      const expected_keys = MASTER_NODE.derivePath(child.path);
       assert.strictEqual(keypair.private_hexstring, expected_keys.privateKey.toString("hex"));
-      assert.strictEqual(keypair.address, EXAMPLE_ADDRESS_MAINNET);
-  });
-
-  it('should throw an error because of invalid path', function() {
-      assert.throws(
-          () => filecoin_signer.keyDerive(EXAMPLE_MNEMONIC, "m/44'/461'/a/0/1", ""),
-          /Expected BIP32Path, got String | Invalid BIP44 path/
-      );
+      assert.strictEqual(keypair.address, child.address);
   });
 })
 
 describe("keyRecover", function() {
   it("should recover testnet key (buffer private key)", function() {
-    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
-    let privateKey = child.privateKey;
+    let child = dataWallet.childs[2]
+    let expected_keys = MASTER_NODE.derivePath(child.path);
 
-    let recoveredKey = filecoin_signer.keyRecover(privateKey, true);
+    assert(child.testnet)
+
+    let recoveredKey = filecoin_signer.keyRecover(expected_keys.privateKey, true);
 
     console.log("Public Key Raw         :", recoveredKey.public_raw);
     console.log("Public Key             :", recoveredKey.public_hexstring);
     console.log("Private                :", recoveredKey.private_hexstring);
+    console.log("Private Key (base64)   :", recoveredKey.private_base64);
     console.log("Address                :", recoveredKey.address);
 
-    assert.strictEqual(recoveredKey.private_hexstring, child.privateKey.toString("hex"));
-    assert.strictEqual(recoveredKey.address, "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
+    assert.strictEqual(recoveredKey.private_hexstring, expected_keys.privateKey.toString("hex"));
+    assert.strictEqual(recoveredKey.address, child.address);
   });
 
   it("key recover mainnet base64", () => {
-      let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
-      let privateKey = child.privateKey.toString('base64');
+      let child = dataWallet.childs[3]
+      let expected_keys = MASTER_NODE.derivePath(child.path);
 
-      let recoveredKey = filecoin_signer.keyRecover(privateKey, false);
+      let recoveredKey = filecoin_signer.keyRecover(expected_keys.privateKey.toString('base64'), false);
 
       console.log("Public Key Raw         :", recoveredKey.public_raw);
       console.log("Public Key (hex)       :", recoveredKey.public_hexstring);
@@ -167,115 +180,95 @@ describe("keyRecover", function() {
       console.log("Private Key (base64)   :", recoveredKey.private_base64);
       console.log("Address                :", recoveredKey.address);
 
-      assert.strictEqual(recoveredKey.private_hexstring, child.privateKey.toString("hex"));
-      assert.strictEqual(recoveredKey.address, "f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
+      assert.strictEqual(recoveredKey.private_hexstring, expected_keys.privateKey.toString("hex"));
+      assert.strictEqual(recoveredKey.address, child.address);
   });
 })
 
 describeCall("keyRecoverBLS", function() {
   it("should derive the key and return a BLS address", function() {
-    let recoveredKey = filecoin_signer.keyRecoverBLS("P2pSgkvsZSgi0LOczuHmSXT1+l/hvSs3fVBb4y8OgVo=", true);
+    let recoveredKey = filecoin_signer.keyRecoverBLS(dataWallet.bls_private_key, true);
 
     console.log("Public Key Raw         :", recoveredKey.public_raw);
     console.log("Public Key             :", recoveredKey.public_hexstring);
     console.log("Private                :", recoveredKey.private_hexstring);
     console.log("Address                :", recoveredKey.address);
 
-    assert.strictEqual(recoveredKey.address, "t3uxb75vcy3ilwbsaavao52v7gfnfh6aics4a7nj26dwpcmj4mxxgnzholkupuplafdrbd55frpoolfnm7wlda");
+    assert.strictEqual(recoveredKey.address, dataWallet.bls_address);
   })
 })
 
 describe("transactionSerialize", function() {
   it("should serialize transaction", function() {
-    assert.strictEqual(EXAMPLE_CBOR_TX, filecoin_signer.transactionSerialize(EXAMPLE_TRANSACTION));
+    assert.strictEqual(dataTxs[0].cbor, filecoin_signer.transactionSerialize(dataTxs[0].transaction));
   });
 
-  let itCall = describe;
+  let itCall = it;
   if (process.env.PURE_JS) { itCall = it.skip }
   itCall("should serialize transaction with serialize params", function() {
-    let swap_params = {
-        From: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-        To: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-    }
+    console.log(dataTxs[2].transaction)
+    let serializedTransaction = filecoin_signer.transactionSerialize(dataTxs[2].transaction);
 
-    let serialized_swap_params = filecoin_signer.serializeParams(swap_params);
-
-    console.log(Buffer.from(serialized_swap_params).toString('base64'))
-
-    let params = {
-        To: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-        Value: "0",
-        Method: 7,
-        Params: Buffer.from(serialized_swap_params).toString('base64')
-    }
-
-    let serialized_params = filecoin_signer.serializeParams(params);
-
-    let transaction = {
-        to: "t01002",
-        from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-        nonce: 1,
-        value: "100000",
-        gaslimit: 25000,
-        gasfeecap: "1",
-        gaspremium: "1",
-        method: 7,
-        params: Buffer.from(serialized_params).toString('base64')
-    };
-
-    console.log(filecoin_signer.transactionSerialize(transaction));
+    console.log(serializedTransaction)
 
     assert.strictEqual(
-      "845501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6284007582d825501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b7116",
-      Buffer.from(serialized_params).toString('hex')
+      dataTxs[2].cbor,
+      serializedTransaction
     )
   });
 })
 
 describe("transactionSerializeRaw", function() {
   it("should serialize raw transaction", function() {
-    let cbor_uint8_array = filecoin_signer.transactionSerializeRaw(EXAMPLE_TRANSACTION);
-    assert.strictEqual(EXAMPLE_CBOR_TX, Buffer.from(cbor_uint8_array).toString('hex'));
+    let tx = dataTxs[0]
+    let cbor_uint8_array = filecoin_signer.transactionSerializeRaw(tx.transaction);
+    assert.strictEqual(tx.cbor, Buffer.from(cbor_uint8_array).toString('hex'));
   })
 })
 
 describe("transactionParse", function() {
   it("should parse transaction (testnet)", function() {
-    assert.deepStrictEqual(EXAMPLE_TRANSACTION, filecoin_signer.transactionParse(EXAMPLE_CBOR_TX, true))
+    let tx = dataTxs[0]
+    assert.deepStrictEqual(tx.transaction, filecoin_signer.transactionParse(tx.cbor, tx.testnet))
   });
 
   it("should parse transaction (mainnet)", function () {
-      assert.deepStrictEqual(EXAMPLE_TRANSACTION_MAINNET, filecoin_signer.transactionParse(EXAMPLE_CBOR_TX, false));
+      let tx = dataTxs[1]
+      assert.deepStrictEqual(tx.transaction, filecoin_signer.transactionParse(tx.cbor, tx.testnet));
   });
 
   it("should fail to parse because of extra bytes", function () {
-      let cbor_transaction_extra_bytes = EXAMPLE_CBOR_TX + "00";
+      let tx = dataTxs[0] 
+      let cbor_transaction_extra_bytes = tx.cbor + "00";
 
       assert.throws(
           () => filecoin_signer.transactionParse(cbor_transaction_extra_bytes, false),
-          /(CBOR error: 'trailing data at offset 64'|Extraneous CBOR data found beyond initial top-level object)/
+          /(Encoding error \| trailing data at offset 64|Extraneous CBOR data found beyond initial top-level object)/
       );
   });
 
   it("should fail to parse because of extra bytes (non null)", function () {
-      let cbor_transaction_extra_bytes = EXAMPLE_CBOR_TX + "39";
+      let tx = dataTxs[0] 
+      let cbor_transaction_extra_bytes = tx.cbor + "39";
 
       assert.throws(
           () => filecoin_signer.transactionParse(cbor_transaction_extra_bytes, false),
-          /(CBOR error: 'trailing data at offset 64'|Failed to parse)/
+          /(Encoding error \| trailing data at offset 64|Failed to parse)/
       );
   });
 })
 
 describe("transactionSign", function() {
   it("should sign transaction", function() {
-    const example_key = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+    const child = dataWallet.childs[3]
+    const tx = dataTxs[0]
+    const example_key = MASTER_NODE.derivePath(child.path);
 
-    var signed_tx = filecoin_signer.transactionSign(EXAMPLE_TRANSACTION, example_key.privateKey.toString("base64"));
+    var signed_tx = filecoin_signer.transactionSign(tx.transaction, example_key.privateKey.toString("base64"));
     console.log(signed_tx.signature);
     const signature = Buffer.from(signed_tx.signature.data, 'base64');
 
-    let message_digest = getDigest(Buffer.from(EXAMPLE_CBOR_TX, 'hex'));
+    let message_digest = getDigest(Buffer.from(tx.cbor, 'hex'));
 
     // Signature representation is R, S & V
     console.log("Signature  :", signature.toString('hex'));
@@ -295,40 +288,28 @@ describe("transactionSign", function() {
 
 describe("transactionSignLotus", function() {
   it("should sign transaction and return a Lotus compatible json string", function() {
-    const example_key = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+    let data = fs.readFileSync('../../test_vectors/signed_message.json')
+    let tc = JSON.parse(data)
 
-    var signed_tx = filecoin_signer.transactionSignLotus(EXAMPLE_TRANSACTION, example_key.privateKey.toString("base64"));
+    console.log(tc.tx.Message)
+
+    var signed_tx = filecoin_signer.transactionSignLotus(tc.tx.Message, tc.pk);
 
     console.log(signed_tx)
 
-    // Order is important...
-    assert.deepStrictEqual(JSON.parse(signed_tx),{
-      "Message": {
-        "From": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-        "GasLimit": 25000,
-        "GasPremium": "1",
-        "GasFeeCap": "1",
-        "Method": 0,
-        "Nonce": 1,
-        "Params": "",
-        "To": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-        "Value": "100000"
-      },
-      "Signature": {
-        "Data": "nFuTI7MxEXqTQ0QmmQTmqbUsNZfHFXlNjz+susVDkAk1SrRCdJKxlVZZrM4vUtVBSYgtMIeigNfpqdKGIFhoWQA=",
-        "Type": 1
-      }
-    });
+    assert.deepStrictEqual(JSON.parse(signed_tx),tc.tx);
   })
 })
 
 describe("transactionSignRaw", function() {
   it("should sign transaction and return raw signature", function() {
-    const example_key = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+    const child = dataWallet.childs[3]
+    const tx = dataTxs[0]
+    const example_key = MASTER_NODE.derivePath(child.path);
 
-    let signature = filecoin_signer.transactionSignRaw(EXAMPLE_TRANSACTION, example_key.privateKey.toString("base64"));
+    let signature = filecoin_signer.transactionSignRaw(tx.transaction, example_key.privateKey.toString("base64"));
     signature = Buffer.from(signature);
-    let message_digest = getDigest(Buffer.from(EXAMPLE_CBOR_TX, 'hex'));
+    let message_digest = getDigest(Buffer.from(tx.cbor, 'hex'));
 
     // Signature representation is R, S & V
     console.log("Signature  :", signature.toString('hex'));
@@ -348,11 +329,13 @@ describe("transactionSignRaw", function() {
 
 describe("verifySignature", function() {
   it("should verify signature", function() {
-    let child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
-    let message_digest = getDigest(Buffer.from(EXAMPLE_CBOR_TX, 'hex'));
+    const child = dataWallet.childs[3]
+    const tx = dataTxs[0]
+    let example_key = MASTER_NODE.derivePath(child.path);
+    let message_digest = getDigest(Buffer.from(tx.cbor, 'hex'));
 
     // Get hex signature in the format (R,S)
-    let signature = secp256k1.ecdsaSign(message_digest, child.privateKey);
+    let signature = secp256k1.ecdsaSign(message_digest, example_key.privateKey);
 
     // Concat v value at the end of the signature
     let signatureRSV =
@@ -360,51 +343,27 @@ describe("verifySignature", function() {
         Buffer.from([signature.recid]).toString('hex');
 
     console.log("RSV signature :", signatureRSV);
-    console.log("CBOR Transaction hex :", EXAMPLE_CBOR_TX);
+    console.log("CBOR Transaction hex :", tx.cbor);
 
-    assert.strictEqual(filecoin_signer.verifySignature(signatureRSV, EXAMPLE_CBOR_TX), true);
+    assert.strictEqual(filecoin_signer.verifySignature(signatureRSV, tx.cbor), true);
   })
   
   let itCall = it
   if (process.env.PURE_JS) { itCall = it.skip }
   
   itCall("verify BLS signature (1)", function() {
-    const sig = "a0e8380977d2ccc5dd4d5ebd823406ed22fde880a3bd0fa8426c16b34013c487c51107f5e2808031b680ff200aa16f770a12a82022cc0fd2a7b0302baacee87862fed11be087609d3b0daf90869558574e15b94b375a0f34bce9478e975bb02c";
-    const message = {
-      to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-      from: "t3vxrizeiel2e2bxg3jhk62dlcutyc26fjnw6ua2sptu32dtjpwxbjawg666nqdngrkvvn45h7yb4qiya6ls7q",
-      nonce: 1,
-      value: "100000",
-      gaslimit: 25000,
-      gasfeecap: "2500",
-      gaspremium: "2500",
-      method: 0,
-      params: ""
-    }
+    const message = dataTxs[3].transaction
+    const sig = dataTxs[3].sig
+    
     const tx = filecoin_signer.transactionSerialize(message)
-    console.log(tx)
-    const v = filecoin_signer.verifySignature(sig, "8a005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c628583103ade28c91045e89a0dcdb49d5ed0d62a4f02d78a96dbd406a4f9d37a1cd2fb5c29058def79b01b4d1556ade74ffc079040144000186a01961a8430009c4430009c40040")
+    const v = filecoin_signer.verifySignature(sig, tx)
 
     assert.strictEqual(v, true);
   })
   
   itCall("verify BLS signature (2)", function() {
-    const tc = {
-        "pk": "af2f1d46d7f618997f43fbc3b7e4d4fb6ca8bc290e161e1f8643f0d894509814da5a5ff8729fc8935086a334469a3702",
-        "sk": "9c26a653e3f6feed763fee9e163a4863252fd3ca38bfeeaa83dab2799b5cf10c",
-        "sig": "b6b660b9557b722f2b20770511aa1761836c4352313002030ab4229273eb3f9ea09ca8490176f361dabec4c64cc62e130ce1bb2d0a9fe143b4e844de20e311b842b465900f4c3f861d46755c2dcca5f2effb97c0da379fbf7a4e046f909a0fa5",
-        "message": {
-            "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-            "from": "t3v4xr2rwx6ymjs72d7pb3pzgu7nwkrpbjbylb4h4gipynrfcqtaknuws77bzj7setkcdkgncgti3qfa4n7seq",
-            "nonce": 1,
-            "value": "100000",
-            "gaslimit": 25000,
-            "gasfeecap": "1",
-            "gaspremium": "1",
-            "method": 0,
-            "params": ""
-        }
-    }
+    const tc = dataTxs[4]
+    
     const signed_tx = filecoin_signer.transactionSign(tc.message, Buffer.from(tc.sk, "hex").toString("base64"));
     console.log(signed_tx);
     const raw_signature = filecoin_signer.transactionSignRaw(tc.message, Buffer.from(tc.sk, "hex").toString("base64"));
@@ -421,179 +380,78 @@ describe("verifySignature", function() {
 })
 
 describeCall('SerializeParams', function () {
-  it('serialize parameters to cbor data', function () {
-    let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
+  /* Load params test data */
+  let rawdata = fs.readFileSync('../../test_vectors/serialize_params.json');
+  let data = JSON.parse(rawdata);
+  
+  for (let tc of data) {    
+    it(tc.description, function() {
+      console.log(tc.params)
+      let serialized_params = filecoin_signer.serializeParams(tc.params);
 
-    let constructor_params = { signers: addresses, num_approvals_threshold: 1, unlock_duration: 0 }
-
-    let params = {
-        code_cid: 'fil/1/multisig',
-        constructor_params: Buffer.from(filecoin_signer.serializeParams(constructor_params)).toString('base64')
-    }
-
-    let serialized_params = filecoin_signer.serializeParams(params);
-
-    console.log(Buffer.from(serialized_params).toString('hex'));
-
-    assert.strictEqual(
-      "82d82a53000155000e66696c2f312f6d756c7469736967583083825501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160100",
-      Buffer.from(serialized_params).toString('hex')
-    )
-  })
-
-  it('serialize parameters to cbor data test with PascalCase', function () {
-    let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
-
-    let constructor_params = { Signers: addresses, NumApprovalsThreshold: 1, UnlockDuration: 0 }
-
-    let params = {
-        CodeCid: 'fil/1/multisig',
-        ConstructorParams: Buffer.from(filecoin_signer.serializeParams(constructor_params)).toString('base64')
-    }
-
-    let serialized_params = filecoin_signer.serializeParams(params);
-
-    console.log(Buffer.from(serialized_params).toString('hex'));
-
-    assert.strictEqual(
-      "82d82a53000155000e66696c2f312f6d756c7469736967583083825501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160100",
-      Buffer.from(serialized_params).toString('hex')
-    )
-  })
-
-  it('serialize parameters to cbor data test with PascalCase (2)', function () {
-    let addresses = ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"];
-
-    let params = {
-        To: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-        Value: "1000",
-        Method: 0,
-        Params: ""
-    }
-
-    let serialized_params = filecoin_signer.serializeParams(params);
-
-    console.log(Buffer.from(serialized_params).toString('hex'));
-
-    assert.strictEqual(
-      "845501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c628430003e80040",
-      Buffer.from(serialized_params).toString('hex')
-    )
-  })
-
-  it('serialize parameters to cbor data test with PascalCase (3)', function () {
-
-    let swap_params = {
-        From: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-        To: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-    }
-
-    let serialized_swap_params = filecoin_signer.serializeParams(swap_params);
-
-    console.log(Buffer.from(serialized_swap_params).toString('base64'))
-
-    let params = {
-        To: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-        Value: "0",
-        Method: 7,
-        Params: Buffer.from(serialized_swap_params).toString('base64')
-    }
-
-    let serialized_params = filecoin_signer.serializeParams(params);
-
-    console.log(Buffer.from(serialized_params).toString('hex'));
-
-    assert.strictEqual(
-      "845501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6284007582d825501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b7116",
-      Buffer.from(serialized_params).toString('hex')
-    )
-  })
+      assert.strictEqual(
+        tc.serialized_params,
+        Buffer.from(serialized_params).toString('base64')
+      )
+    })
+  }
 })
 
 describeCall('DeserializeParams', function () {
-  it('deserialize cbor base64 string parameters (Swap parameters)', function () {
-    let cbor_base64 = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
-    let swap_params_expected = {
-        from: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-        to: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-    }
-    
-    let params = filecoin_signer.deserializeParams(cbor_base64, "fil/1/multisig", 7)
-    
-    assert.deepStrictEqual(swap_params_expected, params)
-  })
+  /* Load params test data */
+  let rawdata = fs.readFileSync('../../test_vectors/deserialize_params.json');
+  let data = JSON.parse(rawdata);
   
-  it('deserialize params should fail with wrong actor type for method', function () {
-    let cbor_base64 = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
-
-    assert.throws(() => {
-          filecoin_signer.deserializeParams(cbor_base64, "fil/2/paymentchannel", 7)
-        },
-        /Unknown method fo actor 'fil\/2\/paymentchannel'./
-    );
-  })
-  
-  it('deserialize params should fail with unknown actor type', function () {
-    let cbor_base64 = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
-
-    assert.throws(() => {
-          filecoin_signer.deserializeParams(cbor_base64, "fil/1/paymentchannel", 7)
-        },
-        /Actor type not supported./
-    );
-  })
+  for (let tc of data) {
+    it(tc.description, function () {
+      if (tc.valid) {
+        let params = filecoin_signer.deserializeParams(tc.serialized_params, tc.code_cid, tc.method)
+        
+        assert.deepStrictEqual(tc.params, params)
+      } else {
+        assert.throws(() => {
+              filecoin_signer.deserializeParams(tc.serialized_params, tc.code_cid, tc.method)
+            },
+            new RegExp(tc.error)
+        );
+      }
+    })
+  }
 })
 
 describeCall('DeserializeConstructorParams', function () {
-  it('deserialize cbor base64 string parameters (Swap parameters)', function () {
-    let cbor_base64 = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
-    let constructor_params_expected = {
-        from: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-        to: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-    }
-    
-    let params = filecoin_signer.deserializeConstructorParams(cbor_base64, "fil/2/paymentchannel")
-    
-    assert.deepStrictEqual(constructor_params_expected, params)
-  })
+  /* Load params test data */
+  let rawdata = fs.readFileSync('../../test_vectors/deserialize_constructor_params.json');
+  let data = JSON.parse(rawdata);
   
-  it('deserialize params should fail with wrong code cid', function () {
-    let cbor_base64 = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
-
-    assert.throws(() => {
-          filecoin_signer.deserializeConstructorParams(cbor_base64, "fil/2/multisig")
-        },
-        /Code CID not supported./
-    );
-  })
+  for (let tc of data) {
+    it(tc.description, function() {
+      if (tc.valid) {
+        let params = filecoin_signer.deserializeConstructorParams(tc.serialized_params, tc.code_cid)
+        
+        assert.deepStrictEqual(tc.params, params)
+      } else {
+        assert.throws(() => {
+              filecoin_signer.deserializeConstructorParams(tc.serialized_params, tc.code_cid)
+            },
+            new RegExp(tc.error)
+        );
+      }
+    })
+  }
 })
 
 describeCall('GetCid', function () {
-  it('get cid from signed message', function () {
-    let signedMessage = {
-      message: {
-        to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-        from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-        nonce: 1,
-        value: "100000",
-        gas_limit: 2500000,
-        gas_fee_cap: "1",
-        gas_premium: "1",
-        method: 0,
-        params: "",
-      },
-      signature: {
-        type: 1,
-        data: "0wRrFJZFIVh8m0JD+f5C55YrxD6YAWtCXWYihrPTKdMfgMhYAy86MVhs43hSLXnV+47UReRIe8qFdHRJqFlreAE=",
-      }
-    }
+  /* Load test data */
+  let rawdata = fs.readFileSync('../../test_vectors/get_cid.json')
+  let tc = JSON.parse(rawdata)
+  
+  it(tc.description, function () {    
+    let cid = filecoin_signer.getCid(tc.signed_message)
     
-    let cid = filecoin_signer.getCid(signedMessage)
+    assert(tc.valid)
     
-    assert.strictEqual(
-      "bafy2bzacebaiinljwwctblf7czp4zxwhz4747z6tpricgn5cumd4xhebftcvu",
-      cid
-    )
+    assert.strictEqual(tc.cid, cid)
     
   })
 })
