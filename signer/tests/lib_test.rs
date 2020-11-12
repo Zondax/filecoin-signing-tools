@@ -707,6 +707,9 @@ fn support_multisig_create() {
         test_value["create"]["constructor_params"]["unlock_duration"]
             .as_i64()
             .unwrap(),
+        test_value["create"]["constructor_params"]["start_epoch"]
+            .as_i64()
+            .unwrap(),
         test_value["create"]["message"]["gaslimit"]
             .as_i64()
             .unwrap(),

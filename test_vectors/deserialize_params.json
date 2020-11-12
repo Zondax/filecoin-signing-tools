@@ -3,7 +3,7 @@
     "description": "deserialize cbor base64 string parameters (Swap parameters)",
     "valid": true,
     "serialized_params": "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW",
-    "code_cid": "fil/1/multisig",
+    "code_cid": "fil/2/multisig",
     "method": 7,
     "params": {
       "from": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
