@@ -94,11 +94,11 @@ impl TryFrom<ExecParamsAPI> for ExecParams {
             base64::decode(exec_constructor.constructor_params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-        if exec_constructor.code_cid != "fil/1/multisig"
+        if exec_constructor.code_cid != "fil/2/multisig"
             && exec_constructor.code_cid != "fil/2/paymentchannel"
         {
             return Err(SignerError::GenericString(
-                "Only support `fil/1/multisig` and `fil/2/paymentchannel` code for now."
+                "Only support `fil/2/multisig` and `fil/2/paymentchannel` code for now."
                     .to_string(),
             ));
         }
