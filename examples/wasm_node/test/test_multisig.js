@@ -37,6 +37,7 @@ describeCall("createMultisig", function() {
       multisig_create.constructor_params.num_approvals_threshold,
       multisig_create.message.nonce,
       BigInt(multisig_create.constructor_params.unlock_duration),
+      BigInt(multisig_create.constructor_params.start_epoch),
       BigInt(multisig_create.message.gaslimit),
       multisig_create.message.gasfeecap,
       multisig_create.message.gaspremium
@@ -55,6 +56,7 @@ describeCall("createMultisig", function() {
       multisig_create.constructor_params.num_approvals_threshold,
       multisig_create.message.nonce,
       BigInt(-1),
+      BigInt(multisig_create.constructor_params.start_epoch),
       BigInt(multisig_create.message.gaslimit),
       multisig_create.message.gasfeecap,
       multisig_create.message.gaspremium

@@ -29,6 +29,7 @@ pub struct ConstructorParams {
     pub signers: Vec<Address>,
     pub num_approvals_threshold: i64,
     pub unlock_duration: ChainEpoch,
+    pub start_epoch: ChainEpoch,
 }
 
 /// Propose method call parameters
