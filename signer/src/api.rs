@@ -2,7 +2,7 @@ use std::convert::{TryFrom, TryInto};
 use std::str::FromStr;
 
 use forest_address::{Address, Network};
-use forest_cid::{multihash::Identity, Cid, Codec};
+use forest_cid::{multihash::MultihashDigest, Cid, Code::Identity, Codec};
 use forest_crypto::signature;
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
@@ -29,6 +29,8 @@ pub struct ConstructorParamsMultisig {
     pub num_approvals_threshold: i64,
     #[serde(alias = "UnlockDuration")]
     pub unlock_duration: i64,
+    #[serde(alias = "StartEpoch")]
+    pub start_epoch: i64,
 }
 
 impl TryFrom<ConstructorParamsMultisig> for multisig::ConstructorParams {
@@ -56,6 +58,7 @@ impl TryFrom<ConstructorParamsMultisig> for multisig::ConstructorParams {
             signers,
             num_approvals_threshold: constructor_params.num_approvals_threshold,
             unlock_duration: constructor_params.unlock_duration,
+            start_epoch: constructor_params.start_epoch,
         })
     }
 }
@@ -68,6 +71,7 @@ impl Into<ConstructorParamsMultisig> for multisig::ConstructorParams {
             signers,
             num_approvals_threshold: self.num_approvals_threshold,
             unlock_duration: self.num_approvals_threshold,
+            start_epoch: self.start_epoch,
         }
     }
 }
@@ -90,11 +94,11 @@ impl TryFrom<ExecParamsAPI> for ExecParams {
             base64::decode(exec_constructor.constructor_params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-        if exec_constructor.code_cid != "fil/1/multisig"
+        if exec_constructor.code_cid != "fil/2/multisig"
             && exec_constructor.code_cid != "fil/2/paymentchannel"
         {
             return Err(SignerError::GenericString(
-                "Only support `fil/1/multisig` and `fil/2/paymentchannel` code for now."
+                "Only support `fil/2/multisig` and `fil/2/paymentchannel` code for now."
                     .to_string(),
             ));
         }
@@ -102,7 +106,7 @@ impl TryFrom<ExecParamsAPI> for ExecParams {
         Ok(ExecParams {
             code_cid: Cid::new_v1(
                 Codec::Raw,
-                Identity::digest(exec_constructor.code_cid.as_bytes()),
+                Identity.digest(exec_constructor.code_cid.as_bytes()),
             ),
             constructor_params: forest_vm::Serialized::new(serialized_constructor_multisig_params),
         })

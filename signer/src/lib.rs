@@ -7,7 +7,7 @@ use std::str::FromStr;
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
 use forest_address::{Address, BLSPublicKey, Network, Protocol};
-use forest_cid::{multihash::Blake2b256, multihash::Identity, Cid, Codec};
+use forest_cid::{multihash::MultihashDigest, Cid, Code::Blake2b256, Code::Identity, Codec};
 use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
 use forest_message::SignedMessage;
@@ -515,6 +515,7 @@ pub fn create_multisig(
     required: i64,
     nonce: u64,
     duration: i64,
+    start_epoch: i64,
     gas_limit: i64,
     gas_fee_cap: String,
     gas_premium: String,
@@ -543,6 +544,7 @@ pub fn create_multisig(
         signers,
         num_approvals_threshold: required,
         unlock_duration: duration,
+        start_epoch: start_epoch,
     };
 
     let serialized_constructor_params = forest_vm::Serialized::serialize::<
@@ -551,7 +553,7 @@ pub fn create_multisig(
     .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_multisig = ExecParams {
-        code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/1/multisig")),
+        code_cid: Cid::new_v1(Codec::Raw, Identity.digest(b"fil/2/multisig")),
         constructor_params: serialized_constructor_params,
     };
 
@@ -780,17 +782,17 @@ pub fn create_pymtchan(
     gas_fee_cap: String,
     gas_premium: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
-    let create_payment_channel_params = paych::ConstructorParams {
-        from: Address::from_str(&from_address)?,
-        to: Address::from_str(&to_address)?,
-    };
+    let from = Address::from_str(&from_address)?;
+    let to = Address::from_str(&to_address)?;
+
+    let create_payment_channel_params = paych::ConstructorParams { from, to };
 
     let serialized_constructor_params =
         forest_vm::Serialized::serialize::<paych::ConstructorParams>(create_payment_channel_params)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_create_pymtchan = ExecParams {
-        code_cid: Cid::new_v1(Codec::Raw, Identity::digest(b"fil/2/paymentchannel")),
+        code_cid: Cid::new_v1(Codec::Raw, Identity.digest(b"fil/2/paymentchannel")),
         constructor_params: serialized_constructor_params,
     };
 
@@ -798,8 +800,11 @@ pub fn create_pymtchan(
         forest_vm::Serialized::serialize::<ExecParams>(message_params_create_pymtchan)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
+    let mut init_actor_address = Address::from_str("f01")?;
+    init_actor_address.set_network(from.network());
+
     let pch_create_message_api = UnsignedMessageAPI {
-        to: "f01".to_owned(), // INIT_ACTOR_ADDR
+        to: init_actor_address.to_string(),
         from: from_address,
         nonce,
         value,
@@ -1031,10 +1036,10 @@ pub fn deserialize_params(
                 Ok(MessageParams::MessageParamsMultisig(params.into()))
             }
             _ => Err(SignerError::GenericString(
-                "Unknown method fo actor 'fil/2/init'.".to_string(),
+                "Unknown method for actor 'fil/2/init'.".to_string(),
             )),
         },
-        "fil/1/multisig" => match FromPrimitive::from_u64(method) {
+        "fil/2/multisig" => match FromPrimitive::from_u64(method) {
             Some(multisig::MethodMultisig::Propose) => {
                 let params = serialized_params.deserialize::<multisig::ProposeParams>()?;
 
@@ -1069,7 +1074,7 @@ pub fn deserialize_params(
                 ))
             }
             _ => Err(SignerError::GenericString(
-                "Unknown method fo actor 'fil/1/multisig'.".to_string(),
+                "Unknown method for actor 'fil/2/multisig'.".to_string(),
             )),
         },
         "fil/2/paymentchannel" => {
@@ -1111,7 +1116,7 @@ pub fn deserialize_constructor_params(
     let serialized_params = forest_vm::Serialized::new(params_decode);
 
     match code_cid.as_str() {
-        "fil/1/multisig" => {
+        "fil/2/multisig" => {
             let params = serialized_params.deserialize::<multisig::ConstructorParams>()?;
             Ok(MessageParams::ConstructorParamsMultisig(params.into()))
         }

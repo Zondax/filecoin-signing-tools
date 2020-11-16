@@ -316,6 +316,7 @@ pub fn create_multisig_with_fee(
     required: i32,
     nonce: u32,
     duration: i64,
+    start_epoch: i64,
     gas_limit: i64,
     gas_fee_cap: String,
     gas_premium: String,
@@ -339,6 +340,7 @@ pub fn create_multisig_with_fee(
         required as i64,
         nonce as u64,
         duration,
+        start_epoch,
         gas_limit,
         gas_fee_cap,
         gas_premium,
@@ -361,6 +363,7 @@ pub fn create_multisig(
     required: i32,
     nonce: u32,
     duration: i64,
+    start_epoch: i64,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
@@ -381,6 +384,7 @@ pub fn create_multisig(
         required as i64,
         nonce as u64,
         duration,
+        start_epoch,
         0,
         "0".to_string(),
         "0".to_string(),

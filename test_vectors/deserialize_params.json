@@ -1,0 +1,29 @@
+[
+  {
+    "description": "deserialize cbor base64 string parameters (Swap parameters)",
+    "valid": true,
+    "serialized_params": "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW",
+    "code_cid": "fil/2/multisig",
+    "method": 7,
+    "params": {
+      "from": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+      "to": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"
+    }
+  },
+  {
+    "description": "deserialize params should fail with wrong actor type for method",
+    "valid": false,
+    "serialized_params": "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW",
+    "code_cid": "fil/2/paymentchannel",
+    "method": 7,
+    "error": "Unknown method fo actor 'fil\/2\/paymentchannel'."
+  },
+  {
+    "description": "deserialize params should fail with wrong actor type for method",
+    "valid": false,
+    "serialized_params": "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW",
+    "code_cid": "fil/1/paymentchannel",
+    "method": 7,
+    "error": "Actor type not supported."
+  }
+]

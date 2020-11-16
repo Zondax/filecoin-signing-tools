@@ -1,0 +1,58 @@
+[
+  {
+    "description": "serialize parameters to cbor data n°1",
+    "params": {
+      "signers": ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"],
+      "num_approvals_threshold": 1, 
+      "unlock_duration": 0,
+      "start_epoch": 0
+    },
+    "serialized_params": "hIJVAf0dD0381+ma/Lmagya33EWdMsYoVQEerxyKS7/usIcLF0Wx9XUDRwtxFgEAAA=="
+  }, 
+  {
+    "description": "serialize parameters to cbor data n°2",
+    "params": {
+      "code_cid": "fil/2/multisig",
+      "constructor_params": "hIJVAf0dD0381+ma/Lmagya33EWdMsYoVQEerxyKS7/usIcLF0Wx9XUDRwtxFgEAAA=="
+    },
+    "serialized_params": "gtgqUwABVQAOZmlsLzIvbXVsdGlzaWdYMYSCVQH9HQ9N/Nfpmvy5moMmt9xFnTLGKFUBHq8ciku/7rCHCxdFsfV1A0cLcRYBAAA="
+  },
+  {
+    "description": "serialize parameters to cbor data test with PascalCase n°1",
+    "params": {
+      "Signers": ["t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy","t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"],
+      "NumApprovalsThreshold": 1, 
+      "UnlockDuration": 0,
+      "StartEpoch": 0
+    },
+    "serialized_params": "hIJVAf0dD0381+ma/Lmagya33EWdMsYoVQEerxyKS7/usIcLF0Wx9XUDRwtxFgEAAA=="
+  },
+  {
+    "description": "serialize parameters to cbor data test with PascalCase n°2",
+    "params": {
+      "CodeCid": "fil/2/multisig",
+      "ConstructorParams": "g4JVAf0dD0381+ma/Lmagya33EWdMsYoVQEerxyKS7/usIcLF0Wx9XUDRwtxFgEA"
+    },
+    "serialized_params": "gtgqUwABVQAOZmlsLzIvbXVsdGlzaWdYMIOCVQH9HQ9N/Nfpmvy5moMmt9xFnTLGKFUBHq8ciku/7rCHCxdFsfV1A0cLcRYBAA=="
+  },
+  {
+    "description": "serialize parameters to cbor data test with PascalCase n°3",
+    "params": {
+      "To": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+      "Value": "1000",
+      "Method": 0,
+      "Params": ""
+    },
+    "serialized_params": "hFUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihDAAPoAEA="
+  },
+  {
+    "description": "serialize parameters to cbor data test with PascalCase n°4",
+    "params": {
+      "To": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+      "Value": "0",
+      "Method": 7,
+      "Params": "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
+    },
+    "serialized_params": "hFUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihAB1gtglUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
+  }
+]

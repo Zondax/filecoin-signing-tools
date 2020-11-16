@@ -1,0 +1,19 @@
+[
+  {
+    "description": "deserialize cbor base64 string parameters (Swap parameters)",
+    "valid": true,
+    "params": {
+      "from": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+      "to": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"
+    },
+    "code_cid": "fil/2/paymentchannel",
+    "serialized_params": "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
+  },
+  {
+    "description": "deserialize params should fail with wrong code cid",
+    "valid": false,
+    "serialized_params": "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW",
+    "code_cid": "fil/1/paymentchannel",
+    "error": "Code CID not supported."
+  }
+]

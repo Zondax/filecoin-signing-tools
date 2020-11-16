@@ -163,13 +163,11 @@ pub struct PaymentVerifyParams {
 }
 
 /// State channel parameters
-// REVIEW: do we still need proof ? (https://github.com/filecoin-project/specs-actors/blob/master/actors/builtin/paych/paych_actor.go#L80-L83)
 #[derive(Serialize_tuple, Deserialize_tuple)]
 pub struct UpdateChannelStateParams {
     pub sv: SignedVoucher,
     #[serde(with = "serde_bytes")]
     pub secret: Vec<u8>,
-    // "proof" removed in v2 actros
 }
 
 /// Methods payment channel
