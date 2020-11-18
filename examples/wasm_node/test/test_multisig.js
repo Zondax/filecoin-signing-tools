@@ -85,6 +85,30 @@ describeCall("createMultisig", function() {
 
     assert(JSON.parse(signature).Signature);
   });
+  
+  it("should fail because of bigint", function() {
+    const multisig_create = dataTxs.create
+
+    console.log(BigInt("18446744073709551617"))
+
+    let create_multisig_transaction = filecoin_signer.createMultisigWithFee(
+      multisig_create.message.from,
+      multisig_create.constructor_params.signers,
+      multisig_create.message.value,
+      multisig_create.constructor_params.num_approvals_threshold,
+      multisig_create.message.nonce,
+      BigInt(multisig_create.constructor_params.unlock_duration),
+      BigInt(multisig_create.constructor_params.start_epoch),
+      "18446744073709551617",
+      multisig_create.message.gasfeecap,
+      multisig_create.message.gaspremium
+    );
+    
+    console.log(create_multisig_transaction)
+    
+    assert(false)
+  });
+  
 })
 
 describeCall("proposeMultisig", function() {
