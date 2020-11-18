@@ -85,8 +85,12 @@ pub async fn key_generate_mnemonic(
 pub async fn key_derive(c: MethodCall, _: RemoteNodeSection) -> Result<Success, ServiceError> {
     let params = c.params.parse::<KeyDeriveParamsAPI>()?;
 
-    let key_address =
-        filecoin_signer::key_derive(&params.mnemonic, &params.path, &params.password, &params.language_code)?;
+    let key_address = filecoin_signer::key_derive(
+        &params.mnemonic,
+        &params.path,
+        &params.password,
+        &params.language_code,
+    )?;
 
     let result = KeyDeriveResultAPI {
         public_hexstring: hex::encode(&key_address.public_key.to_vec()),

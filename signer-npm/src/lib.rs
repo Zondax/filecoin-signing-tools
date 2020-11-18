@@ -125,7 +125,7 @@ pub fn key_derive(
     mnemonic: String,
     path: String,
     password: String,
-    language_code: &str
+    language_code: &str,
 ) -> Result<ExtendedKey, JsValue> {
     set_panic_hook();
 
