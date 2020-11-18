@@ -188,12 +188,13 @@ pub async fn transaction_sign_with_device(
             let mut sig = s.sig.serialize().to_vec();
             sig.push(s.v);
             Promise::resolve(&js_or_reject!(&SignedMessageAPI {
-            message: unsigned_message,
-            signature: SignatureAPI {
-                sig_type: filecoin_signer::api::SigTypes::SigTypeSecp256k1 as u8,
-                data: sig,
-            },
-        }))},
+                message: unsigned_message,
+                signature: SignatureAPI {
+                    sig_type: filecoin_signer::api::SigTypes::SigTypeSecp256k1 as u8,
+                    data: sig,
+                },
+            }))
+        }
         Err(err) => {
             let js_value = js_or_reject!(&ledger_error_to_javascript_error(err));
             Promise::reject(&js_value)
