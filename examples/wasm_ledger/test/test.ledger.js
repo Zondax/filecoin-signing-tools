@@ -4,6 +4,15 @@ const secp256k1 = require('secp256k1/elliptic');
 const getDigest = require('./utils').getDigest;
 const Resolve = require("path").resolve;
 const Zemu = require("@zondax/zemu").default;
+const fs = require("fs");
+
+/* Load multisig test data */
+let rawdataTxs = fs.readFileSync('../../test_vectors/txs.json')
+let dataTxs = JSON.parse(rawdataTxs)
+
+/* Load wallet test data */
+let rawdataWallet = fs.readFileSync('../../test_vectors/wallet.json')
+let dataWallet = JSON.parse(rawdataWallet)
 
 const catchExit = async () => {
   process.on("SIGINT", () => {
@@ -30,12 +39,11 @@ describe("LEDGER TEST", function () {
   beforeEach(async function() {
     const DEMO_APP_PATH = Resolve("bin/app.elf");
     sim = new Zemu(DEMO_APP_PATH);
-    const APP_SEED = "equip will roof matter pink blind book anxiety banner elbow sun young";
     const sim_options = {
         logging: true,
-        custom: `-s "${APP_SEED}"`,
+        custom: `-s "${dataWallet.mnemonic}"`,
         press_delay: 150
-        ,X11: true
+        //,X11: true
     };
 
     await sim.start(sim_options);
@@ -166,14 +174,11 @@ describe("LEDGER TEST", function () {
     assert("mcuVersion" in resp);
   });
 
-  it.skip("#transactionSignRawWithDevice()", async function() {
+  it("#transactionSignRawWithDevice()", async function() {
     this.timeout(50000);
 
     const path = "m/44'/461'/0/0/0";
-    const message = Buffer.from(
-      "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a0430009c41961a80040",
-      "hex",
-    );
+    const message = Buffer.from(dataTxs[0].cbor, "hex");
 
     const responsePk = await signer.keyRetrieveFromDevice(path, transport);
     console.log(responsePk)
@@ -181,8 +186,9 @@ describe("LEDGER TEST", function () {
     // Wait until we are not in the main menu
     await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot());
 
-    await sim.clickBoth();
-    await sim.clickRight();
+    for (let i = 0; i < 9; i++) {
+      await sim.clickRight();
+    }
     await sim.clickBoth();
 
     const responseSign = await responseRequest;
@@ -202,59 +208,32 @@ describe("LEDGER TEST", function () {
 
     assert.deepStrictEqual(sigBuf, sigCompBuf);
 
-    const compressedPublicKey = secp256k1.publicKeyConvert(responsePk.publicKey, true)
+    const compressedPublicKey = secp256k1.publicKeyConvert(responsePk.publicKey, true);
     const signatureOk = secp256k1.ecdsaVerify(signature, msgDigest, compressedPublicKey);
     assert(signatureOk);
   });
 
-  it.skip("#transactionSignWithDevice() Testnet", async function() {
-    const path = "m/44'/1'/0/0/0";
-    const messageContent = {
-      from: "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
-      to: "t1t5gdjfb6jojpivbl5uek6vf6svlct7dph5q2jwa",
-      value: "1000",
-      method: 0,
-      gasPrice: "1",
-      gasLimit: 1000,
-      nonce: 0,
-      params: ""
-    };
+  it("#transactionSignWithDevice() Testnet", async function() {
+    this.timeout(50000);
 
-    const responsePk = await signer.keyRetrieveFromDevice(path, transport);
+    const responsePk = await signer.keyRetrieveFromDevice(dataWallet.childs[3].path, transport);
     console.log(responsePk)
-    const responseRequest = signer.transactionSignWithDevice(messageContent, path, transport);
+    const responseRequest = signer.transactionSignWithDevice(dataTxs[0].transaction, dataWallet.childs[3].path, transport);
     // Wait until we are not in the main menu
     await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot());
-
-    await sim.clickLeft();
-    await sim.clickRight();
+    
+    for (let i = 0; i < 9; i++) {
+      await sim.clickRight();
+    }
     await sim.clickBoth();
 
     const responseSign = await responseRequest;
 
     console.log(responseSign);
-
-    // Calculate message digest
-    const msgDigest = getDigest(message);
-    console.log(`Digest: ${msgDigest.toString("hex")}`);
-
-    // Check signature is valid
-    const signatureDER = responseSign.signature_der;
-    const signature = secp256k1.signatureImport(signatureDER);
-    console.log(`DER   : ${responseSign.signature_der.toString("hex")}`);
-
-    // Check compact signatures
-    const sigBuf = Buffer.from(signature);
-    const sigCompBuf = Buffer.from(responseSign.signature_compact.slice(0, 64));
-    console.log(`compact   : ${Buffer.from(responseSign.signature_compact).toString("hex")}`);
-
-    assert.deepStrictEqual(sigBuf, sigCompBuf);
-
-    const compressedPublicKey = secp256k1.publicKeyConvert(responsePk.publicKey, true)
-    const signatureOk = secp256k1.ecdsaVerify(signature, msgDigest, compressedPublicKey);
-    assert(signatureOk);
-
-    console.log(`compact   : ${responseSign.signature_compact.toString("base64")}`);
+    
+    let result = signer.verifySignature(responseSign.signature.data, dataTxs[0].cbor);
+    console.log(result);
+    assert(result);
   });
 
   it.skip("#transactionSignRawWithDevice() Fail", async function() {
