@@ -37,7 +37,7 @@ describe("keyDerive", function() {
   it("should derive key from mnemonic", function() {
     const child = dataWallet.childs[0]
 
-    const keypair = filecoin_signer.keyDerive(dataWallet.mnemonic, child.path, child.password);
+    const keypair = filecoin_signer.keyDerive(dataWallet.mnemonic, child.path, child.password, dataWallet.language_code);
 
     console.log("Public Key Raw         :", keypair.public_raw);
     console.log("Public Key             :", keypair.public_hexstring);
@@ -54,7 +54,7 @@ describe("keyDerive", function() {
       
       assert(child.testnet)
       
-      const keypair = filecoin_signer.keyDerive(dataWallet.mnemonic, child.path, child.password);
+      const keypair = filecoin_signer.keyDerive(dataWallet.mnemonic, child.path, child.password, dataWallet.language_code);
 
       console.log("Public Key Raw         :", keypair.public_raw);
       console.log("Public Key             :", keypair.public_hexstring);
@@ -76,14 +76,14 @@ describe("keyDerive", function() {
   
   it('should throw an error because of invalid path', function() {
       assert.throws(
-          () => filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/a/0/1", ""),
+          () => filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/a/0/1", "", dataWallet.language_code),
           /Expected BIP32Path, got String | Invalid BIP44 path/
       );
   });
 
   it("should derive key with the password", function() {
       const password = "password"
-      const keypair = filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/0/0/1", password);
+      const keypair = filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/0/0/1", password, dataWallet.language_code);
 
       console.log("Public Key Raw         :", keypair.public_raw);
       console.log("Public Key             :", keypair.public_hexstring);
@@ -98,7 +98,7 @@ describe("keyDerive", function() {
   });
 
   it("should not match the key with the different password", function() {
-      const keypair = filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/0/0/1", "password");
+      const keypair = filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/0/0/1", "password", dataWallet.language_code);
 
       console.log("Public Key Raw         :", keypair.public_raw);
       console.log("Public Key             :", keypair.public_hexstring);
@@ -112,6 +112,14 @@ describe("keyDerive", function() {
       assert.notEqual(keypair.private_hexstring, expected_keys.privateKey.toString("hex"));
   });
 
+  it.skip("fail if incorrect language_code", function() {
+    
+  });
+
+
+  it.skip("test chinese mnemonic", function() {
+    
+  });
 })
 
 describe("keyDeriveFromSeed", function() {

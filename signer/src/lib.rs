@@ -128,8 +128,15 @@ fn derive_extended_secret_key_from_mnemonic(
     mnemonic: &str,
     path: &str,
     password: &str,
+    language_code: &str,
 ) -> Result<ExtendedSecretKey, SignerError> {
-    let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic, Language::English)
+    let lang = Language::from_language_code(language_code);
+    
+    if lang.is_none() {
+        return Err(SignerError::GenericString("Unknown language code".to_string()));
+    };
+    
+    let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic, lang.unwrap())
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let seed = Seed::new(&mnemonic, password);
@@ -144,8 +151,8 @@ fn derive_extended_secret_key_from_mnemonic(
 /// * `mnemonic` - A string containing a 24-words English mnemonic
 /// * `path` - A string containing a derivation path
 /// * `password` - Password to decrypt seed, if none use and empty string (e.g "")
-pub fn key_derive(mnemonic: &str, path: &str, password: &str) -> Result<ExtendedKey, SignerError> {
-    let esk = derive_extended_secret_key_from_mnemonic(mnemonic, path, password)?;
+pub fn key_derive(mnemonic: &str, path: &str, password: &str, language_code: &str) -> Result<ExtendedKey, SignerError> {
+    let esk = derive_extended_secret_key_from_mnemonic(mnemonic, path, password, language_code)?;
 
     let mut address = Address::new_secp256k1(&esk.public_key().to_vec())?;
 

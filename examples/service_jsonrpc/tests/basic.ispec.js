@@ -42,7 +42,7 @@ test("key_generate_mnemonic", async () => {
 
 test("key_derive", async () => {
   const path = "m/44'/461'/0/0/0";
-  const response = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path, ""], 1);
+  const response = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path, "", "en"], 1);
   const child = EXPECTED_ROOT_NODE.derivePath(path);
   console.log(response);
 
@@ -54,7 +54,7 @@ test("key_derive", async () => {
 
 test("key_derive testnet path", async () => {
   const path = "m/44'/1'/0/0/0";
-  const response = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path, ""], 1);
+  const response = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path, "", "en"], 1);
   const child = EXPECTED_ROOT_NODE.derivePath(path);
   const expectedPubKey = Buffer.from(secp256k1.publicKeyCreate(child.privateKey, false));
 
@@ -320,7 +320,7 @@ var messageCID
 test("send_signed_tx", async () => {
   jest.setTimeout(40000);
   const path = "m/44'/1'/0/0/0";
-  const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path], 1);
+  const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path, "", "en"], 1);
 
   console.log(keyAddressResponse);
 

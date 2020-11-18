@@ -34,6 +34,7 @@ pub struct KeyDeriveParamsAPI {
     pub path: String,
     #[serde(default)]
     pub password: String,
+    pub language_code: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -85,7 +86,7 @@ pub async fn key_derive(c: MethodCall, _: RemoteNodeSection) -> Result<Success, 
     let params = c.params.parse::<KeyDeriveParamsAPI>()?;
 
     let key_address =
-        filecoin_signer::key_derive(&params.mnemonic, &params.path, &params.password)?;
+        filecoin_signer::key_derive(&params.mnemonic, &params.path, &params.password, &params.language_code)?;
 
     let result = KeyDeriveResultAPI {
         public_hexstring: hex::encode(&key_address.public_key.to_vec()),
