@@ -179,23 +179,21 @@ pub async fn transaction_sign_with_device(
         "Error serializing transaction"
     );
 
-    let message = ok_or_reject!(
-        get_digest(cbor_message.as_ref()),
-        "Error preparing transaction for signing"
-    );
-
     let app = filecoin_signer_ledger::app::FilecoinApp::new(apdu_transport);
 
     let bip44_path = ok_or_reject!(BIP44Path::from_string(&path), INVALID_BIP44);
 
-    match app.sign(&bip44_path, &message).await {
-        Ok(s) => Promise::resolve(&js_or_reject!(&SignedMessageAPI {
+    match app.sign(&bip44_path, &cbor_message.as_ref()).await {
+        Ok(s) => {
+            let mut sig = s.sig.serialize().to_vec();
+            sig.push(s.v);
+            Promise::resolve(&js_or_reject!(&SignedMessageAPI {
             message: unsigned_message,
             signature: SignatureAPI {
                 sig_type: filecoin_signer::api::SigTypes::SigTypeSecp256k1 as u8,
-                data: s.sig.serialize().to_vec(),
+                data: sig,
             },
-        })),
+        }))},
         Err(err) => {
             let js_value = js_or_reject!(&ledger_error_to_javascript_error(err));
             Promise::reject(&js_value)
