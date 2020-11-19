@@ -140,8 +140,10 @@ fn derive_extended_secret_key_from_mnemonic(
             let seed = Seed::new(&mnemonic, password);
 
             derive_extended_secret_key(seed.as_bytes(), path)
-        },
-        None => Err(SignerError::GenericString("Unknown language code".to_string()))
+        }
+        None => Err(SignerError::GenericString(
+            "Unknown language code".to_string(),
+        )),
     }
 }
 
