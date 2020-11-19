@@ -132,18 +132,17 @@ fn derive_extended_secret_key_from_mnemonic(
 ) -> Result<ExtendedSecretKey, SignerError> {
     let lang = Language::from_language_code(language_code);
 
-    if lang.is_none() {
-        return Err(SignerError::GenericString(
-            "Unknown language code".to_string(),
-        ));
-    };
+    match lang {
+        Some(l) => {
+            let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic, l)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-    let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic, lang.unwrap())
-        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+            let seed = Seed::new(&mnemonic, password);
 
-    let seed = Seed::new(&mnemonic, password);
-
-    derive_extended_secret_key(seed.as_bytes(), path)
+            derive_extended_secret_key(seed.as_bytes(), path)
+        },
+        None => Err(SignerError::GenericString("Unknown language code".to_string()))
+    }
 }
 
 /// Returns a public key, private key and address given a mnemonic, derivation path and a password
