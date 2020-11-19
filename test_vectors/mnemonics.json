@@ -1,0 +1,14 @@
+[
+  {
+    "description": "should derive mnemonic from simplified chinese",
+    "valid": true,
+    "mnemonic": "认 涨 节 浩 品 总 奴 教 等 专 牵 美",
+    "language_code": "zh-hans"
+  },
+  {
+    "description": "should derive mnemonic from french",
+    "valid": true,
+    "mnemonic": "buisson tétine caviar trivial bandage bambin mémoire calepin ailier cribler pixel buvette",
+    "language_code": "fr"
+  }
+]

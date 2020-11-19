@@ -112,14 +112,34 @@ describe("keyDerive", function() {
       assert.notEqual(keypair.private_hexstring, expected_keys.privateKey.toString("hex"));
   });
 
-  it.skip("fail if incorrect language_code", function() {
-    
+
+  it("fail if incorrect language_code", function() {
+    assert.throws(
+        () => filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/0/0/1", "", "fr"),
+        /invalid word in phrase/
+    );
+  });
+  
+  it("fail if unknown language_code", function() {
+    assert.throws(
+        () => filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/0/0/1", "", "be"),
+        /Unknown language code/
+    );
   });
 
+  /* Load mnemonics test data */
+  let raw = fs.readFileSync('../../test_vectors/mnemonics.json');
+  let data = JSON.parse(raw);
+  
+  for (let tc of data) {
+    it(tc.description, function() {
+      
+      let key = filecoin_signer.keyDerive(tc.mnemonic, "m/44'/461'/0/0/1", "", tc.language_code)
 
-  it.skip("test chinese mnemonic", function() {
-    
-  });
+      assert(key)
+    });
+  }
+
 })
 
 describe("keyDeriveFromSeed", function() {
