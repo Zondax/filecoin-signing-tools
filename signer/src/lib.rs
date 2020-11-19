@@ -558,7 +558,7 @@ pub fn create_multisig(
         signers,
         num_approvals_threshold: required,
         unlock_duration: duration,
-        start_epoch: start_epoch,
+        start_epoch,
     };
 
     let serialized_constructor_params = forest_vm::Serialized::serialize::<

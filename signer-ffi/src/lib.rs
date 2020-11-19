@@ -20,6 +20,7 @@ create_fn!(filecoin_signer_key_derive|Java_ch_zondax_FilecoinSigner_keyDerive: (
         let mnemonic = get_string!(etc, mnemonic)?;
         let path = get_string!(etc, path)?;
         let password = get_string!(etc, password)?;
+        let language_code = get_string!(etc, language_code)?;
         Ok(key_derive(
             get_string_ref(&mnemonic),
             get_string_ref(&path),
