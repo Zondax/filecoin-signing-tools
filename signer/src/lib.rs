@@ -1073,6 +1073,14 @@ pub fn deserialize_params(
                     params.into(),
                 ))
             }
+            Some(multisig::MethodMultisig::LockBalance) => {
+                let params = serialized_params
+                    .deserialize::<multisig::LockBalanceParams>()?;
+
+                Ok(MessageParams::LockBalanceMultisigParams(
+                    params.into(),
+                ))
+            }
             _ => Err(SignerError::GenericString(
                 "Unknown method for actor 'fil/2/multisig'.".to_string(),
             )),

@@ -90,6 +90,15 @@ pub struct ChangeNumApprovalsThresholdParams {
     pub new_threshold: i64,
 }
 
+/// Lock balance call params.
+#[derive(Serialize_tuple, Deserialize_tuple)]
+pub struct LockBalanceParams {
+    pub start_epoch: ChainEpoch,
+    pub unlock_duration: ChainEpoch,
+    #[serde(with = "bigint_ser")]
+    pub amount: TokenAmount,
+}
+
 /// Multisig actor methods available
 #[repr(u64)]
 #[derive(FromPrimitive)]
@@ -102,4 +111,5 @@ pub enum MethodMultisig {
     RemoveSigner = 6,
     SwapSigner = 7,
     ChangeNumApprovalsThreshold = 8,
+    LockBalance = 9,
 }
