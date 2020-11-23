@@ -396,8 +396,7 @@ pub struct LockBalanceMultisigParams {
     pub amount: String,
 }
 
-impl TryFrom<LockBalanceMultisigParams> for multisig::LockBalanceParams
-{
+impl TryFrom<LockBalanceMultisigParams> for multisig::LockBalanceParams {
     type Error = SignerError;
 
     fn try_from(
@@ -411,9 +410,7 @@ impl TryFrom<LockBalanceMultisigParams> for multisig::LockBalanceParams
     }
 }
 
-impl Into<LockBalanceMultisigParams>
-    for multisig::LockBalanceParams
-{
+impl Into<LockBalanceMultisigParams> for multisig::LockBalanceParams {
     fn into(self) -> LockBalanceMultisigParams {
         LockBalanceMultisigParams {
             start_epoch: self.start_epoch,
