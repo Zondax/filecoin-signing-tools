@@ -114,6 +114,7 @@ describe("keyDerive", function() {
 
 
   it("fail if incorrect language_code", function() {
+    console.log(dataWallet.mnemonic)
     assert.throws(
         () => filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/0/0/1", "", "fr"),
         /invalid word in phrase/
@@ -121,6 +122,7 @@ describe("keyDerive", function() {
   });
   
   it("fail if unknown language_code", function() {
+    console.log(dataWallet.mnemonic)
     assert.throws(
         () => filecoin_signer.keyDerive(dataWallet.mnemonic, "m/44'/461'/0/0/1", "", "be"),
         /Unknown language code/
