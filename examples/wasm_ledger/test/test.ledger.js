@@ -61,9 +61,6 @@ describe("LEDGER TEST", function () {
   it("#getVersionFromDevice()", async function() {
     const resp = await signer.getVersion(transport);
 
-    // eslint-disable-next-line no-console
-    console.log(resp);
-
     assert("test_mode" in resp);
     assert("major" in resp);
     assert("minor" in resp);
@@ -72,35 +69,20 @@ describe("LEDGER TEST", function () {
   });
 
   it("#keyRetrieveFromDevice()", async function() {
-    const path = "m/44'/461'/5/0/3";
-    const resp = await signer.keyRetrieveFromDevice(path, transport);
-
-    // eslint-disable-next-line no-console
-    console.log(resp);
+    const resp = await signer.keyRetrieveFromDevice(dataWallet.childs[0].path, transport);
 
     assert("addrByte" in resp);
     assert("addrString" in resp);
     assert("publicKey" in resp);
 
     assert.strictEqual(
-      resp.publicKey.toString("hex"),
-      "04240ecf6ec722b701f051aaaffde7455a56e433139e4c0ff2ad7c8675e2cce104a8027ba13e5bc640ec9932cce184f33a789bb9c32f41e34328118b7862fc9ca2",
-    );
-
-    assert.strictEqual(
-      resp.addrByte.toString("hex"),
-      "0175a6b113220c2f71c4db420753aab2cef5edb6a8"
-    );
-
-    assert.strictEqual(
       resp.addrString,
-      "f1owtlcezcbqxxdrg3iidvhkvsz3263nvijwpumui"
+      dataWallet.childs[0].address
     );
   });
 
   it("#showKeyOnDevice()", async function() {
-    const path = "m/44'/461'/0/0/1";
-    const respRequest = signer.showKeyOnDevice(path, transport);
+    const respRequest = signer.showKeyOnDevice(dataWallet.childs[0].path, transport);
     await Zemu.sleep(2000);
 
     // click right
@@ -112,61 +94,31 @@ describe("LEDGER TEST", function () {
 
     const resp = await respRequest;
 
-    // eslint-disable-next-line no-console
-    console.log(resp);
-
     assert("addrByte" in resp);
     assert("addrString" in resp);
     assert("publicKey" in resp);
 
     assert.strictEqual(
-      resp.publicKey.toString("hex"),
-      "04fc016f3d88dc7070cdd95b5754d32fd5290f850b7c2208fca0f715d35861de1841d9a342a487692a63810a6c906b443a18aa804d9d508d69facc5b06789a01b4",
-    );
-
-    assert.strictEqual(
-      resp.addrByte.toString("hex"),
-      "018bab69a28eeb4525bd8f49679a740a9582691906"
-    );
-
-    assert.strictEqual(
       resp.addrString,
-      "f1rovwtiuo5ncslpmpjftzu5akswbgsgighjazxoi"
+      dataWallet.childs[0].address
     );
   });
 
   it("#keyRetrieveFromDevice() Testnet", async function() {
-    const path = "m/44'/1'/0/0/0";
-    const resp = await signer.keyRetrieveFromDevice(path, transport);
-
-    // eslint-disable-next-line no-console
-    console.log(resp);
+    const resp = await signer.keyRetrieveFromDevice(dataWallet.childs[2].path, transport);
 
     assert("addrByte" in resp);
     assert("addrString" in resp);
     assert("publicKey" in resp);
 
     assert.strictEqual(
-      resp.publicKey.toString("hex"),
-      "0466f2bdb19e90fd7c29e4bf63612eb98515e5163c97888042364ba777d818e88b765c649056ba4a62292ae4e2ccdabd71b845d8fa0991c140f664d2978ac0972a",
-    );
-
-    assert.strictEqual(
-      resp.addrByte.toString("hex"),
-      "01dfe49184d46adc8f89d44638beb45f78fcad2590"
-    );
-
-    assert.strictEqual(
       resp.addrString,
-      "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"
+      dataWallet.childs[2].address
     );
   });
 
   it("deviceInfo", async function() {
     const resp = await signer.deviceInfo(transport);
-
-    // eslint-disable-next-line no-console
-    console.log(resp);
 
     assert("targetId" in resp);
     assert("seVersion" in resp);
@@ -177,11 +129,9 @@ describe("LEDGER TEST", function () {
   it("#transactionSignRawWithDevice()", async function() {
     this.timeout(50000);
 
-    const path = "m/44'/461'/0/0/0";
     const message = Buffer.from(dataTxs[0].cbor, "hex");
 
-    const responsePk = await signer.keyRetrieveFromDevice(path, transport);
-    console.log(responsePk)
+    const responsePk = await signer.keyRetrieveFromDevice(dataWallet.childs[3].path, transport);
     const responseRequest = signer.transactionSignRawWithDevice(message, path, transport);
     // Wait until we are not in the main menu
     await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot());
@@ -192,8 +142,6 @@ describe("LEDGER TEST", function () {
     await sim.clickBoth();
 
     const responseSign = await responseRequest;
-
-    console.log(responseSign)
 
     // Calculate message digest
     const msgDigest = getDigest(message);
@@ -217,7 +165,6 @@ describe("LEDGER TEST", function () {
     this.timeout(50000);
 
     const responsePk = await signer.keyRetrieveFromDevice(dataWallet.childs[3].path, transport);
-    console.log(responsePk)
     const responseRequest = signer.transactionSignWithDevice(dataTxs[0].transaction, dataWallet.childs[3].path, transport);
     // Wait until we are not in the main menu
     await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot());
@@ -228,24 +175,20 @@ describe("LEDGER TEST", function () {
     await sim.clickBoth();
 
     const responseSign = await responseRequest;
-
-    console.log(responseSign);
     
     let result = signer.verifySignature(responseSign.signature.data, dataTxs[0].cbor);
-    console.log(result);
     assert(result);
   });
 
   it.skip("#transactionSignRawWithDevice() Fail", async function() {
     this.timeout(40000);
 
-    const path = "m/44'/461'/0/0/0";
     let invalidMessage = Buffer.from(
       "89005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855011eaf1c8a4bbfeeb0870b1745b1f57503470b71160144000186a0430009c41961a80040" + "01",
       "hex",
     );
 
-    const responseRequest = signer.transactionSignRawWithDevice(invalidMessage, path, transport);
+    const responseRequest = signer.transactionSignRawWithDevice(invalidMessage, dataWallet.childs[3].path, transport);
     // Wait until we are not in the main menu
     await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot());
 
