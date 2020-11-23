@@ -24,7 +24,7 @@ fn key_derive() {
 
     let path = "m/44'/461'/0/0/1".to_string();
 
-    let answer = filecoin_signer_wasm::key_derive(mnemonic, path, "".to_string(), "en".to_string())
+    let answer = filecoin_signer_wasm::key_derive(mnemonic, path, "".to_string(), &"en".to_string())
         .expect("unexpected error");
 
     assert_eq!(
