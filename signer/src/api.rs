@@ -383,6 +383,43 @@ impl Into<ChangeNumApprovalsThresholdMultisigParams>
     }
 }
 
+/// Lock balance call params.
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct LockBalanceMultisigParams {
+    #[serde(alias = "StartEpoch")]
+    pub start_epoch: i64,
+    #[serde(alias = "UnlockDuration")]
+    pub unlock_duration: i64,
+    #[serde(alias = "Amount")]
+    pub amount: String,
+}
+
+impl TryFrom<LockBalanceMultisigParams> for multisig::LockBalanceParams {
+    type Error = SignerError;
+
+    fn try_from(
+        params: LockBalanceMultisigParams,
+    ) -> Result<multisig::LockBalanceParams, Self::Error> {
+        Ok(multisig::LockBalanceParams {
+            start_epoch: params.start_epoch,
+            unlock_duration: params.unlock_duration,
+            amount: BigInt::from_str(&params.amount)?,
+        })
+    }
+}
+
+impl Into<LockBalanceMultisigParams> for multisig::LockBalanceParams {
+    fn into(self) -> LockBalanceMultisigParams {
+        LockBalanceMultisigParams {
+            start_epoch: self.start_epoch,
+            unlock_duration: self.unlock_duration,
+            amount: self.amount.to_str_radix(10),
+        }
+    }
+}
+
 /// Payment channel create params
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -499,6 +536,7 @@ pub enum MessageParams {
     ChangeNumApprovalsThresholdMultisigParams(ChangeNumApprovalsThresholdMultisigParams),
     PaymentChannelCreateParams(PaymentChannelCreateParams),
     PaymentChannelUpdateStateParams(PaymentChannelUpdateStateParams),
+    LockBalanceMultisigParams(LockBalanceMultisigParams),
 }
 
 impl MessageParams {
@@ -579,6 +617,12 @@ impl MessageParams {
                 let params = paych::UpdateChannelStateParams::try_from(pch_update_params)?;
 
                 forest_vm::Serialized::serialize::<paych::UpdateChannelStateParams>(params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
+            }
+            MessageParams::LockBalanceMultisigParams(multisig_lock_balance) => {
+                let params = multisig::LockBalanceParams::try_from(multisig_lock_balance)?;
+
+                forest_vm::Serialized::serialize::<multisig::LockBalanceParams>(params)
                     .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
         };
