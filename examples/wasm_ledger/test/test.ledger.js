@@ -132,7 +132,7 @@ describe("LEDGER TEST", function () {
     const message = Buffer.from(dataTxs[0].cbor, "hex");
 
     const responsePk = await signer.keyRetrieveFromDevice(dataWallet.childs[3].path, transport);
-    const responseRequest = signer.transactionSignRawWithDevice(message, path, transport);
+    const responseRequest = signer.transactionSignRawWithDevice(message, dataWallet.childs[3].path, transport);
     // Wait until we are not in the main menu
     await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot());
 
