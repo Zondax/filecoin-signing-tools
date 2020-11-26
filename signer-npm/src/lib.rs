@@ -125,10 +125,16 @@ pub fn key_derive(
     mnemonic: String,
     path: String,
     password: String,
+    language_code: Option<String>,
 ) -> Result<ExtendedKey, JsValue> {
     set_panic_hook();
 
-    let key_address = filecoin_signer::key_derive(&mnemonic, &path, &password)
+    let lc = match language_code {
+        Some(lc) => lc,
+        None => "en".to_string(),
+    };
+
+    let key_address = filecoin_signer::key_derive(&mnemonic, &path, &password, &lc)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
 
     Ok(ExtendedKey { 0: key_address })

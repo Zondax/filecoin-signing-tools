@@ -128,13 +128,23 @@ fn derive_extended_secret_key_from_mnemonic(
     mnemonic: &str,
     path: &str,
     password: &str,
+    language_code: &str,
 ) -> Result<ExtendedSecretKey, SignerError> {
-    let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic, Language::English)
-        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+    let lang = Language::from_language_code(language_code);
 
-    let seed = Seed::new(&mnemonic, password);
+    match lang {
+        Some(l) => {
+            let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic, l)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-    derive_extended_secret_key(seed.as_bytes(), path)
+            let seed = Seed::new(&mnemonic, password);
+
+            derive_extended_secret_key(seed.as_bytes(), path)
+        }
+        None => Err(SignerError::GenericString(
+            "Unknown language code".to_string(),
+        )),
+    }
 }
 
 /// Returns a public key, private key and address given a mnemonic, derivation path and a password
@@ -144,8 +154,13 @@ fn derive_extended_secret_key_from_mnemonic(
 /// * `mnemonic` - A string containing a 24-words English mnemonic
 /// * `path` - A string containing a derivation path
 /// * `password` - Password to decrypt seed, if none use and empty string (e.g "")
-pub fn key_derive(mnemonic: &str, path: &str, password: &str) -> Result<ExtendedKey, SignerError> {
-    let esk = derive_extended_secret_key_from_mnemonic(mnemonic, path, password)?;
+pub fn key_derive(
+    mnemonic: &str,
+    path: &str,
+    password: &str,
+    language_code: &str,
+) -> Result<ExtendedKey, SignerError> {
+    let esk = derive_extended_secret_key_from_mnemonic(mnemonic, path, password, language_code)?;
 
     let mut address = Address::new_secp256k1(&esk.public_key().to_vec())?;
 
@@ -544,7 +559,7 @@ pub fn create_multisig(
         signers,
         num_approvals_threshold: required,
         unlock_duration: duration,
-        start_epoch: start_epoch,
+        start_epoch,
     };
 
     let serialized_constructor_params = forest_vm::Serialized::serialize::<

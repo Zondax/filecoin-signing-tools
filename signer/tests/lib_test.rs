@@ -40,8 +40,9 @@ fn derive_key() {
     let test_value = common::load_test_vectors("../test_vectors/wallet.json").unwrap();
     let mnemonic = test_value["mnemonic"].as_str().unwrap();
     let private_key = test_value["private_key"].as_str().unwrap();
+    let language_code = test_value["language_code"].as_str().unwrap();
 
-    let extended_key = key_derive(&mnemonic, "m/44'/461'/0/0/0", "").unwrap();
+    let extended_key = key_derive(&mnemonic, "m/44'/461'/0/0/0", "", language_code).unwrap();
 
     assert_eq!(
         base64::encode(&extended_key.private_key.0),
@@ -55,6 +56,7 @@ fn derive_key_password() {
     let mnemonic = test_value["mnemonic"].as_str().unwrap();
     let password = "password".to_string();
     let path = "m/44'/461'/0/0/0".to_string();
+    let language_code = test_value["language_code"].as_str().unwrap();
 
     let m = bip39::Mnemonic::from_phrase(&mnemonic, Language::English).unwrap();
 
@@ -62,7 +64,7 @@ fn derive_key_password() {
 
     let extended_key_expected = key_derive_from_seed(seed.as_bytes(), &path).unwrap();
 
-    let extended_key = key_derive(&mnemonic, &path, &password).unwrap();
+    let extended_key = key_derive(&mnemonic, &path, &password, &language_code).unwrap();
 
     assert_eq!(
         base64::encode(&extended_key.private_key.0),
@@ -648,7 +650,9 @@ fn test_sign_voucher() {
     let wallet = common::load_test_vectors("../test_vectors/wallet.json").unwrap();
     // TODO: the privatekey should be added to voucher.json to keep test vectors seperated
     let mnemonic = wallet["mnemonic"].as_str().unwrap();
-    let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "").unwrap();
+    let language_code = wallet["language_code"].as_str().unwrap();
+
+    let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "", language_code).unwrap();
 
     let test_value = common::load_test_vectors("../test_vectors/voucher.json").unwrap();
     let voucher_value = test_value["sign"]["voucher"].to_owned();
