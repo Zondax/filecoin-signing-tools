@@ -25,5 +25,17 @@
     "code_cid": "fil/1/paymentchannel",
     "method": 7,
     "error": "Actor type not supported."
+  },
+  {
+    "description": "should deserialize exec params",
+    "valid": true,
+    "serialized_params": "gtgqUwABVQAOZmlsLzIvbXVsdGlzaWdYIISBVQFsOq0x8u0ZMgRuqvDv48DeLC/TkwEYZBoAA9qL",
+    "code_cid": "fil/1/init",
+    "method": 2,
+    "params": {
+      "code_cid": "bafkqadtgnfwc6mrpnv2wy5djonuwo",
+      "constructor_params": "hIFVAWw6rTHy7RkyBG6q8O/jwN4sL9OTARhkGgAD2os="
+    }
+    
   }
 ]
