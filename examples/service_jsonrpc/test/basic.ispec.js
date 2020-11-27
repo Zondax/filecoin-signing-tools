@@ -8,10 +8,6 @@ import { callMethod } from "../src";
 
 const testsVectorsPath = "../manual_testvectors.json";
 
-// WARNING: filecoin-service is expected to be running
-const URL = "http://127.0.0.1:3030/v0";
-const MASTER_NODE = bip32.fromBase58(dataWallet.master_key)
-
 /* Load Txs test data */
 let rawdataTxs = fs.readFileSync('../../test_vectors/txs.json')
 let dataTxs = JSON.parse(rawdataTxs)
@@ -19,6 +15,11 @@ let dataTxs = JSON.parse(rawdataTxs)
 /* Load wallet test data */
 let rawdataWallet = fs.readFileSync('../../test_vectors/wallet.json')
 let dataWallet = JSON.parse(rawdataWallet)
+
+// WARNING: filecoin-service is expected to be running
+const URL = "http://127.0.0.1:3030/v0";
+const MASTER_NODE = bip32.fromBase58(dataWallet.master_key)
+
 
 test("key_generate_mnemonic", async () => {
   const response = await callMethod(URL, "key_generate_mnemonic", [], 1);
