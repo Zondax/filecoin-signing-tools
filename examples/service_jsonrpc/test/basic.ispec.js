@@ -8,27 +8,18 @@ import { callMethod } from "../src";
 
 const testsVectorsPath = "../manual_testvectors.json";
 
+/* Load Txs test data */
+let rawdataTxs = fs.readFileSync('../../test_vectors/txs.json')
+let dataTxs = JSON.parse(rawdataTxs)
+
+/* Load wallet test data */
+let rawdataWallet = fs.readFileSync('../../test_vectors/wallet.json')
+let dataWallet = JSON.parse(rawdataWallet)
+
 // WARNING: filecoin-service is expected to be running
 const URL = "http://127.0.0.1:3030/v0";
-const EXPECTED_MNEMONIC = "equip will roof matter pink blind book anxiety banner elbow sun young";
-const EXPECTED_SEED =
-  "xprv9s21ZrQH143K49QgrAgAVELf6ue2tZNHYUc7yfj8JGZY9SpZ38u8EfhWi85GsA6grUeB36wXrbNTkjX9EfGP1ybbPRG4sdP2EPfY1SZ2BF5";
-const EXPECTED_ROOT_NODE = bip32.fromBase58(EXPECTED_SEED);
+const MASTER_NODE = bip32.fromBase58(dataWallet.master_key)
 
-const EXAMPLE_TRANSACTION_CBOR =
-  "8A005501FD1D0F4DFCD7E99AFCB99A8326B7DC459D32C62855011EAF1C8A4BBFEEB0870B1745B1F57503470B71160144000186A01961A84200014200010040".toLowerCase();
-
-const EXAMPLE_TRANSACTION = {
-  to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-  from: "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-  nonce: 1,
-  value: "100000",
-  gasfeecap: "1",
-  gaslimit: 25000,
-  gaspremium: "1",
-  method: 0,
-  params: "",
-};
 
 test("key_generate_mnemonic", async () => {
   const response = await callMethod(URL, "key_generate_mnemonic", [], 1);
@@ -41,21 +32,19 @@ test("key_generate_mnemonic", async () => {
 });
 
 test("key_derive", async () => {
-  const path = "m/44'/461'/0/0/0";
-  const response = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path, "", "en"], 1);
-  const child = EXPECTED_ROOT_NODE.derivePath(path);
+  const response = await callMethod(URL, "key_derive", [dataWallet.mnemonic, dataWallet.childs[3].path, "", dataWallet.language_code], 1);
+  const child = MASTER_NODE.derivePath(dataWallet.childs[3].path);
   console.log(response);
 
   // Do we have a results
   expect(response).toHaveProperty("result");
   expect(response.result.private_base64).toEqual(child.privateKey.toString("base64"));
-  expect(response.result.address).toEqual("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
+  expect(response.result.address).toEqual(dataWallet.childs[3].address);
 });
 
 test("key_derive testnet path", async () => {
-  const path = "m/44'/1'/0/0/0";
-  const response = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path, "", "en"], 1);
-  const child = EXPECTED_ROOT_NODE.derivePath(path);
+  const response = await callMethod(URL, "key_derive", [dataWallet.mnemonic, dataWallet.childs[2].path, "", dataWallet.language_code], 1);
+  const child = MASTER_NODE.derivePath(dataWallet.childs[2].path);
   const expectedPubKey = Buffer.from(secp256k1.publicKeyCreate(child.privateKey, false));
 
   console.log(response);
@@ -76,7 +65,7 @@ test("key_derive missing all parameters", async () => {
 });
 
 test("key_derive missing path parameters", async () => {
-  const response = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC], 1);
+  const response = await callMethod(URL, "key_derive", [dataWallet.mnemonic], 1);
   console.log(response);
 
   expect(response).toHaveProperty("error");
@@ -84,7 +73,7 @@ test("key_derive missing path parameters", async () => {
 });
 
 test("key_derive invalid path parameter", async () => {
-  const response = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, "", "", "en"], 1);
+  const response = await callMethod(URL, "key_derive", [dataWallet.mnemonic, "", "", dataWallet.language_code], 1);
   console.log(response);
 
   expect(response).toHaveProperty("error");
@@ -92,24 +81,22 @@ test("key_derive invalid path parameter", async () => {
 });
 
 test("key_derive missing password parameter (verify default)", async () => {
-  const path = "m/44'/461'/0/0/0";
-  const response = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path, "", "en"], 1);
-  const child = EXPECTED_ROOT_NODE.derivePath(path);
+  const response = await callMethod(URL, "key_derive", [dataWallet.mnemonic, dataWallet.childs[3].path, "", dataWallet.language_code], 1);
+  const child = MASTER_NODE.derivePath(dataWallet.childs[3].path);
   const expectedPubKey = Buffer.from(secp256k1.publicKeyCreate(child.privateKey, false));
   console.log(response);
 
   expect(response).toHaveProperty("result");
   expect(response.result.private_base64).toEqual(child.privateKey.toString("base64"));
   expect(response.result.public_hexstring).toEqual(expectedPubKey.toString("hex"));
-  expect(response.result.address).toEqual("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
+  expect(response.result.address).toEqual(dataWallet.childs[3].address);
 });
 
 test("key_derive_from_seed", async () => {
-  const path = "m/44'/461'/0/0/0";
-  const seed = bip39.mnemonicToSeedSync(EXPECTED_MNEMONIC).toString("hex");
+  const seed = bip39.mnemonicToSeedSync(dataWallet.mnemonic).toString("hex");
 
-  const response = await callMethod(URL, "key_derive_from_seed", [seed, path], 1);
-  const child = EXPECTED_ROOT_NODE.derivePath(path);
+  const response = await callMethod(URL, "key_derive_from_seed", [seed, dataWallet.childs[3].path], 1);
+  const child = MASTER_NODE.derivePath(dataWallet.childs[3].path);
   const expectedPubKey = Buffer.from(secp256k1.publicKeyCreate(child.privateKey, false));
   console.log(response);
 
@@ -117,23 +104,23 @@ test("key_derive_from_seed", async () => {
   expect(response).toHaveProperty("result");
   expect(response.result.private_base64).toEqual(child.privateKey.toString("base64"));
   expect(response.result.public_hexstring).toEqual(expectedPubKey.toString("hex"));
-  expect(response.result.address).toEqual("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba");
+  expect(response.result.address).toEqual(dataWallet.childs[3].address);
 });
 
 test("transaction_serialize", async () => {
-  const response = await callMethod(URL, "transaction_serialize", EXAMPLE_TRANSACTION, 1);
+  const response = await callMethod(URL, "transaction_serialize", dataTxs[0].transaction, 1);
 
-  expect(Buffer.from(response.result).toString("hex")).toBe(EXAMPLE_TRANSACTION_CBOR);
+  expect(Buffer.from(response.result).toString("hex")).toBe(dataTxs[0].cbor);
 });
 
 test("transaction_parse", async () => {
-  const response = await callMethod(URL, "transaction_parse", [EXAMPLE_TRANSACTION_CBOR, true], 1);
+  const response = await callMethod(URL, "transaction_parse", [dataTxs[0].cbor, true], 1);
 
-  expect(JSON.parse(response.result)).toStrictEqual(EXAMPLE_TRANSACTION);
+  expect(JSON.parse(response.result)).toStrictEqual(dataTxs[0].transaction);
 });
 
 test("transaction_parse_invalid_length", async () => {
-  const response = await callMethod(URL, "transaction_parse", [`${EXAMPLE_TRANSACTION_CBOR}'`, true], 1);
+  const response = await callMethod(URL, "transaction_parse", [`${dataTxs[0].cbor}'`, true], 1);
 
   expect(response).toHaveProperty("error");
   expect(response.error.message).toMatch(/Hex decoding | Invalid length/);
@@ -180,13 +167,13 @@ for (let i = 0; i < jsonData.length; i += 1) {
 }
 
 test("sign_transaction", async () => {
-  const child = EXPECTED_ROOT_NODE.derivePath("m/44'/461'/0/0/0");
-  const message_digest = getDigest(Buffer.from(EXAMPLE_TRANSACTION_CBOR, "hex"));
+  const child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
+  const message_digest = getDigest(Buffer.from(dataTxs[0].cbor, "hex"));
 
   const response = await callMethod(
     URL,
     "sign_transaction",
-    [EXAMPLE_TRANSACTION, child.privateKey.toString("base64")],
+    [dataTxs[0].transaction, child.privateKey.toString("base64")],
     1,
   );
 
@@ -206,7 +193,7 @@ test("sign_transaction", async () => {
 });
 
 test("sign_invalid_transaction", async () => {
-  const child = EXPECTED_ROOT_NODE.derivePath("m/44'/461'/0/0/0");
+  const child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
   const invalid_transaction = {
     to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
     from: "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
@@ -232,9 +219,9 @@ test("sign_invalid_transaction", async () => {
 });
 
 test("verify_signature", async () => {
-  const child = EXPECTED_ROOT_NODE.derivePath("m/44'/461'/0/0/0");
+  const child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
 
-  const message_digest = getDigest(Buffer.from(EXAMPLE_TRANSACTION_CBOR, "hex"));
+  const message_digest = getDigest(Buffer.from(dataTxs[0].cbor, "hex"));
 
   const signature = secp256k1.ecdsaSign(message_digest, child.privateKey);
 
@@ -242,7 +229,7 @@ test("verify_signature", async () => {
   const signatureRSV =
     Buffer.from(signature.signature).toString("hex") + Buffer.from([signature.recid]).toString("hex");
 
-  const response = await callMethod(URL, "verify_signature", [signatureRSV, EXAMPLE_TRANSACTION_CBOR], 1);
+  const response = await callMethod(URL, "verify_signature", [signatureRSV, dataTxs[0].cbor], 1);
 
   console.log(response);
 
@@ -250,7 +237,7 @@ test("verify_signature", async () => {
 });
 
 test("verify_signature signed with lotus", async () => {
-  const child = EXPECTED_ROOT_NODE.derivePath("m/44'/461'/0/0/0");
+  const child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
 
   const tx = {
     to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
@@ -293,9 +280,9 @@ test("verify_signature signed with lotus", async () => {
 });
 
 test("verify_invalid_signature", async () => {
-  const child = EXPECTED_ROOT_NODE.derivePath("m/44'/461'/0/0/0");
+  const child = MASTER_NODE.derivePath("m/44'/461'/0/0/0");
 
-  const message_digest = getDigest(Buffer.from(EXAMPLE_TRANSACTION_CBOR, "hex"));
+  const message_digest = getDigest(Buffer.from(dataTxs[0].cbor, "hex"));
 
   const signature = secp256k1.ecdsaSign(message_digest, child.privateKey);
 
@@ -305,7 +292,7 @@ test("verify_invalid_signature", async () => {
   // Concat recovery id value at the end of the signature
   const signatureRSV = invalid_signature.toString("hex") + Buffer.from([signature.recid]).toString("hex");
 
-  const response = await callMethod(URL, "verify_signature", [signatureRSV, EXAMPLE_TRANSACTION_CBOR], 1);
+  const response = await callMethod(URL, "verify_signature", [signatureRSV, dataTxs[0].cbor], 1);
 
   console.log(response);
 
@@ -319,8 +306,7 @@ var messageCID
 
 test("send_signed_tx", async () => {
   jest.setTimeout(40000);
-  const path = "m/44'/1'/0/0/0";
-  const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path, "", "en"], 1);
+  const keyAddressResponse = await callMethod(URL, "key_derive", [dataWallet.mnemonic, dataWallet.childs[2].path, "", dataWallet.language_code], 1);
 
   console.log(keyAddressResponse);
 
@@ -417,8 +403,7 @@ test("get_nonce", async () => {
 test("send_sign", async () => {
   jest.setTimeout(40000);
 
-  const path = "m/44'/1'/0/0/0";
-  const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path, "", "en"], 1);
+  const keyAddressResponse = await callMethod(URL, "key_derive", [dataWallet.mnemonic, dataWallet.childs[2].path, "", dataWallet.language_code], 1);
 
   console.log(keyAddressResponse);
 
@@ -454,8 +439,7 @@ test("send_sign", async () => {
 });
 
 test("send_sign wrong network", async () => {
-  const path = "m/44'/461'/0/0/0";
-  const keyAddressResponse = await callMethod(URL, "key_derive", [EXPECTED_MNEMONIC, path, "", "en"], 1);
+  const keyAddressResponse = await callMethod(URL, "key_derive", [dataWallet.mnemonic, dataWallet.childs[3].path, "", dataWallet.language_code], 1);
 
   console.log(keyAddressResponse);
 
