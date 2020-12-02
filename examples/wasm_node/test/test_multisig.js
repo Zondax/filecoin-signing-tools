@@ -36,9 +36,9 @@ describeCall("createMultisig", function() {
       multisig_create.message.value,
       multisig_create.constructor_params.num_approvals_threshold,
       multisig_create.message.nonce,
-      BigInt(multisig_create.constructor_params.unlock_duration),
-      BigInt(multisig_create.constructor_params.start_epoch),
-      BigInt(multisig_create.message.gaslimit),
+      multisig_create.constructor_params.unlock_duration.toString(),
+      multisig_create.constructor_params.start_epoch.toString(),
+      multisig_create.message.gaslimit.toString(),
       multisig_create.message.gasfeecap,
       multisig_create.message.gaspremium
     );
@@ -55,9 +55,9 @@ describeCall("createMultisig", function() {
       multisig_create.message.value,
       multisig_create.constructor_params.num_approvals_threshold,
       multisig_create.message.nonce,
-      BigInt(-1),
-      BigInt(multisig_create.constructor_params.start_epoch),
-      BigInt(multisig_create.message.gaslimit),
+      BigInt(-1).toString(),
+      multisig_create.constructor_params.start_epoch.toString(),
+      multisig_create.message.gaslimit.toString(),
       multisig_create.message.gasfeecap,
       multisig_create.message.gaspremium
     );
@@ -89,24 +89,22 @@ describeCall("createMultisig", function() {
   it("should fail because of bigint", function() {
     const multisig_create = dataTxs.create
 
-    console.log(BigInt("18446744073709551617"))
-
-    let create_multisig_transaction = filecoin_signer.createMultisigWithFee(
-      multisig_create.message.from,
-      multisig_create.constructor_params.signers,
-      multisig_create.message.value,
-      multisig_create.constructor_params.num_approvals_threshold,
-      multisig_create.message.nonce,
-      BigInt(multisig_create.constructor_params.unlock_duration),
-      BigInt(multisig_create.constructor_params.start_epoch),
-      "18446744073709551617",
-      multisig_create.message.gasfeecap,
-      multisig_create.message.gaspremium
+    assert.throws(
+        () => filecoin_signer.createMultisigWithFee(
+          multisig_create.message.from,
+          multisig_create.constructor_params.signers,
+          multisig_create.message.value,
+          multisig_create.constructor_params.num_approvals_threshold,
+          multisig_create.message.nonce,
+          multisig_create.constructor_params.unlock_duration.toString(),
+          multisig_create.constructor_params.start_epoch.toString(),
+          "18446744073709551617",
+          multisig_create.message.gasfeecap,
+          multisig_create.message.gaspremium
+        ),
+        /(number too large to fit in target type)/
     );
-    
-    console.log(create_multisig_transaction)
-    
-    assert(false)
+
   });
   
 })
@@ -121,7 +119,7 @@ describeCall("proposeMultisig", function() {
       multisig_propose.message.from,
       multisig_propose.proposal_params.value,
       multisig_propose.message.nonce,
-      BigInt(multisig_propose.message.gaslimit),
+      multisig_propose.message.gaslimit.toString(),
       multisig_propose.message.gasfeecap,
       multisig_propose.message.gaspremium
     );
@@ -163,7 +161,7 @@ describeCall("approveMultisig", function() {
       multisig_approve.proposal_params.value,
       multisig_approve.message.from,
       multisig_approve.message.nonce,
-      BigInt(multisig_approve.message.gaslimit),
+      multisig_approve.message.gaslimit.toString(),
       multisig_approve.message.gasfeecap,
       multisig_approve.message.gaspremium
     );
@@ -204,7 +202,7 @@ describeCall("cancelMultisig", function() {
       multisig_cancel.proposal_params.value,
       multisig_cancel.message.from,
       multisig_cancel.message.nonce,
-      BigInt(multisig_cancel.message.gaslimit),
+      multisig_cancel.message.gaslimit.toString(),
       multisig_cancel.message.gasfeecap,
       multisig_cancel.message.gaspremium
     );
