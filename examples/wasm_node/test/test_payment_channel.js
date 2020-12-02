@@ -40,7 +40,7 @@ describeCall('createPymtChan', function () {
       paymentchannel_create.constructor_params.to,
       paymentchannel_create.message.value,
       paymentchannel_create.message.nonce,
-      BigInt(paymentchannel_create.message.gaslimit),
+      paymentchannel_create.message.gaslimit.toString(),
       paymentchannel_create.message.gasfeecap,
       paymentchannel_create.message.gaspremium
     );
@@ -68,7 +68,7 @@ describeCall('createPymtChan', function () {
       paymentchannel_create.constructor_params.to,
       paymentchannel_create.message.value,
       paymentchannel_create.message.nonce,
-      BigInt(paymentchannel_create.message.gaslimit),
+      paymentchannel_create.message.gaslimit.toString(),
       paymentchannel_create.message.gasfeecap,
       paymentchannel_create.message.gaspremium
     );
@@ -94,7 +94,7 @@ describeCall('updatePymtChan', function () {
       paymentchannel_update.message.from,
       paymentchannel_update.voucher_base64,
       paymentchannel_update.message.nonce,
-      BigInt(paymentchannel_update.message.gaslimit),
+      paymentchannel_update.message.gaslimit.toString(),
       paymentchannel_update.message.gasfeecap,
       paymentchannel_update.message.gaspremium
     );
@@ -125,7 +125,7 @@ describeCall('settlePymtChan', function () {
       paymentchannel_settle.message.to,
       paymentchannel_settle.message.from,
       paymentchannel_settle.message.nonce,
-      BigInt(paymentchannel_settle.message.gaslimit),
+      paymentchannel_settle.message.gaslimit.toString(),
       paymentchannel_settle.message.gasfeecap,
       paymentchannel_settle.message.gaspremium
     );
@@ -153,7 +153,7 @@ describeCall('collectPymtChan', function () {
       paymentchannel_collect.message.to,
       paymentchannel_collect.message.from,
       paymentchannel_collect.message.nonce,
-      BigInt(paymentchannel_collect.message.gaslimit),
+      paymentchannel_collect.message.gaslimit.toString(),
       paymentchannel_collect.message.gasfeecap,
       paymentchannel_collect.message.gaspremium
     );
@@ -178,12 +178,12 @@ describeCall('createVoucher', function () {
     
     const voucher = filecoin_signer.createVoucher(
       voucher_expected.payment_channel_address,
-      BigInt(voucher_expected.time_lock_min),
-      BigInt(voucher_expected.time_lock_max),
+      voucher_expected.time_lock_min.toString(),
+      voucher_expected.time_lock_max.toString(),
       voucher_expected.amount,
-      BigInt(voucher_expected.lane),
-      BigInt(voucher_expected.nonce),
-      BigInt(voucher_expected.min_settle_height),
+      voucher_expected.lane.toString(),
+      voucher_expected.nonce,
+      voucher_expected.min_settle_height.toString(),
     );
 
     assert(voucher);
@@ -201,12 +201,12 @@ describeCall('signVoucher', function () {
 
     const voucher = filecoin_signer.createVoucher(
       voucher_expected.payment_channel_address,
-      BigInt(voucher_expected.time_lock_min),
-      BigInt(voucher_expected.time_lock_max),
+      voucher_expected.time_lock_min.toString(),
+      voucher_expected.time_lock_max.toString(),
       voucher_expected.amount,
-      BigInt(voucher_expected.lane),
-      BigInt(voucher_expected.nonce),
-      BigInt(voucher_expected.min_settle_height),
+      voucher_expected.lane.toString(),
+      voucher_expected.nonce,
+      voucher_expected.min_settle_height.toString(),
     );
     
     const signedVoucher = filecoin_signer.signVoucher(voucher, privateKey);
