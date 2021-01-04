@@ -89,24 +89,21 @@ describeCall("createMultisig", function() {
   it("should fail because of bigint", function() {
     const multisig_create = dataTxs.create
 
-    console.log(BigInt("18446744073709551617"))
-
-    let create_multisig_transaction = filecoin_signer.createMultisigWithFee(
-      multisig_create.message.from,
-      multisig_create.constructor_params.signers,
-      multisig_create.message.value,
-      multisig_create.constructor_params.num_approvals_threshold,
-      multisig_create.message.nonce,
-      BigInt(multisig_create.constructor_params.unlock_duration),
-      BigInt(multisig_create.constructor_params.start_epoch),
-      "18446744073709551617",
-      multisig_create.message.gasfeecap,
-      multisig_create.message.gaspremium
+   assert.throws(
+        () => filecoin_signer.createMultisigWithFee(
+          multisig_create.message.from,
+          multisig_create.constructor_params.signers,
+          multisig_create.message.value,
+          multisig_create.constructor_params.num_approvals_threshold,
+          multisig_create.message.nonce,
+          multisig_create.constructor_params.unlock_duration.toString(),
+          multisig_create.constructor_params.start_epoch.toString(),
+          "18446744073709551617",
+          multisig_create.message.gasfeecap,
+          multisig_create.message.gaspremium
+        ),
+        /(number too large to fit in target type)/
     );
-    
-    console.log(create_multisig_transaction)
-    
-    assert(false)
   });
   
 })
