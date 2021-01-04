@@ -35,12 +35,12 @@ arbitrary = { optional = true, features = ["derive"], version = "" }
 ffi-support = { optional = true, version = "0.4" }
 
 
-forest_vm = "0.3.0"
-forest_message = "0.6.0"
-forest_address = "0.3.0"
-forest_encoding = "0.2.0"
-forest_cid = "0.2.0"
-forest_crypto = "0.4.0"
+forest_vm = "0.3.1"
+forest_message = "0.6.1"
+forest_address = "0.3.1"
+forest_encoding = "0.2.1"
+forest_cid = "0.3.0"
+forest_crypto = "0.4.1"
 
 tiny-bip39 = "0.8.0"
 num_bigint_chainsafe = { package = "forest_bigint", version = "0.1.2"}

@@ -7,7 +7,7 @@ use std::str::FromStr;
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
 use forest_address::{Address, BLSPublicKey, Network, Protocol};
-use forest_cid::{multihash::MultihashDigest, Cid, Code::Blake2b256, Code::Identity, Codec};
+use forest_cid::{multihash::MultihashDigest, Cid, Code::Blake2b256, Code::Identity};
 use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
 use forest_message::SignedMessage;
@@ -568,7 +568,7 @@ pub fn create_multisig(
     .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_multisig = ExecParams {
-        code_cid: Cid::new_v1(Codec::Raw, Identity.digest(b"fil/2/multisig")),
+        code_cid: Cid::new_v1(forest_cid::RAW, Identity.digest(b"fil/2/multisig")),
         constructor_params: serialized_constructor_params,
     };
 
@@ -807,7 +807,7 @@ pub fn create_pymtchan(
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_create_pymtchan = ExecParams {
-        code_cid: Cid::new_v1(Codec::Raw, Identity.digest(b"fil/2/paymentchannel")),
+        code_cid: Cid::new_v1(forest_cid::RAW, Identity.digest(b"fil/2/paymentchannel")),
         constructor_params: serialized_constructor_params,
     };
 
@@ -1211,7 +1211,7 @@ pub fn get_cid(signed_message_api: SignedMessageAPI) -> Result<String, SignerErr
     let signed_message = SignedMessage::try_from(&signed_message_api)?;
     let cbor_signed_message = to_vec(&signed_message)?;
 
-    let cid = Cid::new_from_cbor(&cbor_signed_message, Blake2b256);
+    let cid = forest_cid::new_from_cbor(&cbor_signed_message, Blake2b256);
 
     Ok(cid.to_string())
 }
