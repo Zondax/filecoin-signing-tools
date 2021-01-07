@@ -14,6 +14,9 @@ forest_address = "=0.3.0"
 forest_encoding = "=0.2.0"
 forest_cid = "=0.2.0"
 forest_crypto = "=0.4.0"
+multihash = "=0.13.1"
+multihash-derive = "=0.7.0"
+forest_json_utils = "=0.1.0"
 
 num_bigint = { package = "forest_bigint", version = "0.1.2"}
 clock = { git = "https://github.com/chainsafe/forest", rev="2863f64e40fde88433f9a00be764872f54c2e5ba" }
