@@ -24,6 +24,18 @@ js-sys = "0.3.42"
 wasm-bindgen-futures = "0.4.15"
 serde = { version = "1.0", features = ["derive"] }
 
+libc = "=0.2.80"
+const_fn = "=0.4.3"
+itoa = "=0.4.6"
+parking_lot_core = "=0.8.0"
+pin-project = "=1.0.2"
+pin-project-internal = "=1.0.2"
+quote = "=1.0.7"
+smallvec = "=1.5.0"
+subtle = "=2.3.0"
+syn = "=1.0.51"
+toml = "=0.5.7"
+
 getrandom = { version = "0.1.14", features = ["wasm-bindgen"]}
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
@@ -48,8 +60,14 @@ filecoin-signer-ledger = { path = "../ledger" }
 zx-bip44 = "0.1.0"
 
 [dependencies.wasm-bindgen]
-version = "^0.2.65"
+version = "=0.2.68"
 features = ["serde-serialize"]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.15"
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
+
+[build-dependencies]
+cc = "=1.0.65"
