@@ -60,7 +60,7 @@ filecoin-signer-ledger = { path = "../ledger" }
 zx-bip44 = "0.1.0"
 
 [dependencies.wasm-bindgen]
-version = "^0.2.65"
+version = "=0.2.68"
 features = ["serde-serialize"]
 
 [dev-dependencies]
