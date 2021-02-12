@@ -10,7 +10,7 @@ use forest_address::{Address, BLSPublicKey, Network, Protocol};
 use forest_cid::{multihash::MultihashDigest, Cid, Code::Blake2b256, Code::Identity, Codec};
 use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
-use forest_message::SignedMessage;
+use forest_message::{SignedMessage, UnsignedMessage};
 use num_bigint_chainsafe::BigInt;
 use num_traits::FromPrimitive;
 use rayon::prelude::*;
@@ -276,7 +276,7 @@ pub fn key_recover_bls(
 pub fn transaction_serialize(
     unsigned_message_arg: &UnsignedMessageAPI,
 ) -> Result<CborBuffer, SignerError> {
-    let unsigned_message = forest_message::UnsignedMessage::try_from(unsigned_message_arg)?;
+    let unsigned_message = UnsignedMessage::try_from(unsigned_message_arg)?;
     let message_cbor = CborBuffer(to_vec(&unsigned_message)?);
     Ok(message_cbor)
 }
@@ -329,10 +329,12 @@ fn transaction_sign_bls_raw(
     unsigned_message_api: &UnsignedMessageAPI,
     private_key: &PrivateKey,
 ) -> Result<SignatureBLS, SignerError> {
-    let message_cbor = transaction_serialize(unsigned_message_api)?;
-
     let sk = bls_signatures::PrivateKey::from_bytes(&private_key.0)?;
-    let sig = sk.sign(&message_cbor.0);
+
+    let unsigned_message = UnsignedMessage::try_from(unsigned_message_api)?;
+
+    //sign the message's signing bytes
+    let sig = sk.sign(unsigned_message.to_signing_bytes());
 
     Ok(SignatureBLS::try_from(sig.as_bytes())?)
 }
