@@ -1231,16 +1231,17 @@ pub fn verify_voucher_signature(
     }
 }
 
-/// Return the CID of a signed message
+/// Return the CID of an unsigned message
 ///
 /// # Arguments
 ///
-/// * `signed_message_api` - The signed message;
-pub fn get_cid(signed_message_api: SignedMessageAPI) -> Result<String, SignerError> {
-    let signed_message = SignedMessage::try_from(&signed_message_api)?;
-    let cbor_signed_message = to_vec(&signed_message)?;
+/// * `unsigned_message_api` - The unsigned message;
+pub fn get_cid(unsigned_message_api: UnsignedMessageAPI) -> Result<String, SignerError> {
+    let unsigned_message = UnsignedMessage::try_from(&unsigned_message_api)?;
 
-    let cid = Cid::new_from_cbor(&cbor_signed_message, Blake2b256);
+    let raw_cid = unsigned_message.to_signing_bytes();
+    let cid = Cid::from_raw_cid(raw_cid)
+        .expect("FIX ME: to_signing_bytes is assumed to return ONLY the CID");
 
     Ok(cid.to_string())
 }

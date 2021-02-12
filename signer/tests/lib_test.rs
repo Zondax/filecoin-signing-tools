@@ -938,7 +938,7 @@ fn test_get_cid() {
         serde_json::from_value(test_value["signed_message"].to_owned())
             .expect("couldn't serialize signed message");
 
-    let cid = get_cid(signed_message_api).unwrap();
+    let cid = get_cid(signed_message_api.message).unwrap();
 
     assert_eq!(cid, expected_cid);
 }
