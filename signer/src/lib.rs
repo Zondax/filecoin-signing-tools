@@ -437,14 +437,16 @@ fn verify_bls_signature(
 ) -> Result<bool, SignerError> {
     // TODO: need a function to extract from public key from cbor buffer directly
     let message = transaction_parse(cbor_buffer, true)?;
+    let message = message.get_message();
 
-    let address = Address::from_str(&message.get_message().from)?;
+    let address = Address::from_str(&message.from)?;
 
     let pk = bls_signatures::PublicKey::from_bytes(&address.payload_bytes())?;
 
     let sig = bls_signatures::Signature::from_bytes(signature.as_ref())?;
 
-    let result = pk.verify(sig, cbor_buffer.as_ref());
+    let signing_bytes = get_signing_bytes(message)?;
+    let result = pk.verify(sig, signing_bytes);
 
     Ok(result)
 }
@@ -483,6 +485,17 @@ fn extract_from_pub_key_from_message(
     Ok(pk)
 }
 
+fn extract_bls_signing_bytes_from_message(
+    cbor_message: &CborBuffer,
+) -> Result<Vec<u8>, SignerError> {
+    let message = transaction_parse(cbor_message, true)?;
+
+    let unsigned_message_api = message.get_message();
+    let unsigned_message = UnsignedMessage::try_from(&unsigned_message_api)?;
+
+    Ok(unsigned_message.to_signing_bytes())
+}
+
 pub fn verify_aggregated_signature(
     signature: &SignatureBLS,
     cbor_messages: &[CborBuffer],
@@ -505,9 +518,23 @@ pub fn verify_aggregated_signature(
     };
 
     // Hashes
-    let hashes: Vec<_> = cbor_messages
+    let tmp: Result<Vec<_>, SignerError> = cbor_messages
+        .iter()
+        .map(|cbor_message| extract_bls_signing_bytes_from_message(cbor_message))
+        .collect();
+
+    let signing_bytes = match tmp {
+        Ok(bytes) => bytes,
+        Err(_) => {
+            return Err(SignerError::GenericString(
+                "An invalid message was provided".to_string(),
+            ));
+        }
+    };
+
+    let hashes = signing_bytes
         .par_iter()
-        .map(|cbor_message| bls_signatures::hash(cbor_message.as_ref()))
+        .map(|signing_bytes| bls_signatures::hash(signing_bytes.as_ref()))
         .collect::<Vec<_>>();
 
     Ok(bls_signatures::verify(&sig, &hashes, pks.as_slice()))
