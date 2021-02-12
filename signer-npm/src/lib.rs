@@ -996,3 +996,17 @@ pub fn get_cid(signed_message: JsValue) -> Result<String, JsValue> {
 
     Ok(result)
 }
+
+#[wasm_bindgen(js_name = getSigningBytes)]
+pub fn get_signing_bytes(unsigned_message: JsValue) -> Result<Vec<u8>, JsValue> {
+    set_panic_hook();
+
+    let unsigned_message_api: UnsignedMessageAPI = unsigned_message
+        .into_serde()
+        .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
+
+    let result = filecoin_signer::get_signing_bytes(unsigned_message_api)
+        .map_err(|e| JsValue::from(format!("Error getting the cid: {}", e)))?;
+
+    Ok(result)
+}

@@ -1217,3 +1217,16 @@ pub fn get_cid(signed_message_api: SignedMessageAPI) -> Result<String, SignerErr
 
     Ok(cid.to_string())
 }
+
+/// Return the bytes to sign of an unsigned message
+///
+/// # Arguments
+///
+/// * `unsigned_message_api` - The unsigned message;
+pub fn get_signing_bytes(unsigned_message_api: UnsignedMessageAPI) -> Result<Vec<u8>, SignerError> {
+    let unsigned_message = UnsignedMessage::try_from(&unsigned_message_api)?;
+
+    let bytes = unsigned_message.to_signing_bytes();
+
+    Ok(bytes)
+}
