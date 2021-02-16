@@ -445,7 +445,9 @@ fn verify_bls_signature(
 
     let sig = bls_signatures::Signature::from_bytes(signature.as_ref())?;
 
-    let signing_bytes = get_bls_signing_bytes(message)?;
+    let message = UnsignedMessage::try_from(&message)?;
+    let signing_bytes = message.to_signing_bytes();
+
     let result = pk.verify(sig, signing_bytes);
 
     Ok(result)
@@ -1253,19 +1255,4 @@ pub fn get_cid(message_api: MessageTxAPI) -> Result<String, SignerError> {
             Ok(cid.to_string())
         }
     }
-}
-
-/// Return the bytes to sign of an unsigned message
-///
-/// # Arguments
-///
-/// * `unsigned_message_api` - The unsigned message;
-pub fn get_bls_signing_bytes(
-    unsigned_message_api: UnsignedMessageAPI,
-) -> Result<Vec<u8>, SignerError> {
-    let unsigned_message = UnsignedMessage::try_from(&unsigned_message_api)?;
-
-    let bytes = unsigned_message.to_signing_bytes();
-
-    Ok(bytes)
 }
