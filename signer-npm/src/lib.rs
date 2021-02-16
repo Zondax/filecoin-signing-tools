@@ -991,7 +991,7 @@ pub fn get_cid(message: JsValue) -> Result<String, JsValue> {
         .into_serde()
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
-    let result = filecoin_signer::get_cid(message_api.get_message())
+    let result = filecoin_signer::get_cid(message_api)
         .map_err(|e| JsValue::from(format!("Error getting the cid: {}", e)))?;
 
     Ok(result)
