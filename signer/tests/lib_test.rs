@@ -326,7 +326,6 @@ fn sign_bls_transaction() {
 fn test_verify_bls_signature() {
     let test_value = common::load_test_vectors("../test_vectors/bls_signature.json").unwrap();
 
-    //TODO: update signature (what is the private key?)
     let sig = Signature::try_from(test_value["sig"].as_str().unwrap().to_string()).unwrap();
     let message =
         CborBuffer(hex::decode(test_value["cbor"].as_str().unwrap().to_string()).unwrap());
@@ -934,11 +933,10 @@ fn test_get_cid() {
     let test_value = common::load_test_vectors("../test_vectors/get_cid.json").unwrap();
 
     let expected_cid = test_value["cid"].as_str().unwrap().to_string();
-    let signed_message_api: SignedMessageAPI =
-        serde_json::from_value(test_value["signed_message"].to_owned())
-            .expect("couldn't serialize signed message");
+    let message_api: MessageTxAPI = serde_json::from_value(test_value["signed_message"].to_owned())
+        .expect("couldn't serialize signed message");
 
-    let cid = get_cid(signed_message_api.message).unwrap();
+    let cid = get_cid(message_api).unwrap();
 
     assert_eq!(cid, expected_cid);
 }
