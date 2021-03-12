@@ -556,7 +556,7 @@ pub fn create_multisig(
     let serialized_constructor_params = forest_vm::Serialized::serialize::<
         multisig::ConstructorParams,
     >(constructor_params_multisig)
-        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+    .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_multisig = ExecParams {
         code_cid: Cid::new_v1(forest_cid::RAW, Identity.digest(b"fil/2/multisig")),
@@ -851,7 +851,7 @@ pub fn update_pymtchan(
     let serialized_params = forest_vm::Serialized::serialize::<paych::UpdateChannelStateParams>(
         update_payment_channel_params,
     )
-        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+    .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
     let pch_update_message_api = UnsignedMessageAPI {
