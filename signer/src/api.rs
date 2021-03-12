@@ -2,7 +2,7 @@ use std::convert::{TryFrom, TryInto};
 use std::str::FromStr;
 
 use forest_address::{Address, Network};
-use forest_cid::{multihash::MultihashDigest, Cid, Code::Identity, Codec};
+use forest_cid::{multihash::MultihashDigest, Cid, Code::Identity};
 use forest_crypto::signature;
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
@@ -105,7 +105,7 @@ impl TryFrom<ExecParamsAPI> for ExecParams {
 
         Ok(ExecParams {
             code_cid: Cid::new_v1(
-                Codec::Raw,
+                forest_cid::RAW,
                 Identity.digest(exec_constructor.code_cid.as_bytes()),
             ),
             constructor_params: forest_vm::Serialized::new(serialized_constructor_multisig_params),
@@ -360,7 +360,7 @@ pub struct ChangeNumApprovalsThresholdMultisigParams {
 }
 
 impl TryFrom<ChangeNumApprovalsThresholdMultisigParams>
-    for multisig::ChangeNumApprovalsThresholdParams
+for multisig::ChangeNumApprovalsThresholdParams
 {
     type Error = SignerError;
 
@@ -374,7 +374,7 @@ impl TryFrom<ChangeNumApprovalsThresholdMultisigParams>
 }
 
 impl Into<ChangeNumApprovalsThresholdMultisigParams>
-    for multisig::ChangeNumApprovalsThresholdParams
+for multisig::ChangeNumApprovalsThresholdParams
 {
     fn into(self) -> ChangeNumApprovalsThresholdMultisigParams {
         ChangeNumApprovalsThresholdMultisigParams {
@@ -473,8 +473,8 @@ impl From<&SpecsActorsCryptoSignature> for SpecsActorsCryptoSignature {
 
 impl Serialize for SpecsActorsCryptoSignature {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         let mut v = Vec::<u8>::new();
         v.push(self.typ);
@@ -567,7 +567,7 @@ impl MessageParams {
                 forest_vm::Serialized::serialize::<multisig::ChangeNumApprovalsThresholdParams>(
                     params,
                 )
-                .map_err(|err| SignerError::GenericString(err.to_string()))?
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
             MessageParams::PaymentChannelCreateParams(pymtchan_create_params) => {
                 let params = paych::ConstructorParams::try_from(pymtchan_create_params)?;
@@ -710,15 +710,15 @@ mod serde_base64_vector {
     use serde::{self, Deserialize, Deserializer, Serializer};
 
     pub fn serialize<S>(v: &[u8], serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         serializer.serialize_str(&base64::encode(v))
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
         base64::decode(s).map_err(serde::de::Error::custom)

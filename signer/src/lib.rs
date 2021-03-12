@@ -7,7 +7,7 @@ use std::str::FromStr;
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
 use forest_address::{Address, BLSPublicKey, Network, Protocol};
-use forest_cid::{multihash::MultihashDigest, Cid, Code::Blake2b256, Code::Identity, Codec};
+use forest_cid::{multihash::MultihashDigest, Cid, Code::Blake2b256, Code::Identity};
 use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
 use forest_message::SignedMessage;
@@ -310,14 +310,15 @@ fn transaction_sign_secp56k1_raw(
     Ok(signature)
 }
 
-fn transaction_sign_bls_raw(
+pub fn transaction_sign_bls_raw(
     unsigned_message_api: &UnsignedMessageAPI,
     private_key: &PrivateKey,
 ) -> Result<SignatureBLS, SignerError> {
     let message_cbor = transaction_serialize(unsigned_message_api)?;
+    let cid = forest_cid::new_from_cbor(&message_cbor.0, Blake2b256);
 
     let sk = bls_signatures::PrivateKey::from_bytes(&private_key.0)?;
-    let sig = sk.sign(&message_cbor.0);
+    let sig = sk.sign(cid.to_bytes());
 
     Ok(SignatureBLS::try_from(sig.as_bytes())?)
 }
@@ -487,8 +488,13 @@ pub fn verify_aggregated_signature(
         }
     };
 
+    let cids: Vec<Vec<u8>> = cbor_messages
+        .iter()
+        .map(|cbor_message| forest_cid::new_from_cbor(&cbor_message.0, Blake2b256).to_bytes())
+        .collect();
+
     // Hashes
-    let hashes: Vec<_> = cbor_messages
+    let hashes: Vec<_> = cids
         .par_iter()
         .map(|cbor_message| bls_signatures::hash(cbor_message.as_ref()))
         .collect::<Vec<_>>();
@@ -550,10 +556,10 @@ pub fn create_multisig(
     let serialized_constructor_params = forest_vm::Serialized::serialize::<
         multisig::ConstructorParams,
     >(constructor_params_multisig)
-    .map_err(|err| SignerError::GenericString(err.to_string()))?;
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_multisig = ExecParams {
-        code_cid: Cid::new_v1(Codec::Raw, Identity.digest(b"fil/2/multisig")),
+        code_cid: Cid::new_v1(forest_cid::RAW, Identity.digest(b"fil/2/multisig")),
         constructor_params: serialized_constructor_params,
     };
 
@@ -792,7 +798,7 @@ pub fn create_pymtchan(
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_create_pymtchan = ExecParams {
-        code_cid: Cid::new_v1(Codec::Raw, Identity.digest(b"fil/2/paymentchannel")),
+        code_cid: Cid::new_v1(forest_cid::RAW, Identity.digest(b"fil/2/paymentchannel")),
         constructor_params: serialized_constructor_params,
     };
 
@@ -845,7 +851,7 @@ pub fn update_pymtchan(
     let serialized_params = forest_vm::Serialized::serialize::<paych::UpdateChannelStateParams>(
         update_payment_channel_params,
     )
-    .map_err(|err| SignerError::GenericString(err.to_string()))?;
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
     let pch_update_message_api = UnsignedMessageAPI {
@@ -1191,7 +1197,7 @@ pub fn get_cid(signed_message_api: SignedMessageAPI) -> Result<String, SignerErr
     let signed_message = SignedMessage::try_from(&signed_message_api)?;
     let cbor_signed_message = to_vec(&signed_message)?;
 
-    let cid = Cid::new_from_cbor(&cbor_signed_message, Blake2b256);
+    let cid = forest_cid::new_from_cbor(&cbor_signed_message, Blake2b256);
 
     Ok(cid.to_string())
 }

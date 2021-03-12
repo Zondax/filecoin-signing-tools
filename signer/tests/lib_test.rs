@@ -11,6 +11,7 @@ use rayon::prelude::*;
 use filecoin_signer::api::{MessageTxAPI, SignedMessageAPI, UnsignedMessageAPI};
 use filecoin_signer::signature::{Signature, SignatureBLS};
 use filecoin_signer::*;
+use forest_cid::{Code::Blake2b256};
 
 mod common;
 
@@ -312,10 +313,12 @@ fn sign_bls_transaction() {
     let bls_pk = bls_signatures::PublicKey::from_bytes(&bls_pubkey).unwrap();
 
     let message_cbor = transaction_serialize(&message).expect("FIX ME");
+    let cid = forest_cid::new_from_cbor(&message_cbor.0, Blake2b256);
 
-    println!("{}", hex::encode(&message_cbor));
+    println!("Message: {}", hex::encode(&message_cbor));
+    println!("CID: {}", hex::encode(cid.to_bytes()));
 
-    assert!(bls_pk.verify(sig, &message_cbor));
+    assert!(bls_pk.verify(sig, cid.to_bytes()));
 }
 
 #[test]
@@ -424,7 +427,7 @@ fn payment_channel_creation_bls_signing() {
             .unwrap()
             .to_string(),
     )
-    .unwrap();
+        .unwrap();
 
     let pch_create_message_expected: UnsignedMessageAPI =
         serde_json::from_value(tc_creation_bls["message"].to_owned()).unwrap();
@@ -436,6 +439,7 @@ fn payment_channel_creation_bls_signing() {
 
     // First check transaction_serialize() in creating an unsigned message
     let result = transaction_serialize(&pch_create_message_api).unwrap();
+    let result_cid = forest_cid::new_from_cbor(&result.0, Blake2b256);
 
     // Now check that we can generate a correct signature
     let sig = transaction_sign_raw(&pch_create_message_api, &bls_key).unwrap();
@@ -444,7 +448,7 @@ fn payment_channel_creation_bls_signing() {
 
     let bls_sig = bls_signatures::Serialize::from_bytes(&sig.as_bytes()).expect("FIX ME");
 
-    assert!(bls_pkey.verify(bls_sig, &result));
+    assert!(bls_pkey.verify(bls_sig, result_cid.to_bytes()));
 }
 
 #[test]
@@ -509,7 +513,7 @@ fn payment_channel_update() {
             .unwrap()
             .to_string(),
     )
-    .unwrap();
+        .unwrap();
 
     let pch_update_message_unsigned_expected: UnsignedMessageAPI =
         serde_json::from_value(tc_update_secp256k1["message"].to_owned())
@@ -564,7 +568,7 @@ fn payment_channel_settle() {
             .to_string()
             .to_string(),
     )
-    .unwrap();
+        .unwrap();
 
     let pch_settle_message_unsigned_expected: UnsignedMessageAPI =
         serde_json::from_value(tc_settle_secp256k1["message"].to_owned())
@@ -620,7 +624,7 @@ fn payment_channel_collect() {
             .unwrap()
             .to_string(),
     )
-    .unwrap();
+        .unwrap();
 
     let pch_collect_message_unsigned_expected: UnsignedMessageAPI =
         serde_json::from_value(tc_collect_secp256k1["message"].to_owned())
@@ -665,7 +669,7 @@ fn test_sign_voucher() {
         voucher_value["nonce"].as_u64().unwrap(),
         voucher_value["min_settle_height"].as_i64().unwrap(),
     )
-    .unwrap();
+        .unwrap();
 
     let signed_voucher = sign_voucher(voucher, &extended_key.private_key).unwrap();
 
@@ -722,7 +726,7 @@ fn support_multisig_create() {
             .unwrap()
             .to_string(),
     )
-    .unwrap();
+        .unwrap();
 
     let multisig_create_message_expected: UnsignedMessageAPI =
         serde_json::from_value(test_value["create"]["message"].to_owned()).unwrap();
@@ -774,7 +778,7 @@ fn support_multisig_propose_message() {
             .unwrap()
             .to_string(),
     )
-    .unwrap();
+        .unwrap();
 
     let multisig_proposal_message_expected: UnsignedMessageAPI =
         serde_json::from_value(test_value["propose"]["message"].to_owned()).unwrap();
@@ -830,7 +834,7 @@ fn support_multisig_approve_message() {
             .unwrap()
             .to_string(),
     )
-    .unwrap();
+        .unwrap();
 
     let multisig_approval_message_expected: UnsignedMessageAPI =
         serde_json::from_value(test_value["approve"]["message"].to_owned()).unwrap();
@@ -886,7 +890,7 @@ fn support_multisig_cancel_message() {
             .unwrap()
             .to_string(),
     )
-    .unwrap();
+        .unwrap();
 
     let multisig_cancel_message_expected: UnsignedMessageAPI =
         serde_json::from_value(test_value["cancel"]["message"].to_owned()).unwrap();

@@ -17,6 +17,9 @@ endif
 build_npm:
 	rm -rf signer-npm/pkg/
 	wasm-pack build --no-typescript --target nodejs --out-dir pkg/nodejs  signer-npm/
+	# Adjust for weird `env` dependency
+	sed -i.bak "s/require('env')/\{now: () => 1\}/g" signer-npm/pkg/nodejs/filecoin_signer_wasm.js
+	rm signer-npm/pkg/nodejs/filecoin_signer_wasm.js.bak
 	wasm-pack build --no-typescript --target browser --out-dir pkg/browser signer-npm/
 	# For the pure js we need the node_modules folder when using `yarn link`
 	cd signer-npm/js && yarn install && yarn lint
