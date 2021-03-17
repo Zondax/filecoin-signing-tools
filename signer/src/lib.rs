@@ -1143,7 +1143,8 @@ pub fn deserialize_params(
                     Ok(MessageParams::MessageParamsSerialized("".to_string()))
                 }
                 _ => Err(SignerError::GenericString(
-                    "Unknown method fo actor 'fil/2/paymentchannel' or 'fil/3/paymentchannel'.".to_string(),
+                    "Unknown method fo actor 'fil/2/paymentchannel' or 'fil/3/paymentchannel'."
+                        .to_string(),
                 )),
             }
         }
@@ -1167,7 +1168,7 @@ pub fn deserialize_constructor_params(
     let serialized_params = forest_vm::Serialized::new(params_decode);
 
     match code_cid.as_str() {
-        "fil/2/multisig" | "fil/3/multisig"  => {
+        "fil/2/multisig" | "fil/3/multisig" => {
             let params = serialized_params.deserialize::<multisig::ConstructorParams>()?;
             Ok(MessageParams::ConstructorParamsMultisig(params.into()))
         }
