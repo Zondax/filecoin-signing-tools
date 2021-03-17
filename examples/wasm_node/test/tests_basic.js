@@ -380,22 +380,16 @@ describe("verifySignature", function() {
   if (process.env.PURE_JS) { itCall = it.skip }
   
   itCall("verify BLS signature (1)", function() {
-    const message = dataTxs[3].transaction
-    const sig = dataTxs[3].sig
-    
-    const tx = filecoin_signer.transactionSerialize(message)
-    const v = filecoin_signer.verifySignature(sig, tx)
-
-    assert.strictEqual(v, true);
-  })
-  
-  itCall("verify BLS signature (2)", function() {
     const tc = dataTxs[4]
     
     const signed_tx = filecoin_signer.transactionSign(tc.message, Buffer.from(tc.sk, "hex").toString("base64"));
     console.log(signed_tx);
     const raw_signature = filecoin_signer.transactionSignRaw(tc.message, Buffer.from(tc.sk, "hex").toString("base64"));
-    console.log(Buffer.from(raw_signature).toString('hex'));
+    
+    const hex_sig = Buffer.from(raw_signature).toString('hex');
+    console.log(hex_sig);
+    assert.strictEqual(hex_sig, tc.sig);
+    
     const signature = Buffer.from(signed_tx.signature.data, 'base64');
     console.log(signature.toString('hex'));
     const tx = filecoin_signer.transactionSerialize(tc.message)

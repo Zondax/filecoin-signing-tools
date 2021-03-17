@@ -10,7 +10,7 @@ use forest_address::{Address, BLSPublicKey, Network, Protocol};
 use forest_cid::{multihash::MultihashDigest, Cid, Code::Blake2b256, Code::Identity, Codec};
 use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
-use forest_message::SignedMessage;
+use forest_message::{SignedMessage, UnsignedMessage};
 use num_bigint_chainsafe::BigInt;
 use num_traits::FromPrimitive;
 use rayon::prelude::*;
@@ -276,7 +276,7 @@ pub fn key_recover_bls(
 pub fn transaction_serialize(
     unsigned_message_arg: &UnsignedMessageAPI,
 ) -> Result<CborBuffer, SignerError> {
-    let unsigned_message = forest_message::UnsignedMessage::try_from(unsigned_message_arg)?;
+    let unsigned_message = UnsignedMessage::try_from(unsigned_message_arg)?;
     let message_cbor = CborBuffer(to_vec(&unsigned_message)?);
     Ok(message_cbor)
 }
@@ -329,10 +329,12 @@ fn transaction_sign_bls_raw(
     unsigned_message_api: &UnsignedMessageAPI,
     private_key: &PrivateKey,
 ) -> Result<SignatureBLS, SignerError> {
-    let message_cbor = transaction_serialize(unsigned_message_api)?;
-
     let sk = bls_signatures::PrivateKey::from_bytes(&private_key.0)?;
-    let sig = sk.sign(&message_cbor.0);
+
+    let unsigned_message = UnsignedMessage::try_from(unsigned_message_api)?;
+
+    //sign the message's signing bytes
+    let sig = sk.sign(unsigned_message.to_signing_bytes());
 
     Ok(SignatureBLS::try_from(sig.as_bytes())?)
 }
@@ -435,14 +437,18 @@ fn verify_bls_signature(
 ) -> Result<bool, SignerError> {
     // TODO: need a function to extract from public key from cbor buffer directly
     let message = transaction_parse(cbor_buffer, true)?;
+    let message = message.get_message();
 
-    let address = Address::from_str(&message.get_message().from)?;
+    let address = Address::from_str(&message.from)?;
 
     let pk = bls_signatures::PublicKey::from_bytes(&address.payload_bytes())?;
 
     let sig = bls_signatures::Signature::from_bytes(signature.as_ref())?;
 
-    let result = pk.verify(sig, cbor_buffer.as_ref());
+    let message = UnsignedMessage::try_from(&message)?;
+    let signing_bytes = message.to_signing_bytes();
+
+    let result = pk.verify(sig, signing_bytes);
 
     Ok(result)
 }
@@ -481,6 +487,17 @@ fn extract_from_pub_key_from_message(
     Ok(pk)
 }
 
+fn extract_bls_signing_bytes_from_message(
+    cbor_message: &CborBuffer,
+) -> Result<Vec<u8>, SignerError> {
+    let message = transaction_parse(cbor_message, true)?;
+
+    let unsigned_message_api = message.get_message();
+    let unsigned_message = UnsignedMessage::try_from(&unsigned_message_api)?;
+
+    Ok(unsigned_message.to_signing_bytes())
+}
+
 pub fn verify_aggregated_signature(
     signature: &SignatureBLS,
     cbor_messages: &[CborBuffer],
@@ -503,9 +520,23 @@ pub fn verify_aggregated_signature(
     };
 
     // Hashes
-    let hashes: Vec<_> = cbor_messages
+    let tmp: Result<Vec<_>, SignerError> = cbor_messages
+        .iter()
+        .map(|cbor_message| extract_bls_signing_bytes_from_message(cbor_message))
+        .collect();
+
+    let signing_bytes = match tmp {
+        Ok(bytes) => bytes,
+        Err(_) => {
+            return Err(SignerError::GenericString(
+                "An invalid message was provided".to_string(),
+            ));
+        }
+    };
+
+    let hashes = signing_bytes
         .par_iter()
-        .map(|cbor_message| bls_signatures::hash(cbor_message.as_ref()))
+        .map(|signing_bytes| bls_signatures::hash(signing_bytes.as_ref()))
         .collect::<Vec<_>>();
 
     Ok(bls_signatures::verify(&sig, &hashes, pks.as_slice()))
@@ -1202,16 +1233,26 @@ pub fn verify_voucher_signature(
     }
 }
 
-/// Return the CID of a signed message
+/// Return the CID of a message
 ///
 /// # Arguments
 ///
-/// * `signed_message_api` - The signed message;
-pub fn get_cid(signed_message_api: SignedMessageAPI) -> Result<String, SignerError> {
-    let signed_message = SignedMessage::try_from(&signed_message_api)?;
-    let cbor_signed_message = to_vec(&signed_message)?;
+/// * `message_api` - The message;
+pub fn get_cid(message_api: MessageTxAPI) -> Result<String, SignerError> {
+    use forest_encoding::Cbor;
 
-    let cid = Cid::new_from_cbor(&cbor_signed_message, Blake2b256);
+    match message_api {
+        MessageTxAPI::UnsignedMessageAPI(unsigned) => {
+            let unsigned_message = UnsignedMessage::try_from(&unsigned)?;
+            let cid = unsigned_message.cid()?;
 
-    Ok(cid.to_string())
+            Ok(cid.to_string())
+        }
+        MessageTxAPI::SignedMessageAPI(signed) => {
+            let signed_message = SignedMessage::try_from(&signed)?;
+            let cid = signed_message.cid()?;
+
+            Ok(cid.to_string())
+        }
+    }
 }

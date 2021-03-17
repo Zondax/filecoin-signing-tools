@@ -65,9 +65,9 @@ fn run(num_messages: usize) {
         .map(|(message_api, sk)| {
             let message = UnsignedMessage::try_from(message_api).expect("FIXME");
 
-            let message_cbor = to_vec(&message).expect("Cbor serialization failed");
+            let sign_bytes = message.to_signing_bytes();
 
-            sk.sign(message_cbor)
+            sk.sign(sign_bytes)
         })
         .collect::<Vec<Signature>>();
 

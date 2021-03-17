@@ -3,7 +3,8 @@ use std::convert::TryFrom;
 use bip39::{Language, Seed};
 use bls_signatures::Serialize;
 use forest_address::Address;
-use forest_encoding::to_vec;
+use forest_encoding::{to_vec, Cbor};
+use forest_message::UnsignedMessage;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
@@ -290,7 +291,7 @@ fn sign_bls_transaction() {
     let bls_key =
         PrivateKey::try_from(test_value["bls_private_key"].as_str().unwrap().to_string()).unwrap();
 
-    println!("{}", bls_address.to_string());
+    dbg!(bls_address.to_string());
 
     // Prepare message with BLS address
     let message = UnsignedMessageAPI {
@@ -307,17 +308,18 @@ fn sign_bls_transaction() {
 
     let raw_sig = transaction_sign_raw(&message, &bls_key).unwrap();
 
-    println!("{}", hex::encode(raw_sig.as_bytes()));
+    dbg!(hex::encode(raw_sig.as_bytes()));
 
     let sig = bls_signatures::Signature::from_bytes(&raw_sig.as_bytes()).expect("FIX ME");
 
     let bls_pk = bls_signatures::PublicKey::from_bytes(&bls_pubkey).unwrap();
 
-    let message_cbor = transaction_serialize(&message).expect("FIX ME");
+    let message = UnsignedMessage::try_from(&message).expect("FIX ME");
+    let message_cbor = message.marshal_cbor().expect("FIX ME");
 
-    println!("{}", hex::encode(&message_cbor));
+    dbg!(hex::encode(&message_cbor));
 
-    assert!(bls_pk.verify(sig, &message_cbor));
+    assert!(bls_pk.verify(sig, &message.to_signing_bytes()));
 }
 
 #[test]
@@ -437,7 +439,10 @@ fn payment_channel_creation_bls_signing() {
     );
 
     // First check transaction_serialize() in creating an unsigned message
-    let result = transaction_serialize(&pch_create_message_api).unwrap();
+    let _ = transaction_serialize(&pch_create_message_api).unwrap();
+
+    let unsigned_message = UnsignedMessage::try_from(&pch_create_message_api).unwrap();
+    let bls_signing_bytes = unsigned_message.to_signing_bytes();
 
     // Now check that we can generate a correct signature
     let sig = transaction_sign_raw(&pch_create_message_api, &bls_key).unwrap();
@@ -446,7 +451,7 @@ fn payment_channel_creation_bls_signing() {
 
     let bls_sig = bls_signatures::Serialize::from_bytes(&sig.as_bytes()).expect("FIX ME");
 
-    assert!(bls_pkey.verify(bls_sig, &result));
+    assert!(bls_pkey.verify(bls_sig, &bls_signing_bytes));
 }
 
 #[test]
@@ -928,11 +933,10 @@ fn test_get_cid() {
     let test_value = common::load_test_vectors("../test_vectors/get_cid.json").unwrap();
 
     let expected_cid = test_value["cid"].as_str().unwrap().to_string();
-    let signed_message_api: SignedMessageAPI =
-        serde_json::from_value(test_value["signed_message"].to_owned())
-            .expect("couldn't serialize signed message");
+    let message_api: MessageTxAPI = serde_json::from_value(test_value["signed_message"].to_owned())
+        .expect("couldn't serialize signed message");
 
-    let cid = get_cid(signed_message_api).unwrap();
+    let cid = get_cid(message_api).unwrap();
 
     assert_eq!(cid, expected_cid);
 }
