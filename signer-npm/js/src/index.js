@@ -8,6 +8,7 @@ const lowercaseKeys = require("lowercase-keys");
 
 const ExtendedKey = require("./extendedkey");
 const {
+  getCID,
   getDigest,
   getCoinTypeFromPath,
   addressAsBytes,
@@ -440,4 +441,6 @@ module.exports = {
   verifySignature,
   addressAsBytes,
   bytesToAddress,
+  getDigest,
+  getCID,
 };
