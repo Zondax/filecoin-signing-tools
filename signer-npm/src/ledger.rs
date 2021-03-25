@@ -1,5 +1,4 @@
 use filecoin_signer::api::{SignatureAPI, SignedMessageAPI, UnsignedMessageAPI};
-use filecoin_signer::utils::get_digest;
 use filecoin_signer_ledger;
 use js_sys::Promise;
 use wasm_bindgen::prelude::*;

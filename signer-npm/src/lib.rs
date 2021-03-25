@@ -4,7 +4,7 @@ use std::convert::TryFrom;
 
 use wasm_bindgen::prelude::*;
 
-use filecoin_signer::api::{MessageParams, MessageTxAPI, SignedMessageAPI, UnsignedMessageAPI};
+use filecoin_signer::api::{MessageParams, MessageTxAPI, UnsignedMessageAPI};
 use filecoin_signer::signature::Signature;
 use filecoin_signer::{CborBuffer, PrivateKey};
 
