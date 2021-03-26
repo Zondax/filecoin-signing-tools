@@ -9,10 +9,10 @@ description ="Temporary lib used for compatibility with wasm"
 
 [dependencies]
 forest_vm = "=0.3.1"
-forest_message = { default-features = false, features = ["pairing"], version = "0.7.1" }
+forest_message = { default-features = false, features = ["pairing"], version = "0.7" }
 forest_address = "=0.3.1"
 forest_encoding = "=0.2.1"
-forest_cid = "=0.2.0"
+forest_cid = {version = "=0.3.0", features = ["cbor"]}
 forest_crypto = { default-features = false, features = ["pairing"], version = "0.5.1" }
 multihash = "=0.13.1"
 multihash-derive = "=0.7.0"

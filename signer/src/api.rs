@@ -2,7 +2,7 @@ use std::convert::{TryFrom, TryInto};
 use std::str::FromStr;
 
 use forest_address::{Address, Network};
-use forest_cid::{Cid, Code::Identity, multihash::MultihashDigest, Version};
+use forest_cid::{Cid, Code::Identity, multihash::MultihashDigest};
 use forest_crypto::signature;
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
@@ -106,8 +106,8 @@ impl TryFrom<ExecParamsAPI> for ExecParams {
         }
 
         Ok(ExecParams {
-            code_cid: Cid::new(
-                Version::V1,
+            code_cid: Cid::new_v1(
+                forest_cid::RAW,
                 Identity.digest(exec_constructor.code_cid.as_bytes()),
             ),
             constructor_params: forest_vm::Serialized::new(serialized_constructor_multisig_params),
