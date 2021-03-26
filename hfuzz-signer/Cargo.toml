@@ -13,8 +13,8 @@ path = "unsigned-message.rs"
 [dependencies]
 filecoin-signer = { features = ["with-arbitrary"], path = "../signer" }
 forest_address = "0.3.1"
-forest_crypto = "0.5.0"
-forest_message = "=0.7.0"
+forest_crypto = { default-features = false, features = ["pairing"], version = "0.5.1" }
+forest_message = { default-features = false, features = ["pairing"], version = "0.7.1" }
 honggfuzz = "0.5"
 
 [package]
