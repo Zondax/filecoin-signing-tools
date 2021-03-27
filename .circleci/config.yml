@@ -128,13 +128,13 @@ jobs:
             cd examples/service_jsonrpc
             yarn install
       - run:
-          name: wait for service to be available
-          command: .circleci/wait_for_port.sh 3030
-      - run:
           name: start service
           background: true
           command: |
             cargo run --manifest-path service/Cargo.toml -- start
+      - run:
+          name: wait for service to be available
+          command: .circleci/wait_for_port.sh 3030
       - run:
           name: run jsonrpc tests
           command: |

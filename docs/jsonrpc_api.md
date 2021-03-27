@@ -35,9 +35,11 @@ console.log(response.result);
 
 ## key_derive
 
-Derive a child key from a mnemonic following a [BIP44 path](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
+Derive a child key from a mnemonic following
+a [BIP44 path](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
 
 Arguments :
+
 * **mnemonic**: a string containing the words;
 * **path**: a BIP44 path;
 * **password (optional)**: for encrypted seed;
@@ -81,6 +83,7 @@ console.log(response.result);
 Derive a child key from a seed following a [BIP44 path](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
 
 Arguments :
+
 * **seed**: a seed as a hex string;
 * **path**: a BIP44 path;
 
@@ -128,6 +131,7 @@ console.log(response.result);
 Serialize a transaction and return a CBOR hexstring.
 
 Arguments :
+
 * **transaction**: a filecoin transaction;
 
 ```javascript
@@ -173,6 +177,7 @@ console.log(response.result);
 Parse a CBOR hextring into a filecoin transaction.
 
 Arguments:
+
 * **hexstring**: the cbor hexstring to parse;
 * **testnet**: boolean value `true` if testnet or `false` for mainnet;
 
@@ -214,6 +219,7 @@ console.log(response.result);
 Sign a transaction and return the signature (RSV format).
 
 Arguments:
+
 * **transaction**: a filecoin transaction;
 * **privatekey**: a private key as base64 string;
 
@@ -264,6 +270,7 @@ console.log(response.result);
 Verify a signature.
 
 Arguments :
+
 * **signature**: RSV format signature;
 * **CBOR transaction**: the CBOR transaction;
 
@@ -306,8 +313,8 @@ console.log(response.result);
 Get the status of a transaction.
 
 Arguments :
-* **message cid**: message cid of the transaction;
 
+* **message cid**: message cid of the transaction;
 
 ```javascript
 const axios = require("axios");
@@ -346,6 +353,7 @@ console.log(response.result);
 Get the nonce of an account.
 
 Arguments :
+
 * **account**: the account from which we want the nonce;
 
 ```javascript
@@ -385,6 +393,7 @@ console.log(response.result);
 Send a signed transaction to a filecoin node.
 
 Arguments :
+
 * **signed tx**: a transaction and its signature;
 
 ```javascript
