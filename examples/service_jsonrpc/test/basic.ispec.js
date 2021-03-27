@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { expect, test } from 'jest'
 import * as bip32 from 'bip32'
 import * as bip39 from 'bip39'
@@ -261,6 +262,7 @@ test('verify_signature signed with lotus', async () => {
   ).toString('hex')
 
   const signatureBuffer = Buffer.from(signatureRSV, 'hex').slice(0, -1)
+  // eslint-disable-next-line no-unused-vars
   const recoveredID = Buffer.from(signatureRSV, 'hex')[64]
 
   const result = secp256k1.ecdsaVerify(signatureBuffer, message_digest, child.publicKey)
@@ -270,7 +272,7 @@ test('verify_signature signed with lotus', async () => {
   const recovered_pubkey = secp256k1.ecdsaRecover(signatureBuffer, 0, message_digest)
   console.log(child.publicKey.toString('hex'))
   console.log(Buffer.from(recovered_pubkey).toString('hex'))
-  expect(Buffer.from(recovered_pubkey).toString('hex') == child.publicKey.toString('hex')).toEqual(true)
+  expect(Buffer.from(recovered_pubkey).toString('hex') === child.publicKey.toString('hex')).toEqual(true)
 
   const response = await callMethod(URL, 'verify_signature', [signatureRSV, cbor_tx], 1)
 
@@ -306,7 +308,10 @@ var messageCID
 
 test('send_signed_tx', async () => {
   jest.setTimeout(40000)
-  const keyAddressResponse = await callMethod(URL, 'key_derive', [dataWallet.mnemonic, dataWallet.childs[2].path, '', dataWallet.language_code], 1)
+  const keyAddressResponse = await callMethod(URL, 'key_derive', [
+    dataWallet.mnemonic,
+    dataWallet.childs[2].path, '',
+    dataWallet.language_code], 1)
 
   console.log(keyAddressResponse)
 
@@ -362,8 +367,8 @@ test('send_signed_tx', async () => {
 })
 
 test('get_status', async () => {
-  const messageCid = messageCID
-  const response = await callMethod(URL, 'get_status', [messageCid], 1)
+  console.log(messageCID)
+  const response = await callMethod(URL, 'get_status', [messageCID], 1)
   console.log(response)
 
   expect(response).toHaveProperty('result')
@@ -411,6 +416,7 @@ test('send_sign', async () => {
   const nonceResponse = await callMethod(URL, 'get_nonce', [keyAddressResponse.result.address], 1)
 
   let nonce = nonceResponse.result
+  nonce
   console.log('Nonce: ', nonce)
   console.log(keyAddressResponse.result.address)
 

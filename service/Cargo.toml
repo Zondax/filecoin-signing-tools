@@ -8,6 +8,7 @@ repository = "https://github.com/Zondax/filecoin-signing-tools"
 description =""
 
 [dependencies]
+log="0.4"
 thiserror = "1.0.21"
 serde_json = "1.0.58"
 filecoin-signer = { path = "../signer" }

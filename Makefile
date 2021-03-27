@@ -17,6 +17,7 @@ endif
 #	cargo install wasm-pack
 
 build_npm:
+	yarn
 	rm -rf signer-npm/pkg/
 	wasm-pack build --no-typescript --target nodejs --out-dir pkg/nodejs  signer-npm/
 	wasm-pack build --no-typescript --target browser --out-dir pkg/browser signer-npm/

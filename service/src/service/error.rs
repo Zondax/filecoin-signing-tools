@@ -6,8 +6,10 @@ use thiserror::Error;
 pub enum RemoteNode {
     #[error("Could not retrieve nonce. Empty")]
     EmptyNonce,
-    #[error("Could not retrieve nonce. Invalid")]
-    InvalidNonce,
+    #[error("Could not retrieve nonce. {0}")]
+    InvalidNonce(String),
+    #[error("Unknown error")]
+    UnknownError,
     #[error("Could not retrieve status")]
     InvalidStatusRequest,
     /// JSONRPC error

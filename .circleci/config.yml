@@ -54,7 +54,6 @@ jobs:
             rustc --version
             cargo --version
             cargo test --lib --all-features
-      # No need to save this in cache
 
   tests_ffi:
     docker:
@@ -103,8 +102,6 @@ jobs:
       # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-signing-tools/issues/68
       - run: make test_npm_unit
       - run: make test_npm_node
-      - save-sccache-cache
-      # No need to save this in cache
 
   tests_service:
     docker:
@@ -168,7 +165,6 @@ jobs:
       - run: make install_wasmpack SILENT=true
       - run: make link_npm
       - run: node examples/wasm_node/payment_channel.js
-      - save-sccache-cache
 
   rust_publish:
     docker:

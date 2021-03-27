@@ -3,7 +3,7 @@
 #[cfg(feature = "cache-nonce")]
 use crate::service::cache::{cache_get_nonce, cache_put_nonce};
 use crate::service::error::RemoteNode::{
-    EmptyNonce, HTTPError, InvalidNonce, InvalidStatusRequest, JSONRPC,
+    EmptyNonce, HTTPError, InvalidNonce, InvalidStatusRequest, UnknownError, JSONRPC,
 };
 use crate::service::error::ServiceError;
 use abscissa_core::tracing::info;
@@ -65,12 +65,19 @@ pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceE
         id: Id::Num(call_id),
     };
 
+    log::info!("get_nonce {:?}", jwt);
+
     let resp = make_rpc_call(url, jwt, &m).await?;
+
+    log::info!("get_nonce {:?}", resp);
 
     // Handle response
     let nonce = match resp {
         Response::Single(Success(s)) => s.result.as_u64().ok_or(EmptyNonce)?,
-        _ => return Err(ServiceError::RemoteNode(InvalidNonce)),
+        Response::Single(Failure(f)) => {
+            return Err(ServiceError::RemoteNode(InvalidNonce(f.error.message)))
+        }
+        _ => return Err(ServiceError::RemoteNode(UnknownError)),
     };
 
     #[cfg(feature = "cache-nonce")]
