@@ -14,12 +14,10 @@ You can find usage examples [here](https://github.com/Zondax/filecoin-signing-to
     "test:js": "env PURE_JS=True mocha",
 ```
 
-
 ## Structure
 
-* `ledger-filecoin-js` submodule which refers to https://github.com/Zondax/ledger-filecoin-js
+* `ledger-filecoin-js` refers to https://github.com/Zondax/ledger-filecoin-js
 * `src` rust bindings for javascript
 * `pkg` ready to distribute wasm module
-* `tests` rust test
-* `lib` javascript lib wrapper class around rust bindings and ledger-filecoin-js
+* `tests` rust tests
 * `dist` usable files

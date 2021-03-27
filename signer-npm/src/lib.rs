@@ -10,11 +10,6 @@ use filecoin_signer::{CborBuffer, PrivateKey};
 
 mod utils;
 
-#[cfg(target_arch = "wasm32")]
-pub mod ledger;
-#[cfg(target_arch = "wasm32")]
-mod ledger_errors;
-
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
 #[cfg(feature = "wee_alloc")]

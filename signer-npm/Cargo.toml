@@ -54,9 +54,6 @@ wee_alloc = { version = "0.4.2", optional = true }
 # import filecoin_signer
 filecoin-signer = { path = "../signer" }
 
-# ledger app
-filecoin-signer-ledger = { path = "../ledger" }
-
 zx-bip44 = "0.1.0"
 
 [dependencies.wasm-bindgen]
