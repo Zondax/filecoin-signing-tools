@@ -78,9 +78,6 @@ checks:
 	cargo clippy --all-features
 	cargo audit
 
-hooks:
-	git config core.hooksPath .githooks
-
 # prepreprocess circleci config so it can be ran locally
 # Usage example:
 # make ci JOB=test_service
