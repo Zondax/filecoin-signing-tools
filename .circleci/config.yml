@@ -118,7 +118,7 @@ jobs:
             echo address = \"127.0.0.1:3030\" >> filecoin-service.toml
             echo [remote_node] >> filecoin-service.toml
             echo url = \"$LOTUS_SECRET_URL\" >> filecoin-service.toml
-            echo jwt = \"$LOTUS_SECRET_JWT\" >> filecoin-service.toml
+            echo jwt = \"$LOTUS_SECRET_TOKEN\" >> filecoin-service.toml
       - run:
           name: install node dependencies
           command: |
