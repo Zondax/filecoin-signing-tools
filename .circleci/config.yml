@@ -106,52 +106,49 @@ jobs:
       - save-sccache-cache
       # No need to save this in cache
 
-  tests_ledger:
-    machine:
-      image: ubuntu-1604:201903-01
-    working_directory: ~/repo
-    environment:
-      BASH_ENV: "/opt/circleci/.nvm/nvm.sh"
-    steps:
-      - restore-sccache-cache
-      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev curl
-      - run:
-          name: Install rustup
-          command: |
-            curl https://sh.rustup.rs -o rustup.sh
-            chmod +x rustup.sh
-            ./rustup.sh -y
-            source $HOME/.cargo/env
-            rm rustup.sh
-      - checkout
-      - run: git submodule update --init --recursive
-      - run: docker pull zondax/builder-zemu
-      - run:
-          name: Install node + yarn
-          command: |
-            nvm install 14.4.0
-            nvm use 14.4.0
-            npm install -g yarn
-      - run:
-          name: Install deps wasm
-          command: |
-            source $HOME/.cargo/env
-            nvm use 14.4.0
-            make install_wasmpack SILENT=true
-      - run:
-          name: Run zemu tests
-          command: |
-            nvm use 14.4.0
-            source $HOME/.cargo/env
-            make test_ledger
-      - save-sccache-cache
+#  tests_ledger:
+#    machine:
+#      image: ubuntu-1604:201903-01
+#    working_directory: ~/repo
+#    environment:
+#      BASH_ENV: "/opt/circleci/.nvm/nvm.sh"
+#    steps:
+#      - restore-sccache-cache
+#      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev curl
+#      - run:
+#          name: Install rustup
+#          command: |
+#            curl https://sh.rustup.rs -o rustup.sh
+#            chmod +x rustup.sh
+#            ./rustup.sh -y
+#            source $HOME/.cargo/env
+#            rm rustup.sh
+#      - checkout
+#      - run: git submodule update --init --recursive
+#      - run: docker pull zondax/builder-zemu
+#      - run:
+#          name: Install node + yarn
+#          command: |
+#            nvm install 14.4.0
+#            nvm use 14.4.0
+#            npm install -g yarn
+#      - run:
+#          name: Install deps wasm
+#          command: |
+#            source $HOME/.cargo/env
+#            nvm use 14.4.0
+#            make install_wasmpack SILENT=true
+#      - run:
+#          name: Run zemu tests
+#          command: |
+#            nvm use 14.4.0
+#            source $HOME/.cargo/env
+#            make test_ledger
+#      - save-sccache-cache
 
   tests_service:
     docker:
       - image: zondax/rust-ci:latest
-#    environment:
-#      LOTUS_SECRET_URL: some_url
-#      LOTUS_SECRET_JWT: some_jwt
     steps:
       - checkout
       - restore-sccache-cache
@@ -198,7 +195,7 @@ jobs:
           name: Update tag
           command: |
             cd /home/circleci/project/signer-npm/pkg
-            echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > .npmrc
+              echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > .npmrc
             npm --no-git-tag-version version $CIRCLE_TAG
             npm publish
 
@@ -248,8 +245,8 @@ workflows:
 #          <<: *no-tags
       - tests_service:
           <<: *no-tags
-      - tests_ledger:
-          <<: *no-tags
+#      - tests_ledger:
+#          <<: *no-tags
       - devnet:
           <<: *no-tags
 
@@ -265,8 +262,8 @@ workflows:
           <<: *only-release-tags
       - tests_service:
           <<: *only-release-tags
-      - tests_ledger:
-          <<: *only-release-tags
+#      - tests_ledger:
+#          <<: *only-release-tags
       - devnet:
           <<: *only-release-tags
 
@@ -277,4 +274,4 @@ workflows:
             - tests_rust
             - tests_npm
             - tests_service
-            - tests_ledger
+#            - tests_ledger
