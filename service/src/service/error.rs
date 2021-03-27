@@ -4,15 +4,18 @@ use thiserror::Error;
 /// RemoteNode Error
 #[derive(Error, Debug)]
 pub enum RemoteNode {
-    #[error("Could not retrieve nonce")]
+    #[error("Could not retrieve nonce. Empty")]
     EmptyNonce,
-    #[error("Could not retrieve nonce")]
+    #[error("Could not retrieve nonce. Invalid")]
     InvalidNonce,
     #[error("Could not retrieve status")]
     InvalidStatusRequest,
     /// JSONRPC error
     #[error("RPC | {0}")]
     JSONRPC(#[from] jsonrpc_core::types::Error),
+    /// Generic string error
+    #[error("Error | {0}")]
+    HTTPError(String),
 }
 
 /// Signer Error

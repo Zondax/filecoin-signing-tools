@@ -2,6 +2,8 @@ NPM_PACKAGE_NAME:="@zondax/filecoin-signing-tools"
 
 build: build_npm
 
+run_service:
+	cargo run --manifest-path service/Cargo.toml -- start
 
 install_wasmpack:
 ifeq ($(SILENT),)
