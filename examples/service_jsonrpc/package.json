@@ -4,27 +4,26 @@
   "description": "Signing Service JSONRPC - Tests and examples",
   "main": "./src/index.js",
   "dependencies": {
-    "@babel/runtime": "^7.10.4",
+    "@babel/runtime": "^7.13.10",
     "axios": "^0.21.1",
-    "bip39": "^3.0.2"
+    "bip39": "^3.0.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.10.4",
-    "@babel/plugin-transform-runtime": "^7.10.4",
-    "@babel/preset-env": "^7.10.4",
-    "bip32": "^2.0.5",
+    "@babel/core": "^7.13.13",
+    "@babel/plugin-transform-runtime": "^7.13.10",
+    "@babel/preset-env": "^7.13.12",
+    "bip32": "^2.0.6",
     "blakejs": "^1.1.0",
-    "eslint": "^7.4.0",
-    "eslint-config-airbnb-base": "^14.1.0",
-    "eslint-config-prettier": "^6.10.1",
-    "eslint-plugin-import": "^2.20.2",
-    "eslint-plugin-jest": "^23.8.2",
-    "eslint-plugin-prettier": "^3.1.2",
+    "eslint": "^7.23.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jest": "^24.3.2",
+    "eslint-plugin-prettier": "^3.3.1",
     "index.js": "^0.0.3",
-    "jest": "^25.2.4",
+    "jest": "^26.6.3",
     "jest-serial-runner": "^1.1.0",
-    "prettier": "^2.0.2",
-    "secp256k1": "^4.0.0"
+    "prettier": "^2.2.1",
+    "secp256k1": "^4.0.2"
   },
   "moduleDirectories": [
     "node_modules",

@@ -1,4 +1,4 @@
-# Filecoin Signing Tools Examples (WASM / JS) 
+# Filecoin Signing Tools Examples (WASM / JS)
 
 ## Prerequisites
 
@@ -7,11 +7,13 @@ You may want to run `make link_npm` in he root directory to link the local imple
 ## Run tests
 
 WASM backend
+
 ```
 yarn test
 ```
 
 Pure JS backend
+
 ```
 yarn test:js
 ```

@@ -4,7 +4,6 @@ members = [
     "signer",
     "signer-ffi",
     "signer-npm",
-    "ledger",
     "hfuzz-signer",
     "extras",
 ]

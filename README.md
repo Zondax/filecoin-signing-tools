@@ -10,13 +10,11 @@ You can find more information in the [Documentation Site](https://zondax.ch/proj
   - Secp256k1
   - Multisig (Work in progress)
   - BLS
-  - Hardware Wallet support (Ledger Nano S/X)
   - Filecoin transactions (CBOR <> JSON serialization)
 - WASM Library
   - Secp256k1
   - Multisig (Work in progress)
   - BLS
-  - Hardware Wallet support (Ledger Nano S/X)
   - Filecoin transactions (CBOR <> JSON serialization)
 - JSON RPC Server
   - Focus: Exchange integration
@@ -35,10 +33,8 @@ You can find more information in the [Documentation Site](https://zondax.ch/proj
   | Node.js         | JSONRPC Service | Ready :heavy_check_mark:         | [Link](examples/service_jsonrpc) |
   |                 |                 |                                  |                                  |
   | Browser         | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm_browser)    |
-  | Browser         | WASM + Ledger   | Ready :heavy_check_mark:         | [Link](examples/wasm_node)       |
   | Node.js / Mocha | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm_node)       |
   |                 |                 |                                  |                                  |
-  | Rust            | Rust + Ledger   | Ready :heavy_check_mark:         | [Link](examples/wasm_ledger)     |
   | C               | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/c)           |
   | C++             | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/c++)         |
   | Java            | Rust            | Ready :heavy_check_mark:         | [Link](examples/ffi/java)        |
@@ -102,4 +98,3 @@ After this, you can run the following tests / examples:
 | `make test_npm_unit`     | Unit tests                |
 | `make test_npm_node`     | Node integration tests    |
 | `make test_npm_browser`  | Browser integration tests |
-| `make test_npm_ledger`   | Ledger integration tests  |

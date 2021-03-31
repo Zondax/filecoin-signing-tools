@@ -5,7 +5,6 @@ Reference for mermaid
 https://mermaid-js.github.io/mermaid/#/sequenceDiagram
 -->
 
-
 ## Address Generation
 
 <mermaid>
@@ -40,6 +39,5 @@ sequenceDiagram
     Exchange->>User: cid_message
 </mermaid>
 
-::: tip
-A message in filecoin is also a transaction.
+::: tip A message in filecoin is also a transaction.
 :::

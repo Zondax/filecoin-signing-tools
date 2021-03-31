@@ -2,7 +2,7 @@
 
 You will need to install [`@zondax/filecoin-signing-tools`](https://www.npmjs.com/package/@zondax/filecoin-signing-tools) npm package.
 
-This library is an utility library for filecoin composed of a wasm api and an wrapper for hardware wallet (like ledger).
+This library is an utility library for filecoin composed of a wasm API
 
 To start using load the library :
 

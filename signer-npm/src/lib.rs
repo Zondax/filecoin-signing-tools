@@ -4,16 +4,11 @@ use std::convert::TryFrom;
 
 use wasm_bindgen::prelude::*;
 
-use filecoin_signer::api::{MessageParams, MessageTxAPI, SignedMessageAPI, UnsignedMessageAPI};
+use filecoin_signer::api::{MessageParams, MessageTxAPI, UnsignedMessageAPI};
 use filecoin_signer::signature::Signature;
 use filecoin_signer::{CborBuffer, PrivateKey};
 
 mod utils;
-
-#[cfg(target_arch = "wasm32")]
-pub mod ledger;
-#[cfg(target_arch = "wasm32")]
-mod ledger_errors;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.

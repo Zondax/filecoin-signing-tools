@@ -2,7 +2,9 @@
 
 #[cfg(feature = "cache-nonce")]
 use crate::service::cache::{cache_get_nonce, cache_put_nonce};
-use crate::service::error::RemoteNode::{EmptyNonce, InvalidNonce, InvalidStatusRequest, JSONRPC};
+use crate::service::error::RemoteNode::{
+    EmptyNonce, HTTPError, InvalidNonce, InvalidStatusRequest, UnknownError, JSONRPC,
+};
 use crate::service::error::ServiceError;
 use abscissa_core::tracing::info;
 use jsonrpc_core::response::Output::{Failure, Success};
@@ -14,8 +16,19 @@ static CALL_ID: AtomicU64 = AtomicU64::new(1);
 
 pub async fn make_rpc_call(url: &str, jwt: &str, m: &MethodCall) -> Result<Response, ServiceError> {
     let client = reqwest::Client::new();
-    let request = client.post(url).bearer_auth(jwt).json(&m).build()?;
+
+    let mut request_builder = client.post(url).json(&m);
+    if jwt.len() > 0 {
+        request_builder = request_builder.bearer_auth(jwt);
+    }
+
+    let request = request_builder.build()?;
     let node_answer = client.execute(request).await?;
+    if !node_answer.status().is_success() {
+        return Err(ServiceError::RemoteNode(HTTPError(
+            node_answer.status().to_string(),
+        )));
+    }
 
     ///// FIXME: This block is a workaround for a non-standard Lotus answer
     let mut workaround = node_answer.json::<Value>().await?;
@@ -52,12 +65,19 @@ pub async fn get_nonce(url: &str, jwt: &str, addr: &str) -> Result<u64, ServiceE
         id: Id::Num(call_id),
     };
 
+    log::info!("get_nonce {:?}", jwt);
+
     let resp = make_rpc_call(url, jwt, &m).await?;
+
+    log::info!("get_nonce {:?}", resp);
 
     // Handle response
     let nonce = match resp {
         Response::Single(Success(s)) => s.result.as_u64().ok_or(EmptyNonce)?,
-        _ => return Err(ServiceError::RemoteNode(InvalidNonce)),
+        Response::Single(Failure(f)) => {
+            return Err(ServiceError::RemoteNode(InvalidNonce(f.error.message)))
+        }
+        _ => return Err(ServiceError::RemoteNode(UnknownError)),
     };
 
     #[cfg(feature = "cache-nonce")]
@@ -119,29 +139,6 @@ pub async fn get_status(url: &str, jwt: &str, cid_message: Value) -> Result<Valu
     Ok(result)
 }
 
-pub async fn get_balance(url: &str, jwt: &str, addr: &str) -> Result<Value, ServiceError> {
-    let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
-
-    // Prepare request
-    let m = MethodCall {
-        jsonrpc: Some(Version::V2),
-        method: "Filecoin.WalletBalance".to_owned(),
-        params: Params::Array(vec![Value::from(addr)]),
-        id: Id::Num(call_id),
-    };
-
-    let resp = make_rpc_call(url, jwt, &m).await?;
-
-    // Handle response
-    let balance = match resp {
-        Response::Single(Success(s)) => s.result,
-        Response::Single(Failure(f)) => return Err(ServiceError::RemoteNode(JSONRPC(f.error))),
-        _ => return Err(ServiceError::RemoteNode(InvalidStatusRequest)),
-    };
-
-    Ok(balance)
-}
-
 pub async fn is_mainnet(url: &str, jwt: &str) -> Result<bool, ServiceError> {
     let call_id = CALL_ID.fetch_add(1, Ordering::SeqCst);
 
@@ -194,7 +191,6 @@ mod tests {
         let result = is_mainnet(&credentials.url, &credentials.jwt).await;
 
         println!("{:?}", result);
-
         assert!(result.is_ok());
     }
 

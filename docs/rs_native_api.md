@@ -15,9 +15,11 @@ println!("{}", mnemonic);
 
 ## key_derive
 
-Derive a child key from a mnemonic following a [BIP44 path](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
+Derive a child key from a mnemonic following
+a [BIP44 path](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
 
 Arguments :
+
 * **mnemonic**: a string containing the words;
 * **path**: a BIP44 path;
 * **password**: for encrypted seed if none use an empty string (e.g "")
@@ -39,6 +41,7 @@ println!("{:?}", extended_key);
 Derive a child key from a seed following a [BIP44 path](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
 
 Arguments :
+
 * **seed**: a seed;
 * **path**: a BIP44 path;
 
@@ -63,6 +66,7 @@ println!("{:?}", extended_key);
 Get extended private key from private key.
 
 Arguments:
+
 * **PrivateKey**: A `PrivateKey`.
 * **testnet**: A boolean value that indicate if testnet (`true`) or mainnet (`false`);
 
@@ -81,6 +85,7 @@ println!("{:?}", extended_key);
 Serialize a transaction and return the CBOR equivalent.
 
 Arguments :
+
 * **transaction**: a filecoin transaction;
 
 ```rust
@@ -111,6 +116,7 @@ println!("{:?}", cbor_transaction);
 Parse a CBOR transaction into a filecoin transaction (signed or unsigned).
 
 Arguments:
+
 * **cbor_data**: the CBOR transaction;
 * **testnet**: boolean value `true` if testnet or `false` for mainnet;
 
@@ -132,15 +138,21 @@ match transaction {
 
 ## transaction\_sign\_raw
 
-Sign a transaction and return a raw signature. Now support `Secp256k1` signing (RSV format) and `BLS` signing. The type of signature chosen will be dictated by the protocol of the `from` field of the transaction.
+Sign a transaction and return a raw signature. Now support `Secp256k1` signing (RSV format) and `BLS` signing. The type
+of signature chosen will be dictated by the protocol of the `from` field of the transaction.
 
 e.g :
 
-* "t**1**b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka" is a [protocol 1 address](https://filecoin-project.github.io/specs/#protocol-1-libsecpk1-elliptic-curve-public-keys) therefore `transaction_sign_raw` will attempt to the sign the transaction using `Secp256k1`.
+* "t**1**b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka" is
+  a [protocol 1 address](https://filecoin-project.github.io/specs/#protocol-1-libsecpk1-elliptic-curve-public-keys)
+  therefore `transaction_sign_raw` will attempt to the sign the transaction using `Secp256k1`.
 
-* "t**3**vxrizeiel2e2bxg3jhk62dlcutyc26fjnw6ua2sptu32dtjpwxbjawg666nqdngrkvvn45h7yb4qiya6ls7q" is a [protocol 3 address](https://filecoin-project.github.io/specs/#protocol-3-bls). Here we will use `BLS` signing scheme.
+* "t**3**vxrizeiel2e2bxg3jhk62dlcutyc26fjnw6ua2sptu32dtjpwxbjawg666nqdngrkvvn45h7yb4qiya6ls7q" is
+  a [protocol 3 address](https://filecoin-project.github.io/specs/#protocol-3-bls). Here we will use `BLS` signing
+  scheme.
 
 Arguments:
+
 * **transaction**: a filecoin transaction;
 * **privatekey**: a`PrivateKey` (should be the associated private key of `from` address of the transaction);
 
@@ -171,13 +183,18 @@ println!("{:?}", raw_signature);
 
 ## transaction_sign
 
-Sign a transaction and return a signed message (message + signature). Now support `Secp256k1` signing (RSV format) and `BLS` signing. The type of signature chosen will be dictated by the protocol of the `from` field of the transaction.
+Sign a transaction and return a signed message (message + signature). Now support `Secp256k1` signing (RSV format)
+and `BLS` signing. The type of signature chosen will be dictated by the protocol of the `from` field of the transaction.
 
 e.g :
 
-* "t**1**b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka" is a [protocol 1 address](https://filecoin-project.github.io/specs/#protocol-1-libsecpk1-elliptic-curve-public-keys) therefore `transaction_sign_raw` will attempt to the sign the transaction using `Secp256k1`.
+* "t**1**b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka" is
+  a [protocol 1 address](https://filecoin-project.github.io/specs/#protocol-1-libsecpk1-elliptic-curve-public-keys)
+  therefore `transaction_sign_raw` will attempt to the sign the transaction using `Secp256k1`.
 
-* "t**3**vxrizeiel2e2bxg3jhk62dlcutyc26fjnw6ua2sptu32dtjpwxbjawg666nqdngrkvvn45h7yb4qiya6ls7q" is a [protocol 3 address](https://filecoin-project.github.io/specs/#protocol-3-bls). Here we will use `BLS` signing scheme.
+* "t**3**vxrizeiel2e2bxg3jhk62dlcutyc26fjnw6ua2sptu32dtjpwxbjawg666nqdngrkvvn45h7yb4qiya6ls7q" is
+  a [protocol 3 address](https://filecoin-project.github.io/specs/#protocol-3-bls). Here we will use `BLS` signing
+  scheme.
 
 ```rust
 pub struct SignedMessageAPI {
@@ -187,6 +204,7 @@ pub struct SignedMessageAPI {
 ```
 
 Arguments:
+
 * **transaction**: a filecoin transaction;
 * **privatekey**: a `PrivateKey` (should match the address of the `from` field);
 
@@ -220,6 +238,7 @@ println!("{:?}", raw_signature);
 Verify a signature. Return a boolean. Now support `Secp256k1` and `BLS` scheme.
 
 Arguments :
+
 * **signature**: RSV format signature;
 * **CBOR transaction**: the CBOR transaction;
 
@@ -257,6 +276,7 @@ println!("{}", result);
 Utilitary function to serialize parameters of a message. Return CBOR encoded bytes.
 
 Arguments
+
 * **message_params**: A MessageParams
 
 ```rust
@@ -279,6 +299,7 @@ println!("{}", result);
 Utilitary function to deserialize parameters of a message. Return decode MessageParams.
 
 Arguments
+
 * **params_b64_string**: Base64 string of the encoded parameters;
 * **actor_type**: String defining the actor type (e.g "fil/1/multisig")
 * **method**: Method number that indicate the method the parameters has been encoded for.
@@ -299,6 +320,7 @@ println!("{}", result);
 Utilitary function to deserialize specificaly constructor parameters. Return decode MessageParams.
 
 Arguments
+
 * **params_b64_string**: Base64 string of the encoded parameters;
 * **code_cid**: String defining the actor type (e.g "fil/1/multisig")
 
@@ -318,6 +340,7 @@ println!("{}", result);
 Utilitary function to create a create multisig message. Return an unsigned message.
 
 Arguments:
+
 * **sender_address**: A string address;
 * **addresses**: List of string addresses of the multisig;
 * **value**: Value to send on the multisig;
@@ -350,6 +373,7 @@ println!("{}", result);
 Utilitary function to create a proposal multisig message. Return an unsigned message.
 
 Arguments:
+
 * **multisig_address**: A string address;
 * **to_address**: A string address;
 * **from_address**: A string address;
@@ -377,6 +401,7 @@ println!("{}", result);
 Utilitary function to create an approve multisig message. Return an unsigned message.
 
 Arguments
+
 * **multisig_address**: A string address
 * **message_id**: message id
 * **proposer_address**: A string address
@@ -408,6 +433,7 @@ println!("{}", result);
 Utilitary function to create a cancel multisig message. Return an unsigned message.
 
 Arguments
+
 * **multisig_address**: A string address
 * **message_id**: message id
 * **proposer_address**: A string address
@@ -439,6 +465,7 @@ println!("{}", result);
 Verify BLS aggragated signature.
 
 Arguments :
+
 * **signature**: BLS aggregated signature;
 * **CBOR transactions**: An array of CBOR transactions to verify;
 
@@ -505,6 +532,7 @@ assert!(verify_aggregated_signature(&sig, &cbor_messages[..]).unwrap());
 Verify a voucher signature. Return a boolean. Now support `Secp256k1` and `BLS` scheme.
 
 Arguments :
+
 * **voucher base64**: Voucher base64;
 * **signer address**: The address string of the signer;
 
@@ -524,6 +552,7 @@ println!("{}", result);
 Get CID hash of a signed message.
 
 Arguments :
+
 * **signed message**: SignedMessageAPI object;
 
 ```rust

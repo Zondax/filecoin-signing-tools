@@ -3,6 +3,6 @@ const ProtocolIndicator = {
   SECP256K1: 1,
   ACTOR: 2,
   BLS: 3,
-};
+}
 
-module.exports = { ProtocolIndicator };
+module.exports = { ProtocolIndicator }

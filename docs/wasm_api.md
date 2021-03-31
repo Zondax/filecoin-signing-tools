@@ -2,7 +2,6 @@
 
 Wasm api for filecoin signer service.
 
-
 ## generateMnemonic
 
 Generate a 24 english words mnemonic.
@@ -20,9 +19,11 @@ console.log(mnemonic);
 
 ## keyDerive
 
-Derive a child key from a mnemonic following a [BIP44 path](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
+Derive a child key from a mnemonic following
+a [BIP44 path](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
 
 Arguments :
+
 * **mnemonic**: a string containing the words;
 * **path**: a BIP44 path;
 * **password**: for encrypted seed if none use an empty string (e.g "")
@@ -46,6 +47,7 @@ console.log(keypair);
 Derive a child key from a seed following a [BIP44 path](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki).
 
 Arguments :
+
 * **seed**: a seed (hexstring or Buffer);
 * **path**: a BIP44 path;
 
@@ -71,6 +73,7 @@ console.log(keypair);
 Recover a extended key from a private key.
 
 Arguments :
+
 * **privateKey**: a private key (base64 string or Buffer);
 * **testnet**: a boolean value. Indicate if you want testnet or mainnet address;
 
@@ -93,6 +96,7 @@ console.log(keypair);
 Serialize a transaction and return a CBOR hexstring.
 
 Arguments :
+
 * **transaction**: a filecoin transaction;
 
 ```javascript
@@ -122,6 +126,7 @@ console.log(cbor_transaction);
 Serialize a transaction and return the CBOR equivalent as a Uint8Array.
 
 Arguments :
+
 * **transaction**: a filecoin transaction;
 
 ```javascript
@@ -151,6 +156,7 @@ console.log(cbor_uint8_array);
 Parse a CBOR hextring into a filecoin transaction.
 
 Arguments:
+
 * **cbor_transaction**: the cbor (hexstring or Buffer);
 * **testnet**: boolean value `true` if testnet or `false` for mainnet;
 
@@ -174,6 +180,7 @@ console.log(transaction);
 Sign a transaction and return the signature (RSV format).
 
 Arguments:
+
 * **transaction**: a filecoin transaction;
 * **privatekey**: a private key (base64 string or buffer);
 
@@ -199,6 +206,7 @@ console.log(signed_tx);
 Sign a transaction and return a JSON string of the signed transaction which can then be sent to a lotus node.
 
 Arguments:
+
 * **transaction**: a filecoin transaction;
 * **privatekey**: a private key (hexstring or buffer);
 
@@ -224,6 +232,7 @@ console.log(signed_tx_json);
 Sign a transaction and return a buffer signature.
 
 Arguments:
+
 * **transaction**: a filecoin transaction;
 * **privatekey**: a private key (base64 string or buffer);
 
@@ -249,6 +258,7 @@ console.log(buffer_signature);
 Verify a signature.
 
 Arguments :
+
 * **signature**: RSV format signature;
 * **CBOR transaction**: the CBOR transaction;
 
@@ -278,6 +288,7 @@ console.log(result);
 Return a create multisig transaction.
 
 Arguments :
+
 * **Sender address**: the one in the `From` field;
 * **Addresses**: the list of addresses taking part in the multisig contract;
 * **Amount**: amount to start the multisig with;
@@ -304,6 +315,7 @@ console.log(create_multisig_transaction);
 Return a proposal multisig transaction.
 
 Arguments :
+
 * **ID address**: tthe id address;
 * **To address**: address to which the funds are being moved from the multisig;
 * **From address**: the one in the `From` field;
@@ -329,6 +341,7 @@ console.log(propose_multisig_transaction);
 Return an approval multisig transaction.
 
 Arguments :
+
 * **ID address**: the id address;
 * **TxnID**: the idea of the proposal transaction;
 * **Proposer address**: address of the proposer;
@@ -357,6 +370,7 @@ console.log(approve_multisig_transaction);
 Return a cancel multisig transaction.
 
 Arguments :
+
 * **ID address**: the id address;
 * **TxnID**: the idea of the proposal transaction;
 * **Proposer address**: address of the proposer;
@@ -364,7 +378,6 @@ Arguments :
 * **Amount**: amount to start the multisig with;
 * **From address**: the one in the `From` field;
 * **Nonce**: nonce of transaction;
-
 
 ```javascript
 const signer_wasm = require('@zondax/filecoin-signing-tools');
@@ -386,6 +399,7 @@ console.log(approve_multisig_transaction);
 Serialize parameters into cbor data.
 
 Arguments :
+
 * **params**: params object;
 
 ```javascript
@@ -412,6 +426,7 @@ console.log(serialized_params);
 Deserialize parameters into javascript object given and actor type and a method nuber associated with the parameter.
 
 Arguments :
+
 * **params**: base64 cbor encoded parameters;
 * **actoType**: a string giving the actor type (e.g "fil/1/multisig");
 * **method**: method associated with encoded parameters (e.g 7 -> SwapSigners);
@@ -433,6 +448,7 @@ console.log(params);
 Deserialize specificaly constructor parameters into javascript object given the code CID associated with the parameter.
 
 Arguments :
+
 * **params**: base64 cbor encoded constructor parameters;
 * **codeCID**: a string giving the actor type (e.g "fil/2/paymentchannel");
 
@@ -453,6 +469,7 @@ console.log(params);
 Verify a voucher signature.
 
 Arguments :
+
 * **signed voucher**: the base64 string representing the signed voucher;
 * **signer address**: the signer address;
 
@@ -476,6 +493,7 @@ console.log(result);
 Get the cid hash of a signed message.
 
 Arguments :
+
 * **signed message**: json object of the sign message;
 
 ```javascript
