@@ -1075,59 +1075,64 @@ pub fn deserialize_params(
     let serialized_params = forest_vm::Serialized::new(params_decode);
 
     match actor_type.as_str() {
-        "fil/1/init" | "fil/2/init" | "fil/3/init" | "fil/4/init" => match FromPrimitive::from_u64(method) {
-            Some(MethodInit::Exec) => {
-                let params = serialized_params.deserialize::<ExecParams>()?;
+        "fil/1/init" | "fil/2/init" | "fil/3/init" | "fil/4/init" => {
+            match FromPrimitive::from_u64(method) {
+                Some(MethodInit::Exec) => {
+                    let params = serialized_params.deserialize::<ExecParams>()?;
 
-                Ok(MessageParams::MessageParamsMultisig(params.into()))
+                    Ok(MessageParams::MessageParamsMultisig(params.into()))
+                }
+                _ => Err(SignerError::GenericString(
+                    "Unknown method for actor 'fil/2/init', 'fil/3/init' or 'fil/4/init' ."
+                        .to_string(),
+                )),
             }
-            _ => Err(SignerError::GenericString(
-                "Unknown method for actor 'fil/2/init', 'fil/3/init' or 'fil/4/init' .".to_string(),
-            )),
-        },
-        "fil/2/multisig" | "fil/3/multisig" | "fil/4/multisig" => match FromPrimitive::from_u64(method) {
-            Some(multisig::MethodMultisig::Propose) => {
-                let params = serialized_params.deserialize::<multisig::ProposeParams>()?;
+        }
+        "fil/2/multisig" | "fil/3/multisig" | "fil/4/multisig" => {
+            match FromPrimitive::from_u64(method) {
+                Some(multisig::MethodMultisig::Propose) => {
+                    let params = serialized_params.deserialize::<multisig::ProposeParams>()?;
 
-                Ok(MessageParams::ProposeParamsMultisig(params.into()))
-            }
-            Some(multisig::MethodMultisig::Approve) | Some(multisig::MethodMultisig::Cancel) => {
-                let params = serialized_params.deserialize::<multisig::TxnIDParams>()?;
+                    Ok(MessageParams::ProposeParamsMultisig(params.into()))
+                }
+                Some(multisig::MethodMultisig::Approve) | Some(multisig::MethodMultisig::Cancel) => {
+                    let params = serialized_params.deserialize::<multisig::TxnIDParams>()?;
 
-                Ok(MessageParams::TxnIDParamsMultisig(params.into()))
-            }
-            Some(multisig::MethodMultisig::AddSigner) => {
-                let params = serialized_params.deserialize::<multisig::AddSignerParams>()?;
+                    Ok(MessageParams::TxnIDParamsMultisig(params.into()))
+                }
+                Some(multisig::MethodMultisig::AddSigner) => {
+                    let params = serialized_params.deserialize::<multisig::AddSignerParams>()?;
 
-                Ok(MessageParams::AddSignerMultisigParams(params.into()))
-            }
-            Some(multisig::MethodMultisig::RemoveSigner) => {
-                let params = serialized_params.deserialize::<multisig::RemoveSignerParams>()?;
+                    Ok(MessageParams::AddSignerMultisigParams(params.into()))
+                }
+                Some(multisig::MethodMultisig::RemoveSigner) => {
+                    let params = serialized_params.deserialize::<multisig::RemoveSignerParams>()?;
 
-                Ok(MessageParams::RemoveSignerMultisigParams(params.into()))
-            }
-            Some(multisig::MethodMultisig::SwapSigner) => {
-                let params = serialized_params.deserialize::<multisig::SwapSignerParams>()?;
+                    Ok(MessageParams::RemoveSignerMultisigParams(params.into()))
+                }
+                Some(multisig::MethodMultisig::SwapSigner) => {
+                    let params = serialized_params.deserialize::<multisig::SwapSignerParams>()?;
 
-                Ok(MessageParams::SwapSignerMultisigParams(params.into()))
-            }
-            Some(multisig::MethodMultisig::ChangeNumApprovalsThreshold) => {
-                let params = serialized_params
-                    .deserialize::<multisig::ChangeNumApprovalsThresholdParams>()?;
+                    Ok(MessageParams::SwapSignerMultisigParams(params.into()))
+                }
+                Some(multisig::MethodMultisig::ChangeNumApprovalsThreshold) => {
+                    let params = serialized_params
+                        .deserialize::<multisig::ChangeNumApprovalsThresholdParams>()?;
 
-                Ok(MessageParams::ChangeNumApprovalsThresholdMultisigParams(
-                    params.into(),
-                ))
-            }
-            Some(multisig::MethodMultisig::LockBalance) => {
-                let params = serialized_params.deserialize::<multisig::LockBalanceParams>()?;
+                    Ok(MessageParams::ChangeNumApprovalsThresholdMultisigParams(
+                        params.into(),
+                    ))
+                }
+                Some(multisig::MethodMultisig::LockBalance) => {
+                    let params = serialized_params.deserialize::<multisig::LockBalanceParams>()?;
 
-                Ok(MessageParams::LockBalanceMultisigParams(params.into()))
+                    Ok(MessageParams::LockBalanceMultisigParams(params.into()))
+                }
+                _ => Err(SignerError::GenericString(
+                    "Unknown method for actor 'fil/2/multisig', 'fil/3/multisig' or 'fil/4/multisig'.".to_string(),
+                )),
             }
-            _ => Err(SignerError::GenericString(
-                "Unknown method for actor 'fil/2/multisig', 'fil/3/multisig' or 'fil/4/multisig'.".to_string(),
-            )),
-        },
+        }
         "fil/2/paymentchannel" | "fil/3/paymentchannel" | "fil/4/paymentchannel" => {
             match FromPrimitive::from_u64(method) {
                 Some(paych::MethodsPaych::UpdateChannelState) => {
