@@ -49,6 +49,8 @@ const unsigned_tx = {
   'value': '100000',
   'gasprice': '2500',
   'gaslimit': 25000,
+  'gaspremium': '2500',
+  'gasfeecap': '2500',
   'method': 4,
   'params': '',
 }
