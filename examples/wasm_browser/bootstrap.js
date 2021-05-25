@@ -6,3 +6,4 @@ import('./index.js')
     import('./index-multisig.js')
   })
   .catch(e => console.error('Error importing `index-multisig.js`:', e))
+
