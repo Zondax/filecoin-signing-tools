@@ -28,7 +28,7 @@ log(`<b>private base64</b> ${key.private_base64}`)
 /////////////////////////////////
 // Recover key
 
-let recovered_key = wasm.keyRecover('6a1a68774457742a8bc69db5491df5ae7677687d49e1003a78e2d60959d5f7a7')
+let recovered_key = wasm.keyRecover(Buffer.from('6a1a68774457742a8bc69db5491df5ae7677687d49e1003a78e2d60959d5f7a7',"hex"))
 
 log('<h2>[wasm.key_recover]</h2>')
 log(`<b>address      </b> ${recovered_key.address}`)
