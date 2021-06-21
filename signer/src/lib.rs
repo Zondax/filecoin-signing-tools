@@ -599,7 +599,7 @@ pub fn create_multisig(
     .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_multisig = ExecParams {
-        code_cid: Cid::new_v1(forest_cid::RAW, Identity.digest(b"fil/4/multisig")),
+        code_cid: Cid::new_v1(forest_cid::RAW, Identity.digest(b"5/multisig")),
         constructor_params: serialized_constructor_params,
     };
 
@@ -838,7 +838,7 @@ pub fn create_pymtchan(
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_create_pymtchan = ExecParams {
-        code_cid: Cid::new_v1(forest_cid::RAW, Identity.digest(b"fil/4/paymentchannel")),
+        code_cid: Cid::new_v1(forest_cid::RAW, Identity.digest(b"fil/5/paymentchannel")),
         constructor_params: serialized_constructor_params,
     };
 
@@ -1075,7 +1075,7 @@ pub fn deserialize_params(
     let serialized_params = forest_vm::Serialized::new(params_decode);
 
     match actor_type.as_str() {
-        "fil/1/init" | "fil/2/init" | "fil/3/init" | "fil/4/init" => {
+        "fil/1/init" | "fil/2/init" | "fil/3/init" | "fil/4/init" | "fil/5/init" => {
             match FromPrimitive::from_u64(method) {
                 Some(MethodInit::Exec) => {
                     let params = serialized_params.deserialize::<ExecParams>()?;
@@ -1083,12 +1083,12 @@ pub fn deserialize_params(
                     Ok(MessageParams::MessageParamsMultisig(params.into()))
                 }
                 _ => Err(SignerError::GenericString(
-                    "Unknown method for actor 'fil/2/init', 'fil/3/init' or 'fil/4/init' ."
+                    "Unknown method for actor 'fil/2/init', 'fil/3/init', 'fil/4/init' or 'fil/5/init' ."
                         .to_string(),
                 )),
             }
         }
-        "fil/2/multisig" | "fil/3/multisig" | "fil/4/multisig" => {
+        "fil/2/multisig" | "fil/3/multisig" | "fil/4/multisig" | "fil/5/multisig" => {
             match FromPrimitive::from_u64(method) {
                 Some(multisig::MethodMultisig::Propose) => {
                     let params = serialized_params.deserialize::<multisig::ProposeParams>()?;
@@ -1129,11 +1129,11 @@ pub fn deserialize_params(
                     Ok(MessageParams::LockBalanceMultisigParams(params.into()))
                 }
                 _ => Err(SignerError::GenericString(
-                    "Unknown method for actor 'fil/2/multisig', 'fil/3/multisig' or 'fil/4/multisig'.".to_string(),
+                    "Unknown method for actor 'fil/2/multisig', 'fil/3/multisig', 'fil/4/multisig' or 'fil/5/multisig'.".to_string(),
                 )),
             }
         }
-        "fil/2/paymentchannel" | "fil/3/paymentchannel" | "fil/4/paymentchannel" => {
+        "fil/2/paymentchannel" | "fil/3/paymentchannel" | "fil/4/paymentchannel" | "fil/5/paymentchannel" => {
             match FromPrimitive::from_u64(method) {
                 Some(paych::MethodsPaych::UpdateChannelState) => {
                     let params =
@@ -1148,7 +1148,7 @@ pub fn deserialize_params(
                     Ok(MessageParams::MessageParamsSerialized("".to_string()))
                 }
                 _ => Err(SignerError::GenericString(
-                    "Unknown method fo actor 'fil/2/paymentchannel', 'fil/3/paymentchannel' or 'fil/4/paymentchannel'."
+                    "Unknown method fo actor 'fil/2/paymentchannel', 'fil/3/paymentchannel', 'fil/4/paymentchannel' or fil/5/paymentchannel'."
                         .to_string(),
                 )),
             }
@@ -1173,11 +1173,11 @@ pub fn deserialize_constructor_params(
     let serialized_params = forest_vm::Serialized::new(params_decode);
 
     match code_cid.as_str() {
-        "fil/2/multisig" | "fil/3/multisig" | "fil/4/multisig" => {
+        "fil/2/multisig" | "fil/3/multisig" | "fil/4/multisig" | "fil/5/multisig" => {
             let params = serialized_params.deserialize::<multisig::ConstructorParams>()?;
             Ok(MessageParams::ConstructorParamsMultisig(params.into()))
         }
-        "fil/2/paymentchannel" | "fil/3/paymentchannel" | "fil/4/paymentchannel" => {
+        "fil/2/paymentchannel" | "fil/3/paymentchannel" | "fil/4/paymentchannel" | "fil/5/paymentchannel" => {
             let params = serialized_params.deserialize::<paych::ConstructorParams>()?;
             Ok(MessageParams::PaymentChannelCreateParams(params.into()))
         }
