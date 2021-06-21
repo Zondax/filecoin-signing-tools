@@ -1182,7 +1182,8 @@ pub fn deserialize_constructor_params(
             Ok(MessageParams::PaymentChannelCreateParams(params.into()))
         }
         "fil/1/multisig" => {
-            let deprecated_multisig_params = serialized_params.deserialize::<multisig::ConstructorParamsV1>()?;
+            let deprecated_multisig_params =
+                serialized_params.deserialize::<multisig::ConstructorParamsV1>()?;
             let params = multisig::ConstructorParams {
                 signers: deprecated_multisig_params.signers,
                 num_approvals_threshold: deprecated_multisig_params.num_approvals_threshold,
