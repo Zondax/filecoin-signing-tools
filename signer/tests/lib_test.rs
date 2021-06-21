@@ -9,9 +9,11 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 
-use filecoin_signer::api::{MessageTxAPI, SignedMessageAPI, UnsignedMessageAPI};
+use filecoin_signer::api::{MessageParams, MessageTxAPI, SignedMessageAPI, UnsignedMessageAPI};
 use filecoin_signer::signature::{Signature, SignatureBLS};
 use filecoin_signer::*;
+
+use extras::multisig;
 
 mod common;
 
@@ -939,4 +941,27 @@ fn test_get_cid() {
     let cid = get_cid(message_api).unwrap();
 
     assert_eq!(cid, expected_cid);
+}
+
+#[test]
+fn test_multisig_v1_deserialize() {
+    let expected_params = multisig::ConstructorParams {
+        signers: vec![Address::from_bytes(
+            &hex::decode("01D75AB2B78BB2FEB1CF86B1412E96916D805B40C3").unwrap(),
+        )
+        .unwrap()],
+        num_approvals_threshold: 1,
+        unlock_duration: 0,
+        start_epoch: 0,
+    };
+    let params = deserialize_constructor_params(
+        "g4FVAddasreLsv6xz4axQS6WkW2AW0DDAQA=".to_string(),
+        "fil/1/multisig".to_string(),
+    )
+    .unwrap();
+
+    assert_eq!(
+        params,
+        MessageParams::ConstructorParamsMultisig(expected_params.into())
+    );
 }

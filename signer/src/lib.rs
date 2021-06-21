@@ -1181,6 +1181,17 @@ pub fn deserialize_constructor_params(
             let params = serialized_params.deserialize::<paych::ConstructorParams>()?;
             Ok(MessageParams::PaymentChannelCreateParams(params.into()))
         }
+        "fil/1/multisig" => {
+            let deprecated_multisig_params =
+                serialized_params.deserialize::<multisig::ConstructorParamsV1>()?;
+            let params = multisig::ConstructorParams {
+                signers: deprecated_multisig_params.signers,
+                num_approvals_threshold: deprecated_multisig_params.num_approvals_threshold,
+                unlock_duration: deprecated_multisig_params.unlock_duration,
+                start_epoch: 0,
+            };
+            Ok(MessageParams::ConstructorParamsMultisig(params.into()))
+        }
         _ => Err(SignerError::GenericString(
             "Code CID not supported.".to_string(),
         )),
