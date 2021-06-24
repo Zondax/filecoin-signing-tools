@@ -599,7 +599,7 @@ pub fn create_multisig(
     .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let message_params_multisig = ExecParams {
-        code_cid: Cid::new_v1(forest_cid::RAW, Identity.digest(b"5/multisig")),
+        code_cid: Cid::new_v1(forest_cid::RAW, Identity.digest(b"fil/5/multisig")),
         constructor_params: serialized_constructor_params,
     };
 
