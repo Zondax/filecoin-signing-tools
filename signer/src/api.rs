@@ -96,11 +96,15 @@ impl TryFrom<ExecParamsAPI> for ExecParams {
 
         if exec_constructor.code_cid != "fil/2/multisig"
             && exec_constructor.code_cid != "fil/3/multisig"
+            && exec_constructor.code_cid != "fil/4/multisig"
+            && exec_constructor.code_cid != "fil/5/multisig"
             && exec_constructor.code_cid != "fil/3/paymentchannel"
             && exec_constructor.code_cid != "fil/2/paymentchannel"
+            && exec_constructor.code_cid != "fil/4/paymentchannel"
+            && exec_constructor.code_cid != "fil/5/paymentchannel"
         {
             return Err(SignerError::GenericString(
-                "Only support `fil/2/multisig`, `fil/2/paymentchannel`, `fil/3/multisig` and `fil/3/paymentchannel` code for now."
+                "Only support `fil/2/multisig`, `fil/2/paymentchannel`, `fil/3/multisig`, `fil/3/paymentchannel`, `fil/4/multisig`, `fil/4/paymentchannel`, `fil/5/multisig` and `fil/5/paymentchannel` code for now."
                     .to_string(),
             ));
         }
