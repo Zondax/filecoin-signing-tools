@@ -26,9 +26,17 @@ class InvalidChecksumAddress extends Error {
   }
 }
 
+class InvalidPrivateKeyFormat extends Error {
+  constructor(...args) {
+    super(...args)
+    this.message = 'Private key need to be an instance of Buffer or a base64 string.'
+  }
+}
+
 module.exports = {
   UnknownProtocolIndicator,
   InvalidPayloadLength,
   ProtocolNotSupported,
   InvalidChecksumAddress,
+  InvalidPrivateKeyFormat,
 }

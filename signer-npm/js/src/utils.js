@@ -4,7 +4,7 @@ const base32Encode = require('base32-encode')
 const leb = require('leb128')
 
 const assert = require('assert')
-const { UnknownProtocolIndicator, InvalidPayloadLength, ProtocolNotSupported, InvalidChecksumAddress } = require('./errors')
+const { UnknownProtocolIndicator, InvalidPayloadLength, ProtocolNotSupported, InvalidChecksumAddress, InvalidPrivateKeyFormat } = require('./errors')
 
 const { ProtocolIndicator } = require('./constants')
 
@@ -134,7 +134,7 @@ function tryToPrivateKeyBuffer(privateKey) {
     if (privateKey.slice(-1) === '=') {
       privateKey = Buffer.from(privateKey, 'base64')
     } else {
-      privateKey = Buffer.from(privateKey, 'hex')
+      throw new InvalidPrivateKeyFormat()
     }
   }
 
