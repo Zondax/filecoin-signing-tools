@@ -42,7 +42,6 @@ function keyDerive(mnemonic, path, password) {
 }
 
 function keyRecover(privateKey, testnet) {
-  // verify format and convert to buffer if needed
   privateKey = tryToPrivateKeyBuffer(privateKey)
   return new ExtendedKey(privateKey, testnet)
 }
