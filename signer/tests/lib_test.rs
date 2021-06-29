@@ -9,7 +9,7 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 
-use filecoin_signer::api::{MessageTxAPI, UnsignedMessageAPI, MessageParams};
+use filecoin_signer::api::{MessageParams, MessageTxAPI, UnsignedMessageAPI};
 use filecoin_signer::signature::{Signature, SignatureBLS};
 use filecoin_signer::*;
 
