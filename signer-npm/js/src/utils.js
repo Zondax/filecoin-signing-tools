@@ -4,7 +4,13 @@ const base32Encode = require('base32-encode')
 const leb = require('leb128')
 
 const assert = require('assert')
-const { UnknownProtocolIndicator, InvalidPayloadLength, ProtocolNotSupported, InvalidChecksumAddress, InvalidPrivateKeyFormat } = require('./errors')
+const {
+  UnknownProtocolIndicator,
+  InvalidPayloadLength,
+  ProtocolNotSupported,
+  InvalidChecksumAddress,
+  InvalidPrivateKeyFormat,
+} = require('./errors')
 
 const { ProtocolIndicator } = require('./constants')
 
