@@ -6,7 +6,6 @@ use rayon::prelude::*;
 
 use filecoin_signer::api::UnsignedMessageAPI;
 use forest_address::Address;
-use forest_encoding::to_vec;
 use forest_message::UnsignedMessage;
 use std::convert::TryFrom;
 
