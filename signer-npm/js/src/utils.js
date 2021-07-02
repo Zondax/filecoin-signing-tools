@@ -80,7 +80,15 @@ function addressAsBytes(address) {
       }
       break
     case ProtocolIndicator.BLS:
-      throw new ProtocolNotSupported('BLS')
+      address_decoded = base32Decode(address.slice(2).toUpperCase(), 'RFC4648')
+
+      payload = address_decoded.slice(0, -4)
+      checksum = Buffer.from(address_decoded.slice(-4))
+
+      if (payload.byteLength !== 48) {
+        throw new InvalidPayloadLength()
+      }
+      break
     default:
       throw new UnknownProtocolIndicator()
   }
@@ -112,7 +120,10 @@ function bytesToAddress(payload, testnet) {
       }
       break
     case ProtocolIndicator.BLS:
-      throw new ProtocolNotSupported('BLS')
+      if (payload.slice(1).length !== 48) {
+        throw new InvalidPayloadLength()
+      }
+      break
     default:
       throw new UnknownProtocolIndicator()
   }
