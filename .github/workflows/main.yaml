@@ -45,7 +45,7 @@ jobs:
 
 
   tests_rust:
-    needs: [ build ]
+    needs: [ configure, build ]
     runs-on: ubuntu-latest
     container:
       image: zondax/rust-ci:latest
@@ -72,7 +72,7 @@ jobs:
 
 
 #  tests_ffi:
-#    needs: [ build ]
+#    needs: [ configure, build ]
 #    runs-on: ubuntu-latest
 #    container:
 #      image: zondax/rust-ci:latest
@@ -115,7 +115,7 @@ jobs:
 
 
   tests_npm:
-    needs: [ build ]
+    needs: [ configure, build ]
     runs-on: ubuntu-latest
     container:
       image: zondax/rust-ci:latest
@@ -139,7 +139,7 @@ jobs:
       - run: make test_npm_node
 
   tests_service:
-    needs: [ build ]
+    needs: [ configure, build ]
     runs-on: ubuntu-latest
     container:
       image: zondax/rust-ci:latest
@@ -181,7 +181,7 @@ jobs:
       # No need to save this in cache
 
   devnet:
-    needs: [ build ]
+    needs: [ configure, build ]
     runs-on: ubuntu-latest
     container:
       image: zondax/rust-ci:latest
