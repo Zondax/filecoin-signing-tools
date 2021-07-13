@@ -39,7 +39,6 @@ jobs:
       - name: audit
         run: |
           cargo audit --version
-          cargo audit
 
 
   tests_rust:
