@@ -1,0 +1,65 @@
+name: "Main"
+on:
+  - push
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    outputs:
+      uid_gid: ${{ steps.get-user.outputs.uid_gid }}
+    steps:
+      - id: get-datetime
+        run: echo "::set-output name=datetime::$(date +'%Y-%m-%d %H:%M:%S')"
+
+  build:
+    needs: [ configure ]
+    container:
+      image: zondax/rust-ci:latest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Restore/Save sscache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/sccache
+          key: ${{ runner.os }}-${{ steps.get-datetime.outputs.datetime }}
+      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
+      - name: rustfmt
+        run: |
+          cargo fmt --version
+          cargo fmt -- --check
+      - name: clippy
+        run: |
+          cargo clippy --version
+          cargo clippy --all-features --all-targets
+      - name: audit
+        run: |
+          cargo audit --version
+          cargo audit
+
+  tests_rust:
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    container:
+      image: zondax/rust-ci:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Restore/Save sscache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/sccache
+          key: ${{ runner.os }}-${{ steps.get-datetime.outputs.datetime }}
+      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
+      - name: rust unit tests --all-features
+        run: |
+          rustc --version
+          cargo --version
+          cargo test --lib --all-features
