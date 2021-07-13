@@ -8,7 +8,45 @@ on:
       - "v[0-9]+(\\.[0-9]+)*"
 
 jobs:
+  configure:
+    runs-on: ubuntu-latest
+    outputs:
+      datetime: ${{ steps.get-datetime.outputs.datetime }}
+    steps:
+      - id: get-datetime
+        run: echo "::set-output name=datetime::$(date +'%Y%m%d%H%M%S')"
+
+  build:
+    needs: [ configure ]
+    container:
+      image: zondax/rust-ci:latest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Restore/Save sscache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/sccache
+          key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
+      - run: apt-get update -y && apt-get install -y libusb-1.0.0 libudev-dev
+      - name: rustfmt
+        run: |
+          cargo fmt --version
+          cargo fmt -- --check
+      - name: clippy
+        run: |
+          cargo clippy --version
+          cargo clippy --all-features --all-targets
+      - name: audit
+        run: |
+          cargo audit --version
+
   publish_npm_package:
+    needs: [ build ]
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     steps:
@@ -44,3 +82,23 @@ jobs:
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+
+#  rust_publish:
+#    needs: [ build ]
+#    if: ${{ github.ref == 'refs/heads/main' }}
+#    runs-on: ubuntu-latest
+#    container:
+#      image: zondax/rust-ci:latest
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#        with:
+#          submodules: true
+#      - name: Restore/Save sscache
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.cache/sccache
+#          key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
+#      # TODO: Enable cargo publish
