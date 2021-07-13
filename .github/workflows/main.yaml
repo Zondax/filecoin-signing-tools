@@ -128,7 +128,7 @@ jobs:
           path: |
             ~/.cache/sccache
           key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
-      - run: sudo apt-get update && sudo apt-get install -y firefox-esr libnss3
+      - run: apt-get update && apt-get install -y firefox-esr libnss3
       - run: make install_wasmpack SILENT=true
       # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-signing-tools/issues/68
       - run: make test_npm_unit
@@ -175,3 +175,23 @@ jobs:
           yarn run test:unit
           yarn run test:integration
       # No need to save this in cache
+
+  devnet:
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    container:
+      image: zondax/rust-ci:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Restore/Save sscache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/sccache
+          key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
+      - run: make install_wasmpack SILENT=true
+      - run: make link_npm
+      - run: node examples/wasm_node/payment_channel.js
