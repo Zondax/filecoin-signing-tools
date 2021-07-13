@@ -81,7 +81,7 @@ jobs:
           cd signer-npm/pkg
           npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_PUBLISH_AUTO }}
 
 
 #  rust_publish:
