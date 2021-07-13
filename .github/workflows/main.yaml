@@ -9,7 +9,7 @@ jobs:
       datetime: ${{ steps.get-datetime.outputs.datetime }}
     steps:
       - id: get-datetime
-        run: echo "::set-output name=datetime::$(date +'%Y-%m-%d %H:%M:%S')"
+        run: echo "::set-output name=datetime::$(date +'%Y%m%d%H%M%S')"
 
   build:
     needs: [ configure ]
