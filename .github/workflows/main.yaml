@@ -132,7 +132,7 @@ jobs:
           path: |
             ~/.cache/sccache
           key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
-      - run: apt-get update && apt-get install -y firefox-esr libnss3
+      - run: sudo apt-get update && sudo apt-get install -y firefox-esr libnss3
       - run: make install_wasmpack SILENT=true
       # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-signing-tools/issues/68
       - run: make test_npm_unit
