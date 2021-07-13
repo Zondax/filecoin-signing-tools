@@ -151,6 +151,7 @@ jobs:
             ~/.cache/sccache
           key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
 
+      - run: apt-get update -y && apt-get install -y netcat
       - run: cargo build --manifest-path service/Cargo.toml
       - name: patch configuration file
         env:
