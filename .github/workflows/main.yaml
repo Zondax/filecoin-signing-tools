@@ -8,7 +8,7 @@ jobs:
     outputs:
       uid_gid: ${{ steps.get-user.outputs.uid_gid }}
     steps:
-      - id: get-datetime
+      - id: datetime
         run: echo "::set-output name=datetime::$(date +'%Y-%m-%d %H:%M:%S')"
 
   build:
@@ -26,8 +26,8 @@ jobs:
         with:
           path: |
             ~/.cache/sccache
-          key: ${{ runner.os }}-${{ steps.get-datetime.outputs.datetime }}
-      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
+          key: ${{ runner.os }}-${{ github.run_id }}-${{ steps.datetime.outputs.datetime }}
+      - run: apt-get update -y && apt-get install -y libusb-1.0.0 libudev-dev
       - name: rustfmt
         run: |
           cargo fmt --version
@@ -57,8 +57,8 @@ jobs:
         with:
           path: |
             ~/.cache/sccache
-          key: ${{ runner.os }}-${{ steps.get-datetime.outputs.datetime }}
-      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
+          key: ${{ runner.os }}-${{ github.run_id }}-${{ steps.datetime.outputs.datetime }}
+      - run: apt-get update -y && apt-get install -y libusb-1.0.0 libudev-dev
       - name: rust unit tests --all-features
         run: |
           rustc --version
