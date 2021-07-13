@@ -41,6 +41,7 @@ jobs:
           cargo audit --version
           cargo audit
 
+
   tests_rust:
     needs: [ build ]
     runs-on: ubuntu-latest
