@@ -6,8 +6,11 @@ jobs:
   configure:
     runs-on: ubuntu-latest
     outputs:
+      uid_gid: ${{ steps.get-user.outputs.uid_gid }}
       datetime: ${{ steps.get-datetime.outputs.datetime }}
     steps:
+      - id: get-user
+        run: echo "::set-output name=uid_gid::$(id -u):$(id -g)"
       - id: get-datetime
         run: echo "::set-output name=datetime::$(date +'%Y%m%d%H%M%S')"
 
@@ -116,6 +119,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: zondax/rust-ci:latest
+      options: --user ${{ needs.configure.outputs.uid_gid }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
