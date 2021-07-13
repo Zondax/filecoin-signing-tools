@@ -59,13 +59,82 @@ jobs:
           key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
       - run: apt-get update -y && apt-get install -y libusb-1.0.0 libudev-dev
       - name: rust unit tests --all-features
+        env:
+          LOTUS_SECRET_URL: ${{ secrets.LOTUS_SECRET_URL }}
+          LOTUS_SECRET_TOKEN: ${{ secrets.LOTUS_SECRET_TOKEN }}
         run: |
           rustc --version
           cargo --version
           cargo test --lib --all-features
 
 
-  tests_ffi:
+#  tests_ffi:
+#    needs: [ build ]
+#    runs-on: ubuntu-latest
+#    container:
+#      image: zondax/rust-ci:latest
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#        with:
+#          submodules: true
+#      - name: Restore/Save sscache
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.cache/sccache
+#          key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
+#      - name: External dependencies
+#        run: |
+#          apt-get install -y clang default-jdk g++ gcc gnustep gnustep-devel gobjc golang libicu-dev libtinfo5 valgrind
+#      - name: Cbindgen
+#        run: |
+#          cd signer-ffi
+#          rustup install nightly
+#          rustup default nightly
+#          cargo install cbindgen
+#          cbindgen --config cbindgen.toml --crate filecoin-signer-ffi --lang c --output /tmp/filecoin_signer_ffi.h
+#          cbindgen --config cbindgen.toml --crate filecoin-signer-ffi --lang c++ --output /tmp/filecoin_signer_ffi_cpp.h
+#      - name: Libraries
+#        run: |
+#          cd signer-ffi
+#          cargo build
+#          cp ../../target/debug/libfilecoin_signer_ffi.so /tmp/libfilecoin_signer_ffi.so
+#          cargo build --features with-jni
+#          cp ../../target/debug/libfilecoin_signer_ffi.so /tmp/libfilecoin_signer_ffi_java.so
+#      - run: OUT_DIR=/tmp/c ./.github/scripts/test_c.sh
+#      - run: OUT_DIR=/tmp/cpp ./.github/scripts/test_cpp.sh
+#      - run: OUT_DIR=/tmp/go ./.github/scripts/test_go.sh
+#      - run: OUT_DIR=/tmp/java ./.github/scripts/test_java.sh
+#      - run: OUT_DIR=/tmp/kotlin ./.github/scripts/test_kotlin.sh
+#      - run: OUT_DIR=/tmp/objective-c ./.github/scripts/test_objective-c.sh
+#      - run: OUT_DIR=/tmp/swift ./.github/scripts/test_swift.sh
+
+
+  tests_npm:
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    container:
+      image: zondax/rust-ci:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - run: cargo --version
+      - name: Restore/Save sscache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/sccache
+          key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
+      - run: sudo apt-get update && sudo apt-get install -y firefox-esr libnss3
+      - run: make install_wasmpack SILENT=true
+      # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-signing-tools/issues/68
+      - run: make test_npm_unit
+      - run: make test_npm_node
+
+  tests_service:
     needs: [ build ]
     runs-on: ubuntu-latest
     container:
@@ -81,28 +150,27 @@ jobs:
           path: |
             ~/.cache/sccache
           key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
-      - name: External dependencies
+
+      - run: cargo build --manifest-path service/Cargo.toml
+      - name: patch configuration file
+        env:
+          LOTUS_SECRET_URL: ${{ secrets.LOTUS_SECRET_URL }}
+          LOTUS_SECRET_TOKEN: ${{ secrets.LOTUS_SECRET_TOKEN }}
         run: |
-          apt-get install -y clang default-jdk g++ gcc gnustep gnustep-devel gobjc golang libicu-dev libtinfo5 valgrind
-      - name: Cbindgen
+          echo [service] >> filecoin-service.toml
+          echo address = \"127.0.0.1:3030\" >> filecoin-service.toml
+          echo [remote_node] >> filecoin-service.toml
+          echo url = \"$LOTUS_SECRET_URL\" >> filecoin-service.toml
+          echo jwt = \"$LOTUS_SECRET_TOKEN\" >> filecoin-service.toml
+      - name: install node dependencies
         run: |
-          cd signer-ffi
-          rustup install nightly
-          rustup default nightly
-          cargo install cbindgen
-          cbindgen --config cbindgen.toml --crate filecoin-signer-ffi --lang c --output /tmp/filecoin_signer_ffi.h
-          cbindgen --config cbindgen.toml --crate filecoin-signer-ffi --lang c++ --output /tmp/filecoin_signer_ffi_cpp.h
-      - name: Libraries
+          cd examples/service_jsonrpc
+          yarn install
+      - name: run jsonrpc tests
         run: |
-          cd signer-ffi
-          cargo build
-          cp ../../target/debug/libfilecoin_signer_ffi.so /tmp/libfilecoin_signer_ffi.so
-          cargo build --features with-jni
-          cp ../../target/debug/libfilecoin_signer_ffi.so /tmp/libfilecoin_signer_ffi_java.so
-      - run: OUT_DIR=/tmp/c ./.github/scripts/test_c.sh
-      - run: OUT_DIR=/tmp/cpp ./.github/scripts/test_cpp.sh
-      - run: OUT_DIR=/tmp/go ./.github/scripts/test_go.sh
-      - run: OUT_DIR=/tmp/java ./.github/scripts/test_java.sh
-      - run: OUT_DIR=/tmp/kotlin ./.github/scripts/test_kotlin.sh
-      - run: OUT_DIR=/tmp/objective-c ./.github/scripts/test_objective-c.sh
-      - run: OUT_DIR=/tmp/swift ./.github/scripts/test_swift.sh
+          cargo run --manifest-path service/Cargo.toml -- start &
+          .github/scripts/wait_for_port.sh 3030
+          cd examples/service_jsonrpc
+          yarn run test:unit
+          yarn run test:integration
+      # No need to save this in cache
