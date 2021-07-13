@@ -6,9 +6,9 @@ jobs:
   configure:
     runs-on: ubuntu-latest
     outputs:
-      uid_gid: ${{ steps.get-user.outputs.uid_gid }}
+      datetime: ${{ steps.get-datetime.outputs.datetime }}
     steps:
-      - id: datetime
+      - id: get-datetime
         run: echo "::set-output name=datetime::$(date +'%Y-%m-%d %H:%M:%S')"
 
   build:
@@ -26,7 +26,7 @@ jobs:
         with:
           path: |
             ~/.cache/sccache
-          key: ${{ runner.os }}-${{ github.run_id }}-${{ steps.datetime.outputs.datetime }}
+          key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
       - run: apt-get update -y && apt-get install -y libusb-1.0.0 libudev-dev
       - name: rustfmt
         run: |
@@ -57,7 +57,7 @@ jobs:
         with:
           path: |
             ~/.cache/sccache
-          key: ${{ runner.os }}-${{ github.run_id }}-${{ steps.datetime.outputs.datetime }}
+          key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
       - run: apt-get update -y && apt-get install -y libusb-1.0.0 libudev-dev
       - name: rust unit tests --all-features
         run: |
