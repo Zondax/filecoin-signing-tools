@@ -135,8 +135,8 @@ jobs:
       - run: make install_wasmpack SILENT=true
       - run: chown -R root:root /home/github
       # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-signing-tools/issues/68
-      - run: sudo make test_npm_unit
-      - run: sudo make test_npm_node
+      - run: make test_npm_unit
+      - run: make test_npm_node
 
   tests_service:
     needs: [ configure, build ]
