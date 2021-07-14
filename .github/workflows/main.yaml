@@ -119,7 +119,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: zondax/rust-ci:latest
-      options: --user ${{ needs.configure.outputs.uid_gid }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -132,8 +131,9 @@ jobs:
           path: |
             ~/.cache/sccache
           key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
-      - run: sudo apt-get update && sudo apt-get install -y firefox-esr libnss3
-      - run: sudo make install_wasmpack SILENT=true
+      - run: apt-get update && apt-get install -y firefox-esr libnss3
+      - run: make install_wasmpack SILENT=true
+      - run: chown -R root:root /home/github
       # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-signing-tools/issues/68
       - run: sudo make test_npm_unit
       - run: sudo make test_npm_node
