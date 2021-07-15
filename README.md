@@ -1,7 +1,7 @@
 # Filecoin Signing Tools
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![CircleCI](https://circleci.com/gh/Zondax/filecoin-signing-tools.svg?style=shield&circle-token=51b2d5fe68c0eb73436dace6f47fa0a387169ef5)](https://circleci.com/gh/Zondax/filecoin-signing-tools)
+[![GithubActions](https://github.com/zondax/filecoin-signing-tools/actions/workflows/main.yaml/badge.svg)](https://github.com/Zondax/filecoin-signing-tools/blob/main/.github/workflows/main.yaml)
 [![npm version](https://badge.fury.io/js/%40zondax%2Ffilecoin-signing-tools.svg)](https://badge.fury.io/js/%40zondax%2Ffilecoin-signing-tools)
 
 You can find more information in the [Documentation Site](https://zondax.ch/projects/filecoin-signing-tools/)
