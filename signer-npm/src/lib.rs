@@ -423,6 +423,8 @@ pub fn propose_multisig_with_fee(
     gas_limit: String,
     gas_fee_cap: String,
     gas_premium: String,
+    method: u32,
+    params: String,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
@@ -438,6 +440,8 @@ pub fn propose_multisig_with_fee(
         gl,
         gas_fee_cap,
         gas_premium,
+        method as u64,
+        params,
     )
     .map_err(|e| {
         JsValue::from_str(format!("Error porposing multisig transaction: {}", e).as_str())
@@ -456,6 +460,8 @@ pub fn propose_multisig(
     from_address: String,
     amount: String,
     nonce: u32,
+    method: u32,
+    params: String,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
@@ -468,6 +474,8 @@ pub fn propose_multisig(
         0,
         "0".to_string(),
         "0".to_string(),
+        method as u64,
+        params,
     )
     .map_err(|e| {
         JsValue::from_str(format!("Error porposing multisig transaction: {}", e).as_str())

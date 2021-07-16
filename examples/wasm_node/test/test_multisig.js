@@ -124,6 +124,8 @@ describeCall('proposeMultisig', function() {
       multisig_propose.message.gaslimit.toString(),
       multisig_propose.message.gasfeecap,
       multisig_propose.message.gaspremium,
+      multisig_propose.proposal_params.method,
+      multisig_propose.proposal_params.params,
     )
 
     assert.deepStrictEqual(multisig_propose.message, propose_multisig_transaction)
