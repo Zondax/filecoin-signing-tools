@@ -379,6 +379,11 @@ Arguments:
 * **from_address**: A string address;
 * **amount**: Amount of the transaction;
 * **nonce**: Nonce of the message;
+* **gas_limit**: The gas limit
+* **gas_fee_cap**: The gas fee cap
+* **gas_premium**: The gas premium
+* **proposal_method**: The proposal method
+* **proposal_serialized_params**: The proposal parameters serialized
 
 ```rust
 use signer::proposal_multisig_message;
@@ -389,6 +394,11 @@ let result = proposal_multisig_message(
     "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string(),
     "1000".to_string(),
     1,
+    250,
+    250,
+    250,
+    0,
+    "".to_string(),
 )
 .unwrap();
 

@@ -784,6 +784,13 @@ fn support_multisig_propose_message() {
             .as_str()
             .unwrap()
             .to_string(),
+        test_value["propose"]["proposal_params"]["method"]
+            .as_u64()
+            .unwrap(),
+        test_value["propose"]["proposal_params"]["params"]
+            .as_str()
+            .unwrap()
+            .to_string(),
     )
     .unwrap();
 

@@ -630,6 +630,11 @@ pub fn create_multisig(
 /// * `from_address` - A string address
 /// * `amount` - Amount of the transaction
 /// * `nonce` - Nonce of the message
+/// * `gas_limit` - The gas limit
+/// * `gas_fee_cap` - The gas fee cap
+/// * `gas_premium` - The gas premium
+/// * `proposal_method` - The proposal method
+/// * `proposal_serialized_params` - The proposal parameters serialized
 ///
 #[allow(clippy::too_many_arguments)]
 pub fn proposal_multisig_message(
@@ -641,12 +646,14 @@ pub fn proposal_multisig_message(
     gas_limit: i64,
     gas_fee_cap: String,
     gas_premium: String,
+    proposal_method: u64,
+    proposal_serialized_params: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     let propose_params_multisig = multisig::ProposeParams {
         to: Address::from_str(&to_address)?,
         value: BigInt::from_str(&amount)?,
-        method: 0,
-        params: forest_vm::Serialized::new(Vec::new()),
+        method: proposal_method,
+        params: forest_vm::Serialized::new(base64::decode(proposal_serialized_params)?),
     };
 
     let params =
