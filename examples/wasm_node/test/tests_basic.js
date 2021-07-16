@@ -562,7 +562,6 @@ describe('Transaction Deserialization - Parameterized', function() {
 
     if (tc.not_implemented) {
       // FIXME: Protocol 0 parsing not implemented in forest
-      // FIXME: doesn't fail for empty value #54
       console.log('FIXME: Protocol 0 parsing not implemented in forest')
       continue
     }
