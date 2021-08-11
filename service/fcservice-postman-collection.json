@@ -66,7 +66,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"jsonrpc\": \"2.0\",\n    \"id\": \"curltest\",\n    \"method\": \"key_derive\",\n    \"params\": [\n        \"robust creek govern marriage super design group accuse soccer romance shrug blame broom render apart glass expire mom enforce six range gate dose organ\",\n        \"m/44'/461'/0/0/0\",\n        \"\",\n        \"en\"\n    ]\n}",
+					"raw": "{\n    \"jsonrpc\": \"2.0\",\n    \"id\": \"curltest\",\n    \"method\": \"key_derive\",\n    \"params\": [\n        \"equip will roof matter pink blind book anxiety banner elbow sun young\",\n        \"m/44'/461'/0/0/0\",\n        \"\",\n        \"en\"\n    ]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -195,7 +195,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"jsonrpc\": \"2.0\",\n    \"id\": \"1\",\n    \"method\": \"sign_transaction\",\n    \"params\": [\n        {\n            \"to\": \"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy\",\n            \"from\": \"f1jejt4mukbw4oh5c2mt3yyvpdif7l55lich5qo3i\",\n            \"nonce\": 1,\n            \"value\": \"100000\",\n            \"gasprice\": \"2500\",\n            \"gasFeeCap\": \"2500\",\n            \"gasPremium\": \"2500\",\n            \"gaslimit\": 25000,\n            \"method\": 0,\n            \"params\": \"\"\n        },\n        \"PYGdWyC0OOMtAS4ePlOA6XmEZbZcJfw9Bo12X6zVSuo=\"\n    ]\n}",
+					"raw": "{\n    \"jsonrpc\": \"2.0\",\n    \"id\": \"curltest\",\n    \"method\": \"sign_transaction\",\n    \"params\": [\n        {\n            \"to\": \"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy\",\n            \"from\": \"t1b4zd6ryj5dsnwda5jtjxj6ptkia5e35s52ox7ka\",\n            \"nonce\": 1,\n            \"value\": \"100000\",\n            \"gasprice\": \"2500\",\n            \"gasFeeCap\": \"2500\",\n            \"gasPremium\": \"2500\",\n            \"gaslimit\": 25000,\n            \"method\": 0,\n            \"params\": \"\"\n        },\n        \"f15716d3b003b304b8055d9cc62e6b9c869d56cc930c3858d4d7c31f5f53f14a\"\n    ]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -436,5 +436,6 @@
 			},
 			"response": []
 		}
-	]
+	],
+	"protocolProfileBehavior": {}
 }
