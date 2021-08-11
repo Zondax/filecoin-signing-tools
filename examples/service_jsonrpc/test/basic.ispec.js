@@ -17,10 +17,17 @@ let dataTxs = JSON.parse(rawdataTxs)
 let rawdataWallet = fs.readFileSync('../../test_vectors/wallet.json')
 let dataWallet = JSON.parse(rawdataWallet)
 
+/* Load multisig test data */
+let rawdataMultisig = fs.readFileSync('../../test_vectors/multisig.json')
+let dataMultisig = JSON.parse(rawdataMultisig)
+
 // WARNING: filecoin-service is expected to be running
 const URL = 'http://127.0.0.1:3030/v0'
 const MASTER_NODE = bip32.fromBase58(dataWallet.master_key)
 
+function getHexString(string) {
+  return Buffer.from(string).toString('hex');
+}
 
 test('key_generate_mnemonic', async () => {
   const response = await callMethod(URL, 'key_generate_mnemonic', [], 1)
@@ -480,4 +487,131 @@ test('send_sign wrong network', async () => {
   console.log('error: ', response)
 
   expect(response).toHaveProperty('error')
+})
+
+test('gen_create_multisig_tx', async () => {
+  const rawJson = dataMultisig.create;
+
+  const rawMessage = rawJson.message;
+  const rawParams = rawJson.constructor_params;
+
+  const request = {
+    "from": rawMessage.from,
+    "nonce": rawMessage.nonce,
+    "value": rawMessage.value,
+    "gasprice": rawMessage.gasprice,
+    "gaslimit": rawMessage.gaslimit,
+    "gasfeecap": rawMessage.gasfeecap,
+    "gaspremium": rawMessage.gaspremium,
+    "signers": rawParams.signers,
+    "threshold": rawParams.num_approvals_threshold,
+    "unlock_duration": rawParams.unlock_duration,
+    "start_epoch": rawParams.start_epoch
+  };
+
+  const createMultisigTxResponse = await callMethod(
+      URL,
+      'gen_create_multisig_tx',
+      [request],
+      2,
+  )
+
+  const serializedTxResponse = await callMethod(
+      URL,
+      'transaction_serialize',
+      createMultisigTxResponse.result,
+      1
+  )
+
+  expect(getHexString(serializedTxResponse.result)).toBe(rawJson.cbor)
+})
+
+test('collect_propose_multisig_tx', async () => {
+  const rawJson = dataMultisig.propose;
+
+  const rawMessage = rawJson.message;
+  const rawParams = rawJson.proposal_params;
+
+  const proposalParams = {
+    "requester": "",
+    "to": rawParams.to,
+    "value": rawParams.value,
+    "method": rawParams.method,
+    "params": rawParams.params
+  }
+
+  const multisigTxResponse = await callMethod(
+      URL,
+      'propose_multisig_tx',
+      [
+          rawMessage,
+        proposalParams
+      ],
+      2,
+  )
+
+  const serializedTxResponse = await callMethod(
+      URL,
+      'transaction_serialize',
+      multisigTxResponse.result,
+      1
+  )
+
+  expect(getHexString(serializedTxResponse.result)).toBe(rawJson.cbor)
+})
+
+test('collect_approve_multisig_tx', async () => {
+  const rawJson = dataMultisig.approve;
+
+  const rawMessage = rawJson.message;
+  const proposalParams = rawJson.proposal_params;
+  const txId = rawJson.approval_params.txn_id;
+
+  const multisigTxResponse = await callMethod(
+      URL,
+      'approve_multisig_tx',
+      [
+        rawMessage,
+        proposalParams,
+        txId
+      ],
+      2,
+  )
+
+  const serializedTxResponse = await callMethod(
+      URL,
+      'transaction_serialize',
+      multisigTxResponse.result,
+      1
+  )
+
+  expect(getHexString(serializedTxResponse.result)).toBe(rawJson.cbor)
+})
+
+test('collect_cancel_multisig_tx', async () => {
+  const rawJson = dataMultisig.cancel;
+
+  const rawMessage = rawJson.message;
+  const proposalParams = rawJson.proposal_params;
+  const txId = rawJson.cancel_params.txn_id;
+
+  const multisigTxResponse = await callMethod(
+      URL,
+      'cancel_multisig_tx',
+      [
+        rawMessage,
+        proposalParams,
+        txId
+      ],
+      2,
+  )
+
+  const serializedTxResponse = await callMethod(
+      URL,
+      'transaction_serialize',
+      multisigTxResponse.result,
+      1
+  )
+
+  expect(getHexString(serializedTxResponse.result)).toBe(rawJson.cbor)
 })
