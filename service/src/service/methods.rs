@@ -3,7 +3,9 @@
 use crate::config::RemoteNodeSection;
 use crate::service::client;
 use crate::service::error::ServiceError;
-use filecoin_signer::api::{SignedMessageAPI, UnsignedMessageAPI, CreateMultisigMessageAPI, ProposalMessageParamsAPI};
+use filecoin_signer::api::{
+    CreateMultisigMessageAPI, ProposalMessageParamsAPI, SignedMessageAPI, UnsignedMessageAPI,
+};
 use filecoin_signer::signature::Signature;
 use filecoin_signer::{CborBuffer, PrivateKey};
 use jsonrpc_core::{MethodCall, Success, Version};
@@ -329,7 +331,7 @@ pub async fn create_multisig(c: MethodCall, _: RemoteNodeSection) -> Result<Succ
         tx_params.start_epoch,
         tx_params.gas_limit,
         tx_params.gas_fee_cap,
-        tx_params.gas_premium
+        tx_params.gas_premium,
     )?;
 
     let so = Success {
@@ -341,7 +343,10 @@ pub async fn create_multisig(c: MethodCall, _: RemoteNodeSection) -> Result<Succ
     Ok(so)
 }
 
-pub async fn propose_multisig_tx(c: MethodCall, _: RemoteNodeSection) -> Result<Success, ServiceError> {
+pub async fn propose_multisig_tx(
+    c: MethodCall,
+    _: RemoteNodeSection,
+) -> Result<Success, ServiceError> {
     let params: ProposeMultisigTxParamsAPI = c.params.parse::<ProposeMultisigTxParamsAPI>()?;
 
     let tx: UnsignedMessageAPI = params.transaction;
@@ -357,7 +362,7 @@ pub async fn propose_multisig_tx(c: MethodCall, _: RemoteNodeSection) -> Result<
         tx.gas_fee_cap,
         tx.gas_premium,
         proposal_params.method,
-        proposal_params.params
+        proposal_params.params,
     )?;
 
     let so = Success {
@@ -369,8 +374,12 @@ pub async fn propose_multisig_tx(c: MethodCall, _: RemoteNodeSection) -> Result<
     Ok(so)
 }
 
-pub async fn approve_multisig_tx(c: MethodCall, _: RemoteNodeSection) -> Result<Success, ServiceError> {
-    let params: ApproveCancelMultisigTxParamsAPI = c.params.parse::<ApproveCancelMultisigTxParamsAPI>()?;
+pub async fn approve_multisig_tx(
+    c: MethodCall,
+    _: RemoteNodeSection,
+) -> Result<Success, ServiceError> {
+    let params: ApproveCancelMultisigTxParamsAPI =
+        c.params.parse::<ApproveCancelMultisigTxParamsAPI>()?;
 
     let tx: UnsignedMessageAPI = params.transaction;
     let proposal_params: ProposalMessageParamsAPI = params.proposal_params;
@@ -385,7 +394,7 @@ pub async fn approve_multisig_tx(c: MethodCall, _: RemoteNodeSection) -> Result<
         tx.nonce,
         tx.gas_limit,
         tx.gas_fee_cap,
-        tx.gas_premium
+        tx.gas_premium,
     )?;
 
     let so = Success {
@@ -397,9 +406,12 @@ pub async fn approve_multisig_tx(c: MethodCall, _: RemoteNodeSection) -> Result<
     Ok(so)
 }
 
-
-pub async fn cancel_multisig_tx(c: MethodCall, _: RemoteNodeSection) -> Result<Success, ServiceError> {
-    let params: ApproveCancelMultisigTxParamsAPI = c.params.parse::<ApproveCancelMultisigTxParamsAPI>()?;
+pub async fn cancel_multisig_tx(
+    c: MethodCall,
+    _: RemoteNodeSection,
+) -> Result<Success, ServiceError> {
+    let params: ApproveCancelMultisigTxParamsAPI =
+        c.params.parse::<ApproveCancelMultisigTxParamsAPI>()?;
 
     let tx: UnsignedMessageAPI = params.transaction;
     let proposal_params: ProposalMessageParamsAPI = params.proposal_params;
@@ -414,7 +426,7 @@ pub async fn cancel_multisig_tx(c: MethodCall, _: RemoteNodeSection) -> Result<S
         tx.nonce,
         tx.gas_limit,
         tx.gas_fee_cap,
-        tx.gas_premium
+        tx.gas_premium,
     )?;
 
     let so = Success {

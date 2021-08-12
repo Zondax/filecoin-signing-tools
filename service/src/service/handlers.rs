@@ -49,7 +49,7 @@ async fn v0_post_methods(
         "gen_create_multisig_tx" => methods::create_multisig(method_call, config).await,
         "propose_multisig_tx" => methods::propose_multisig_tx(method_call, config).await,
         "approve_multisig_tx" => methods::approve_multisig_tx(method_call, config).await,
-        "cancel_multisig_tx" =>  methods::cancel_multisig_tx(method_call, config).await,
+        "cancel_multisig_tx" => methods::cancel_multisig_tx(method_call, config).await,
         _ => return Err(warp::reject::not_found()),
     };
 
