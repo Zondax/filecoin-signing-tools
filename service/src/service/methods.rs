@@ -3,7 +3,9 @@
 use crate::config::RemoteNodeSection;
 use crate::service::client;
 use crate::service::error::ServiceError;
-use filecoin_signer::api::{SignedMessageAPI, UnsignedMessageAPI};
+use filecoin_signer::api::{
+    CreateMultisigMessageAPI, ProposalMessageParamsAPI, SignedMessageAPI, UnsignedMessageAPI,
+};
 use filecoin_signer::signature::Signature;
 use filecoin_signer::{CborBuffer, PrivateKey};
 use jsonrpc_core::{MethodCall, Success, Version};
@@ -11,6 +13,24 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use serde_json::Value;
 use std::convert::TryFrom;
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct CreateMultisigParamsAPI {
+    pub tx_params: CreateMultisigMessageAPI,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ProposeMultisigTxParamsAPI {
+    pub transaction: UnsignedMessageAPI,
+    pub proposal_params: ProposalMessageParamsAPI,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ApproveCancelMultisigTxParamsAPI {
+    pub transaction: UnsignedMessageAPI,
+    pub proposal_params: ProposalMessageParamsAPI,
+    pub txn_id: i64,
+}
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SendSignedTxParamsAPI {
@@ -290,6 +310,128 @@ pub async fn send_sign(c: MethodCall, config: RemoteNodeSection) -> Result<Succe
     let so = Success {
         jsonrpc: Some(Version::V2),
         result,
+        id: c.id,
+    };
+
+    Ok(so)
+}
+
+pub async fn create_multisig(c: MethodCall, _: RemoteNodeSection) -> Result<Success, ServiceError> {
+    let params: CreateMultisigParamsAPI = c.params.parse::<CreateMultisigParamsAPI>()?;
+
+    let tx_params: CreateMultisigMessageAPI = params.tx_params;
+
+    let result: UnsignedMessageAPI = filecoin_signer::create_multisig(
+        tx_params.from,
+        tx_params.signers,
+        tx_params.value,
+        tx_params.threshold,
+        tx_params.nonce,
+        tx_params.unlock_duration,
+        tx_params.start_epoch,
+        tx_params.gas_limit,
+        tx_params.gas_fee_cap,
+        tx_params.gas_premium,
+    )?;
+
+    let so = Success {
+        jsonrpc: Some(Version::V2),
+        result: serde_json::to_value(result)?,
+        id: c.id,
+    };
+
+    Ok(so)
+}
+
+pub async fn propose_multisig_tx(
+    c: MethodCall,
+    _: RemoteNodeSection,
+) -> Result<Success, ServiceError> {
+    let params: ProposeMultisigTxParamsAPI = c.params.parse::<ProposeMultisigTxParamsAPI>()?;
+
+    let tx: UnsignedMessageAPI = params.transaction;
+    let proposal_params: ProposalMessageParamsAPI = params.proposal_params;
+
+    let result: UnsignedMessageAPI = filecoin_signer::proposal_multisig_message(
+        tx.to,
+        proposal_params.to,
+        tx.from,
+        proposal_params.value,
+        tx.nonce,
+        tx.gas_limit,
+        tx.gas_fee_cap,
+        tx.gas_premium,
+        proposal_params.method,
+        proposal_params.params,
+    )?;
+
+    let so = Success {
+        jsonrpc: Some(Version::V2),
+        result: serde_json::to_value(result)?,
+        id: c.id,
+    };
+
+    Ok(so)
+}
+
+pub async fn approve_multisig_tx(
+    c: MethodCall,
+    _: RemoteNodeSection,
+) -> Result<Success, ServiceError> {
+    let params: ApproveCancelMultisigTxParamsAPI =
+        c.params.parse::<ApproveCancelMultisigTxParamsAPI>()?;
+
+    let tx: UnsignedMessageAPI = params.transaction;
+    let proposal_params: ProposalMessageParamsAPI = params.proposal_params;
+
+    let result: UnsignedMessageAPI = filecoin_signer::approve_multisig_message(
+        tx.to,
+        params.txn_id,
+        proposal_params.requester,
+        proposal_params.to,
+        proposal_params.value,
+        tx.from,
+        tx.nonce,
+        tx.gas_limit,
+        tx.gas_fee_cap,
+        tx.gas_premium,
+    )?;
+
+    let so = Success {
+        jsonrpc: Some(Version::V2),
+        result: serde_json::to_value(result)?,
+        id: c.id,
+    };
+
+    Ok(so)
+}
+
+pub async fn cancel_multisig_tx(
+    c: MethodCall,
+    _: RemoteNodeSection,
+) -> Result<Success, ServiceError> {
+    let params: ApproveCancelMultisigTxParamsAPI =
+        c.params.parse::<ApproveCancelMultisigTxParamsAPI>()?;
+
+    let tx: UnsignedMessageAPI = params.transaction;
+    let proposal_params: ProposalMessageParamsAPI = params.proposal_params;
+
+    let result: UnsignedMessageAPI = filecoin_signer::cancel_multisig_message(
+        tx.to,
+        params.txn_id,
+        proposal_params.requester,
+        proposal_params.to,
+        proposal_params.value,
+        tx.from,
+        tx.nonce,
+        tx.gas_limit,
+        tx.gas_fee_cap,
+        tx.gas_premium,
+    )?;
+
+    let so = Success {
+        jsonrpc: Some(Version::V2),
+        result: serde_json::to_value(result)?,
         id: c.id,
     };
 

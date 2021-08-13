@@ -700,6 +700,72 @@ pub enum MessageTxAPI {
     SignedMessageAPI(SignedMessageAPI),
 }
 
+/// Create multisig message api structure
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
+pub struct CreateMultisigMessageAPI {
+    #[serde(alias = "From")]
+    pub from: String,
+    #[serde(alias = "Nonce")]
+    pub nonce: u64,
+    #[serde(alias = "Value")]
+    pub value: String,
+
+    #[serde(rename = "gaslimit")]
+    #[serde(alias = "gasLimit")]
+    #[serde(alias = "gas_limit")]
+    #[serde(alias = "GasLimit")]
+    pub gas_limit: i64,
+
+    #[serde(rename = "gasfeecap")]
+    #[serde(alias = "gasFeeCap")]
+    #[serde(alias = "gas_fee_cap")]
+    #[serde(alias = "GasFeeCap")]
+    pub gas_fee_cap: String,
+
+    #[serde(rename = "gaspremium")]
+    #[serde(alias = "gasPremium")]
+    #[serde(alias = "gas_premium")]
+    #[serde(alias = "GasPremium")]
+    pub gas_premium: String,
+
+    #[serde(alias = "Signers")]
+    #[serde(alias = "signers")]
+    pub signers: Vec<String>,
+
+    #[serde(alias = "Threshold")]
+    #[serde(alias = "threshold")]
+    pub threshold: i64,
+
+    #[serde(alias = "UnlockDuration")]
+    #[serde(alias = "unlock_duration")]
+    pub unlock_duration: i64,
+
+    #[serde(alias = "StartEpoch")]
+    #[serde(alias = "start_epoch")]
+    pub start_epoch: i64,
+}
+
+/// Proposal message api structure
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
+#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
+pub struct ProposalMessageParamsAPI {
+    #[serde(alias = "Requester")]
+    pub requester: String,
+
+    #[serde(alias = "To")]
+    pub to: String,
+
+    #[serde(alias = "Value")]
+    pub value: String,
+
+    #[serde(alias = "Method")]
+    pub method: u64,
+
+    #[serde(alias = "Params")]
+    pub params: String,
+}
+
 impl MessageTxAPI {
     pub fn get_message(&self) -> UnsignedMessageAPI {
         match self {
