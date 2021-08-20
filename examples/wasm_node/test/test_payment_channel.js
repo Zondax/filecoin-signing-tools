@@ -78,6 +78,31 @@ describeCall('createPymtChan', function() {
     let signedMessage = filecoin_signer.transactionSignLotus(create_pymtchan, paymentchannel_create.private_key)
     signedMessage = JSON.parse(signedMessage)
 
+    try {
+      const messageForCid = {
+        "message": {
+          "to": signedMessage.Message.To,
+          "from": signedMessage.Message.From,
+          "nonce": +signedMessage.Message.Nonce,
+          "value": signedMessage.Message.Value,
+          "gas_limit": +signedMessage.Message.GasLimit,
+          "gas_fee_cap": signedMessage.Message.GasFeeCap,
+          "gas_premium": signedMessage.Message.GasPremium,
+          "method": +signedMessage.Message.Method,
+          "params": signedMessage.Message.Params
+        },
+        "signature": {
+          "type": signedMessage.Signature.Type,
+          "data": signedMessage.Signature.Data
+        }
+      }
+      console.log('messageForCid: ', messageForCid);
+      const cid = filecoin_signer.getCid(messageForCid);
+      console.log('cid: ', cid);
+    } catch (error) {
+      console.log('getCid error: ', error)
+    }
+
     assert.deepStrictEqual(paymentchannel_create.message.params, create_pymtchan.params)
 
     // TODO: verify signature
