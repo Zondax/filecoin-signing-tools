@@ -42,33 +42,33 @@ jobs:
       - name: audit
         run: |
           cargo audit --version
-
-
-  tests_rust:
-    needs: [ configure, build ]
-    runs-on: ubuntu-latest
-    container:
-      image: zondax/rust-ci:latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: true
-      - name: Restore/Save sscache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cache/sccache
-          key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
-      - run: apt-get update -y && apt-get install -y libusb-1.0.0 libudev-dev
-      - name: rust unit tests --all-features
-        env:
-          LOTUS_SECRET_URL: ${{ secrets.LOTUS_SECRET_URL }}
-          LOTUS_SECRET_TOKEN: ${{ secrets.LOTUS_SECRET_TOKEN }}
-        run: |
-          rustc --version
-          cargo --version
-          cargo test --lib --all-features
+#
+#
+#  tests_rust:
+#    needs: [ configure, build ]
+#    runs-on: ubuntu-latest
+#    container:
+#      image: zondax/rust-ci:latest
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#        with:
+#          submodules: true
+#      - name: Restore/Save sscache
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.cache/sccache
+#          key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
+#      - run: apt-get update -y && apt-get install -y libusb-1.0.0 libudev-dev
+#      - name: rust unit tests --all-features
+#        env:
+#          LOTUS_SECRET_URL: ${{ secrets.LOTUS_SECRET_URL }}
+#          LOTUS_SECRET_TOKEN: ${{ secrets.LOTUS_SECRET_TOKEN }}
+#        run: |
+#          rustc --version
+#          cargo --version
+#          cargo test --lib --all-features
 
 
 #  tests_ffi:
@@ -139,48 +139,48 @@ jobs:
       # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-signing-tools/issues/68
       - run: make test_npm_unit
       - run: make test_npm_node
-
-  tests_service:
-    needs: [ configure, build ]
-    runs-on: ubuntu-latest
-    container:
-      image: zondax/rust-ci:latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: true
-      - name: Restore/Save sscache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cache/sccache
-          key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
-
-      - run: apt-get update -y && apt-get install -y netcat
-      - run: cargo build --manifest-path service/Cargo.toml
-      - name: patch configuration file
-        env:
-          LOTUS_SECRET_URL: ${{ secrets.LOTUS_SECRET_URL }}
-          LOTUS_SECRET_TOKEN: ${{ secrets.LOTUS_SECRET_TOKEN }}
-        run: |
-          echo [service] >> filecoin-service.toml
-          echo address = \"127.0.0.1:3030\" >> filecoin-service.toml
-          echo [remote_node] >> filecoin-service.toml
-          echo url = \"$LOTUS_SECRET_URL\" >> filecoin-service.toml
-          echo jwt = \"$LOTUS_SECRET_TOKEN\" >> filecoin-service.toml
-      - name: install node dependencies
-        run: |
-          cd examples/service_jsonrpc
-          yarn install
-      - name: run jsonrpc tests
-        run: |
-          cargo run --manifest-path service/Cargo.toml -- start &
-          .github/scripts/wait_for_port.sh 3030
-          cd examples/service_jsonrpc
-          yarn run test:unit
-          yarn run test:integration
-      # No need to save this in cache
+#
+#  tests_service:
+#    needs: [ configure, build ]
+#    runs-on: ubuntu-latest
+#    container:
+#      image: zondax/rust-ci:latest
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#        with:
+#          submodules: true
+#      - name: Restore/Save sscache
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.cache/sccache
+#          key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
+#
+#      - run: apt-get update -y && apt-get install -y netcat
+#      - run: cargo build --manifest-path service/Cargo.toml
+#      - name: patch configuration file
+#        env:
+#          LOTUS_SECRET_URL: ${{ secrets.LOTUS_SECRET_URL }}
+#          LOTUS_SECRET_TOKEN: ${{ secrets.LOTUS_SECRET_TOKEN }}
+#        run: |
+#          echo [service] >> filecoin-service.toml
+#          echo address = \"127.0.0.1:3030\" >> filecoin-service.toml
+#          echo [remote_node] >> filecoin-service.toml
+#          echo url = \"$LOTUS_SECRET_URL\" >> filecoin-service.toml
+#          echo jwt = \"$LOTUS_SECRET_TOKEN\" >> filecoin-service.toml
+#      - name: install node dependencies
+#        run: |
+#          cd examples/service_jsonrpc
+#          yarn install
+#      - name: run jsonrpc tests
+#        run: |
+#          cargo run --manifest-path service/Cargo.toml -- start &
+#          .github/scripts/wait_for_port.sh 3030
+#          cd examples/service_jsonrpc
+#          yarn run test:unit
+#          yarn run test:integration
+#      # No need to save this in cache
 
   devnet:
     needs: [ configure, build ]
