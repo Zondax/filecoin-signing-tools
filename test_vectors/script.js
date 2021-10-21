@@ -34,18 +34,29 @@ identity.digest(Buffer.from('fil/6/multisig', 'utf-8'))
 */
 
 
-const payment_channel_params_b64 = "gtgqWBkAAVUAFGZpbC81L3BheW1lbnRjaGFubmVsWEqCWDEDkwecz0UMcgWwqOxkoW5i9Z9hJ1kJsU6RpoTUrMbzIbTsQfRUMxPCBa5gAZ/snDBOVQElRUfDOAbbTJ6ACbjr2cTS5fIBgg=="
+const payment_channel_params_b64_bls = "gtgqWBkAAVUAFGZpbC81L3BheW1lbnRjaGFubmVsWEqCWDEDkwecz0UMcgWwqOxkoW5i9Z9hJ1kJsU6RpoTUrMbzIbTsQfRUMxPCBa5gAZ/snDBOVQElRUfDOAbbTJ6ACbjr2cTS5fIBgg=="
+const payment_channel_params_b64_secpk256k1 = "gtgqWBkAAVUAFGZpbC80L3BheW1lbnRjaGFubmVsWEqCVQElRUfDOAbbTJ6ACbjr2cTS5fIBglgxA5MHnM9FDHIFsKjsZKFuYvWfYSdZCbFOkaaE1KzG8yG07EH0VDMTwgWuYAGf7JwwTg=="
 
-const payment_channel_params = Buffer.from(payment_channel_params_b64, "base64")
-const encoded_params_payment_channel = decode(payment_channel_params)[0]
+const payment_channel_params_bls = Buffer.from(payment_channel_params_b64_bls, "base64")
+const encoded_params_payment_channel_bls = decode(payment_channel_params_bls)[0]
+
+const payment_channel_params_secp256k1 = Buffer.from(payment_channel_params_b64_secpk256k1, "base64")
+const encoded_params_payment_channel_secp256k1 = decode(payment_channel_params_b64_secpk256k1)[0]
+
 
 // Change version when needed
 identity.digest(Buffer.from('fil/5/paymentchannel', 'utf-8'))
     .then(function (hash) {
         const newCID = CID.create(1, raw.code, hash)
 
-        const encoded_params_hex = Buffer.from(payment_channel_params).toString('hex')
-        encoded_params_hex.replace(Buffer.from(encoded_params_payment_channel.bytes).toString('hex'), Buffer.from(newCID.bytes).toString('hex'))
+        const encoded_params_bls_hex = Buffer.from(payment_channel_params_bls).toString('hex')
+        encoded_params_bls_hex.replace(Buffer.from(encoded_params_payment_channel_bls.bytes).toString('hex'), Buffer.from(newCID.bytes).toString('hex'))
         
-        console.log('New base64 params for payment channel: ' + Buffer.from(encoded_params_hex, 'hex').toString('base64'))
+        console.log('New base64 params for payment channel (BLS): ' + Buffer.from(encoded_params_bls_hex, 'hex').toString('base64'))
+
+        const encoded_params_secp256k1_hex = Buffer.from(payment_channel_params_secp256k1).toString('hex')
+        encoded_params_secp256k1_hex.replace(Buffer.from(encoded_params_payment_channel_secp256k1.bytes).toString('hex'), Buffer.from(newCID.bytes).toString('hex'))
+        
+        console.log('New base64 params for payment channel (SECP256K1): ' + Buffer.from(encoded_params_secp256k1_hex, 'hex').toString('base64'))
+
     })
