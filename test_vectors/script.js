@@ -13,8 +13,6 @@ async function main() {
     let multisig_json = fs.readFileSync('./multisig.json')
     multisig_json = JSON.parse(multisig_json)
 
-    console.log(multisig_json)
-
     const cbor_multisig_hex = "8a0042000155011eaf1c8a4bbfeeb0870b1745b1f57503470b711601430003e81a000f4240430009c4430009c402584a82d82a53000155000e66696c2f352f6d756c74697369675831848255011eaf1c8a4bbfeeb0870b1745b1f57503470b71165501dfe49184d46adc8f89d44638beb45f78fcad2590010000"
 
     const cbor_multisig = Buffer.from(cbor_multisig_hex, "hex")
@@ -62,10 +60,11 @@ async function main() {
 
     payment_channel_json.creation.bls.message.params = Buffer.from(encoded_params_bls_hex, 'hex').toString('base64')
 
-    const encoded_params_secp256k1_hex = Buffer.from(payment_channel_params_secp256k1).toString('hex')
-    encoded_params_secp256k1_hex.replace(Buffer.from(encoded_params_payment_channel_secp256k1.bytes).toString('hex'), Buffer.from(new_payment_channel_CID.bytes).toString('hex'))
+    const encoded_params_secp256k1_hex = Buffer.from(payment_channel_params_secp256k1).toString('hex')    
 
-    payment_channel_json.creation.secp256k1.message.params = Buffer.from(encoded_params_secp256k1_hex, 'hex').toString('base64')
+    let new_hex = encoded_params_secp256k1_hex.replace(Buffer.from(encoded_params_payment_channel_secp256k1.bytes).toString('hex'), Buffer.from(new_payment_channel_CID.bytes).toString('hex'))
+
+    payment_channel_json.creation.secp256k1.message.params = Buffer.from(new_hex, 'hex').toString('base64')
 
     fs.writeFileSync('./payment_channel.json', JSON.stringify(payment_channel_json))
 }
