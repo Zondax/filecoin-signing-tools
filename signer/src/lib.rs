@@ -1180,14 +1180,15 @@ pub fn deserialize_constructor_params(
     let serialized_params = forest_vm::Serialized::new(params_decode);
 
     match code_cid.as_str() {
-        "fil/2/multisig" | "fil/3/multisig" | "fil/4/multisig" | "fil/5/multisig" | "fil/6/multisig" => {
+        "fil/2/multisig" | "fil/3/multisig" | "fil/4/multisig" | "fil/5/multisig"
+        | "fil/6/multisig" => {
             let params = serialized_params.deserialize::<multisig::ConstructorParams>()?;
             Ok(MessageParams::ConstructorParamsMultisig(params.into()))
         }
         "fil/2/paymentchannel"
         | "fil/3/paymentchannel"
         | "fil/4/paymentchannel"
-        | "fil/5/paymentchannel" => {
+        | "fil/5/paymentchannel"
         | "fil/6/paymentchannel" => {
             let params = serialized_params.deserialize::<paych::ConstructorParams>()?;
             Ok(MessageParams::PaymentChannelCreateParams(params.into()))
