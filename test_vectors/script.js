@@ -20,16 +20,16 @@ async function main() {
     const cid = decode(encoded_params)[0]
 
     // Change version when needed
-    const multisig_hash = await identity.digest(Buffer.from('fil/6/multisig', 'utf-8'))
+    const multisig_hash = await identity.digest(Buffer.from('fil/5/multisig', 'utf-8'))
     const new_multisig_CID = CID.create(1, raw.code, multisig_hash)
 
     // I need to update encoded params too
     const multisig_encoded_params_hex = Buffer.from(encoded_params).toString('hex')
-    multisig_encoded_params_hex.replace(Buffer.from(cid.bytes).toString('hex'), Buffer.from(new_multisig_CID.bytes).toString('hex'))
+    let new_hex = multisig_encoded_params_hex.replace(Buffer.from(cid.bytes).toString('hex'), Buffer.from(new_multisig_CID.bytes).toString('hex'))
 
-    multisig_json.create.message.params = Buffer.from(multisig_encoded_params_hex, 'hex').toString('base64')
-    cbor_multisig_hex.replace(Buffer.from(cid.bytes).toString('hex'), Buffer.from(new_multisig_CID.bytes).toString('hex'))
-    multisig_json.create.cbor = cbor_multisig_hex
+    multisig_json.create.message.params = Buffer.from(new_hex, 'hex').toString('base64')
+    let new_cbor_hex = cbor_multisig_hex.replace(Buffer.from(cid.bytes).toString('hex'), Buffer.from(new_multisig_CID.bytes).toString('hex'))
+    multisig_json.create.cbor = new_cbor_hex
 
     fs.writeFileSync('./multisig.json', JSON.stringify(multisig_json))
 
@@ -52,7 +52,7 @@ async function main() {
 
 
     // Change version when needed
-    const payment_channel_hash = await identity.digest(Buffer.from('fil/6/paymentchannel', 'utf-8'))
+    const payment_channel_hash = await identity.digest(Buffer.from('fil/5/paymentchannel', 'utf-8'))
     const new_payment_channel_CID = CID.create(1, raw.code, payment_channel_hash)
 
     const encoded_params_bls_hex = Buffer.from(payment_channel_params_bls).toString('hex')
