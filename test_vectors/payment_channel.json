@@ -2,7 +2,7 @@
   "creation": {
     "bls": {
       "private_key": "8niW4fUBoKNo3GMDVfWu0oari11js4t1QpwXVBpEpFA=",
-      "public_key" : "93079ccf450c7205b0a8ec64a16e62f59f61275909b14e91a684d4acc6f321b4ec41f4543313c205ae60019fec9c304e",
+      "public_key": "93079ccf450c7205b0a8ec64a16e62f59f61275909b14e91a684d4acc6f321b4ec41f4543313c205ae60019fec9c304e",
       "message": {
         "to": "t01",
         "from": "t3smdzzt2fbrzalmfi5rskc3tc6wpwcj2zbgyu5engqtkkzrxteg2oyqpukqzrhqqfvzqadh7mtqye443liejq",
