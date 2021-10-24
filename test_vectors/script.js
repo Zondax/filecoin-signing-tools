@@ -41,7 +41,7 @@ async function main() {
     let payment_channel_json = fs.readFileSync('./payment_channel.json')
     payment_channel_json = JSON.parse(payment_channel_json)
 
-    const payment_channel_params_b64_bls = "gtgqWBkAAVUAFGZpbC81L3BheW1lbnRjaGFubmVsWEqCWDEDkwecz0UMcgWwqOxkoW5i9Z9hJ1kJsU6RpoTUrMbzIbTsQfRUMxPCBa5gAZ/snDBOVQElRUfDOAbbTJ6ACbjr2cTS5fIBgg=="
+    const payment_channel_params_b64_bls = "gtgqWBkAAVUAFGZpbC80L3BheW1lbnRjaGFubmVsWEqCWDEDkwecz0UMcgWwqOxkoW5i9Z9hJ1kJsU6RpoTUrMbzIbTsQfRUMxPCBa5gAZ/snDBOVQElRUfDOAbbTJ6ACbjr2cTS5fIBgg=="
     const payment_channel_params_b64_secpk256k1 = "gtgqWBkAAVUAFGZpbC80L3BheW1lbnRjaGFubmVsWEqCVQElRUfDOAbbTJ6ACbjr2cTS5fIBglgxA5MHnM9FDHIFsKjsZKFuYvWfYSdZCbFOkaaE1KzG8yG07EH0VDMTwgWuYAGf7JwwTg=="
 
     const payment_channel_params_bls = Buffer.from(payment_channel_params_b64_bls, "base64")
@@ -56,15 +56,15 @@ async function main() {
     const new_payment_channel_CID = CID.create(1, raw.code, payment_channel_hash)
 
     const encoded_params_bls_hex = Buffer.from(payment_channel_params_bls).toString('hex')
-    encoded_params_bls_hex.replace(Buffer.from(encoded_params_payment_channel_bls.bytes).toString('hex'), Buffer.from(new_payment_channel_CID.bytes).toString('hex'))
+    let new_bls_hex = encoded_params_bls_hex.replace(Buffer.from(encoded_params_payment_channel_bls.bytes).toString('hex'), Buffer.from(new_payment_channel_CID.bytes).toString('hex'))
 
-    payment_channel_json.creation.bls.message.params = Buffer.from(encoded_params_bls_hex, 'hex').toString('base64')
+    payment_channel_json.creation.bls.message.params = Buffer.from(new_bls_hex, 'hex').toString('base64')
 
     const encoded_params_secp256k1_hex = Buffer.from(payment_channel_params_secp256k1).toString('hex')    
 
-    let new_hex = encoded_params_secp256k1_hex.replace(Buffer.from(encoded_params_payment_channel_secp256k1.bytes).toString('hex'), Buffer.from(new_payment_channel_CID.bytes).toString('hex'))
+    let new_secpk256k1_hex = encoded_params_secp256k1_hex.replace(Buffer.from(encoded_params_payment_channel_secp256k1.bytes).toString('hex'), Buffer.from(new_payment_channel_CID.bytes).toString('hex'))
 
-    payment_channel_json.creation.secp256k1.message.params = Buffer.from(new_hex, 'hex').toString('base64')
+    payment_channel_json.creation.secp256k1.message.params = Buffer.from(new_secpk256k1_hex, 'hex').toString('base64')
 
     fs.writeFileSync('./payment_channel.json', JSON.stringify(payment_channel_json))
 }
