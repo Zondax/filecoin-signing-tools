@@ -106,7 +106,7 @@ impl TryFrom<ExecParamsAPI> for ExecParams {
             && exec_constructor.code_cid != "fil/6/paymentchannel"
         {
             return Err(SignerError::GenericString(
-                "Only support `fil/2/multisig`, `fil/2/paymentchannel`, `fil/3/multisig`, `fil/3/paymentchannel`, `fil/4/multisig`, `fil/4/paymentchannel`, `fil/5/multisig`, `fil/5/paymentchannel`, `fil/6/multisig` and `fil/6/paymentchannel` code for now."
+                "Only support fil/<1-6>/multisig or fil/<1-6>/paymentchannel code for now (e.g fil/6/paymentchannel)"
                     .to_string(),
             ));
         }
