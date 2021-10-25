@@ -20,7 +20,7 @@ async function main() {
     const cid = decode(encoded_params)[0]
 
     // Change version when needed
-    const multisig_hash = await identity.digest(Buffer.from('fil/5/multisig', 'utf-8'))
+    const multisig_hash = await identity.digest(Buffer.from('fil/6/multisig', 'utf-8'))
     const new_multisig_CID = CID.create(1, raw.code, multisig_hash)
 
     // I need to update encoded params too
@@ -52,7 +52,7 @@ async function main() {
 
 
     // Change version when needed
-    const payment_channel_hash = await identity.digest(Buffer.from('fil/5/paymentchannel', 'utf-8'))
+    const payment_channel_hash = await identity.digest(Buffer.from('fil/6/paymentchannel', 'utf-8'))
     const new_payment_channel_CID = CID.create(1, raw.code, payment_channel_hash)
 
     const encoded_params_bls_hex = Buffer.from(payment_channel_params_bls).toString('hex')
