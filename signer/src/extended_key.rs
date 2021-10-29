@@ -1,5 +1,5 @@
-use secp256k1::util::{COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE};
-use secp256k1::{PublicKey, SecretKey};
+use libsecp256k1::util::{COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE};
+use libsecp256k1::{PublicKey, SecretKey};
 
 use crate::error::SignerError;
 use hmac::{Hmac, Mac, NewMac};

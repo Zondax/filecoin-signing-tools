@@ -30,7 +30,7 @@ pub enum ServiceError {
     JSONRPC(#[from] jsonrpc_core::types::Error),
     /// Secp256k1 error
     #[error("Secp256k1 | {0}")]
-    Secp256k1(#[from] secp256k1::Error),
+    Secp256k1(#[from] libsecp256k1::Error),
     /// Filecoin signer error
     #[error("Signer | {0}")]
     Signer(#[from] SignerError),

@@ -14,10 +14,10 @@ use forest_message::{SignedMessage, UnsignedMessage};
 use num_bigint_chainsafe::BigInt;
 use num_traits::FromPrimitive;
 use rayon::prelude::*;
-use secp256k1::util::{
+use libsecp256k1::util::{
     COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
 };
-use secp256k1::{recover, sign, verify, Message, RecoveryId};
+use libsecp256k1::{recover, sign, verify, Message, RecoveryId};
 use zx_bip44::BIP44Path;
 
 use extras::{multisig, paych, ExecParams, MethodInit, INIT_ACTOR_ADDR};
@@ -212,8 +212,8 @@ pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, Sign
 /// * `testnet` - specify the network, `true` if testnet else `false` for mainnet
 ///
 pub fn key_recover(private_key: &PrivateKey, testnet: bool) -> Result<ExtendedKey, SignerError> {
-    let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
-    let public_key = secp256k1::PublicKey::from_secret_key(&secret_key);
+    let secret_key = libsecp256k1::SecretKey::parse_slice(&private_key.0)?;
+    let public_key = libsecp256k1::PublicKey::from_secret_key(&secret_key);
     let mut address = Address::new_secp256k1(&public_key.serialize())?;
 
     if testnet {
@@ -310,7 +310,7 @@ fn transaction_sign_secp56k1_raw(
 ) -> Result<SignatureSECP256K1, SignerError> {
     let message_cbor = transaction_serialize(unsigned_message_api)?;
 
-    let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
+    let secret_key = libsecp256k1::SecretKey::parse_slice(&private_key.0)?;
 
     let cid_hashed = utils::get_digest(message_cbor.as_ref())?;
 
@@ -401,7 +401,7 @@ fn verify_secp256k1_signature(
 ) -> Result<bool, SignerError> {
     let network = Network::Testnet;
 
-    let signature_rs = secp256k1::Signature::parse_slice(&signature.0[..64])?;
+    let signature_rs = libsecp256k1::Signature::parse_standard_slice(&signature.0[..64])?;
     let recovery_id = RecoveryId::parse(signature.0[64])?;
 
     // Should be default network here
@@ -994,7 +994,7 @@ pub fn sign_voucher(
     let decoded_voucher = base64::decode(voucher_string)?;
     let mut voucher: paych::SignedVoucher = from_slice(&decoded_voucher)?;
 
-    let secret_key = secp256k1::SecretKey::parse_slice(&private_key.0)?;
+    let secret_key = libsecp256k1::SecretKey::parse_slice(&private_key.0)?;
 
     let svb = voucher.signing_bytes()?;
     let digest = utils::get_digest_voucher(&svb)?;
@@ -1231,9 +1231,9 @@ pub fn verify_voucher_signature(
     match &signed_voucher.signature {
         Some(signature) => match address.protocol() {
             Protocol::Secp256k1 => {
-                let sig = secp256k1::Signature::parse_slice(&signature.bytes()[..64])?;
+                let sig = libsecp256k1::Signature::parse_standard_slice(&signature.bytes()[..64])?;
                 let recovery_id = RecoveryId::parse(signature.bytes()[64])?;
-                let message = secp256k1::Message::parse(&digest);
+                let message = libsecp256k1::Message::parse(&digest);
                 let public_key = recover(&message, &sig, &recovery_id)?;
                 let mut signer = Address::new_secp256k1(&public_key.serialize().to_vec())?;
                 signer.set_network(address.network());

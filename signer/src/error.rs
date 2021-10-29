@@ -10,7 +10,7 @@ pub enum SignerError {
     CBOR(#[from] serde_cbor::Error),
     /// Secp256k1 error
     #[error("secp256k1 error")]
-    Secp256k1(#[from] secp256k1::Error),
+    Secp256k1(#[from] libsecp256k1::Error),
     // Key decoding error
     #[error("key decoding error (only hex or base64 is accepted)")]
     KeyDecoding(),
