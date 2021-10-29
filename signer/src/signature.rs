@@ -1,5 +1,5 @@
 use core::{convert::TryFrom, fmt};
-use secp256k1::util::SIGNATURE_SIZE;
+use libsecp256k1::util::SIGNATURE_SIZE;
 
 use crate::error::SignerError;
 
