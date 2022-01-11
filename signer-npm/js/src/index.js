@@ -4,11 +4,16 @@ const cbor = require('ipld-dag-cbor').util
 const secp256k1 = require('secp256k1')
 const BN = require('bn.js')
 const { MethodInit, MethodPaych } = require('./methods')
-const lowercaseKeys = require('lowercase-keys')
 
 const ExtendedKey = require('./extendedkey')
 const { getDigest, getCoinTypeFromPath, addressAsBytes, bytesToAddress, tryToPrivateKeyBuffer } = require('./utils')
 const { ProtocolIndicator } = require('./constants')
+
+const lowercaseKeys = obj =>
+  Object.keys(obj).reduce((acc, key) => {
+    acc[key.toLowerCase()] = obj[key]
+    return acc
+  }, {})
 
 function generateMnemonic() {
   // 256 so it generate 24 words

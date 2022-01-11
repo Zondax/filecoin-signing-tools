@@ -31,7 +31,6 @@
     "bn.js": "^5.1.2",
     "ipld-dag-cbor": "^0.15.3",
     "leb128": "0.0.5",
-    "lowercase-keys": "^2.0.0",
     "secp256k1": "^4.0.1"
   },
   "main": "./browser/filecoin_signer_wasm.js",
