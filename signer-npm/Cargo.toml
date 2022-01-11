@@ -33,7 +33,7 @@ pin-project-internal = "=1.0.2"
 quote = "=1.0.7"
 smallvec = "=1.6.1"
 subtle = "=2.3.0"
-syn = "=1.0.51"
+syn = "1.0.85"
 toml = "=0.5.7"
 
 getrandom = { version = "0.1.14", features = ["wasm-bindgen"] }
@@ -57,7 +57,7 @@ filecoin-signer = { path = "../signer" }
 zx-bip44 = "0.1.0"
 
 [dependencies.wasm-bindgen]
-version = "=0.2.68"
+version = "0.2.78"
 features = ["serde-serialize"]
 
 [dev-dependencies]
