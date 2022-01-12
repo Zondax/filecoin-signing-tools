@@ -72,7 +72,7 @@ describeCall('keyDerive', function() {
     assert.throws(() => {
         filecoin_signer.keyDerive(dataWallet.mnemonic, 'm/44\'/461\'/0/0/1')
       },
-      /argument must be of type string or an instance of Buffer or ArrayBuffer. Received undefined/,
+      "TypeError: Cannot read properties of undefined (reading 'length')",
     )
   })
 
