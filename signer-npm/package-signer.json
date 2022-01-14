@@ -22,16 +22,16 @@
     "js/*"
   ],
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.24.0",
     "base32-decode": "^1.0.0",
     "base32-encode": "1.2.0",
     "bip32": "2.0.6",
-    "bip39": "^3.0.2",
-    "blakejs": "^1.1.0",
+    "bip39": "^3.0.4",
+    "blakejs": "^1.1.1",
     "bn.js": "^5.1.2",
-    "ipld-dag-cbor": "^0.15.3",
+    "ipld-dag-cbor": "1.0.1",
     "leb128": "0.0.5",
-    "secp256k1": "^4.0.1"
+    "secp256k1": "^4.0.3"
   },
   "main": "./browser/filecoin_signer_wasm.js",
   "exports": {

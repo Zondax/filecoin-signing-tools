@@ -984,7 +984,7 @@ internal-slot@^1.0.3:
     has "^1.0.3"
     side-channel "^1.0.4"
 
-ipld-dag-cbor@^1.0.1:
+ipld-dag-cbor@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/ipld-dag-cbor/-/ipld-dag-cbor-1.0.1.tgz#1e07cb289aec26e393508e99d2a51ff624d876a1"
   integrity sha512-PZh8rHnRETX5bj60i73W2oq6BXoZnIvYCBDwIffYVJgxMr7BEVd5PycAARBiT6daORJ/4zbqEFR5CcrjeCtm/A==
