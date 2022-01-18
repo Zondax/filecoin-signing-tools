@@ -6,7 +6,7 @@ const axios = require('axios')
 const { getDigest } = require('./test/utils')
 const secp256k1 = require('secp256k1')
 const assert = require('assert')
-const cbor = require('ipld-dag-cbor').util
+const cbor = require('@ipld/dag-cbor')
 
 const URL = process.env.URL
 const TOKEN = process.env.TOKEN
@@ -121,7 +121,7 @@ async function main() {
 
   assert(filecoin_signer.verifyVoucherSignature(signedVoucher2, 't1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba'))
 
-  let tmp = cbor.deserialize(Buffer.from(signedVoucher2, 'base64'))[10]
+  let tmp = cbor.decode(Buffer.from(signedVoucher2, 'base64'))[10]
 
   /* Create update voucher message */
 

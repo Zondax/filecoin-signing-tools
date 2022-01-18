@@ -1,6 +1,6 @@
 const bip39 = require('bip39')
 const bip32 = require('bip32')
-const cbor = require('ipld-dag-cbor').util
+const cbor = require('@ipld/dag-cbor')
 const secp256k1 = require('secp256k1')
 const BN = require('bn.js')
 const { MethodInit, MethodPaych } = require('./methods')
@@ -111,7 +111,7 @@ function transactionSerializeRaw(message) {
     Buffer.from(message.params, 'base64'),
   ]
 
-  return cbor.serialize(message_to_encode)
+  return cbor.encode(message_to_encode)
 }
 
 function transactionSerialize(message) {
@@ -120,7 +120,7 @@ function transactionSerialize(message) {
 }
 
 function transactionParse(cborMessage, testnet) {
-  const decoded = cbor.deserialize(Buffer.from(cborMessage, 'hex'))
+  const decoded = cbor.decode(Buffer.from(cborMessage, 'hex'))
 
   if (decoded[0] !== 0) {
     throw new Error('Unsupported version')
@@ -241,7 +241,7 @@ function createPymtChan(from, to, amount, nonce) {
     throw new Error('`amount` address has to be a string.')
   }
   let constructorParams = [to, from]
-  let serializedConstructorParams = cbor.serialize(constructorParams)
+  let serializedConstructorParams = cbor.encode(constructorParams)
 
   let execParams = [
     {
@@ -249,7 +249,7 @@ function createPymtChan(from, to, amount, nonce) {
     },
     serializedConstructorParams,
   ]
-  let serializedParams = cbor.serialize(execParams)
+  let serializedParams = cbor.encode(execParams)
   let message = {
     from: from,
     to: 't01',
@@ -318,9 +318,9 @@ function updatePymtChan(pch, from, signedVoucherBase64, nonce) {
     throw new Error('`signedVoucher` has to be a base64 string.')
   }
   let cborSignedVoucher = Buffer.from(signedVoucherBase64, 'base64')
-  let signedVoucher = cbor.deserialize(cborSignedVoucher)
+  let signedVoucher = cbor.decode(cborSignedVoucher)
   let updateChannelStateParams = [signedVoucher, Buffer.alloc(0), Buffer.alloc(0)]
-  let serializedParams = cbor.serialize(updateChannelStateParams)
+  let serializedParams = cbor.encode(updateChannelStateParams)
   let message = {
     from: from,
     to: pch,
@@ -350,11 +350,11 @@ function signVoucher(unsignedVoucherBase64, privateKey) {
   const messageDigest = getDigest(cborUnsignedVoucher)
   const signature = secp256k1.ecdsaSign(messageDigest, privateKey)
 
-  let unsignedVoucher = cbor.deserialize(cborUnsignedVoucher)
+  let unsignedVoucher = cbor.decode(cborUnsignedVoucher)
 
   unsignedVoucher[9] = signature
 
-  const signedVoucher = cbor.serialize(unsignedVoucher)
+  const signedVoucher = cbor.encode(unsignedVoucher)
 
   return signedVoucher.toString('base64')
 }
@@ -363,7 +363,7 @@ function signVoucher(unsignedVoucherBase64, privateKey) {
 function createVoucher(timeLockMin, timeLockMax, amount, lane, nonce, minSettleHeight) {
   let voucher = [timeLockMin, timeLockMax, Buffer.alloc(0), null, lane, nonce, amount, minSettleHeight, [], Buffer.alloc(0)]
 
-  let serializedVoucher = cbor.serialize(voucher)
+  let serializedVoucher = cbor.encode(voucher)
 
   return serializedVoucher.toString('base64')
 }
