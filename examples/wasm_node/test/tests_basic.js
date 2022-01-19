@@ -4,7 +4,6 @@ const { getDigest, getDigestVoucher, blake2b256 } = require('./utils')
 const secp256k1 = require('secp256k1')
 const fs = require('fs')
 const assert = require('assert')
-const cbor = require('ipld-dag-cbor').util
 
 // Test twice for wasm version and pure js version
 if (process.env.PURE_JS) {
@@ -275,7 +274,7 @@ describe('transactionParse', function() {
 
     assert.throws(
       () => filecoin_signer.transactionParse(cbor_transaction_extra_bytes, false),
-      /(Encoding error \| trailing data at offset 64|Extraneous CBOR data found beyond initial top-level object)/,
+      /Error: CBOR decode error: too many terminals, data makes no sense|Encoding error \| trailing data at offset 64/,
     )
   })
 
@@ -285,7 +284,7 @@ describe('transactionParse', function() {
 
     assert.throws(
       () => filecoin_signer.transactionParse(cbor_transaction_extra_bytes, false),
-      /(Encoding error \| trailing data at offset 64|Failed to parse)/,
+      /Error: CBOR decode error: too many terminals, data makes no sense|Encoding error \| trailing data at offset 64/,
     )
   })
 })
@@ -572,7 +571,7 @@ describe('Transaction Deserialization - Parameterized', function() {
         try {
           var result = filecoin_signer.transactionParse(tc.encoded_tx_hex, tc.testnet)
         } catch (e) {
-          assert.match(e.message, /protocol not supported./)
+          assert.match(e.message, /ID protocol not supported./)
           return
         }
         assert.deepStrictEqual(tc.message, result)
