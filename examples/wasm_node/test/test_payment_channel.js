@@ -11,7 +11,7 @@ const { getDigest, getDigestVoucher, blake2b256 } = require('./utils')
 const secp256k1 = require('secp256k1')
 const fs = require('fs')
 const assert = require('assert')
-const cbor = require('ipld-dag-cbor').util
+const cbor = require('@ipld/dag-cbor')
 
 /* Load wallet test data */
 let rawdataWallet = fs.readFileSync('../../test_vectors/wallet.json')
@@ -213,7 +213,7 @@ describeCall('signVoucher', function() {
 
     const signedVoucher = filecoin_signer.signVoucher(voucher, privateKey)
 
-    let signature = cbor.deserialize(Buffer.from(signedVoucher, 'base64'))[10]
+    let signature = cbor.decode(Buffer.from(signedVoucher, 'base64'))[10]
 
     signature = signature.slice(1, -1)
 
