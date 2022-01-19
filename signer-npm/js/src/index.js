@@ -137,10 +137,10 @@ function transactionParse(cborMessage, testnet) {
   if (decoded[4][0] === 0x01) {
     throw new Error('Value cant be negative')
   }
-  message.value = new BN(decoded[4].toString('hex'), 16).toString(10)
+  message.value = new BN(Buffer.from(decoded[4]).toString('hex'), 16).toString(10)
   message.gaslimit = decoded[5]
-  message.gasfeecap = new BN(decoded[6].toString('hex'), 16).toString(10)
-  message.gaspremium = new BN(decoded[7].toString('hex'), 16).toString(10)
+  message.gasfeecap = new BN(Buffer.from(decoded[6]).toString('hex'), 16).toString(10)
+  message.gaspremium = new BN(Buffer.from(decoded[7]).toString('hex'), 16).toString(10)
   message.method = decoded[8]
   message.params = decoded[9].toString()
 
