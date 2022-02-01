@@ -1,4 +1,4 @@
-# API
+# Wasm API
 
 Wasm api for filecoin signer service.
 

@@ -1,4 +1,4 @@
-# API
+# Rust API
 
 Documentation for the rust api.
 
