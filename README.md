@@ -21,7 +21,6 @@ You can find more information in the [Documentation Site](https://docs.zondax.ch
 
   | Caller          | Callee          | Status                           |                                  |
   |-----------------|-----------------|----------------------------------|----------------------------------|
-  | Node.js         | JSONRPC Service | Ready :heavy_check_mark:         | [Link](examples/service_jsonrpc) |
   |                 |                 |                                  |                                  |
   | Browser         | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm_browser)    |
   | Node.js / Mocha | WASM            | Ready :heavy_check_mark:         | [Link](examples/wasm_node)       |
