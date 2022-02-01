@@ -1,6 +1,5 @@
 [workspace]
 members = [
-    "service",
     "signer",
     "signer-ffi",
     "signer-npm",
