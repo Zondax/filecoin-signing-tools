@@ -229,6 +229,38 @@ function verifySignature(signature, message) {
   return secp256k1.ecdsaVerify(signature.slice(0, -1), messageDigest, publicKey)
 }
 
+function serializeParams(params) {
+  const arrayValues = Object.values(params)
+  const data = cbor.encode(arrayValues)
+
+  return data
+}
+
+function deserializeParams(paramsBase64, actorType, method) {
+  // eslint-disable-next-line no-console
+  console.log(paramsBase64)
+  // eslint-disable-next-line no-console
+  console.log(actorType)
+  // eslint-disable-next-line no-console
+  console.log(method)
+
+  return {}
+}
+
+function deserializeConstructorParams(paramsBase64, codeCID) {
+  // eslint-disable-next-line no-console
+  console.log(paramsBase64)
+  // eslint-disable-next-line no-console
+  console.log(codeCID)
+
+  return {}
+}
+
+/**********************************
+ *
+ *  UNUSED PAYMENT CHANNEL FUNCTIONS
+ *
+ **********************************/
 // eslint-disable-next-line no-unused-vars
 function createPymtChan(from, to, amount, nonce) {
   if (typeof from !== 'string') {
@@ -382,4 +414,7 @@ module.exports = {
   verifySignature,
   addressAsBytes,
   bytesToAddress,
+  serializeParams,
+  deserializeParams,
+  deserializeConstructorParams,
 }

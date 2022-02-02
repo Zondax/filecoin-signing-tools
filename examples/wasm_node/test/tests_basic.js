@@ -406,7 +406,7 @@ describe('verifySignature', function() {
 
 })
 
-describeCall('SerializeParams', function() {
+describe('SerializeParams', function() {
   /* Load params test data */
   let rawdata = fs.readFileSync('../../test_vectors/serialize_params.json')
   let data = JSON.parse(rawdata)
