@@ -1,7 +1,7 @@
-const { encode, decode } = require('@ipld/dag-cbor')
-const { CID } = require('multiformats')
+const {encode, decode} = require('@ipld/dag-cbor')
+const {CID} = require('multiformats')
 const raw = require('multiformats/codecs/raw')
-const { identity } = require('multiformats/hashes/identity')
+const {identity} = require('multiformats/hashes/identity')
 const fs = require('fs')
 
 async function main() {
@@ -20,7 +20,7 @@ async function main() {
     const cid = decode(encoded_params)[0]
 
     // Change version when needed
-    const multisig_hash = await identity.digest(Buffer.from('fil/6/multisig', 'utf-8'))
+    const multisig_hash = await identity.digest(Buffer.from('fil/7/multisig', 'utf-8'))
     const new_multisig_CID = CID.create(1, raw.code, multisig_hash)
 
     // I need to update encoded params too
@@ -52,7 +52,7 @@ async function main() {
 
 
     // Change version when needed
-    const payment_channel_hash = await identity.digest(Buffer.from('fil/6/paymentchannel', 'utf-8'))
+    const payment_channel_hash = await identity.digest(Buffer.from('fil/7/paymentchannel', 'utf-8'))
     const new_payment_channel_CID = CID.create(1, raw.code, payment_channel_hash)
 
     const encoded_params_bls_hex = Buffer.from(payment_channel_params_bls).toString('hex')
@@ -60,7 +60,7 @@ async function main() {
 
     payment_channel_json.creation.bls.message.params = Buffer.from(new_bls_hex, 'hex').toString('base64')
 
-    const encoded_params_secp256k1_hex = Buffer.from(payment_channel_params_secp256k1).toString('hex')    
+    const encoded_params_secp256k1_hex = Buffer.from(payment_channel_params_secp256k1).toString('hex')
 
     let new_secpk256k1_hex = encoded_params_secp256k1_hex.replace(Buffer.from(encoded_params_payment_channel_secp256k1.bytes).toString('hex'), Buffer.from(new_payment_channel_CID.bytes).toString('hex'))
 
