@@ -6,7 +6,7 @@ There is several implementations :
  * Rust
  * Javascript (pure javascript and wasm)
 
-Notes: The pure javascript implementaion is less complete than the rust and wasm one.
+Notes: The pure Javascript implementation is less complete than the Rust and Wasm one.
 
 Examples:
 
