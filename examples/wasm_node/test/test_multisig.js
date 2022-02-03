@@ -241,6 +241,6 @@ describeCall('serializeParams reported cases', function() {
 
     const result = filecoin_signer.serializeParams(innerParams)
 
-    assert(Buffer.from(result).toString('hex'), '8102')
+    assert.strictEqual(Buffer.from(result).toString('hex'), '8102')
   })
 })
