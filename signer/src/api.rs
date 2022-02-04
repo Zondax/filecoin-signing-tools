@@ -363,7 +363,7 @@ impl Into<SwapSignerMultisigParams> for multisig::SwapSignerParams {
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct ChangeNumApprovalsThresholdMultisigParams {
-    #[serde(alias = "NewTreshold", alias="NewThreshold")]
+    #[serde(alias = "NewTreshold", alias = "NewThreshold")]
     pub new_threshold: i64,
 }
 
