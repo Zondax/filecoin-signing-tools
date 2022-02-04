@@ -236,7 +236,7 @@ describeCall('cancelMultisig', function() {
 describeCall('serializeParams reported cases', function() {
   it('newThreshold', function () {
     const innerParams = {
-      NewTreshold: 2
+      NewThreshold: 2
     }
 
     const result = filecoin_signer.serializeParams(innerParams)
