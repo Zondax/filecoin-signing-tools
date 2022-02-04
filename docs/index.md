@@ -24,4 +24,4 @@ Examples:
   | Objective-C     | Rust            | Ready :heavy_check_mark:         | [Link](https://github.com/Zondax/filecoin-signing-tools/blob/master/examples/ffi/objective-c) |
   | Swift           | Rust            | Ready :heavy_check_mark:         | [Link](https://github.com/Zondax/filecoin-signing-tools/blob/master/examples/ffi/swift)       |
   | Flutter         | Rust            | Ready :heavy_check_mark:         | [Link](https://github.com/Zondax/filecoin-signing-tools/blob/master/examples/ffi/flutter)     |
-  | React Native    | Rust            | Planned :hourglass_flowing_sand: | [Soon]()                         |
+  | React Native    | Rust            | Planned :hourglass_flowing_sand: | [Soon](https://github.com/Zondax/filecoin-signing-tools/)                         |
