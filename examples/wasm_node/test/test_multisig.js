@@ -232,3 +232,15 @@ describeCall('cancelMultisig', function() {
     assert(JSON.parse(signature).Signature)
   })
 })
+
+describeCall('serializeParams reported cases', function() {
+  it('newThreshold', function () {
+    const innerParams = {
+      NewThreshold: 2
+    }
+
+    const result = filecoin_signer.serializeParams(innerParams)
+
+    assert.strictEqual(Buffer.from(result).toString('hex'), '8102')
+  })
+})
