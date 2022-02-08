@@ -3,19 +3,16 @@ use std::str::FromStr;
 
 use forest_address::{Address, Network};
 use forest_cid::{multihash::MultihashDigest, Cid, Code::Identity};
-use forest_crypto::{signature, ecrecover};
+use forest_crypto::signature;
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
 use num_bigint_chainsafe::BigInt;
 use serde::{Deserialize, Serialize, Serializer};
-use forest_encoding::{from_slice, to_vec};
 
 use extras::{multisig, paych, ExecParams};
 
 use crate::error::SignerError;
 use crate::signature::Signature;
-
-use crate::utils;
 
 pub enum SigTypes {
     SigTypeSecp256k1 = 0x01,
@@ -997,10 +994,10 @@ mod tests {
     use std::convert::TryFrom;
 
     use forest_encoding::{from_slice, to_vec};
-    use forest_message::{UnsignedMessage, SignedMessage};
+    use forest_message::{SignedMessage, UnsignedMessage};
     use hex::{decode, encode};
 
-    use crate::api::{UnsignedMessageAPI, SignedMessageAPI};
+    use crate::api::{SignedMessageAPI, UnsignedMessageAPI};
 
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
         {
@@ -1071,7 +1068,6 @@ mod tests {
 
     #[test]
     fn conversion_signed_messages() {
-
         const EXAMPLE_SIGNED_MESSAGE: &str = r#"
         {
             "message": {
@@ -1091,10 +1087,12 @@ mod tests {
             }
         }"#;
 
-        let signed_message : SignedMessageAPI =
+        let signed_message: SignedMessageAPI =
             serde_json::from_str(EXAMPLE_SIGNED_MESSAGE).expect("FIXME");
         println!("{:?}", signed_message);
 
-        let signed_message = SignedMessage::try_from(&signed_message).expect("FIXME");
+        let _signed_message = SignedMessage::try_from(&signed_message).expect("FIXME");
+
+        assert!(true);
     }
 }
