@@ -3,16 +3,19 @@ use std::str::FromStr;
 
 use forest_address::{Address, Network};
 use forest_cid::{multihash::MultihashDigest, Cid, Code::Identity};
-use forest_crypto::signature;
+use forest_crypto::{signature, ecrecover};
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
 use num_bigint_chainsafe::BigInt;
 use serde::{Deserialize, Serialize, Serializer};
+use forest_encoding::{from_slice, to_vec};
 
 use extras::{multisig, paych, ExecParams};
 
 use crate::error::SignerError;
 use crate::signature::Signature;
+
+use crate::utils;
 
 pub enum SigTypes {
     SigTypeSecp256k1 = 0x01,
@@ -982,13 +985,10 @@ impl TryFrom<&SignedMessageAPI> for SignedMessage {
     type Error = SignerError;
 
     fn try_from(signed_message_api: &SignedMessageAPI) -> Result<SignedMessage, Self::Error> {
-        let unsigned_message = UnsignedMessage::try_from(&signed_message_api.message)?;
+        let message = UnsignedMessage::try_from(&signed_message_api.message)?;
         let signature = signature::Signature::try_from(&signed_message_api.signature)?;
 
-        let signed_message = SignedMessage::new_from_parts(unsigned_message, signature)
-            .map_err(|err| SignerError::GenericString(err))?;
-
-        Ok(signed_message)
+        Ok(SignedMessage { message, signature })
     }
 }
 
@@ -997,10 +997,10 @@ mod tests {
     use std::convert::TryFrom;
 
     use forest_encoding::{from_slice, to_vec};
-    use forest_message::UnsignedMessage;
+    use forest_message::{UnsignedMessage, SignedMessage};
     use hex::{decode, encode};
 
-    use crate::api::UnsignedMessageAPI;
+    use crate::api::{UnsignedMessageAPI, SignedMessageAPI};
 
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
         {
@@ -1047,7 +1047,7 @@ mod tests {
         let message_user_api_json =
             serde_json::to_string_pretty(&message_user_api).expect("could not serialize as JSON");
 
-        println!("{}", message_user_api_json);
+        println!("{:?}", message_user_api_json);
 
         let message_api: UnsignedMessageAPI =
             serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE).expect("FIXME");
@@ -1067,5 +1067,34 @@ mod tests {
         let message_back = UnsignedMessage::try_from(&message_api).unwrap();
 
         assert_eq!(message, message_back);
+    }
+
+    #[test]
+    fn conversion_signed_messages() {
+
+        const EXAMPLE_SIGNED_MESSAGE: &str = r#"
+        {
+            "message": {
+                "to": "f14ole2akjiw5qizembmw6r2e6yvj5ygmxgczervy",
+                "from": "f1iuj7atowet37tsmeehwxfvyjv2pqhsnyvb6niay",
+                "nonce": 37,
+                "value": "1000000000000000",
+                "gasfeecap": "1890700000",
+                "gaspremium": "150000",
+                "gaslimit": 2101318,
+                "method": 0,
+                "params": ""
+            },
+            "signature": {
+                "type": 1,
+                "data": "f3w5IcXFvWpWEAFp9LOAzixIsPjkgVaFx5XwynXx2sgZJ57yLIHLJi8CepHwoYeaWfZTRRUucHPARhi6iE2qqgA="
+            }
+        }"#;
+
+        let signed_message : SignedMessageAPI =
+            serde_json::from_str(EXAMPLE_SIGNED_MESSAGE).expect("FIXME");
+        println!("{:?}", signed_message);
+
+        let signed_message = SignedMessage::try_from(&signed_message).expect("FIXME");
     }
 }

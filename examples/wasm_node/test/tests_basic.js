@@ -379,6 +379,26 @@ describe('verifySignature', function() {
     assert.strictEqual(filecoin_signer.verifySignature(signatureRSV, tx.cbor), true)
   })
 
+  it('verify signature from #422', function() {
+    const signature = Buffer.from('f3w5IcXFvWpWEAFp9LOAzixIsPjkgVaFx5XwynXx2sgZJ57yLIHLJi8CepHwoYeaWfZTRRUucHPARhi6iE2qqgA=', 'base64')
+
+    const message =  {
+      to: 'f14ole2akjiw5qizembmw6r2e6yvj5ygmxgczervy',
+      from: 'f1iuj7atowet37tsmeehwxfvyjv2pqhsnyvb6niay',
+      nonce: 37,
+      value: '1000000000000000',
+      gaslimit: 2101318,
+      gasfeecap: '1890700000',
+      gaspremium: '150000',
+      method: 0,
+      params: ''
+    }
+
+    const cbor = filecoin_signer.transactionSerialize(message)
+
+    assert.strictEqual(filecoin_signer.verifySignature(signature, cbor), true)
+  })
+
   let itCall = it
   if (process.env.PURE_JS) {
     itCall = it.skip
@@ -480,6 +500,29 @@ describeCall('GetCid', function() {
 
     assert.strictEqual(tc.cid, cid)
 
+  })
+
+  it('get cid from issue #422', function() {
+    const signedMessage = {
+      message: {
+        to: 'f14ole2akjiw5qizembmw6r2e6yvj5ygmxgczervy',
+        from: 'f1iuj7atowet37tsmeehwxfvyjv2pqhsnyvb6niay',
+        nonce: 37,
+        value: '1000000000000000',
+        gas_limit: 2101318,
+        gas_fee_cap: '1890700000',
+        gas_premium: '150000',
+        method: 0,
+        params: ''
+      },
+      signature: {
+        type: 1,
+        data: 'f3w5IcXFvWpWEAFp9LOAzixIsPjkgVaFx5XwynXx2sgZJ57yLIHLJi8CepHwoYeaWfZTRRUucHPARhi6iE2qqgA='
+      }
+    }
+    const cid = filecoin_signer.getCid(signedMessage)
+
+    assert(cid)
   })
 })
 
