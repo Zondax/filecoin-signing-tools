@@ -24,7 +24,7 @@
     "@zondax/filecoin-signing-tools": "^0"
   },
   "devDependencies": {
-    "copy-webpack-plugin": "^5.1.1",
+    "copy-webpack-plugin": "^6.4.1",
     "webpack": "^4.42.1",
     "webpack-cli": "^4.9.2",
     "webpack-dev-server": "^3.10.3"
