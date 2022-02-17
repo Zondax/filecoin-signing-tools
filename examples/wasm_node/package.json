@@ -22,7 +22,7 @@
   ],
   "dependencies": {
     "axios": "^0.21.1",
-    "cids": "^1.1.6"
+    "cids": "^1.1.9"
   },
   "devDependencies": {
     "bip32": "^2.0.6",
