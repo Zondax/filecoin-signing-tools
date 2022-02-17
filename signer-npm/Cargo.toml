@@ -24,7 +24,7 @@ js-sys = "0.3.42"
 wasm-bindgen-futures = "0.4.15"
 serde = { version = "1.0", features = ["derive"] }
 
-libc = "=0.2.80"
+libc = "=0.2.118"
 const_fn = "=0.4.3"
 itoa = "=0.4.6"
 parking_lot_core = "=0.8.0"
