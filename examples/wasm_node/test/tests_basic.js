@@ -442,6 +442,18 @@ describeCall('SerializeParams', function() {
       )
     })
   }
+
+  it('serialized parameters issue #423', function () {
+    const params = {
+      AmountRequested: "123"
+    }
+
+    let serialized_params = filecoin_signer.serializeParams(params)
+
+    console.log(serialized_params)
+
+    assert(false)
+  })
 })
 
 describeCall('DeserializeParams', function() {
