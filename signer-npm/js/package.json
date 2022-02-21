@@ -11,7 +11,7 @@
     "@ipld/dag-cbor": "^7.0.0",
     "axios": "^0.26.0",
     "base32-decode": "^1.0.0",
-    "base32-encode": "1.2.0",
+    "base32-encode": "2.0.0",
     "bip32": "2.0.6",
     "bip39": "^3.0.4",
     "blakejs": "^1.1.1",
