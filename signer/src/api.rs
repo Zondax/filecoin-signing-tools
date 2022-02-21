@@ -9,7 +9,8 @@ use forest_vm::Serialized;
 use num_bigint_chainsafe::BigInt;
 use serde::{Deserialize, Serialize, Serializer};
 
-use extras::{multisig, paych, ExecParams};
+use extras::{multisig, paych};
+use extras::init::ExecParams;
 
 use crate::error::SignerError;
 use crate::signature::Signature;
@@ -26,7 +27,7 @@ pub struct ConstructorParamsMultisig {
     #[serde(alias = "Signers")]
     pub signers: Vec<String>,
     #[serde(alias = "NumApprovalsThreshold")]
-    pub num_approvals_threshold: i64,
+    pub num_approvals_threshold: usize,
     #[serde(alias = "UnlockDuration")]
     pub unlock_duration: i64,
     #[serde(alias = "StartEpoch")]
@@ -70,7 +71,7 @@ impl Into<ConstructorParamsMultisig> for multisig::ConstructorParams {
         ConstructorParamsMultisig {
             signers,
             num_approvals_threshold: self.num_approvals_threshold,
-            unlock_duration: self.num_approvals_threshold,
+            unlock_duration: self.unlock_duration,
             start_epoch: self.start_epoch,
         }
     }
@@ -192,7 +193,7 @@ pub struct PropoposalHashDataParamsMultisig {
     pub params: String,
 }
 
-impl TryFrom<PropoposalHashDataParamsMultisig> for multisig::ProposalHashData {
+/*impl TryFrom<PropoposalHashDataParamsMultisig> for multisig::ProposalHashData {
     type Error = SignerError;
 
     fn try_from(
@@ -202,22 +203,22 @@ impl TryFrom<PropoposalHashDataParamsMultisig> for multisig::ProposalHashData {
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
         Ok(multisig::ProposalHashData {
-            requester: Address::from_str(&proposal_params.requester)?,
-            to: Address::from_str(&proposal_params.to)?,
-            value: BigInt::from_str(&proposal_params.value)?,
-            method: proposal_params.method,
-            params: forest_vm::Serialized::new(params),
+            requester: Option::Some(&Address::from_str(&proposal_params.requester)?),
+            to: &Address::from_str(&proposal_params.to)?,
+            value: &BigInt::from_str(&proposal_params.value)?,
+            method: &proposal_params.method,
+            params: &forest_vm::Serialized::new(params),
         })
     }
-}
+}*/
 
-impl Into<PropoposalHashDataParamsMultisig> for multisig::ProposalHashData {
+impl<'a> Into<PropoposalHashDataParamsMultisig> for multisig::ProposalHashData<'a> {
     fn into(self) -> PropoposalHashDataParamsMultisig {
         PropoposalHashDataParamsMultisig {
-            requester: self.requester.to_string(),
+            requester: self.requester.map_or(String::from(""), |v| v.to_string()),
             to: self.to.to_string(),
             value: self.value.to_str_radix(10),
-            method: self.method,
+            method: *self.method,
             params: base64::encode(self.params.bytes()),
         }
     }
@@ -366,7 +367,7 @@ impl Into<SwapSignerMultisigParams> for multisig::SwapSignerParams {
 #[serde(deny_unknown_fields)]
 pub struct ChangeNumApprovalsThresholdMultisigParams {
     #[serde(alias = "NewTreshold", alias = "NewThreshold")]
-    pub new_threshold: i64,
+    pub new_threshold: usize,
 }
 
 impl TryFrom<ChangeNumApprovalsThresholdMultisigParams>
@@ -535,7 +536,7 @@ impl Serialize for SpecsActorsCryptoSignature {
 #[serde(untagged)]
 pub enum MessageParams {
     MessageParamsSerialized(String),
-    PropoposalHashDataParamsMultisig(PropoposalHashDataParamsMultisig),
+    // PropoposalHashDataParamsMultisig(PropoposalHashDataParamsMultisig),
     ConstructorParamsMultisig(ConstructorParamsMultisig),
     MessageParamsMultisig(ExecParamsAPI),
     ProposeParamsMultisig(ProposeParamsMultisig),
@@ -557,12 +558,12 @@ impl MessageParams {
                     .map_err(|err| SignerError::GenericString(err.to_string()))?;
                 forest_vm::Serialized::new(params_bytes)
             }
-            MessageParams::PropoposalHashDataParamsMultisig(params) => {
+            /*MessageParams::PropoposalHashDataParamsMultisig(params) => {
                 let params = multisig::ProposalHashData::try_from(params)?;
 
                 forest_vm::Serialized::serialize::<multisig::ProposalHashData>(params)
                     .map_err(|err| SignerError::GenericString(err.to_string()))?
-            }
+            }*/
             MessageParams::ConstructorParamsMultisig(constructor_params) => {
                 let params = multisig::ConstructorParams::try_from(constructor_params)?;
 

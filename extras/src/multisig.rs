@@ -32,13 +32,6 @@ pub struct ConstructorParams {
     pub start_epoch: ChainEpoch,
 }
 
-/// Constructor parameters for multisig actor V1 (deprecated)
-#[derive(Serialize_tuple, Deserialize_tuple)]
-pub struct ConstructorParamsV1 {
-    pub signers: Vec<Address>,
-    pub num_approvals_threshold: i64,
-    pub unlock_duration: ChainEpoch,
-}
 
 /// Propose method call parameters
 #[derive(Serialize_tuple, Deserialize_tuple)]

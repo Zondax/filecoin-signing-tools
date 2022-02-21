@@ -20,7 +20,8 @@ use num_traits::FromPrimitive;
 use rayon::prelude::*;
 use zx_bip44::BIP44Path;
 
-use extras::{multisig, paych, ExecParams, MethodInit, INIT_ACTOR_ADDR};
+use extras::{multisig, paych, INIT_ACTOR_ADDR};
+use extras::init;
 
 use crate::api::{
     MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
@@ -29,12 +30,14 @@ use crate::api::{
 use crate::error::SignerError;
 use crate::extended_key::ExtendedSecretKey;
 use crate::signature::{Signature, SignatureBLS, SignatureSECP256K1};
+use crate::multisigV1::ConstructorParamsV1;
 
 pub mod api;
 pub mod error;
 pub mod extended_key;
 pub mod signature;
 pub mod utils;
+pub mod multisigV1;
 
 /// Mnemonic string
 pub struct Mnemonic(pub String);
@@ -558,7 +561,7 @@ pub fn create_multisig(
     sender_address: String,
     addresses: Vec<String>,
     value: String,
-    required: i64,
+    required: usize,
     nonce: u64,
     duration: i64,
     start_epoch: i64,
@@ -598,12 +601,12 @@ pub fn create_multisig(
     >(constructor_params_multisig)
     .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-    let message_params_multisig = ExecParams {
+    let message_params_multisig = init::ExecParams {
         code_cid: Cid::new_v1(forest_cid::RAW, Identity.digest(b"fil/7/multisig")),
         constructor_params: serialized_constructor_params,
     };
 
-    let serialized_params = forest_vm::Serialized::serialize::<ExecParams>(message_params_multisig)
+    let serialized_params = forest_vm::Serialized::serialize::<init::ExecParams>(message_params_multisig)
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let multisig_create_message_api = UnsignedMessageAPI {
@@ -614,7 +617,7 @@ pub fn create_multisig(
         gas_limit,
         gas_fee_cap,
         gas_premium,
-        method: MethodInit::Exec as u64,
+        method: init::Method::Exec as u64,
         params: base64::encode(serialized_params.bytes()),
     };
 
@@ -668,7 +671,7 @@ pub fn proposal_multisig_message(
         gas_limit,
         gas_fee_cap,
         gas_premium,
-        method: multisig::MethodMultisig::Propose as u64,
+        method: multisig::Method::Propose as u64,
         params: base64::encode(params.bytes()),
     };
 
@@ -689,12 +692,13 @@ fn approve_or_cancel_multisig_message(
     gas_fee_cap: String,
     gas_premium: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
+    let addr = Address::from_str(&proposer_address)?;
     let proposal_parameter = multisig::ProposalHashData {
-        requester: Address::from_str(&proposer_address)?,
-        to: Address::from_str(&to_address)?,
-        value: BigInt::from_str(&amount)?,
-        method: 0,
-        params: forest_vm::Serialized::new(Vec::new()),
+        requester: Option::Some(&addr),
+        to: &Address::from_str(&to_address)?,
+        value: &BigInt::from_str(&amount)?,
+        method: &0,
+        params: &forest_vm::Serialized::new(Vec::new()),
     };
 
     let serialize_proposal_parameter =
@@ -751,7 +755,7 @@ pub fn approve_multisig_message(
     gas_premium: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     approve_or_cancel_multisig_message(
-        multisig::MethodMultisig::Approve as u64,
+        multisig::Method::Approve as u64,
         multisig_address,
         message_id,
         proposer_address,
@@ -791,7 +795,7 @@ pub fn cancel_multisig_message(
     gas_premium: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
     approve_or_cancel_multisig_message(
-        multisig::MethodMultisig::Cancel as u64,
+        multisig::Method::Cancel as u64,
         multisig_address,
         message_id,
         proposer_address,
@@ -844,13 +848,13 @@ pub fn create_pymtchan(
         forest_vm::Serialized::serialize::<paych::ConstructorParams>(create_payment_channel_params)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-    let message_params_create_pymtchan = ExecParams {
+    let message_params_create_pymtchan = init::ExecParams {
         code_cid: Cid::new_v1(forest_cid::RAW, Identity.digest(b"fil/7/paymentchannel")),
         constructor_params: serialized_constructor_params,
     };
 
     let serialized_params =
-        forest_vm::Serialized::serialize::<ExecParams>(message_params_create_pymtchan)
+        forest_vm::Serialized::serialize::<init::ExecParams>(message_params_create_pymtchan)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let mut init_actor_address = Address::from_str("f01")?;
@@ -864,7 +868,7 @@ pub fn create_pymtchan(
         gas_limit,
         gas_fee_cap,
         gas_premium,
-        method: MethodInit::Exec as u64,
+        method: init::Method::Exec as u64,
         params: base64::encode(serialized_params.bytes()),
     };
 
@@ -909,7 +913,7 @@ pub fn update_pymtchan(
         gas_limit,
         gas_fee_cap,
         gas_premium,
-        method: paych::MethodsPaych::UpdateChannelState as u64,
+        method: paych::Method::UpdateChannelState as u64,
         params: base64::encode(serialized_params.bytes()),
     };
 
@@ -941,7 +945,7 @@ pub fn settle_pymtchan(
         gas_limit,
         gas_fee_cap,
         gas_premium,
-        method: paych::MethodsPaych::Settle as u64,
+        method: paych::Method::Settle as u64,
         params: base64::encode(Vec::new()),
     };
 
@@ -973,7 +977,7 @@ pub fn collect_pymtchan(
         gas_limit,
         gas_fee_cap,
         gas_premium,
-        method: paych::MethodsPaych::Collect as u64,
+        method: paych::Method::Collect as u64,
         params: base64::encode(Vec::new()),
     };
 
@@ -1033,7 +1037,7 @@ pub fn create_voucher(
     time_lock_min: i64,
     time_lock_max: i64,
     amount: String,
-    lane: u64,
+    lane: usize,
     nonce: u64,
     min_settle_height: i64,
 ) -> Result<String, SignerError> {
@@ -1084,8 +1088,8 @@ pub fn deserialize_params(
     match actor_type.as_str() {
         "fil/1/init" | "fil/2/init" | "fil/3/init" | "fil/4/init" | "fil/5/init" | "fil/6/init" | "fil/7/init" => {
             match FromPrimitive::from_u64(method) {
-                Some(MethodInit::Exec) => {
-                    let params = serialized_params.deserialize::<ExecParams>()?;
+                Some(init::Method::Exec) => {
+                    let params = serialized_params.deserialize::<init::ExecParams>()?;
 
                     Ok(MessageParams::MessageParamsMultisig(params.into()))
                 }
@@ -1097,32 +1101,32 @@ pub fn deserialize_params(
         }
         "fil/2/multisig" | "fil/3/multisig" | "fil/4/multisig" | "fil/5/multisig" | "fil/6/multisig" | "fil/7/multisig" => {
             match FromPrimitive::from_u64(method) {
-                Some(multisig::MethodMultisig::Propose) => {
+                Some(multisig::Method::Propose) => {
                     let params = serialized_params.deserialize::<multisig::ProposeParams>()?;
 
                     Ok(MessageParams::ProposeParamsMultisig(params.into()))
                 }
-                Some(multisig::MethodMultisig::Approve) | Some(multisig::MethodMultisig::Cancel) => {
+                Some(multisig::Method::Approve) | Some(multisig::Method::Cancel) => {
                     let params = serialized_params.deserialize::<multisig::TxnIDParams>()?;
 
                     Ok(MessageParams::TxnIDParamsMultisig(params.into()))
                 }
-                Some(multisig::MethodMultisig::AddSigner) => {
+                Some(multisig::Method::AddSigner) => {
                     let params = serialized_params.deserialize::<multisig::AddSignerParams>()?;
 
                     Ok(MessageParams::AddSignerMultisigParams(params.into()))
                 }
-                Some(multisig::MethodMultisig::RemoveSigner) => {
+                Some(multisig::Method::RemoveSigner) => {
                     let params = serialized_params.deserialize::<multisig::RemoveSignerParams>()?;
 
                     Ok(MessageParams::RemoveSignerMultisigParams(params.into()))
                 }
-                Some(multisig::MethodMultisig::SwapSigner) => {
+                Some(multisig::Method::SwapSigner) => {
                     let params = serialized_params.deserialize::<multisig::SwapSignerParams>()?;
 
                     Ok(MessageParams::SwapSignerMultisigParams(params.into()))
                 }
-                Some(multisig::MethodMultisig::ChangeNumApprovalsThreshold) => {
+                Some(multisig::Method::ChangeNumApprovalsThreshold) => {
                     let params = serialized_params
                         .deserialize::<multisig::ChangeNumApprovalsThresholdParams>()?;
 
@@ -1130,7 +1134,7 @@ pub fn deserialize_params(
                         params.into(),
                     ))
                 }
-                Some(multisig::MethodMultisig::LockBalance) => {
+                Some(multisig::Method::LockBalance) => {
                     let params = serialized_params.deserialize::<multisig::LockBalanceParams>()?;
 
                     Ok(MessageParams::LockBalanceMultisigParams(params.into()))
@@ -1142,7 +1146,7 @@ pub fn deserialize_params(
         }
         "fil/2/paymentchannel" | "fil/3/paymentchannel" | "fil/4/paymentchannel" | "fil/5/paymentchannel" | "fil/6/paymentchannel" | "fil/7/paymentchannel" => {
             match FromPrimitive::from_u64(method) {
-                Some(paych::MethodsPaych::UpdateChannelState) => {
+                Some(paych::Method::UpdateChannelState) => {
                     let params =
                         serialized_params.deserialize::<paych::UpdateChannelStateParams>()?;
 
@@ -1150,7 +1154,7 @@ pub fn deserialize_params(
                         params.try_into()?,
                     ))
                 }
-                Some(paych::MethodsPaych::Settle) | Some(paych::MethodsPaych::Collect) => {
+                Some(paych::Method::Settle) | Some(paych::Method::Collect) => {
                     /* Note : those method doesn't have params to decode */
                     Ok(MessageParams::MessageParamsSerialized("".to_string()))
                 }
@@ -1196,7 +1200,7 @@ pub fn deserialize_constructor_params(
         }
         "fil/1/multisig" => {
             let deprecated_multisig_params =
-                serialized_params.deserialize::<multisig::ConstructorParamsV1>()?;
+                serialized_params.deserialize::<ConstructorParamsV1>()?;
             let params = multisig::ConstructorParams {
                 signers: deprecated_multisig_params.signers,
                 num_approvals_threshold: deprecated_multisig_params.num_approvals_threshold,

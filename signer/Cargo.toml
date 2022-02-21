@@ -41,6 +41,7 @@ forest_encoding = "0.2.2"
 forest_cid = { version ="0.3.0", features = ["cbor"] }
 forest_message = { default-features = false, features = ["pairing"], version = "0.7"  }
 forest_crypto = { default-features = false, features = ["pairing"], version = "0.5.3"  }
+clock = { package = "fil_clock", git = "https://github.com/chainsafe/forest", rev="d5a774a10b59dcad5372f520577180b9614fe2bb" }
 
 tiny-bip39 = "0.8.0"
 num_bigint_chainsafe = { package = "forest_bigint", version = "0.1.4"}
