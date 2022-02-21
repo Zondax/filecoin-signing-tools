@@ -70,7 +70,7 @@ impl Into<ConstructorParamsMultisig> for multisig::ConstructorParams {
         ConstructorParamsMultisig {
             signers,
             num_approvals_threshold: self.num_approvals_threshold,
-            unlock_duration: self.num_approvals_threshold,
+            unlock_duration: self.unlock_duration,
             start_epoch: self.start_epoch,
         }
     }
