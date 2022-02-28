@@ -9,7 +9,7 @@
     "cryptography"
   ],
   "description": "Filecoin Signing Tools",
-  "version": "0.2.0",
+  "version": "0.20.1",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
