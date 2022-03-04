@@ -1190,7 +1190,7 @@ pub fn deserialize_constructor_params(
         | "fil/4/paymentchannel"
         | "fil/5/paymentchannel"
         | "fil/6/paymentchannel"
-        | "fil/7/multisig" => {
+        | "fil/7/paymentchannel" => {
             let params = serialized_params.deserialize::<paych::ConstructorParams>()?;
             Ok(MessageParams::PaymentChannelCreateParams(params.into()))
         }
