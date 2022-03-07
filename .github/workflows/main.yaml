@@ -103,9 +103,10 @@ jobs:
         run: |
           cd signer-ffi
           cargo build
-          cp ../../target/debug/libfilecoin_signer_ffi.so /tmp/libfilecoin_signer_ffi.so
+          ls ../
+          cp ../target/debug/libfilecoin_signer_ffi.so /tmp/libfilecoin_signer_ffi.so
           cargo build --features with-jni
-          cp ../../target/debug/libfilecoin_signer_ffi.so /tmp/libfilecoin_signer_ffi_java.so
+          cp ../target/debug/libfilecoin_signer_ffi.so /tmp/libfilecoin_signer_ffi_java.so
       - run: OUT_DIR=/tmp/c ./.github/scripts/test_c.sh
       - run: OUT_DIR=/tmp/cpp ./.github/scripts/test_cpp.sh
       - run: OUT_DIR=/tmp/go ./.github/scripts/test_go.sh
