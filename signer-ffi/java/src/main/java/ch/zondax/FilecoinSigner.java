@@ -10,7 +10,7 @@ public class FilecoinSigner {
     public static native String extendedKeyPublicKey(long ptr, long err);
     public static native void extendedKeyFree(long ptr);
 
-    public static native long keyDerive(String mnemonic, String path, String password, long err);
+    public static native long keyDerive(String mnemonic, String path, String password, String lang, long err);
 
     static {
         System.loadLibrary("filecoin_signer_ffi");
