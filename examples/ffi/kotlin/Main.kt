@@ -6,6 +6,7 @@ fun main() {
         "equip will roof matter pink blind book anxiety banner elbow sun young",
         "m/44'/461'/0/0/0",
         "",
+        "en",
         error
     )
 
