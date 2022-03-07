@@ -90,7 +90,7 @@ jobs:
           key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
       - name: External dependencies
         run: |
-          apt-get install -y clang default-jdk g++ gcc gnustep gnustep-devel gobjc golang libicu-dev libtinfo5 valgrind
+          apt update && apt-get install -y clang default-jdk g++ gcc gnustep gnustep-devel gobjc golang libicu-dev libtinfo5 valgrind
       - name: Cbindgen
         run: |
           cd signer-ffi
