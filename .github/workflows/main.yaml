@@ -111,7 +111,7 @@ jobs:
       - run: OUT_DIR=/tmp/cpp ./.github/scripts/test_cpp.sh
       - run: OUT_DIR=/tmp/go ./.github/scripts/test_go.sh
       - run: OUT_DIR=/tmp/java ./.github/scripts/test_java.sh
-      - run: OUT_DIR=/tmp/kotlin ./.github/scripts/test_kotlin.sh
+      #- run: OUT_DIR=/tmp/kotlin ./.github/scripts/test_kotlin.sh
       - run: OUT_DIR=/tmp/objective-c ./.github/scripts/test_objective-c.sh
       - run: OUT_DIR=/tmp/swift ./.github/scripts/test_swift.sh
 
