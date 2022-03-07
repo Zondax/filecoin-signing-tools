@@ -16,10 +16,11 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   static const String Mnemonic = 'equip will roof matter pink blind book anxiety banner elbow sun young';
   static const String Path = "m/44'/461'/0/0/0";
+  static const String LanguageCode = "en";
 
   static String _privateKey() {
     var error = Filecoin.errorNew();
-    var extendedKey = Filecoin.keyDerive(Utf8.toUtf8(Mnemonic), Utf8.toUtf8(Path), error);
+    var extendedKey = Filecoin.keyDerive(Utf8.toUtf8(Mnemonic), Utf8.toUtf8(Path), Utf8.toUtf8(LanguageCode), error);
 
     var privateKey = "Error";
     if (Filecoin.errorCode(error) != 0) {
