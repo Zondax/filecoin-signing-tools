@@ -1,7 +1,6 @@
 wget -O sdk.install.sh "https://get.sdkman.io"
 bash sdk.install.sh
-export SDKMAN_DIR=/tmp
-. /tmp/bin/sdkman-init.sh
+. ~/.sdkman/bin/sdkman-init.sh
 sdk install kotlin
 
 mkdir $OUT_DIR
