@@ -66,6 +66,7 @@ impl From<SignerError> for ffi_support::ExternError {
             SignerError::DecodeError(_) => 11,
             SignerError::DeserializeError(_) => 12,
             SignerError::EncodingError(_) => 13,
+            SignerError::EncodingFVMError(_) => 14,
         };
         Self::new_error(ffi_support::ErrorCode::new(code), e.to_string())
     }
@@ -98,6 +99,12 @@ impl From<fvm_shared::bigint::ParseBigIntError> for SignerError {
 
 impl From<fvm_shared::encoding::error::Error> for SignerError {
     fn from(err: fvm_shared::encoding::error::Error) -> SignerError {
+        SignerError::GenericString(err.to_string())
+    }
+}
+
+impl From<cid::multihash::Error> for SignerError {
+    fn from(err: cid::multihash::Error) -> SignerError {
         SignerError::GenericString(err.to_string())
     }
 }

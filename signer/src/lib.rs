@@ -6,7 +6,7 @@ use std::str::FromStr;
 
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
-use forest_address::{Address, BLSPublicKey, Network, Protocol};
+//use forest_address::{Address, BLSPublicKey, Network, Protocol};
 use forest_encoding::blake2b_256;
 use forest_encoding::{from_slice, to_vec};
 use forest_message::{SignedMessage, UnsignedMessage};
@@ -25,8 +25,9 @@ use fil_actor_paych as paych;
 use fil_actor_init::{ExecParams, Method as MethodInit};
 use fil_actors_runtime::builtin::INIT_ACTOR_ADDR;
 use fvm_shared::encoding::RawBytes;
+use fvm_shared::address::{Address, BLSPublicKey, Network, Protocol, BLS_PUB_LEN};
 use cid::Cid;
-use cid::multihash::{Code, MultihashDigest};
+use cid::multihash::{Code, Multihash};
 
 use crate::api::{
     MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
@@ -59,8 +60,6 @@ impl AsRef<[u8]> for CborBuffer {
 }
 
 pub const SIGNATURE_RECOVERY_SIZE: usize = SIGNATURE_SIZE + 1;
-
-pub const BLS_PUB_LEN: usize = 48;
 
 /// Private key buffer
 pub struct PrivateKey(pub [u8; SECRET_KEY_SIZE]);
@@ -188,6 +187,7 @@ pub fn key_derive(
     })
 }
 
+
 /// Returns a public key, private key and address given a seed and derivation path
 ///
 /// # Arguments
@@ -239,6 +239,7 @@ pub fn key_recover(private_key: &PrivateKey, testnet: bool) -> Result<ExtendedKe
     })
 }
 
+
 /// Get extended key from BLS private key
 ///
 /// # Arguments
@@ -261,7 +262,7 @@ pub fn key_recover_bls(
     }
 
     let mut public_key = BLSPublicKey {
-        0: [0; forest_address::BLS_PUB_LEN],
+        0: [0; BLS_PUB_LEN],
     };
     public_key.0.copy_from_slice(&sk.public_key().as_bytes());
 
@@ -277,6 +278,7 @@ pub fn key_recover_bls(
     })
 }
 
+
 /// Serialize a transaction and return a CBOR hexstring.
 ///
 /// # Arguments
@@ -290,6 +292,7 @@ pub fn transaction_serialize(
     let message_cbor = CborBuffer(to_vec(&unsigned_message)?);
     Ok(message_cbor)
 }
+
 
 /// Parse a CBOR hextring into a filecoin transaction (signed or unsigned).
 ///
@@ -576,6 +579,7 @@ pub fn create_multisig(
     gas_fee_cap: String,
     gas_premium: String,
 ) -> Result<UnsignedMessageAPI, SignerError> {
+    let from = fvm_shared::address::Address::from_str(&sender_address)?;
     let signers_tmp: Result<Vec<fvm_shared::address::Address>, _> = addresses
         .into_iter()
         .map(|address_string| fvm_shared::address::Address::from_str(&address_string))
@@ -606,17 +610,22 @@ pub fn create_multisig(
     let serialized_constructor_params = RawBytes::serialize(constructor_params_multisig)
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
+    let multisig_actor_cid = Multihash::wrap(0, b"fil/7/multisig")?;
+
     let message_params_multisig = ExecParams {
-        code_cid: Cid::new_v1(RAW, Code::Sha2_256.digest(b"fil/7/multisig")),
+        code_cid: Cid::new_v1(RAW, multisig_actor_cid),
         constructor_params: serialized_constructor_params,
     };
 
     let serialized_params = RawBytes::serialize(message_params_multisig)
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
+    let mut init_actor_address = fvm_shared::address::Address::from_str("f01")?;
+    init_actor_address.set_network(from.network());
+
     let multisig_create_message_api = UnsignedMessageAPI {
-        to: INIT_ACTOR_ADDR.to_string(),
-        from: sender_address,
+        to: init_actor_address.to_string(),
+        from: from.to_string(),
         nonce,
         value,
         gas_limit,
@@ -852,8 +861,10 @@ pub fn create_pymtchan(
         RawBytes::serialize::<paych::ConstructorParams>(create_payment_channel_params)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
+    let paych_actor_cid = Multihash::wrap(0, b"fil/7/paymentchannel")?;
+
     let message_params_create_pymtchan = ExecParams {
-        code_cid: Cid::new_v1(RAW, Code::Sha2_256.digest(b"fil/7/paymentchannel")),
+        code_cid: Cid::new_v1(RAW, paych_actor_cid),
         constructor_params: serialized_constructor_params,
     };
 
@@ -1215,6 +1226,7 @@ pub fn deserialize_constructor_params(
         )),
     }
 }
+
 
 /// Verify Voucher signature
 ///

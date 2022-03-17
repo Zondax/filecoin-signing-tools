@@ -44,7 +44,7 @@ describeCall('createMultisig', function() {
       multisig_create.message.gaspremium,
     )
 
-    assert.deepStrictEqual(multisig_create.message, create_multisig_transaction)
+    assert.deepStrictEqual(create_multisig_transaction, multisig_create.message)
   })
 
   it('should return a create multisig transaction with duration -1', function() {
