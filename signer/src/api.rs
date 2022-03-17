@@ -3,7 +3,6 @@ use std::str::FromStr;
 
 use forest_address::{Network};
 use fvm_shared::address::{Address};
-//use forest_cid::{multihash::MultihashDigest, Cid, Code::Identity};
 use forest_crypto::signature;
 use forest_message::{Message, SignedMessage, UnsignedMessage};
 use forest_vm::Serialized;
