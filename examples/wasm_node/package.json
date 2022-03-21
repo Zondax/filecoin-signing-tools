@@ -27,7 +27,7 @@
   "devDependencies": {
     "bip32": "^2.0.6",
     "bip39": "^3.0.4",
-    "blakejs": "^1.1.1",
+    "blakejs": "^1.2.1",
     "mocha": "^9.2.2",
     "secp256k1": "^4.0.3"
   }
