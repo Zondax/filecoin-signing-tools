@@ -2,18 +2,17 @@ use std::convert::TryFrom;
 
 use bip39::{Language, Seed};
 use bls_signatures::Serialize;
-use forest_address::Address;
 use forest_encoding::{to_vec, Cbor};
 use forest_message::UnsignedMessage;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 
+use fvm_shared::address::Address;
+use fil_actor_multisig as multisig;
 use filecoin_signer::api::{MessageParams, MessageTxAPI, UnsignedMessageAPI};
 use filecoin_signer::signature::{Signature, SignatureBLS};
 use filecoin_signer::*;
-
-use extras::multisig;
 
 mod common;
 
@@ -712,7 +711,7 @@ fn support_multisig_create() {
             .unwrap()
             .to_string(),
         test_value["create"]["constructor_params"]["num_approvals_threshold"]
-            .as_i64()
+            .as_u64()
             .unwrap(),
         test_value["create"]["message"]["nonce"].as_u64().unwrap(),
         test_value["create"]["constructor_params"]["unlock_duration"]
@@ -961,14 +960,38 @@ fn test_multisig_v1_deserialize() {
         unlock_duration: 0,
         start_epoch: 0,
     };
+
     let params = deserialize_constructor_params(
         "g4FVAddasreLsv6xz4axQS6WkW2AW0DDAQA=".to_string(),
         "fil/1/multisig".to_string(),
     )
     .unwrap();
 
-    assert_eq!(
-        params,
-        MessageParams::ConstructorParamsMultisig(expected_params.into())
-    );
+    match params {
+        MessageParams::MultisigConstructorParams(p) => {
+            assert_eq!(p.signers, expected_params.signers);
+            assert_eq!(p.num_approvals_threshold, expected_params.num_approvals_threshold);
+            assert_eq!(p.unlock_duration, expected_params.unlock_duration);
+            assert_eq!(p.start_epoch, expected_params.start_epoch);
+
+        },
+        _ => { panic!("Not matching"); }
+    }
+
+}
+
+#[test]
+fn test_serialize() {
+    let expected_params = multisig::ChangeNumApprovalsThresholdParams{ new_threshold: 2 };
+
+    println!("{:?}", serde_json::to_string(&expected_params).unwrap());
+
+    let json_params = r#"{ "new_threashold": 2}"#;
+    let params = serde_json::from_str(json_params).unwrap();
+
+    let params = serialize_params(params)
+    .unwrap();
+
+    assert!(false);
+
 }

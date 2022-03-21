@@ -1,7 +1,6 @@
 #![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used,))]
 
 use std::convert::TryFrom;
-use std::convert::TryInto;
 use std::str::FromStr;
 
 use bip39::{Language, MnemonicType, Seed};
@@ -14,20 +13,17 @@ use libsecp256k1::util::{
     COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
 };
 use libsecp256k1::{recover, sign, verify, Message, RecoveryId};
-use num_bigint_chainsafe::BigInt;
 use num_traits::FromPrimitive;
 use rayon::prelude::*;
 use zx_bip44::BIP44Path;
 
-//use extras::{multisig, paych, ExecParams, MethodInit, INIT_ACTOR_ADDR};
 use fil_actor_multisig as multisig;
 use fil_actor_paych as paych;
 use fil_actor_init::{ExecParams, Method as MethodInit};
-use fil_actors_runtime::builtin::INIT_ACTOR_ADDR;
 use fvm_shared::encoding::RawBytes;
 use fvm_shared::address::{Address, BLSPublicKey, Network, Protocol, BLS_PUB_LEN};
 use cid::Cid;
-use cid::multihash::{Code, Multihash};
+use cid::multihash::Multihash;
 
 use crate::api::{
     MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
@@ -868,8 +864,7 @@ pub fn create_pymtchan(
         constructor_params: serialized_constructor_params,
     };
 
-    let serialized_params =
-        forest_vm::Serialized::serialize::<ExecParams>(message_params_create_pymtchan)
+    let serialized_params = RawBytes::serialize(message_params_create_pymtchan)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let mut init_actor_address = fvm_shared::address::Address::from_str("f01")?;
