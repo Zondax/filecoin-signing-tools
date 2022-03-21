@@ -1185,10 +1185,10 @@ multiformats@^9.5.4, multiformats@^9.6.4:
   resolved "https://registry.yarnpkg.com/multiformats/-/multiformats-9.6.4.tgz#5dce1f11a407dbb69aa612cb7e5076069bb759ca"
   integrity sha512-fCCB6XMrr6CqJiHNjfFNGT0v//dxOBMrOMqUIzpPc/mmITweLEyhvMpY9bF+jZ9z3vaMAau5E8B68DW77QMXkg==
 
-n@^8.0.2:
-  version "8.0.2"
-  resolved "https://registry.yarnpkg.com/n/-/n-8.0.2.tgz#8dec9c90245309e4d0b78d8c89b0ea5588e021c7"
-  integrity sha512-IvKMeWenkEntHnktypexqIi1BCTQc0Po1+zBanui+flF4dwHtsV+B2WNkx6KAMCqlTHyIisSddj1Y7EbnKRgXQ==
+n@^8.1.0:
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/n/-/n-8.1.0.tgz#4cda2992841db28e4d24335b985fe6df31dbedb7"
+  integrity sha512-J8cb9e3Hb75Qs6cZ+McFY9toh+X3PnJOzyKMacC11etNo61bucIMAH+uuHrFCD3ELIdmcq9AAkoljowViCJMLw==
 
 natural-compare@^1.4.0:
   version "1.4.0"
