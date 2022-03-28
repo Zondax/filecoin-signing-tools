@@ -7,10 +7,10 @@ use forest_vm::Serialized;
 use num_bigint_chainsafe::BigInt;
 use serde::{Deserialize, Serialize, Serializer};
 
-use fil_actor_multisig as multisig;
-use fil_actor_paych as paych;
-use fil_actor_init::ExecParams;
 use fvm_shared::encoding::RawBytes;
+
+use extras::{multisig, paych};
+use extras::init::ExecParamsAPI;
 
 use crate::error::SignerError;
 use crate::signature::Signature;
@@ -51,22 +51,32 @@ impl Serialize for SpecsActorsCryptoSignature {
     }
 }
 
-#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum MessageParams {
     MessageParamsSerialized(String),
-    ExecParams(ExecParams),
-    MultisigConstructorParams(multisig::ConstructorParams),
-    ProposeParams(multisig::ProposeParams),
-    TxnIDParams(multisig::TxnIDParams),
-    AddSignerParams(multisig::AddSignerParams),
-    RemoveSignerParams(multisig::RemoveSignerParams),
-    SwapSignerParams(multisig::SwapSignerParams),
-    ChangeNumApprovalsThresholdParams(multisig::ChangeNumApprovalsThresholdParams),
-    LockBalanceParams(multisig::LockBalanceParams),
-    PaychConstructorParams(paych::ConstructorParams),
-    UpdateChannelStateParams(paych::UpdateChannelStateParams),
+    #[serde(with = "ExecParamsAPI")]
+    ExecParams(fil_actor_init::ExecParams),
+    #[serde(with = "multisig::ConstructorParamsAPI")]
+    MultisigConstructorParams(fil_actor_multisig::ConstructorParams),
+    #[serde(with = "multisig::ProposeParamsAPI")]
+    ProposeParams(fil_actor_multisig::ProposeParams),
+    #[serde(with = "multisig::TxnIDParamsAPI")]
+    TxnIDParams(fil_actor_multisig::TxnIDParams),
+    #[serde(with = "multisig::AddSignerParamsAPI")]
+    AddSignerParams(fil_actor_multisig::AddSignerParams),
+    #[serde(with = "multisig::RemoveSignerParamsAPI")]
+    RemoveSignerParams(fil_actor_multisig::RemoveSignerParams),
+    #[serde(with = "multisig::SwapSignerParamsAPI")]
+    SwapSignerParams(fil_actor_multisig::SwapSignerParams),
+    #[serde(with = "multisig::ChangeNumApprovalsThresholdParamsAPI")]
+    ChangeNumApprovalsThresholdParams(fil_actor_multisig::ChangeNumApprovalsThresholdParams),
+    #[serde(with = "multisig::LockBalanceParamsAPI")]
+    LockBalanceParams(fil_actor_multisig::LockBalanceParams),
+    #[serde(with = "paych::ConstructorParamsAPI")]
+    PaychConstructorParams(fil_actor_paych::ConstructorParams),
+    #[serde(with = "paych::UpdateChannelStateParamsAPI")]
+    UpdateChannelStateParams(fil_actor_paych::UpdateChannelStateParams),
 }
 
 impl MessageParams {

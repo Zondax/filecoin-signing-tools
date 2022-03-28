@@ -46,12 +46,11 @@ num_bigint_chainsafe = { package = "forest_bigint", version = "0.1.2"}
 
 zx-bip44 = "0.1.0"
 
-#extras = { path = "../extras"}
-#extras = { package = "fil_builtin_actors_bundle", version = "6.0.2" }
-fil_actor_multisig = { path = "../../builtin-actors/actors/multisig" }
-fil_actor_paych = { path = "../../builtin-actors/actors/paych" }
-fil_actor_init = { path = "../../builtin-actors/actors/init" }
-fil_actors_runtime = { path = "../../builtin-actors/actors/runtime", default-features = false }
+extras = { path = "../extras"}
+fil_actor_init = "7.0.7"
+fil_actor_multisig = "7.0.7"
+fil_actor_paych = "7.0.7"
+
 fvm_shared = "0.2.0"
 clock = { package = "fil_clock", git = "https://github.com/chainsafe/forest", rev="d5a774a10b59dcad5372f520577180b9614fe2bb" }
 cid = "0.8.3"

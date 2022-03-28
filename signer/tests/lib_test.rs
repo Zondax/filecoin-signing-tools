@@ -986,12 +986,18 @@ fn test_serialize() {
 
     println!("{:?}", serde_json::to_string(&expected_params).unwrap());
 
-    let json_params = r#"{ "new_threashold": 2}"#;
-    let params = serde_json::from_str(json_params).unwrap();
+    let json_params = r#"{ "new_threshold": 2}"#;
+    let params: MessageParams = serde_json::from_str(json_params).unwrap();
 
-    let params = serialize_params(params)
-    .unwrap();
+    let params_multisig = match params {
+        MessageParams::ChangeNumApprovalsThresholdParams(params) => {
+            params
+        },
+        _ => {
+            panic!("Something went wrong")
+        }
+    };
 
-    assert!(false);
+    assert_eq!(params_multisig.new_threshold, expected_params.new_threshold);
 
 }
