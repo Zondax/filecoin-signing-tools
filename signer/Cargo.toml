@@ -47,9 +47,9 @@ num_bigint_chainsafe = { package = "forest_bigint", version = "0.1.2"}
 zx-bip44 = "0.1.0"
 
 extras = { path = "../extras"}
-fil_actor_init = "7.0.7"
-fil_actor_multisig = "7.0.7"
-fil_actor_paych = "7.0.7"
+fil_actor_init = { git = "https://github.com/rllola/builtin-actors", branch = "fix/actor-feature" }
+fil_actor_multisig = { git = "https://github.com/rllola/builtin-actors", branch = "fix/actor-feature" }
+fil_actor_paych = { git = "https://github.com/rllola/builtin-actors", branch = "fix/actor-feature" }
 
 fvm_shared = "0.2.0"
 clock = { package = "fil_clock", git = "https://github.com/chainsafe/forest", rev="d5a774a10b59dcad5372f520577180b9614fe2bb" }

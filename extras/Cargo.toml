@@ -10,11 +10,13 @@ description ="Temporary lib used for compatibility with wasm"
 [dependencies]
 serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0"
+serde_alias = "0.0.2"
 
-fil_actor_cron = "7.0.7"
-fil_actor_multisig = "7.0.7"
-fil_actor_paych = "7.0.7"
-fil_actor_init = "7.0.7"
+fil_actor_cron = { git = "https://github.com/rllola/builtin-actors", branch = "fix/actor-feature" }
+fil_actor_init = { git = "https://github.com/rllola/builtin-actors", branch = "fix/actor-feature" }
+fil_actor_multisig = { git = "https://github.com/rllola/builtin-actors", branch = "fix/actor-feature" }
+fil_actor_paych = { git = "https://github.com/rllola/builtin-actors", branch = "fix/actor-feature" }
 
 fvm_shared = "0.2.2"
 cid = "0.8.3"
+base64 = "0.13.0"

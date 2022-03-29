@@ -1,87 +1,75 @@
+use fil_actor_paych::{
+    ConstructorParams, Merge, ModVerifyParams, PaymentVerifyParams, SignedVoucher,
+    UpdateChannelStateParams,
+};
 use fvm_shared::address::Address;
 use fvm_shared::bigint::{bigint_ser, BigInt};
 use fvm_shared::clock::ChainEpoch;
+use fvm_shared::crypto::signature::Signature;
 use fvm_shared::encoding::{serde_bytes, RawBytes};
 use fvm_shared::MethodNum;
-use fvm_shared::crypto::signature::Signature;
 use serde::{Deserialize, Serialize};
-use fil_actor_paych::{
-    ConstructorParams,
-    SignedVoucher,
-    ModVerifyParams,
-    PaymentVerifyParams,
-    UpdateChannelStateParams,
-    Merge,
-};
+
+use super::json::address;
+use super::json::rawbytes;
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "ConstructorParams")]
+#[serde(remote = "ConstructorParams", rename_all = "PascalCase")]
 pub struct ConstructorParamsAPI {
+    #[serde(with = "address")]
     pub from: Address,
+    #[serde(with = "address")]
     pub to: Address,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(remote = "SignedVoucher")]
+#[serde(remote = "SignedVoucher", rename_all = "PascalCase")]
 pub struct SignedVoucherAPI {
-    /// ChannelAddr is the address of the payment channel this signed voucher is valid for
+    #[serde(with = "address")]
     pub channel_addr: Address,
-    /// Min epoch before which the voucher cannot be redeemed
     pub time_lock_min: ChainEpoch,
-    /// Max epoch beyond which the voucher cannot be redeemed
-    /// set to 0 means no timeout
     pub time_lock_max: ChainEpoch,
-    /// (optional) Used by `to` to validate
     #[serde(with = "serde_bytes")]
     pub secret_pre_image: Vec<u8>,
-    /// (optional) Specified by `from` to add a verification method to the voucher
     pub extra: Option<ModVerifyParams>,
-    /// Specifies which lane the Voucher merges into (will be created if does not exist)
     pub lane: u64,
-    /// Set by `from` to prevent redemption of stale vouchers on a lane
     pub nonce: u64,
-    /// Amount voucher can be redeemed for
     #[serde(with = "bigint_ser")]
     pub amount: BigInt,
-    /// (optional) Can extend channel min_settle_height if needed
     pub min_settle_height: ChainEpoch,
-
-    /// (optional) Set of lanes to be merged into `lane`
     pub merges: Vec<Merge>,
-
-    /// Sender's signature over the voucher (sign on none)
     pub signature: Option<Signature>,
 }
 
-/// Modular Verification method
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(remote = "ModVerifyParams")]
+#[serde(remote = "ModVerifyParams", rename_all = "PascalCase")]
 pub struct ModVerifyParamsAPI {
+    #[serde(with = "address")]
     pub actor: Address,
     pub method: MethodNum,
+    #[serde(with = "rawbytes")]
     pub data: RawBytes,
 }
 
-/// Payment Verification parameters
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "PaymentVerifyParams")]
+#[serde(remote = "PaymentVerifyParams", rename_all = "PascalCase")]
 pub struct PaymentVerifyParamsAPI {
+    #[serde(with = "rawbytes")]
     pub extra: RawBytes,
     #[serde(with = "serde_bytes")]
     pub proof: Vec<u8>,
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "UpdateChannelStateParams")]
+#[serde(remote = "UpdateChannelStateParams", rename_all = "PascalCase")]
 pub struct UpdateChannelStateParamsAPI {
     pub sv: SignedVoucher,
     #[serde(with = "serde_bytes")]
     pub secret: Vec<u8>,
-    // * proof removed in v2
 }
 
 #[derive(Default, Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(remote = "Merge")]
+#[serde(remote = "Merge", rename_all = "PascalCase")]
 pub struct MergeAPI {
     pub lane: u64,
     pub nonce: u64,

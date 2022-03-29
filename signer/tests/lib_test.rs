@@ -8,11 +8,11 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 
-use fvm_shared::address::Address;
 use fil_actor_multisig as multisig;
 use filecoin_signer::api::{MessageParams, MessageTxAPI, UnsignedMessageAPI};
 use filecoin_signer::signature::{Signature, SignatureBLS};
 use filecoin_signer::*;
+use fvm_shared::address::Address;
 
 mod common;
 
@@ -970,34 +970,34 @@ fn test_multisig_v1_deserialize() {
     match params {
         MessageParams::MultisigConstructorParams(p) => {
             assert_eq!(p.signers, expected_params.signers);
-            assert_eq!(p.num_approvals_threshold, expected_params.num_approvals_threshold);
+            assert_eq!(
+                p.num_approvals_threshold,
+                expected_params.num_approvals_threshold
+            );
             assert_eq!(p.unlock_duration, expected_params.unlock_duration);
             assert_eq!(p.start_epoch, expected_params.start_epoch);
-
-        },
-        _ => { panic!("Not matching"); }
+        }
+        _ => {
+            panic!("Not matching");
+        }
     }
-
 }
 
 #[test]
 fn test_serialize() {
-    let expected_params = multisig::ChangeNumApprovalsThresholdParams{ new_threshold: 2 };
+    let expected_params = multisig::ChangeNumApprovalsThresholdParams { new_threshold: 2 };
 
     println!("{:?}", serde_json::to_string(&expected_params).unwrap());
 
-    let json_params = r#"{ "new_threshold": 2}"#;
+    let json_params = r#"{ "NewThreshold": 2}"#;
     let params: MessageParams = serde_json::from_str(json_params).unwrap();
 
     let params_multisig = match params {
-        MessageParams::ChangeNumApprovalsThresholdParams(params) => {
-            params
-        },
+        MessageParams::ChangeNumApprovalsThresholdParams(params) => params,
         _ => {
             panic!("Something went wrong")
         }
     };
 
     assert_eq!(params_multisig.new_threshold, expected_params.new_threshold);
-
 }

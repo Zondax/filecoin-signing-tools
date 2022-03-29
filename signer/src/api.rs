@@ -9,8 +9,8 @@ use serde::{Deserialize, Serialize, Serializer};
 
 use fvm_shared::encoding::RawBytes;
 
-use extras::{multisig, paych};
 use extras::init::ExecParamsAPI;
+use extras::{multisig, paych};
 
 use crate::error::SignerError;
 use crate::signature::Signature;
@@ -31,7 +31,7 @@ pub struct SpecsActorsCryptoSignature {
 
 impl From<&SpecsActorsCryptoSignature> for SpecsActorsCryptoSignature {
     fn from(sig: &SpecsActorsCryptoSignature) -> Self {
-        let d = sig.data.iter().copied().collect();
+        let d = sig.data.to_vec();
         SpecsActorsCryptoSignature {
             typ: sig.typ,
             data: d,
@@ -44,8 +44,7 @@ impl Serialize for SpecsActorsCryptoSignature {
     where
         S: Serializer,
     {
-        let mut v = Vec::<u8>::new();
-        v.push(self.typ);
+        let mut v = vec![self.typ];
         v.extend(self.data.iter().copied());
         serde_bytes::Serialize::serialize(&v, serializer)
     }
@@ -53,6 +52,7 @@ impl Serialize for SpecsActorsCryptoSignature {
 
 #[derive(Deserialize, Serialize)]
 #[serde(untagged)]
+#[allow(clippy::large_enum_variant)]
 pub enum MessageParams {
     MessageParamsSerialized(String),
     #[serde(with = "ExecParamsAPI")]
@@ -86,11 +86,29 @@ impl MessageParams {
                 let params_bytes = base64::decode(&params_string)
                     .map_err(|err| SignerError::GenericString(err.to_string()))?;
                 RawBytes::from(params_bytes)
-            },
-            params => {
-                RawBytes::serialize(&params)
-                    .map_err(|err| SignerError::GenericString(err.to_string()))?
             }
+            MessageParams::ExecParams(params) => RawBytes::serialize(&params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            MessageParams::MultisigConstructorParams(params) => RawBytes::serialize(&params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            MessageParams::ProposeParams(params) => RawBytes::serialize(&params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            MessageParams::TxnIDParams(params) => RawBytes::serialize(&params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            MessageParams::AddSignerParams(params) => RawBytes::serialize(&params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            MessageParams::RemoveSignerParams(params) => RawBytes::serialize(&params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            MessageParams::SwapSignerParams(params) => RawBytes::serialize(&params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            MessageParams::ChangeNumApprovalsThresholdParams(params) => RawBytes::serialize(&params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            MessageParams::LockBalanceParams(params) => RawBytes::serialize(&params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            MessageParams::PaychConstructorParams(params) => RawBytes::serialize(&params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            MessageParams::UpdateChannelStateParams(params) => RawBytes::serialize(&params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?,
         };
 
         Ok(params_serialized)

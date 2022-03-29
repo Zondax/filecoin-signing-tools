@@ -1,37 +1,34 @@
+use fil_actor_multisig::{
+    AddSignerParams, ChangeNumApprovalsThresholdParams, ConstructorParams, LockBalanceParams,
+    ProposeParams, RemoveSignerParams, SwapSignerParams, Transaction, TxnID, TxnIDParams,
+};
 use fvm_shared::address::Address;
 use fvm_shared::bigint::bigint_ser;
 use fvm_shared::clock::ChainEpoch;
 use fvm_shared::econ::TokenAmount;
-use fvm_shared::MethodNum;
 use fvm_shared::encoding::{serde_bytes, RawBytes};
+use fvm_shared::MethodNum;
 use serde::{Deserialize, Serialize};
-use fil_actor_multisig::{
-    Transaction,
-    ConstructorParams,
-    ProposeParams,
-    TxnIDParams,
-    AddSignerParams,
-    RemoveSignerParams,
-    SwapSignerParams,
-    ChangeNumApprovalsThresholdParams,
-    LockBalanceParams,
-    TxnID
-};
+
+use super::json::address;
+use super::json::rawbytes;
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
-#[serde(remote = "Transaction")]
+#[serde(remote = "Transaction", rename_all = "PascalCase")]
 pub struct TransactionAPI {
+    #[serde(with = "address")]
     pub to: Address,
     #[serde(with = "bigint_ser")]
     pub value: TokenAmount,
     pub method: MethodNum,
+    #[serde(with = "rawbytes")]
     pub params: RawBytes,
 
     pub approved: Vec<Address>,
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "ConstructorParams")]
+#[serde(remote = "ConstructorParams", rename_all = "PascalCase")]
 pub struct ConstructorParamsAPI {
     pub signers: Vec<Address>,
     pub num_approvals_threshold: u64,
@@ -40,6 +37,7 @@ pub struct ConstructorParamsAPI {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
 pub struct ConstructorParamsV1 {
     pub signers: Vec<Address>,
     pub num_approvals_threshold: i64,
@@ -47,17 +45,19 @@ pub struct ConstructorParamsV1 {
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "ProposeParams")]
+#[serde(remote = "ProposeParams", rename_all = "PascalCase")]
 pub struct ProposeParamsAPI {
+    #[serde(with = "address")]
     pub to: Address,
     #[serde(with = "bigint_ser")]
     pub value: TokenAmount,
     pub method: MethodNum,
+    #[serde(with = "rawbytes")]
     pub params: RawBytes,
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "TxnIDParams")]
+#[serde(remote = "TxnIDParams", rename_all = "PascalCase")]
 pub struct TxnIDParamsAPI {
     pub id: TxnID,
     /// Optional hash of proposal to ensure an operation can only apply to a
@@ -67,36 +67,42 @@ pub struct TxnIDParamsAPI {
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "AddSignerParams")]
+#[serde(remote = "AddSignerParams", rename_all = "PascalCase")]
 pub struct AddSignerParamsAPI {
+    #[serde(with = "address")]
     pub signer: Address,
     pub increase: bool,
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "RemoveSignerParams")]
+#[serde(remote = "RemoveSignerParams", rename_all = "PascalCase")]
 pub struct RemoveSignerParamsAPI {
+    #[serde(with = "address")]
     pub signer: Address,
     pub decrease: bool,
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "SwapSignerParams")]
+#[serde(remote = "SwapSignerParams", rename_all = "PascalCase")]
 pub struct SwapSignerParamsAPI {
+    #[serde(with = "address")]
     pub from: Address,
+    #[serde(with = "address")]
     pub to: Address,
 }
 
 /// Propose method call parameters
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "ChangeNumApprovalsThresholdParams")]
+#[serde(remote = "ChangeNumApprovalsThresholdParams", rename_all = "PascalCase")]
 pub struct ChangeNumApprovalsThresholdParamsAPI {
+    // Support typo to avoid breaking dev implementation
+    #[serde(alias = "NewTreshold")]
     pub new_threshold: u64,
 }
 
 /// Lock balance call params.
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "LockBalanceParams")]
+#[serde(remote = "LockBalanceParams", rename_all = "PascalCase")]
 pub struct LockBalanceParamsAPI {
     pub start_epoch: ChainEpoch,
     pub unlock_duration: ChainEpoch,

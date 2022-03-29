@@ -17,13 +17,13 @@ use num_traits::FromPrimitive;
 use rayon::prelude::*;
 use zx_bip44::BIP44Path;
 
+use cid::multihash::Multihash;
+use cid::Cid;
+use fil_actor_init::{ExecParams, Method as MethodInit};
 use fil_actor_multisig as multisig;
 use fil_actor_paych as paych;
-use fil_actor_init::{ExecParams, Method as MethodInit};
-use fvm_shared::encoding::RawBytes;
 use fvm_shared::address::{Address, BLSPublicKey, Network, Protocol, BLS_PUB_LEN};
-use cid::Cid;
-use cid::multihash::Multihash;
+use fvm_shared::encoding::RawBytes;
 
 use crate::api::{
     MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
@@ -31,15 +31,15 @@ use crate::api::{
 };
 use crate::error::SignerError;
 use crate::extended_key::ExtendedSecretKey;
-use crate::signature::{Signature, SignatureBLS, SignatureSECP256K1};
 use crate::multisig_deprecated::ConstructorParamsV1;
+use crate::signature::{Signature, SignatureBLS, SignatureSECP256K1};
 
 pub mod api;
 pub mod error;
 pub mod extended_key;
+pub mod multisig_deprecated;
 pub mod signature;
 pub mod utils;
-pub mod multisig_deprecated;
 
 const RAW: u64 = 0x55;
 
@@ -183,7 +183,6 @@ pub fn key_derive(
     })
 }
 
-
 /// Returns a public key, private key and address given a seed and derivation path
 ///
 /// # Arguments
@@ -235,7 +234,6 @@ pub fn key_recover(private_key: &PrivateKey, testnet: bool) -> Result<ExtendedKe
     })
 }
 
-
 /// Get extended key from BLS private key
 ///
 /// # Arguments
@@ -274,7 +272,6 @@ pub fn key_recover_bls(
     })
 }
 
-
 /// Serialize a transaction and return a CBOR hexstring.
 ///
 /// # Arguments
@@ -288,7 +285,6 @@ pub fn transaction_serialize(
     let message_cbor = CborBuffer(to_vec(&unsigned_message)?);
     Ok(message_cbor)
 }
-
 
 /// Parse a CBOR hextring into a filecoin transaction (signed or unsigned).
 ///
@@ -712,7 +708,7 @@ fn approve_or_cancel_multisig_message(
     };
 
     let serialize_proposal_parameter = RawBytes::serialize(proposal_parameter)
-            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
     let proposal_hash = blake2b_256(&serialize_proposal_parameter);
 
     let params_txnid = multisig::TxnIDParams {
@@ -825,7 +821,7 @@ pub fn cancel_multisig_message(
 /// * `params` - Parameters to serialize
 
 pub fn serialize_params(params: MessageParams) -> Result<CborBuffer, SignerError> {
-    let serialized_params = RawBytes::serialize(params)?;
+    let serialized_params = params.serialize()?;
     let message_cbor = CborBuffer(serialized_params.bytes().to_vec());
     Ok(message_cbor)
 }
@@ -865,7 +861,7 @@ pub fn create_pymtchan(
     };
 
     let serialized_params = RawBytes::serialize(message_params_create_pymtchan)
-            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let mut init_actor_address = fvm_shared::address::Address::from_str("f01")?;
     init_actor_address.set_network(from.network());
@@ -1221,7 +1217,6 @@ pub fn deserialize_constructor_params(
         )),
     }
 }
-
 
 /// Verify Voucher signature
 ///
