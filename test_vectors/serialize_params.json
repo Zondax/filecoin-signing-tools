@@ -12,7 +12,7 @@
   {
     "description": "serialize parameters to cbor data test with PascalCase n°2",
     "params": {
-      "CodeCid": "fil/2/multisig",
+      "CodeCid": "bafkqadtgnfwc6mrpnv2wy5djonuwo",
       "ConstructorParams": "g4JVAf0dD0381+ma/Lmagya33EWdMsYoVQEerxyKS7/usIcLF0Wx9XUDRwtxFgEA"
     },
     "serialized_params": "gtgqUwABVQAOZmlsLzIvbXVsdGlzaWdYMIOCVQH9HQ9N/Nfpmvy5moMmt9xFnTLGKFUBHq8ciku/7rCHCxdFsfV1A0cLcRYBAA=="
