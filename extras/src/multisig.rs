@@ -93,7 +93,10 @@ pub struct SwapSignerParamsAPI {
 
 /// Propose method call parameters
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "ChangeNumApprovalsThresholdParams", rename_all = "PascalCase")]
+#[serde(
+    remote = "ChangeNumApprovalsThresholdParams",
+    rename_all = "PascalCase"
+)]
 pub struct ChangeNumApprovalsThresholdParamsAPI {
     // Support typo to avoid breaking dev implementation
     #[serde(alias = "NewTreshold")]

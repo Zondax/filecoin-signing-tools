@@ -101,8 +101,10 @@ impl MessageParams {
                 .map_err(|err| SignerError::GenericString(err.to_string()))?,
             MessageParams::SwapSignerParams(params) => RawBytes::serialize(&params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?,
-            MessageParams::ChangeNumApprovalsThresholdParams(params) => RawBytes::serialize(&params)
-                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            MessageParams::ChangeNumApprovalsThresholdParams(params) => {
+                RawBytes::serialize(&params)
+                    .map_err(|err| SignerError::GenericString(err.to_string()))?
+            }
             MessageParams::LockBalanceParams(params) => RawBytes::serialize(&params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?,
             MessageParams::PaychConstructorParams(params) => RawBytes::serialize(&params)
