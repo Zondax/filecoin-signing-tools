@@ -64,3 +64,62 @@ pub mod rawbytes {
         Ok(RawBytes::new(raw))
     }
 }
+
+pub mod vec_address {
+    use fvm_shared::address::Address;
+    use serde::{de, Deserialize, Deserializer, Serializer};
+    use std::str::FromStr;
+
+    pub fn serialize<S>(addresses: &Vec<Address>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut result = vec![];
+
+        for a in addresses {
+            let a: &Address = a;
+            let s = a.to_string();
+            result.push(s);
+        }
+
+        serializer.collect_seq(result)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<Address>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let a: Vec<String> = Vec::deserialize(deserializer)?;
+        let mut result: Vec<Address> = Vec::new();
+
+        for s in a {
+            let s: String = s;
+            let address = Address::from_str(&s).map_err(de::Error::custom)?;
+            result.push(address);
+        }
+
+        Ok(result)
+    }
+}
+
+pub mod tokenamount {
+    use fvm_shared::econ::TokenAmount;
+    use serde::{de, Deserialize, Deserializer, Serializer};
+    use std::str::FromStr;
+
+    pub fn serialize<S>(token_amount: &TokenAmount, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let s = token_amount.to_string();
+        serializer.serialize_str(&s)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<TokenAmount, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        TokenAmount::from_str(&s).map_err(de::Error::custom)
+    }
+}

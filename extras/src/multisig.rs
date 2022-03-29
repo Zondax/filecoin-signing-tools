@@ -3,7 +3,6 @@ use fil_actor_multisig::{
     ProposeParams, RemoveSignerParams, SwapSignerParams, Transaction, TxnID, TxnIDParams,
 };
 use fvm_shared::address::Address;
-use fvm_shared::bigint::bigint_ser;
 use fvm_shared::clock::ChainEpoch;
 use fvm_shared::econ::TokenAmount;
 use fvm_shared::encoding::{serde_bytes, RawBytes};
@@ -12,24 +11,27 @@ use serde::{Deserialize, Serialize};
 
 use super::json::address;
 use super::json::rawbytes;
+use super::json::tokenamount;
+use super::json::vec_address;
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 #[serde(remote = "Transaction", rename_all = "PascalCase")]
 pub struct TransactionAPI {
     #[serde(with = "address")]
     pub to: Address,
-    #[serde(with = "bigint_ser")]
+    #[serde(with = "tokenamount")]
     pub value: TokenAmount,
     pub method: MethodNum,
     #[serde(with = "rawbytes")]
     pub params: RawBytes,
-
+    #[serde(with = "vec_address")]
     pub approved: Vec<Address>,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "ConstructorParams", rename_all = "PascalCase")]
 pub struct ConstructorParamsAPI {
+    #[serde(with = "vec_address")]
     pub signers: Vec<Address>,
     pub num_approvals_threshold: u64,
     pub unlock_duration: ChainEpoch,
@@ -39,6 +41,7 @@ pub struct ConstructorParamsAPI {
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ConstructorParamsV1 {
+    #[serde(with = "vec_address")]
     pub signers: Vec<Address>,
     pub num_approvals_threshold: i64,
     pub unlock_duration: ChainEpoch,
@@ -49,7 +52,7 @@ pub struct ConstructorParamsV1 {
 pub struct ProposeParamsAPI {
     #[serde(with = "address")]
     pub to: Address,
-    #[serde(with = "bigint_ser")]
+    #[serde(with = "tokenamount")]
     pub value: TokenAmount,
     pub method: MethodNum,
     #[serde(with = "rawbytes")]
@@ -109,6 +112,6 @@ pub struct ChangeNumApprovalsThresholdParamsAPI {
 pub struct LockBalanceParamsAPI {
     pub start_epoch: ChainEpoch,
     pub unlock_duration: ChainEpoch,
-    #[serde(with = "bigint_ser")]
+    #[serde(with = "tokenamount")]
     pub amount: TokenAmount,
 }
