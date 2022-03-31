@@ -477,8 +477,8 @@ mod tests {
 
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
         {
-            "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-            "from": "t1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
+            "to": "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+            "from": "f1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
             "nonce": 1,
             "value": "100000",
             "gasfeecap": "1",
