@@ -97,12 +97,6 @@ impl From<fvm_shared::bigint::ParseBigIntError> for SignerError {
     }
 }
 
-impl From<fvm_shared::encoding::error::Error> for SignerError {
-    fn from(err: fvm_shared::encoding::error::Error) -> SignerError {
-        SignerError::GenericString(err.to_string())
-    }
-}
-
 impl From<cid::multihash::Error> for SignerError {
     fn from(err: cid::multihash::Error) -> SignerError {
         SignerError::GenericString(err.to_string())
