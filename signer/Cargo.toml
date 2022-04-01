@@ -8,10 +8,10 @@ repository = "https://github.com/Zondax/filecoin-signing-tools"
 description =""
 
 [dependencies]
-thiserror = "=1.0.22"
-base64 = "0.12.3"
-serde = { version = "=1.0.117", features = ["derive"] }
-serde_json = "=1.0.59"
+thiserror = "1.0.30"
+base64 = "0.13.0"
+serde = { version = "1.0.117", features = ["derive"] }
+serde_json = "1.0.79"
 serde_cbor = "0.11.1"
 serde_bytes = "0.11.5"
 rayon = "1"
@@ -38,7 +38,6 @@ ffi-support = { optional = true, version = "0.4" }
 forest_vm = "0.3.1"
 forest_address = "0.3.1"
 forest_encoding = "0.2.1"
-forest_cid = { version ="0.3.0", features = ["cbor"] }
 forest_message = { default-features = false, features = ["pairing"], version = "0.7"  }
 forest_crypto = { default-features = false, features = ["pairing"], version = "0.5.3"  }
 
@@ -48,6 +47,14 @@ num_bigint_chainsafe = { package = "forest_bigint", version = "0.1.2"}
 zx-bip44 = "0.1.0"
 
 extras = { path = "../extras"}
+fil_actor_init = { git = "https://github.com/filecoin-project/builtin-actors", branch = "feat/actor-feature" }
+fil_actor_multisig = { git = "https://github.com/filecoin-project/builtin-actors", branch = "feat/actor-feature" }
+fil_actor_paych = { git = "https://github.com/filecoin-project/builtin-actors", branch = "feat/actor-feature" }
+
+fvm_shared = "0.3.1"
+clock = { package = "fil_clock", git = "https://github.com/chainsafe/forest", rev="d5a774a10b59dcad5372f520577180b9614fe2bb" }
+cid = "0.8.3"
+
 num-traits = "0.2"
 
 [dev-dependencies]

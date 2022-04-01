@@ -6,8 +6,8 @@
     "code_cid": "fil/2/multisig",
     "method": 7,
     "params": {
-      "from": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-      "to": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"
+      "From": "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+      "To": "f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba"
     }
   },
   {
@@ -33,8 +33,8 @@
     "code_cid": "fil/1/init",
     "method": 2,
     "params": {
-      "code_cid": "bafkqadtgnfwc6mrpnv2wy5djonuwo",
-      "constructor_params": "hIFVAWw6rTHy7RkyBG6q8O/jwN4sL9OTARhkGgAD2os="
+      "CodeCid": "bafkqadtgnfwc6mrpnv2wy5djonuwo",
+      "ConstructorParams": "hIFVAWw6rTHy7RkyBG6q8O/jwN4sL9OTARhkGgAD2os="
     }
     
   }

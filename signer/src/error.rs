@@ -44,6 +44,9 @@ pub enum SignerError {
     // forest encoding error
     #[error("Encoding error | {0}")]
     EncodingError(#[from] forest_encoding::error::Error),
+
+    #[error("Encoding error | {0}")]
+    EncodingFVMError(#[from] fvm_shared::encoding::Error),
 }
 
 #[cfg(feature = "with-ffi-support")]
@@ -63,6 +66,7 @@ impl From<SignerError> for ffi_support::ExternError {
             SignerError::DecodeError(_) => 11,
             SignerError::DeserializeError(_) => 12,
             SignerError::EncodingError(_) => 13,
+            SignerError::EncodingFVMError(_) => 14,
         };
         Self::new_error(ffi_support::ErrorCode::new(code), e.to_string())
     }
@@ -77,6 +81,24 @@ impl From<InvalidKeyLength> for SignerError {
 
 impl From<forest_address::Error> for SignerError {
     fn from(err: forest_address::Error) -> SignerError {
+        SignerError::GenericString(err.to_string())
+    }
+}
+
+impl From<fvm_shared::address::Error> for SignerError {
+    fn from(err: fvm_shared::address::Error) -> SignerError {
+        SignerError::GenericString(err.to_string())
+    }
+}
+
+impl From<fvm_shared::bigint::ParseBigIntError> for SignerError {
+    fn from(err: fvm_shared::bigint::ParseBigIntError) -> SignerError {
+        SignerError::GenericString(err.to_string())
+    }
+}
+
+impl From<cid::multihash::Error> for SignerError {
+    fn from(err: cid::multihash::Error) -> SignerError {
         SignerError::GenericString(err.to_string())
     }
 }

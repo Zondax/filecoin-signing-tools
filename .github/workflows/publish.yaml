@@ -41,9 +41,9 @@ jobs:
         run: |
           cargo clippy --version
           cargo clippy --all-features --all-targets
-      - name: audit
-        run: |
-          cargo audit --version
+      #- name: audit
+      #  run: |
+      #    cargo audit --version
 
   publish_npm_package:
     needs: [ build ]

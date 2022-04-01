@@ -8,20 +8,15 @@ repository = "https://github.com/Zondax/filecoin-signing-tools"
 description ="Temporary lib used for compatibility with wasm"
 
 [dependencies]
-forest_vm = "=0.3.1"
-forest_message = { default-features = false, features = ["pairing"], version = "0.7" }
-forest_address = "=0.3.1"
-forest_encoding = "=0.2.1"
-forest_cid = {version = "=0.3.0", features = ["cbor"]}
-forest_crypto = { default-features = false, features = ["pairing"], version = "0.5.3" }
-multihash = "=0.13.1"
-multihash-derive = "=0.7.0"
-forest_json_utils = "=0.1.0"
+serde = { version = "1.0.136", features = ["derive"] }
+serde_json = "1.0"
+serde_alias = "0.0.2"
 
-num_bigint = { package = "forest_bigint", version = "0.1.2"}
-clock = { package = "fil_clock", git = "https://github.com/chainsafe/forest", rev="d5a774a10b59dcad5372f520577180b9614fe2bb" }
-serde = { version = "1.0", features = ["derive"] }
-serde_bytes = "0.11.5"
-lazy_static = "1.4.0"
-num-traits = "0.2"
-num-derive = "0.3"
+fil_actor_cron = { git = "https://github.com/filecoin-project/builtin-actors", branch = "feat/actor-feature" }
+fil_actor_init = { git = "https://github.com/filecoin-project/builtin-actors", branch = "feat/actor-feature" }
+fil_actor_multisig = { git = "https://github.com/filecoin-project/builtin-actors", branch = "feat/actor-feature" }
+fil_actor_paych = { git = "https://github.com/filecoin-project/builtin-actors", branch = "feat/actor-feature" }
+
+fvm_shared = "0.3.1"
+cid = "0.8.3"
+base64 = "0.13.0"

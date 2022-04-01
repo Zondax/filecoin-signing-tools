@@ -1,69 +1,67 @@
-use clock::ChainEpoch;
-use forest_address::Address;
-use forest_encoding::tuple::*;
-use forest_vm::{MethodNum, Serialized, TokenAmount, METHOD_CONSTRUCTOR};
-use num_bigint::bigint_ser;
-use num_derive::FromPrimitive;
+use fil_actor_multisig::{
+    AddSignerParams, ChangeNumApprovalsThresholdParams, ConstructorParams, LockBalanceParams,
+    ProposeParams, RemoveSignerParams, SwapSignerParams, Transaction, TxnID, TxnIDParams,
+};
+use fvm_shared::address::Address;
+use fvm_shared::clock::ChainEpoch;
+use fvm_shared::econ::TokenAmount;
+use fvm_shared::encoding::{serde_bytes, RawBytes};
+use fvm_shared::MethodNum;
 use serde::{Deserialize, Serialize};
 
-/// Transaction ID type
-#[derive(Clone, Copy, Default, Serialize, Deserialize)]
-#[serde(transparent)]
-pub struct TxnID(pub i64);
+use super::json::address;
+use super::json::rawbytes;
+use super::json::tokenamount;
+use super::json::vec_address;
 
-/// Transaction type used in multisig actor
-#[derive(Clone, PartialEq, Debug, Serialize_tuple, Deserialize_tuple)]
-pub struct Transaction {
+#[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
+#[serde(remote = "Transaction", rename_all = "PascalCase")]
+pub struct TransactionAPI {
+    #[serde(with = "address")]
     pub to: Address,
-    #[serde(with = "bigint_ser")]
+    #[serde(with = "tokenamount")]
     pub value: TokenAmount,
     pub method: MethodNum,
-    pub params: Serialized,
-
+    #[serde(with = "rawbytes")]
+    pub params: RawBytes,
+    #[serde(with = "vec_address")]
     pub approved: Vec<Address>,
 }
 
-/// Constructor parameters for multisig actor
-#[derive(Serialize_tuple, Deserialize_tuple)]
-pub struct ConstructorParams {
+#[derive(Serialize, Deserialize)]
+#[serde(remote = "ConstructorParams", rename_all = "PascalCase")]
+pub struct ConstructorParamsAPI {
+    #[serde(with = "vec_address")]
     pub signers: Vec<Address>,
-    pub num_approvals_threshold: i64,
+    pub num_approvals_threshold: u64,
     pub unlock_duration: ChainEpoch,
     pub start_epoch: ChainEpoch,
 }
 
-/// Constructor parameters for multisig actor V1 (deprecated)
-#[derive(Serialize_tuple, Deserialize_tuple)]
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
 pub struct ConstructorParamsV1 {
+    #[serde(with = "vec_address")]
     pub signers: Vec<Address>,
     pub num_approvals_threshold: i64,
     pub unlock_duration: ChainEpoch,
 }
 
-/// Propose method call parameters
-#[derive(Serialize_tuple, Deserialize_tuple)]
-pub struct ProposeParams {
+#[derive(Serialize, Deserialize)]
+#[serde(remote = "ProposeParams", rename_all = "PascalCase")]
+pub struct ProposeParamsAPI {
+    #[serde(with = "address")]
     pub to: Address,
-    #[serde(with = "bigint_ser")]
+    #[serde(with = "tokenamount")]
     pub value: TokenAmount,
     pub method: MethodNum,
-    pub params: Serialized,
+    #[serde(with = "rawbytes")]
+    pub params: RawBytes,
 }
 
-/// Proposal hash data
-#[derive(Clone, PartialEq, Debug, Serialize_tuple, Deserialize_tuple)]
-pub struct ProposalHashData {
-    pub requester: Address,
-    pub to: Address,
-    #[serde(with = "bigint_ser")]
-    pub value: TokenAmount,
-    pub method: u64,
-    pub params: Serialized,
-}
-
-/// Propose method call parameters
-#[derive(Serialize_tuple, Deserialize_tuple)]
-pub struct TxnIDParams {
+#[derive(Serialize, Deserialize)]
+#[serde(remote = "TxnIDParams", rename_all = "PascalCase")]
+pub struct TxnIDParamsAPI {
     pub id: TxnID,
     /// Optional hash of proposal to ensure an operation can only apply to a
     /// specific proposal.
@@ -71,53 +69,49 @@ pub struct TxnIDParams {
     pub proposal_hash: Vec<u8>,
 }
 
-/// Add signer params
-#[derive(Serialize_tuple, Deserialize_tuple)]
-pub struct AddSignerParams {
+#[derive(Serialize, Deserialize)]
+#[serde(remote = "AddSignerParams", rename_all = "PascalCase")]
+pub struct AddSignerParamsAPI {
+    #[serde(with = "address")]
     pub signer: Address,
     pub increase: bool,
 }
 
-/// Remove signer params
-#[derive(Serialize_tuple, Deserialize_tuple)]
-pub struct RemoveSignerParams {
+#[derive(Serialize, Deserialize)]
+#[serde(remote = "RemoveSignerParams", rename_all = "PascalCase")]
+pub struct RemoveSignerParamsAPI {
+    #[serde(with = "address")]
     pub signer: Address,
     pub decrease: bool,
 }
 
-/// Swap signer multisig method params
-#[derive(Serialize_tuple, Deserialize_tuple)]
-pub struct SwapSignerParams {
+#[derive(Serialize, Deserialize)]
+#[serde(remote = "SwapSignerParams", rename_all = "PascalCase")]
+pub struct SwapSignerParamsAPI {
+    #[serde(with = "address")]
     pub from: Address,
+    #[serde(with = "address")]
     pub to: Address,
 }
 
 /// Propose method call parameters
-#[derive(Serialize_tuple, Deserialize_tuple)]
-pub struct ChangeNumApprovalsThresholdParams {
-    pub new_threshold: i64,
+#[derive(Serialize, Deserialize)]
+#[serde(
+    remote = "ChangeNumApprovalsThresholdParams",
+    rename_all = "PascalCase"
+)]
+pub struct ChangeNumApprovalsThresholdParamsAPI {
+    // Support typo to avoid breaking dev implementation
+    #[serde(alias = "NewTreshold")]
+    pub new_threshold: u64,
 }
 
 /// Lock balance call params.
-#[derive(Serialize_tuple, Deserialize_tuple)]
-pub struct LockBalanceParams {
+#[derive(Serialize, Deserialize)]
+#[serde(remote = "LockBalanceParams", rename_all = "PascalCase")]
+pub struct LockBalanceParamsAPI {
     pub start_epoch: ChainEpoch,
     pub unlock_duration: ChainEpoch,
-    #[serde(with = "bigint_ser")]
+    #[serde(with = "tokenamount")]
     pub amount: TokenAmount,
-}
-
-/// Multisig actor methods available
-#[repr(u64)]
-#[derive(FromPrimitive)]
-pub enum MethodMultisig {
-    Constructor = METHOD_CONSTRUCTOR,
-    Propose = 2,
-    Approve = 3,
-    Cancel = 4,
-    AddSigner = 5,
-    RemoveSigner = 6,
-    SwapSigner = 7,
-    ChangeNumApprovalsThreshold = 8,
-    LockBalance = 9,
 }

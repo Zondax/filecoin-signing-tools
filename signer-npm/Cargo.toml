@@ -16,10 +16,10 @@ default = ["console_error_panic_hook"]
 [dependencies]
 tiny-bip39 = "0.8.0"
 thiserror = "1.0.20"
-serde_json = "1.0.56"
+serde_json = "1.0.79"
 libsecp256k1 = "0.6"
 hex = { git = "https://github.com/Zondax/rust-hex", rev = "6e35fb48999278c8c6c75b099baa4ea2a9d1d12b" }
-base64 = "0.12.3"
+base64 = "0.13.0"
 js-sys = "0.3.42"
 wasm-bindgen-futures = "0.4.15"
 serde = { version = "1.0", features = ["derive"] }
@@ -30,7 +30,7 @@ itoa = "=0.4.6"
 parking_lot_core = "=0.8.0"
 pin-project = "=1.0.2"
 pin-project-internal = "=1.0.2"
-quote = "=1.0.7"
+quote = "1.0.15"
 smallvec = "=1.6.1"
 subtle = "=2.3.0"
 syn = "1.0.85"
@@ -57,14 +57,14 @@ filecoin-signer = { path = "../signer" }
 zx-bip44 = "0.1.0"
 
 [dependencies.wasm-bindgen]
-version = "0.2.78"
+version = "0.2.79"
 features = ["serde-serialize"]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.15"
 
-[package.metadata.wasm-pack.profile.release]
-wasm-opt = false
+#[package.metadata.wasm-pack.profile.release]
+#wasm-opt = false
 
 [build-dependencies]
 cc = "=1.0.65"
