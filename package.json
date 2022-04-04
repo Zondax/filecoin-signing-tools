@@ -2,7 +2,7 @@
   "name": "filecoin-signing-tools",
   "private": true,
   "description": "Filecoin signing tools",
-  "version": "0.0.0",
+  "version": "1.0.0-rc0",
   "author": "Zondax GmbH <info@zondax.ch>",
   "homepage": "zondax.ch",
   "license": "private",
