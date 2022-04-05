@@ -12,10 +12,10 @@ serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0"
 serde_alias = "0.0.2"
 
-fil_actor_cron = { git = "https://github.com/filecoin-project/builtin-actors", branch = "feat/actor-feature" }
-fil_actor_init = { git = "https://github.com/filecoin-project/builtin-actors", branch = "feat/actor-feature" }
-fil_actor_multisig = { git = "https://github.com/filecoin-project/builtin-actors", branch = "feat/actor-feature" }
-fil_actor_paych = { git = "https://github.com/filecoin-project/builtin-actors", branch = "feat/actor-feature" }
+fil_actor_cron = "7.1.1"
+fil_actor_init = "7.1.1"
+fil_actor_multisig = "7.1.1"
+fil_actor_paych = "7.1.1"
 
 fvm_shared = "0.3.1"
 cid = "0.8.3"
