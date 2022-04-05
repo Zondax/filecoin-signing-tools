@@ -18,5 +18,5 @@ fil_actor_multisig = "7.1.1"
 fil_actor_paych = "7.1.1"
 
 fvm_shared = "=0.2.2"
-cid = "0.8.3"
+cid = "=0.8.3"
 base64 = "0.13.0"
