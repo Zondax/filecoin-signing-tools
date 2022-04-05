@@ -47,11 +47,11 @@ num_bigint_chainsafe = { package = "forest_bigint", version = "0.1.2"}
 zx-bip44 = "0.1.0"
 
 extras = { path = "../extras"}
-fil_actor_init = "7.1.1"
-fil_actor_multisig = "7.1.1"
-fil_actor_paych = "7.1.1"
+fil_actor_init = { git = "https://github.com/filecoin-project/builtin-actors", rev = "6bdc9412e8b456706b796bc4f9b9015b39107b62"}
+fil_actor_multisig = { git = "https://github.com/filecoin-project/builtin-actors", rev = "6bdc9412e8b456706b796bc4f9b9015b39107b62"}
+fil_actor_paych = { git = "https://github.com/filecoin-project/builtin-actors", rev = "6bdc9412e8b456706b796bc4f9b9015b39107b62"}
 
-fvm_shared = "=0.2.2"
+fvm_shared = "=0.3.1"
 clock = { package = "fil_clock", git = "https://github.com/chainsafe/forest", rev="d5a774a10b59dcad5372f520577180b9614fe2bb" }
 cid = "=0.8.3"
 
