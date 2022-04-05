@@ -16,7 +16,7 @@ serde_cbor = "0.11.1"
 serde_bytes = "0.11.5"
 rayon = "1"
 
-bls-signatures = {version = "0.10", default-features = false, features = ["pairing"]}
+bls-signatures = {version = "0.11.3", default-features = false, features = ["pairing"]}
 
 # Crypto related
 hex = { git = "https://github.com/Zondax/rust-hex", rev="6e35fb48999278c8c6c75b099baa4ea2a9d1d12b" }
@@ -29,7 +29,7 @@ sha2 = "0.9.2"
 
 # logging
 log = "0.4.11"
-env_logger = "0.7"
+env_logger = "0.9.0"
 
 arbitrary = { optional = true, features = ["derive"], version = "1" }
 ffi-support = { optional = true, version = "0.4" }
@@ -47,19 +47,19 @@ num_bigint_chainsafe = { package = "forest_bigint", version = "0.1.2"}
 zx-bip44 = "0.1.0"
 
 extras = { path = "../extras"}
-fil_actor_init = { git = "https://github.com/filecoin-project/builtin-actors", branch = "feat/actor-feature" }
-fil_actor_multisig = { git = "https://github.com/filecoin-project/builtin-actors", branch = "feat/actor-feature" }
-fil_actor_paych = { git = "https://github.com/filecoin-project/builtin-actors", branch = "feat/actor-feature" }
+fil_actor_init = { git = "https://github.com/filecoin-project/builtin-actors", rev = "6bdc9412e8b456706b796bc4f9b9015b39107b62"}
+fil_actor_multisig = { git = "https://github.com/filecoin-project/builtin-actors", rev = "6bdc9412e8b456706b796bc4f9b9015b39107b62"}
+fil_actor_paych = { git = "https://github.com/filecoin-project/builtin-actors", rev = "6bdc9412e8b456706b796bc4f9b9015b39107b62"}
 
-fvm_shared = "0.3.1"
+fvm_shared = "=0.3.1"
 clock = { package = "fil_clock", git = "https://github.com/chainsafe/forest", rev="d5a774a10b59dcad5372f520577180b9614fe2bb" }
-cid = "0.8.3"
+cid = "=0.8.3"
 
 num-traits = "0.2"
 
 [dev-dependencies]
-rand_chacha = "0.2.2"
-rand = "0.7"
+rand_chacha = "0.3.1"
+rand = "0.8"
 
 [features]
 default = []

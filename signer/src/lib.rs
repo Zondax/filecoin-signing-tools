@@ -1006,7 +1006,9 @@ pub fn sign_voucher(
 
     let secret_key = libsecp256k1::SecretKey::parse_slice(&private_key.0)?;
 
-    let svb = voucher.signing_bytes()?;
+    let svb = voucher
+        .signing_bytes()
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
     let digest = utils::get_digest_voucher(&svb)?;
 
     let blob_to_sign = Message::parse_slice(&digest)?;
@@ -1233,7 +1235,9 @@ pub fn verify_voucher_signature(
 
     let address = Address::from_str(&address_signer)?;
 
-    let sv_bytes = signed_voucher.signing_bytes()?;
+    let sv_bytes = signed_voucher
+        .signing_bytes()
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
     let digest = utils::get_digest_voucher(&sv_bytes)?;
 
     match &signed_voucher.signature {

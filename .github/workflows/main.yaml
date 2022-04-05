@@ -38,7 +38,7 @@ jobs:
       - name: clippy
         run: |
           cargo clippy --version
-          cargo clippy --all-features --all-targets
+          cargo clippy --all-features --all-targets 
       #- name: audit
       #  run: |
       #    cargo audit --version
