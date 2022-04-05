@@ -51,9 +51,9 @@ fil_actor_init = "7.1.1"
 fil_actor_multisig = "7.1.1"
 fil_actor_paych = "7.1.1"
 
-fvm_shared = "0.2.2"
+fvm_shared = "=0.2.2"
 clock = { package = "fil_clock", git = "https://github.com/chainsafe/forest", rev="d5a774a10b59dcad5372f520577180b9614fe2bb" }
-cid = "0.8.3"
+cid = "0.8.4"
 
 num-traits = "0.2"
 
