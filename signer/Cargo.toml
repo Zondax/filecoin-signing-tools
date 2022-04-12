@@ -34,25 +34,18 @@ env_logger = "0.9.0"
 arbitrary = { optional = true, features = ["derive"], version = "1" }
 ffi-support = { optional = true, version = "0.4" }
 
-
-forest_vm = "0.3.1"
-forest_address = "0.3.1"
-forest_encoding = "0.2.1"
-forest_message = { default-features = false, features = ["pairing"], version = "0.7"  }
-forest_crypto = { default-features = false, features = ["pairing"], version = "0.5.3"  }
-
 tiny-bip39 = "0.8.0"
 num_bigint_chainsafe = { package = "forest_bigint", version = "0.1.2"}
 
 zx-bip44 = "0.1.0"
 
 extras = { path = "../extras"}
-fil_actor_init = { git = "https://github.com/filecoin-project/builtin-actors", rev = "6bdc9412e8b456706b796bc4f9b9015b39107b62"}
-fil_actor_multisig = { git = "https://github.com/filecoin-project/builtin-actors", rev = "6bdc9412e8b456706b796bc4f9b9015b39107b62"}
-fil_actor_paych = { git = "https://github.com/filecoin-project/builtin-actors", rev = "6bdc9412e8b456706b796bc4f9b9015b39107b62"}
+fil_actor_init = { git = "https://github.com/filecoin-project/builtin-actors" }
+fil_actor_multisig = { git = "https://github.com/filecoin-project/builtin-actors" }
+fil_actor_paych = { git = "https://github.com/filecoin-project/builtin-actors" }
 
-fvm_shared = "=0.3.1"
-clock = { package = "fil_clock", git = "https://github.com/chainsafe/forest", rev="d5a774a10b59dcad5372f520577180b9614fe2bb" }
+fvm_shared = "0.4.1"
+fvm_ipld_encoding = "0.1.0"
 cid = "=0.8.3"
 
 num-traits = "0.2"

@@ -1,54 +1,16 @@
 use std::convert::TryFrom;
 use std::str::FromStr;
 
-use forest_crypto::signature;
-use forest_message::{Message, SignedMessage, UnsignedMessage};
-use forest_vm::Serialized;
-use num_bigint_chainsafe::BigInt;
 use serde::{Deserialize, Serialize, Serializer};
 
-use fvm_shared::encoding::RawBytes;
+use fvm_ipld_encoding::RawBytes;
+use fvm_shared::message::Message;
+use fvm_shared::crypto::signature::Signature;
 
 use extras::init::ExecParamsAPI;
-use extras::{multisig, paych};
+use extras::{multisig, paych, message::MessageAPI};
 
 use crate::error::SignerError;
-use crate::signature::Signature;
-
-pub enum SigTypes {
-    SigTypeSecp256k1 = 0x01,
-    SigTypeBLS = 0x02,
-}
-
-/// *crypto.Signature Go type:  specs-actors/actors/crytpo:Signature
-#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
-#[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct SpecsActorsCryptoSignature {
-    pub typ: u8,
-    #[serde(with = "serde_bytes")]
-    pub data: Vec<u8>,
-}
-
-impl From<&SpecsActorsCryptoSignature> for SpecsActorsCryptoSignature {
-    fn from(sig: &SpecsActorsCryptoSignature) -> Self {
-        let d = sig.data.to_vec();
-        SpecsActorsCryptoSignature {
-            typ: sig.typ,
-            data: d,
-        }
-    }
-}
-
-impl Serialize for SpecsActorsCryptoSignature {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut v = vec![self.typ];
-        v.extend(self.data.iter().copied());
-        serde_bytes::Serialize::serialize(&v, serializer)
-    }
-}
 
 #[derive(Deserialize, Serialize)]
 #[serde(untagged)]
@@ -117,59 +79,14 @@ impl MessageParams {
     }
 }
 
-/// Unsigned message api structure
-#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
-#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
-pub struct UnsignedMessageAPI {
-    #[serde(alias = "To")]
-    pub to: String,
-    #[serde(alias = "From")]
-    pub from: String,
-    #[serde(alias = "Nonce")]
-    pub nonce: u64,
-    #[serde(alias = "Value")]
-    pub value: String,
-
-    #[serde(rename = "gaslimit")]
-    #[serde(alias = "gasLimit")]
-    #[serde(alias = "gas_limit")]
-    #[serde(alias = "GasLimit")]
-    pub gas_limit: i64,
-
-    #[serde(rename = "gasfeecap")]
-    #[serde(alias = "gasFeeCap")]
-    #[serde(alias = "gas_fee_cap")]
-    #[serde(alias = "GasFeeCap")]
-    pub gas_fee_cap: String,
-
-    #[serde(rename = "gaspremium")]
-    #[serde(alias = "gasPremium")]
-    #[serde(alias = "gas_premium")]
-    #[serde(alias = "GasPremium")]
-    pub gas_premium: String,
-
-    #[serde(alias = "Method")]
-    pub method: u64,
-    #[serde(alias = "Params")]
-    pub params: String,
-}
-
-/// Signature api structure
-#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
-#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
-pub struct SignatureAPI {
-    #[serde(rename = "type")]
-    pub sig_type: u8,
-    #[serde(with = "serde_base64_vector")]
-    pub data: Vec<u8>,
-}
-
 /// Signed message api structure
 #[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
 pub struct SignedMessageAPI {
-    pub message: UnsignedMessageAPI,
-    pub signature: SignatureAPI,
+    #[serde(with = "MessageAPI")]
+    pub message: Message,
+    #[serde(with = "json_signature")]
+    pub signature: Signature,
 }
 
 /// Structure containing an `UnsignedMessageAPI` or a `SignedMessageAPI`
@@ -273,54 +190,6 @@ pub struct MessageTxNetwork {
     pub testnet: bool,
 }
 
-impl From<&Signature> for SignatureAPI {
-    fn from(sig: &Signature) -> SignatureAPI {
-        match sig {
-            Signature::SignatureSECP256K1(sig_secp256k1) => SignatureAPI {
-                sig_type: SigTypes::SigTypeSecp256k1 as u8,
-                data: sig_secp256k1.0.to_vec(),
-            },
-            Signature::SignatureBLS(sig_bls) => SignatureAPI {
-                sig_type: SigTypes::SigTypeBLS as u8,
-                data: sig_bls.0.to_vec(),
-            },
-        }
-    }
-}
-
-impl TryFrom<&SignatureAPI> for signature::Signature {
-    type Error = SignerError;
-
-    fn try_from(sig: &SignatureAPI) -> Result<signature::Signature, Self::Error> {
-        match sig.sig_type {
-            2 => (Ok(signature::Signature::new_bls(sig.data.to_vec()))),
-            1 => (Ok(signature::Signature::new_secp256k1(sig.data.to_vec()))),
-            _ => Err(SignerError::GenericString(
-                "Unknown signature type.".to_string(),
-            )),
-        }
-    }
-}
-
-mod serde_base64_vector {
-    use serde::{self, Deserialize, Deserializer, Serializer};
-
-    pub fn serialize<S>(v: &[u8], serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&base64::encode(v))
-    }
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        base64::decode(s).map_err(serde::de::Error::custom)
-    }
-}
-
 impl TryFrom<MessageTxNetwork> for MessageTxAPI {
     type Error = SignerError;
 
@@ -377,93 +246,6 @@ impl TryFrom<MessageTxNetwork> for MessageTxAPI {
     }
 }
 
-impl From<MessageTx> for MessageTxAPI {
-    fn from(message_tx: MessageTx) -> MessageTxAPI {
-        match message_tx {
-            MessageTx::UnsignedMessage(message_tx) => {
-                MessageTxAPI::UnsignedMessageAPI(UnsignedMessageAPI::from(message_tx))
-            }
-            MessageTx::SignedMessage(message_tx) => {
-                MessageTxAPI::SignedMessageAPI(SignedMessageAPI::from(message_tx))
-            }
-        }
-    }
-}
-
-impl TryFrom<&UnsignedMessageAPI> for UnsignedMessage {
-    type Error = SignerError;
-
-    fn try_from(message_api: &UnsignedMessageAPI) -> Result<UnsignedMessage, Self::Error> {
-        let to = forest_address::Address::from_str(&message_api.to)
-            .map_err(|err| SignerError::GenericString(err.to_string()))?;
-        let from = forest_address::Address::from_str(&message_api.from)
-            .map_err(|err| SignerError::GenericString(err.to_string()))?;
-        let value = BigInt::from_str(&message_api.value)?;
-        let gas_limit = message_api.gas_limit;
-        let gas_fee_cap = BigInt::from_str(&message_api.gas_fee_cap)?;
-        let gas_premium = BigInt::from_str(&message_api.gas_premium)?;
-
-        let message_params_bytes = base64::decode(&message_api.params)
-            .map_err(|err| SignerError::GenericString(err.to_string()))?;
-        let params = Serialized::new(message_params_bytes);
-
-        let tmp = UnsignedMessage::builder()
-            .to(to)
-            .from(from)
-            .sequence(message_api.nonce)
-            .value(value)
-            .method_num(message_api.method)
-            .params(params)
-            .gas_limit(gas_limit)
-            .gas_premium(gas_premium)
-            .gas_fee_cap(gas_fee_cap)
-            .build()
-            .map_err(SignerError::GenericString)?;
-
-        Ok(tmp)
-    }
-}
-
-impl From<UnsignedMessage> for UnsignedMessageAPI {
-    fn from(unsigned_message: UnsignedMessage) -> UnsignedMessageAPI {
-        let params_b64_string = base64::encode(unsigned_message.params().bytes());
-
-        UnsignedMessageAPI {
-            to: unsigned_message.to().to_string(),
-            from: unsigned_message.from().to_string(),
-            nonce: unsigned_message.sequence(),
-            value: unsigned_message.value().to_string(),
-            gas_limit: unsigned_message.gas_limit(),
-            gas_fee_cap: unsigned_message.gas_fee_cap().to_string(),
-            gas_premium: unsigned_message.gas_premium().to_string(),
-            method: unsigned_message.method_num(),
-            params: params_b64_string,
-        }
-    }
-}
-
-impl From<SignedMessage> for SignedMessageAPI {
-    fn from(signed_message: SignedMessage) -> SignedMessageAPI {
-        SignedMessageAPI {
-            message: UnsignedMessageAPI::from(signed_message.message().clone()),
-            signature: SignatureAPI {
-                sig_type: SigTypes::SigTypeSecp256k1 as u8,
-                data: signed_message.signature().bytes().to_vec(),
-            },
-        }
-    }
-}
-
-impl TryFrom<&SignedMessageAPI> for SignedMessage {
-    type Error = SignerError;
-
-    fn try_from(signed_message_api: &SignedMessageAPI) -> Result<SignedMessage, Self::Error> {
-        let message = UnsignedMessage::try_from(&signed_message_api.message)?;
-        let signature = signature::Signature::try_from(&signed_message_api.signature)?;
-
-        Ok(SignedMessage { message, signature })
-    }
-}
 
 #[cfg(test)]
 mod tests {

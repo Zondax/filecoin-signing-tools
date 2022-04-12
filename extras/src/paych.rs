@@ -6,7 +6,7 @@ use fvm_shared::address::Address;
 use fvm_shared::bigint::{bigint_ser, BigInt};
 use fvm_shared::clock::ChainEpoch;
 use fvm_shared::crypto::signature::Signature;
-use fvm_shared::encoding::{serde_bytes, RawBytes};
+use fvm_ipld_encoding::{serde_bytes, RawBytes};
 use fvm_shared::MethodNum;
 use serde::{Deserialize, Serialize};
 

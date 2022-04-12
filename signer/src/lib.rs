@@ -5,10 +5,6 @@ use std::str::FromStr;
 
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
-//use forest_address::{Address, BLSPublicKey, Network, Protocol};
-use forest_encoding::blake2b_256;
-use forest_encoding::{from_slice, to_vec};
-use forest_message::{SignedMessage, UnsignedMessage};
 use libsecp256k1::util::{
     COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
 };

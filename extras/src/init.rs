@@ -1,7 +1,7 @@
 use cid::Cid;
 use fil_actor_init::{ConstructorParams, ExecParams, ExecReturn};
 use fvm_shared::address::Address;
-use fvm_shared::encoding::RawBytes;
+use fvm_ipld_encoding::RawBytes;
 use serde::{Deserialize, Serialize};
 
 use super::json::address;
