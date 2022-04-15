@@ -1,5 +1,5 @@
-use clock::ChainEpoch;
-use forest_encoding::tuple::*;
+use fvm_shared::clock::ChainEpoch;
+use fvm_ipld_encoding::tuple::*;
 
 /// Constructor parameters for multisig actor V1 (deprecated)
 #[derive(Serialize_tuple, Deserialize_tuple)]

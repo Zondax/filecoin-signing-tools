@@ -6,9 +6,10 @@ use std::str::FromStr;
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
 use libsecp256k1::util::{
-    COMPRESSED_PUBLIC_KEY_SIZE, FULL_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
+    COMPRESSED_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
 };
-use libsecp256k1::{recover, sign, verify, Message, RecoveryId};
+use fvm_shared::message::Message;
+use fvm_shared::crypto::signature::{Signature, SignatureType};
 use num_traits::FromPrimitive;
 use rayon::prelude::*;
 use zx_bip44::BIP44Path;
@@ -18,23 +19,23 @@ use cid::Cid;
 use fil_actor_init::{ExecParams, Method as MethodInit};
 use fil_actor_multisig as multisig;
 use fil_actor_paych as paych;
-use fvm_shared::address::{Address, BLSPublicKey, Network, Protocol, BLS_PUB_LEN};
-use fvm_shared::encoding::RawBytes;
+use fvm_shared::address::{Address, Network, Protocol};
+use fvm_ipld_encoding::{from_slice, to_vec, RawBytes, Cbor};
+
+use bls_signatures::PublicKey as BLSPublicKey;
+use libsecp256k1::PublicKey as SECP256K1PublicKey;
 
 use crate::api::{
-    MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork, SignatureAPI, SignedMessageAPI,
-    UnsignedMessageAPI,
+    MessageParams, MessageTxAPI, MessageTxNetwork, SignedMessageAPI,
 };
 use crate::error::SignerError;
 use crate::extended_key::ExtendedSecretKey;
 use crate::multisig_deprecated::ConstructorParamsV1;
-use crate::signature::{Signature, SignatureBLS, SignatureSECP256K1};
 
 pub mod api;
 pub mod error;
 pub mod extended_key;
 pub mod multisig_deprecated;
-pub mod signature;
 pub mod utils;
 
 const RAW: u64 = 0x55;
@@ -56,19 +57,17 @@ pub const SIGNATURE_RECOVERY_SIZE: usize = SIGNATURE_SIZE + 1;
 /// Private key buffer
 pub struct PrivateKey(pub [u8; SECRET_KEY_SIZE]);
 
-/// Public key secp256k1 buffer
-pub struct PublicKeySECP256K1(pub [u8; FULL_PUBLIC_KEY_SIZE]);
-
 pub enum PublicKey {
-    PublicKeySECP256K1(PublicKeySECP256K1),
+    SECP256K1PublicKey(SECP256K1PublicKey),
     BLSPublicKey(BLSPublicKey),
 }
 
 impl PublicKey {
     pub fn to_vec(&self) -> Vec<u8> {
         match self {
-            PublicKey::PublicKeySECP256K1(pk) => pk.0.to_vec(),
-            PublicKey::BLSPublicKey(pk) => pk.0.to_vec(),
+            // Uncompressed public key 65 bytes
+            PublicKey::SECP256K1PublicKey(pk) => pk.serialize().to_vec(),
+            PublicKey::BLSPublicKey(pk) => pk.as_bytes(),
         }
     }
 }
@@ -148,13 +147,14 @@ fn derive_extended_secret_key_from_mnemonic(
     }
 }
 
-/// Returns a public key, private key and address given a mnemonic, derivation path and a password
+/// Returns a public key, private key and address given a mnemonic, derivation path and a password (support chinese mnemonic)
 ///
 /// # Arguments
 ///
 /// * `mnemonic` - A string containing a 24-words English mnemonic
 /// * `path` - A string containing a derivation path
 /// * `password` - Password to decrypt seed, if none use and empty string (e.g "")
+/// * `language_code` - The language code for the mnemonic (e.g "en" if english words are used)
 pub fn key_derive(
     mnemonic: &str,
     path: &str,
@@ -174,7 +174,7 @@ pub fn key_derive(
 
     Ok(ExtendedKey {
         private_key: PrivateKey(esk.secret_key()),
-        public_key: PublicKey::PublicKeySECP256K1(PublicKeySECP256K1(esk.public_key())),
+        public_key: PublicKey::SECP256K1PublicKey(SECP256K1PublicKey::parse(&esk.public_key())?),
         address: address.to_string(),
     })
 }
@@ -200,7 +200,7 @@ pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, Sign
 
     Ok(ExtendedKey {
         private_key: PrivateKey(esk.secret_key()),
-        public_key: PublicKey::PublicKeySECP256K1(PublicKeySECP256K1(esk.public_key())),
+        public_key: PublicKey::SECP256K1PublicKey(SECP256K1PublicKey::parse(&esk.public_key())?),
         address: address.to_string(),
     })
 }
@@ -225,7 +225,7 @@ pub fn key_recover(private_key: &PrivateKey, testnet: bool) -> Result<ExtendedKe
 
     Ok(ExtendedKey {
         private_key: PrivateKey(secret_key.serialize()),
-        public_key: PublicKey::PublicKeySECP256K1(PublicKeySECP256K1(public_key.serialize())),
+        public_key: PublicKey::SECP256K1PublicKey(public_key),
         address: address.to_string(),
     })
 }
@@ -251,11 +251,6 @@ pub fn key_recover_bls(
         address.set_network(Network::Mainnet);
     }
 
-    let mut public_key = BLSPublicKey {
-        0: [0; BLS_PUB_LEN],
-    };
-    public_key.0.copy_from_slice(&sk.public_key().as_bytes());
-
     let mut secret_key = PrivateKey {
         0: [0; SECRET_KEY_SIZE],
     };
@@ -263,7 +258,7 @@ pub fn key_recover_bls(
 
     Ok(ExtendedKey {
         private_key: secret_key,
-        public_key: PublicKey::BLSPublicKey(public_key),
+        public_key: PublicKey::BLSPublicKey(sk.public_key()),
         address: address.to_string(),
     })
 }
@@ -272,13 +267,12 @@ pub fn key_recover_bls(
 ///
 /// # Arguments
 ///
-/// * `transaction` - a filecoin transaction
+/// * `message` - a filecoin message (aka transaction)
 ///
 pub fn transaction_serialize(
-    unsigned_message_arg: &UnsignedMessageAPI,
-) -> Result<CborBuffer, SignerError> {
-    let unsigned_message = UnsignedMessage::try_from(unsigned_message_arg)?;
-    let message_cbor = CborBuffer(to_vec(&unsigned_message)?);
+    message: &Message,
+) -> Result<Vec<u8>, SignerError> {
+    let message_cbor = message.marshal_cbor()?;
     Ok(message_cbor)
 }
 
@@ -290,10 +284,10 @@ pub fn transaction_serialize(
 /// * `testnet` - boolean value `true` if testnet or `false` for mainnet
 ///
 pub fn transaction_parse(
-    cbor_buffer: &CborBuffer,
+    cbor: &Vec<u8>,
     testnet: bool,
 ) -> Result<MessageTxAPI, SignerError> {
-    let message: MessageTx = from_slice(cbor_buffer.as_ref())?;
+    let message: MessageTxAPI = from_slice(cbor)?;
 
     let message_tx_with_network = MessageTxNetwork {
         message_tx: message,
@@ -306,64 +300,56 @@ pub fn transaction_parse(
 }
 
 fn transaction_sign_secp56k1_raw(
-    unsigned_message_api: &UnsignedMessageAPI,
+    message: &Message,
     private_key: &PrivateKey,
-) -> Result<SignatureSECP256K1, SignerError> {
-    let message_cbor = transaction_serialize(unsigned_message_api)?;
-
+) -> Result<Signature, SignerError> {
     let secret_key = libsecp256k1::SecretKey::parse_slice(&private_key.0)?;
+    let message_digest = libsecp256k1::Message::parse_slice(&message.to_signing_bytes())?;
 
-    let cid_hashed = utils::get_digest(message_cbor.as_ref())?;
+    let (signature_rs, recovery_id) = libsecp256k1::sign(&message_digest, &secret_key);
 
-    let message_digest = Message::parse_slice(&cid_hashed)?;
+    let mut sig = [0; 65];
+    sig[..64].copy_from_slice(&signature_rs.serialize().to_vec());
+    sig[64] = recovery_id.serialize();
 
-    let (signature_rs, recovery_id) = sign(&message_digest, &secret_key);
-
-    let mut signature = SignatureSECP256K1 { 0: [0; 65] };
-    signature.0[..64].copy_from_slice(&signature_rs.serialize()[..]);
-    signature.0[64] = recovery_id.serialize();
+    let signature = Signature::new_secp256k1(sig.to_vec());
 
     Ok(signature)
 }
 
 fn transaction_sign_bls_raw(
-    unsigned_message_api: &UnsignedMessageAPI,
+    message: &Message,
     private_key: &PrivateKey,
-) -> Result<SignatureBLS, SignerError> {
+) -> Result<Signature, SignerError> {
     let sk = bls_signatures::PrivateKey::from_bytes(&private_key.0)?;
+    let sig = sk.sign(message.to_signing_bytes());
+    let signature = Signature::new_bls(sig.as_bytes());
 
-    let unsigned_message = UnsignedMessage::try_from(unsigned_message_api)?;
-
-    //sign the message's signing bytes
-    let sig = sk.sign(unsigned_message.to_signing_bytes());
-
-    Ok(SignatureBLS::try_from(sig.as_bytes())?)
+    Ok(signature)
 }
 
 /// Sign a transaction and return a raw signature (RSV format).
 ///
 /// # Arguments
 ///
-/// * `unsigned_message_api` - an unsigned filecoin message
+/// * `message` - an unsigned filecoin message
 /// * `private_key` - a `PrivateKey`
 ///
 pub fn transaction_sign_raw(
-    unsigned_message_api: &UnsignedMessageAPI,
+    message: &Message,
     private_key: &PrivateKey,
 ) -> Result<Signature, SignerError> {
     // the `from` address protocol let us know which signing scheme to use
-    let signature = match unsigned_message_api
+    let signature = match message
         .from
-        .as_bytes()
-        .get(1)
-        .ok_or_else(|| SignerError::GenericString("Empty signing protocol".into()))?
+        .protocol()
     {
-        b'1' => Signature::SignatureSECP256K1(transaction_sign_secp56k1_raw(
-            unsigned_message_api,
+        fvm_shared::address::Protocol::Secp256k1 => transaction_sign_secp56k1_raw(
+            message,
             private_key,
-        )?),
-        b'3' => {
-            Signature::SignatureBLS(transaction_sign_bls_raw(unsigned_message_api, private_key)?)
+        )?,
+        fvm_shared::address::Protocol::BLS => {
+            transaction_sign_bls_raw(message, private_key)?
         }
         _ => {
             return Err(SignerError::GenericString(
@@ -379,74 +365,71 @@ pub fn transaction_sign_raw(
 ///
 /// # Arguments
 ///
-/// * `unsigned_message_api` - an unsigned filecoin message
+/// * `message` - an unsigned filecoin message
 /// * `private_key` - a `PrivateKey`
 ///
 pub fn transaction_sign(
-    unsigned_message: &UnsignedMessageAPI,
+    message: &Message,
     private_key: &PrivateKey,
 ) -> Result<SignedMessageAPI, SignerError> {
-    let signature = transaction_sign_raw(unsigned_message, private_key)?;
+    let signature = transaction_sign_raw(message, private_key)?;
 
     let signed_message = SignedMessageAPI {
-        message: unsigned_message.to_owned(),
-        signature: SignatureAPI::from(&signature),
+        message: message.to_owned(),
+        signature: signature,
     };
 
     Ok(signed_message)
 }
 
 fn verify_secp256k1_signature(
-    signature: &SignatureSECP256K1,
-    cbor_buffer: &CborBuffer,
+    signature: &Signature,
+    cbor: &Vec<u8>,
 ) -> Result<bool, SignerError> {
     let network = Network::Testnet;
 
-    let signature_rs = libsecp256k1::Signature::parse_standard_slice(&signature.0[..64])?;
-    let recovery_id = RecoveryId::parse(signature.0[64])?;
+    let signature_rs = libsecp256k1::Signature::parse_standard_slice(&signature.bytes[..64])?;
+    let recovery_id = libsecp256k1::RecoveryId::parse(signature.bytes[64])?;
 
     // Should be default network here
     // FIXME: For now only testnet
-    let tx = transaction_parse(cbor_buffer, network == Network::Testnet)?;
+    let tx = transaction_parse(cbor, network == Network::Testnet)?;
 
     // Decode the CBOR transaction hex string into CBOR transaction buffer
-    let message_digest = utils::get_digest(cbor_buffer.as_ref())?;
+    let message_digest = utils::get_digest(cbor.as_ref())?;
 
-    let blob_to_sign = Message::parse_slice(&message_digest)?;
+    let blob_to_sign = libsecp256k1::Message::parse_slice(&message_digest)?;
 
-    let public_key = recover(&blob_to_sign, &signature_rs, &recovery_id)?;
+    let public_key = libsecp256k1::recover(&blob_to_sign, &signature_rs, &recovery_id)?;
     let mut from = Address::new_secp256k1(&public_key.serialize().to_vec())?;
     from.set_network(network);
 
     let tx_from = match tx {
-        MessageTxAPI::UnsignedMessageAPI(tx) => tx.from,
-        MessageTxAPI::SignedMessageAPI(tx) => tx.message.from,
+        MessageTxAPI::Message(tx) => tx.from,
+        MessageTxAPI::SignedMessage(tx) => tx.message.from,
     };
     let expected_from = from.to_string();
 
     // Compare recovered public key with the public key from the transaction
-    if tx_from != expected_from {
+    if tx_from.to_string() != expected_from {
         return Ok(false);
     }
 
-    Ok(verify(&blob_to_sign, &signature_rs, &public_key))
+    Ok(libsecp256k1::verify(&blob_to_sign, &signature_rs, &public_key))
 }
 
 fn verify_bls_signature(
-    signature: &SignatureBLS,
-    cbor_buffer: &CborBuffer,
+    signature: &Signature,
+    cbor: &Vec<u8>,
 ) -> Result<bool, SignerError> {
     // TODO: need a function to extract from public key from cbor buffer directly
-    let message = transaction_parse(cbor_buffer, true)?;
+    let message = transaction_parse(cbor, true)?;
     let message = message.get_message();
 
-    let address = Address::from_str(&message.from)?;
+    let pk = bls_signatures::PublicKey::from_bytes(&message.from.payload_bytes())?;
 
-    let pk = bls_signatures::PublicKey::from_bytes(&address.payload_bytes())?;
+    let sig = bls_signatures::Signature::from_bytes(signature.bytes())?;
 
-    let sig = bls_signatures::Signature::from_bytes(signature.as_ref())?;
-
-    let message = UnsignedMessage::try_from(&message)?;
     let signing_bytes = message.to_signing_bytes();
 
     let result = pk.verify(sig, signing_bytes);
@@ -463,47 +446,43 @@ fn verify_bls_signature(
 ///
 pub fn verify_signature(
     signature: &Signature,
-    cbor_buffer: &CborBuffer,
+    cbor: &Vec<u8>,
 ) -> Result<bool, SignerError> {
-    let result = match signature {
-        Signature::SignatureSECP256K1(sig_secp256k1) => {
-            verify_secp256k1_signature(sig_secp256k1, cbor_buffer)?
+    // TODO: pass signature.bytes instead of the full signature
+    let result = match signature.sig_type {
+        SignatureType::Secp256k1 => {
+            verify_secp256k1_signature(signature, cbor)?
         }
-        Signature::SignatureBLS(sig_bls) => verify_bls_signature(sig_bls, cbor_buffer)?,
+        SignatureType::BLS => verify_bls_signature(signature, cbor)?,
     };
 
     Ok(result)
 }
 
 fn extract_from_pub_key_from_message(
-    cbor_message: &CborBuffer,
+    cbor_message: &Vec<u8>,
 ) -> Result<bls_signatures::PublicKey, SignerError> {
     let message = transaction_parse(cbor_message, true)?;
-
     let unsigned_message_api = message.get_message();
-    let from_address = Address::from_str(&unsigned_message_api.from)?;
-
-    let pk = bls_signatures::PublicKey::from_bytes(&from_address.payload_bytes())?;
+    let pk = bls_signatures::PublicKey::from_bytes(&unsigned_message_api.from.payload_bytes())?;
 
     Ok(pk)
 }
 
 fn extract_bls_signing_bytes_from_message(
-    cbor_message: &CborBuffer,
+    cbor_message: &Vec<u8>,
 ) -> Result<Vec<u8>, SignerError> {
     let message = transaction_parse(cbor_message, true)?;
-
     let unsigned_message_api = message.get_message();
-    let unsigned_message = UnsignedMessage::try_from(&unsigned_message_api)?;
 
-    Ok(unsigned_message.to_signing_bytes())
+    Ok(unsigned_message_api.to_signing_bytes())
 }
 
 pub fn verify_aggregated_signature(
-    signature: &SignatureBLS,
-    cbor_messages: &[CborBuffer],
+    signature: &Signature,
+    cbor_messages: &[Vec<u8>],
 ) -> Result<bool, SignerError> {
-    let sig = bls_signatures::Signature::from_bytes(signature.as_ref())?;
+    let sig = bls_signatures::Signature::from_bytes(signature.bytes())?;
 
     // Get public keys from message
     let tmp: Result<Vec<_>, SignerError> = cbor_messages
@@ -566,7 +545,7 @@ pub fn create_multisig(
     gas_limit: i64,
     gas_fee_cap: String,
     gas_premium: String,
-) -> Result<UnsignedMessageAPI, SignerError> {
+) -> Result<Message, SignerError> {
     let from = fvm_shared::address::Address::from_str(&sender_address)?;
     let signers_tmp: Result<Vec<fvm_shared::address::Address>, _> = addresses
         .into_iter()
@@ -611,19 +590,20 @@ pub fn create_multisig(
     let mut init_actor_address = fvm_shared::address::Address::from_str("f01")?;
     init_actor_address.set_network(from.network());
 
-    let multisig_create_message_api = UnsignedMessageAPI {
-        to: init_actor_address.to_string(),
-        from: from.to_string(),
-        nonce,
-        value,
+    let multisig_create_message = Message {
+        version: 0,
+        to: init_actor_address,
+        from: from,
+        sequence: nonce,
+        value: fvm_shared::econ::TokenAmount::from_str(&value)?,
         gas_limit,
-        gas_fee_cap,
-        gas_premium,
-        method: MethodInit::Exec as u64,
-        params: base64::encode(serialized_params.bytes()),
+        gas_fee_cap: fvm_shared::econ::TokenAmount::from_str(&gas_fee_cap)?,
+        gas_premium: fvm_shared::econ::TokenAmount::from_str(&gas_premium)?,
+        method_num: MethodInit::Exec as u64,
+        params: serialized_params
     };
 
-    Ok(multisig_create_message_api)
+    Ok(multisig_create_message)
 }
 
 /// Utilitary function to create a proposal multisig message. Return an unsigned message.
@@ -653,7 +633,7 @@ pub fn proposal_multisig_message(
     gas_premium: String,
     proposal_method: u64,
     proposal_serialized_params: String,
-) -> Result<UnsignedMessageAPI, SignerError> {
+) -> Result<Message, SignerError> {
     let propose_params_multisig = multisig::ProposeParams {
         to: fvm_shared::address::Address::from_str(&to_address)?,
         value: fvm_shared::bigint::BigInt::from_str(&amount)?,
@@ -662,22 +642,23 @@ pub fn proposal_multisig_message(
     };
 
     let params =
-        forest_vm::Serialized::serialize::<multisig::ProposeParams>(propose_params_multisig)
+        RawBytes::serialize(propose_params_multisig)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-    let multisig_propose_message_api = UnsignedMessageAPI {
-        to: multisig_address,
-        from: from_address,
-        nonce,
-        value: "0".to_string(),
+    let multisig_propose_message = Message {
+        version: 0,
+        to: fvm_shared::address::Address::from_str(&multisig_address)?,
+        from: fvm_shared::address::Address::from_str(&from_address)?,
+        sequence: nonce,
+        value: fvm_shared::econ::TokenAmount::from_str(&"0")?,
         gas_limit,
-        gas_fee_cap,
-        gas_premium,
-        method: multisig::Method::Propose as u64,
-        params: base64::encode(params.bytes()),
+        gas_fee_cap: fvm_shared::econ::TokenAmount::from_str(&gas_fee_cap)?,
+        gas_premium: fvm_shared::econ::TokenAmount::from_str(&gas_premium)?,
+        method_num: multisig::Method::Propose as u64,
+        params: params,
     };
 
-    Ok(multisig_propose_message_api)
+    Ok(multisig_propose_message)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -693,7 +674,7 @@ fn approve_or_cancel_multisig_message(
     gas_limit: i64,
     gas_fee_cap: String,
     gas_premium: String,
-) -> Result<UnsignedMessageAPI, SignerError> {
+) -> Result<Message, SignerError> {
     let requester = fvm_shared::address::Address::from_str(&proposer_address)?;
     let proposal_parameter = multisig::ProposalHashData {
         requester: Some(&requester),
@@ -705,26 +686,27 @@ fn approve_or_cancel_multisig_message(
 
     let serialize_proposal_parameter = RawBytes::serialize(proposal_parameter)
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
-    let proposal_hash = blake2b_256(&serialize_proposal_parameter);
+    let proposal_hash = utils::blake2b_256(&serialize_proposal_parameter);
 
     let params_txnid = multisig::TxnIDParams {
         id: multisig::TxnID(message_id),
         proposal_hash: proposal_hash.to_vec(),
     };
 
-    let params = forest_vm::Serialized::serialize::<multisig::TxnIDParams>(params_txnid)
+    let params = RawBytes::serialize(params_txnid)
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-    let multisig_unsigned_message_api = UnsignedMessageAPI {
-        to: multisig_address,
-        from: from_address,
-        nonce,
-        value: "0".to_string(),
+    let multisig_unsigned_message_api = Message {
+        version: 0,
+        to: fvm_shared::address::Address::from_str(&multisig_address)?,
+        from: fvm_shared::address::Address::from_str(&from_address)?,
+        sequence: nonce,
+        value: fvm_shared::econ::TokenAmount::from_str(&"0")?,
         gas_limit,
-        gas_fee_cap,
-        gas_premium,
-        method,
-        params: base64::encode(params.bytes()),
+        gas_fee_cap: fvm_shared::econ::TokenAmount::from_str(&gas_fee_cap)?,
+        gas_premium: fvm_shared::econ::TokenAmount::from_str(&gas_premium)?,
+        method_num: method,
+        params: params,
     };
 
     Ok(multisig_unsigned_message_api)
@@ -754,7 +736,7 @@ pub fn approve_multisig_message(
     gas_limit: i64,
     gas_fee_cap: String,
     gas_premium: String,
-) -> Result<UnsignedMessageAPI, SignerError> {
+) -> Result<Message, SignerError> {
     approve_or_cancel_multisig_message(
         multisig::Method::Approve as u64,
         multisig_address,
@@ -794,7 +776,7 @@ pub fn cancel_multisig_message(
     gas_limit: i64,
     gas_fee_cap: String,
     gas_premium: String,
-) -> Result<UnsignedMessageAPI, SignerError> {
+) -> Result<Message, SignerError> {
     approve_or_cancel_multisig_message(
         multisig::Method::Cancel as u64,
         multisig_address,
@@ -839,7 +821,7 @@ pub fn create_pymtchan(
     gas_limit: i64,
     gas_fee_cap: String,
     gas_premium: String,
-) -> Result<UnsignedMessageAPI, SignerError> {
+) -> Result<Message, SignerError> {
     let from = fvm_shared::address::Address::from_str(&from_address)?;
     let to = fvm_shared::address::Address::from_str(&to_address)?;
 
@@ -862,16 +844,17 @@ pub fn create_pymtchan(
     let mut init_actor_address = fvm_shared::address::Address::from_str("f01")?;
     init_actor_address.set_network(from.network());
 
-    let pch_create_message_api = UnsignedMessageAPI {
-        to: init_actor_address.to_string(),
-        from: from_address,
-        nonce,
-        value,
+    let pch_create_message_api = Message {
+        version: 0,
+        to: init_actor_address,
+        from: fvm_shared::address::Address::from_str(&from_address)?,
+        sequence: nonce,
+        value: fvm_shared::econ::TokenAmount::from_str(&value)?,
         gas_limit,
-        gas_fee_cap,
-        gas_premium,
-        method: MethodInit::Exec as u64,
-        params: base64::encode(serialized_params.bytes()),
+        gas_fee_cap: fvm_shared::econ::TokenAmount::from_str(&gas_fee_cap)?,
+        gas_premium: fvm_shared::econ::TokenAmount::from_str(&gas_premium)?,
+        method_num: MethodInit::Exec as u64,
+        params: serialized_params,
     };
 
     Ok(pch_create_message_api)
@@ -894,29 +877,30 @@ pub fn update_pymtchan(
     gas_limit: i64,
     gas_fee_cap: String,
     gas_premium: String,
-) -> Result<UnsignedMessageAPI, SignerError> {
+) -> Result<Message, SignerError> {
     let sv_cbor = base64::decode(signed_voucher)?;
 
-    let sv: paych::SignedVoucher = forest_encoding::from_slice(sv_cbor.as_ref())?;
+    let sv: paych::SignedVoucher = RawBytes::deserialize(&RawBytes::new(sv_cbor))?;
 
     let update_payment_channel_params = paych::UpdateChannelStateParams { sv, secret: vec![] };
 
-    let serialized_params = forest_vm::Serialized::serialize::<paych::UpdateChannelStateParams>(
+    let serialized_params = RawBytes::serialize(
         update_payment_channel_params,
     )
     .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
-    let pch_update_message_api = UnsignedMessageAPI {
-        to: pch_address, // INIT_ACTOR_ADDR
-        from: from_address,
-        nonce,
-        value: "0".to_string(),
+    let pch_update_message_api = Message {
+        version: 0,
+        to: fvm_shared::address::Address::from_str(&pch_address)?, // INIT_ACTOR_ADDR
+        from: fvm_shared::address::Address::from_str(&from_address)?,
+        sequence: nonce,
+        value: fvm_shared::econ::TokenAmount::from_str(&"0".to_string())?,
         gas_limit,
-        gas_fee_cap,
-        gas_premium,
-        method: paych::Method::UpdateChannelState as u64,
-        params: base64::encode(serialized_params.bytes()),
+        gas_fee_cap: fvm_shared::econ::TokenAmount::from_str(&gas_fee_cap)?,
+        gas_premium: fvm_shared::econ::TokenAmount::from_str(&gas_premium)?,
+        method_num: paych::Method::UpdateChannelState as u64,
+        params: serialized_params,
     };
 
     Ok(pch_update_message_api)
@@ -937,18 +921,19 @@ pub fn settle_pymtchan(
     gas_limit: i64,
     gas_fee_cap: String,
     gas_premium: String,
-) -> Result<UnsignedMessageAPI, SignerError> {
+) -> Result<Message, SignerError> {
     // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
-    let pch_settle_message_api = UnsignedMessageAPI {
-        to: pch_address,
-        from: from_address,
-        nonce,
-        value: "0".to_string(),
+    let pch_settle_message_api = Message {
+        version: 0,
+        to: fvm_shared::address::Address::from_str(&pch_address)?, 
+        from: fvm_shared::address::Address::from_str(&from_address)?,
+        sequence: nonce,
+        value: fvm_shared::econ::TokenAmount::from_str(&"0".to_string())?,
         gas_limit,
-        gas_fee_cap,
-        gas_premium,
-        method: paych::Method::Settle as u64,
-        params: base64::encode(Vec::new()),
+        gas_fee_cap: fvm_shared::econ::TokenAmount::from_str(&gas_fee_cap)?,
+        gas_premium: fvm_shared::econ::TokenAmount::from_str(&gas_premium)?,
+        method_num: paych::Method::Settle as u64,
+        params: RawBytes::new(vec!()),
     };
 
     Ok(pch_settle_message_api)
@@ -969,21 +954,22 @@ pub fn collect_pymtchan(
     gas_limit: i64,
     gas_fee_cap: String,
     gas_premium: String,
-) -> Result<UnsignedMessageAPI, SignerError> {
+) -> Result<Message, SignerError> {
     // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
-    let pch_collect_message_api = UnsignedMessageAPI {
-        to: pch_address,
-        from: from_address,
-        nonce,
-        value: "0".to_string(),
+    let pch_collect_message = Message {
+        version: 0,
+        to: fvm_shared::address::Address::from_str(&pch_address)?,
+        from: fvm_shared::address::Address::from_str(&from_address)?,
+        sequence: nonce,
+        value: fvm_shared::econ::TokenAmount::from_str(&"0".to_string())?,
         gas_limit,
-        gas_fee_cap,
-        gas_premium,
-        method: paych::Method::Collect as u64,
-        params: base64::encode(Vec::new()),
+        gas_fee_cap: fvm_shared::econ::TokenAmount::from_str(&gas_fee_cap)?,
+        gas_premium: fvm_shared::econ::TokenAmount::from_str(&gas_premium)?,
+        method_num: paych::Method::Collect as u64,
+        params: RawBytes::new(vec!()),
     };
 
-    Ok(pch_collect_message_api)
+    Ok(pch_collect_message)
 }
 
 /// Sign a voucher for payment channel
@@ -1007,17 +993,15 @@ pub fn sign_voucher(
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
     let digest = utils::get_digest_voucher(&svb)?;
 
-    let blob_to_sign = Message::parse_slice(&digest)?;
+    let blob_to_sign = libsecp256k1::Message::parse_slice(&digest)?;
 
-    let (signature_rs, recovery_id) = sign(&blob_to_sign, &secret_key);
+    let (signature_rs, recovery_id) = libsecp256k1::sign(&blob_to_sign, &secret_key);
 
-    let mut signature = SignatureSECP256K1 { 0: [0; 65] };
-    signature.0[..64].copy_from_slice(&signature_rs.serialize()[..]);
-    signature.0[64] = recovery_id.serialize();
+    let mut sig = [0; 65];
+    sig[..64].copy_from_slice(&signature_rs.serialize()[..]);
+    sig[64] = recovery_id.serialize();
 
-    voucher.signature = Some(fvm_shared::crypto::signature::Signature::new_secp256k1(
-        signature.0.to_vec(),
-    ));
+    voucher.signature = Some(Signature::new_secp256k1(sig.to_vec()));
 
     let binary_voucher = to_vec(&voucher)?;
     let cbor_voucher = base64::encode(binary_voucher);
@@ -1182,7 +1166,7 @@ pub fn deserialize_constructor_params(
     code_cid: String,
 ) -> Result<MessageParams, SignerError> {
     let params_decode = base64::decode(params_b64_string)?;
-    let serialized_params = forest_vm::Serialized::new(params_decode);
+    let serialized_params = RawBytes::new(params_decode);
 
     match code_cid.as_str() {
         "fil/2/multisig" | "fil/3/multisig" | "fil/4/multisig" | "fil/5/multisig"
@@ -1240,9 +1224,9 @@ pub fn verify_voucher_signature(
         Some(signature) => match address.protocol() {
             Protocol::Secp256k1 => {
                 let sig = libsecp256k1::Signature::parse_standard_slice(&signature.bytes()[..64])?;
-                let recovery_id = RecoveryId::parse(signature.bytes()[64])?;
+                let recovery_id = libsecp256k1::RecoveryId::parse(signature.bytes()[64])?;
                 let message = libsecp256k1::Message::parse(&digest);
-                let public_key = recover(&message, &sig, &recovery_id)?;
+                let public_key = libsecp256k1::recover(&message, &sig, &recovery_id)?;
                 let mut signer = Address::new_secp256k1(&public_key.serialize().to_vec())?;
                 signer.set_network(address.network());
 
@@ -1251,7 +1235,7 @@ pub fn verify_voucher_signature(
                         "Address recovered doesn't match address given".to_string(),
                     ))
                 } else {
-                    Ok(verify(&message, &sig, &public_key))
+                    Ok(libsecp256k1::verify(&message, &sig, &public_key))
                 }
             }
             Protocol::BLS => {
@@ -1276,20 +1260,21 @@ pub fn verify_voucher_signature(
 ///
 /// * `message_api` - The message;
 pub fn get_cid(message_api: MessageTxAPI) -> Result<String, SignerError> {
-    use forest_encoding::Cbor;
-
     match message_api {
-        MessageTxAPI::UnsignedMessageAPI(unsigned) => {
-            let unsigned_message = UnsignedMessage::try_from(&unsigned)?;
-            let cid = unsigned_message.cid()?;
+        MessageTxAPI::Message(message) => {
+            let cid = message.cid()?;
 
             Ok(cid.to_string())
-        }
-        MessageTxAPI::SignedMessageAPI(signed) => {
-            let signed_message = SignedMessage::try_from(&signed)?;
+        },
+        _ => Err(SignerError::GenericString(
+            "SignedMessage cid not available.".to_string(),
+        )),
+        /*
+        FIXME: fix the SignedMessage struct 
+        MessageTxAPI::SignedMessage(signed_message) => {
             let cid = signed_message.cid()?;
 
             Ok(cid.to_string())
-        }
+        }*/
     }
 }

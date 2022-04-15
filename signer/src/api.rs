@@ -1,14 +1,13 @@
 use std::convert::TryFrom;
-use std::str::FromStr;
 
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::message::Message;
 use fvm_shared::crypto::signature::Signature;
 
 use extras::init::ExecParamsAPI;
-use extras::{multisig, paych, message::MessageAPI};
+use extras::{multisig, paych, message::MessageAPI, signature::SignatureAPI};
 
 use crate::error::SignerError;
 
@@ -80,21 +79,21 @@ impl MessageParams {
 }
 
 /// Signed message api structure
-#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
 pub struct SignedMessageAPI {
     #[serde(with = "MessageAPI")]
     pub message: Message,
-    #[serde(with = "json_signature")]
+    #[serde(with = "SignatureAPI")]
     pub signature: Signature,
 }
 
 /// Structure containing an `UnsignedMessageAPI` or a `SignedMessageAPI`
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum MessageTxAPI {
-    UnsignedMessageAPI(UnsignedMessageAPI),
-    SignedMessageAPI(SignedMessageAPI),
+    #[serde(with = "MessageAPI")]
+    Message(Message),
+    SignedMessage(SignedMessageAPI),
 }
 
 /// Create multisig message api structure
@@ -164,29 +163,21 @@ pub struct ProposalMessageParamsAPI {
 }
 
 impl MessageTxAPI {
-    pub fn get_message(&self) -> UnsignedMessageAPI {
+    pub fn get_message(&self) -> Message {
         match self {
-            MessageTxAPI::UnsignedMessageAPI(unsigned_message_api) => {
-                unsigned_message_api.to_owned()
+            MessageTxAPI::Message(message) => {
+                message.to_owned()
             }
-            MessageTxAPI::SignedMessageAPI(signed_message_api) => {
-                signed_message_api.message.to_owned()
+            MessageTxAPI::SignedMessage(signed_message) => {
+                signed_message.message.to_owned()
             }
         }
     }
 }
 
-/// Structure containing an `UnsignedMessage` or a `SignedMessage` from forest_address
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(untagged)]
-pub enum MessageTx {
-    UnsignedMessage(UnsignedMessage),
-    SignedMessage(SignedMessage),
-}
-
 /// Message structure with network parameter
 pub struct MessageTxNetwork {
-    pub message_tx: MessageTx,
+    pub message_tx: MessageTxAPI,
     pub testnet: bool,
 }
 
@@ -195,52 +186,48 @@ impl TryFrom<MessageTxNetwork> for MessageTxAPI {
 
     fn try_from(message_tx_network: MessageTxNetwork) -> Result<MessageTxAPI, Self::Error> {
         let network = if message_tx_network.testnet {
-            forest_address::Network::Testnet
+            fvm_shared::address::Network::Testnet
         } else {
-            forest_address::Network::Mainnet
+            fvm_shared::address::Network::Mainnet
         };
 
         match message_tx_network.message_tx {
-            MessageTx::UnsignedMessage(message_tx) => {
-                let mut to_address: forest_address::Address = message_tx.to().to_owned();
+            MessageTxAPI::Message(message_tx) => {
+                let mut to_address: fvm_shared::address::Address = message_tx.to.to_owned();
                 to_address.set_network(network);
 
-                let mut from_address: forest_address::Address = message_tx.from().to_owned();
+                let mut from_address: fvm_shared::address::Address = message_tx.from.to_owned();
                 from_address.set_network(network);
 
-                let tmp = UnsignedMessageAPI::from(message_tx);
-
-                let unsigned_message_user_api = UnsignedMessageAPI {
-                    to: to_address.to_string(),
-                    from: from_address.to_string(),
-                    ..tmp
+                let message_with_network = Message {
+                    to: to_address,
+                    from: from_address,
+                    ..message_tx
                 };
 
-                Ok(MessageTxAPI::UnsignedMessageAPI(unsigned_message_user_api))
+                Ok(MessageTxAPI::Message(message_with_network))
             }
-            MessageTx::SignedMessage(message_tx) => {
-                let mut to_address: forest_address::Address = message_tx.to().to_owned();
+            MessageTxAPI::SignedMessage(message_tx) => {
+                let mut to_address: fvm_shared::address::Address = message_tx.message.to.to_owned();
                 to_address.set_network(network);
 
-                let mut from_address: forest_address::Address = message_tx.from().to_owned();
+                let mut from_address: fvm_shared::address::Address = message_tx.message.from.to_owned();
                 from_address.set_network(network);
 
-                let tmp = UnsignedMessageAPI::from(message_tx.message().clone());
+                let tmp = message_tx.message.clone();
 
-                let unsigned_message_user_api = UnsignedMessageAPI {
-                    to: to_address.to_string(),
-                    from: from_address.to_string(),
+                let message_with_network = Message {
+                    to: to_address,
+                    from: from_address,
                     ..tmp
                 };
-
-                let y = Signature::try_from(message_tx.signature().bytes().to_vec())?;
 
                 let signed_message_api = SignedMessageAPI {
-                    message: unsigned_message_user_api,
-                    signature: SignatureAPI::from(&y),
+                    message: message_with_network,
+                    signature: message_tx.signature,
                 };
 
-                Ok(MessageTxAPI::SignedMessageAPI(signed_message_api))
+                Ok(MessageTxAPI::SignedMessage(signed_message_api))
             }
         }
     }
@@ -249,44 +236,42 @@ impl TryFrom<MessageTxNetwork> for MessageTxAPI {
 
 #[cfg(test)]
 mod tests {
-    use std::convert::TryFrom;
-
-    use forest_encoding::{from_slice, to_vec};
-    use forest_message::{SignedMessage, UnsignedMessage};
+    use fvm_ipld_encoding::{from_slice, to_vec};
     use hex::{decode, encode};
 
-    use crate::api::{SignedMessageAPI, UnsignedMessageAPI};
+    use crate::api::{SignedMessageAPI, MessageTxAPI};
 
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
         {
-            "to": "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-            "from": "f1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
-            "nonce": 1,
-            "value": "100000",
-            "gasfeecap": "1",
-            "gaspremium": "1",
-            "gaslimit": 25000,
-            "method": 0,
-            "params": ""
+            "To": "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+            "From": "f1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
+            "Nonce": 1,
+            "Value": "100000",
+            "GasFeeCap": "1",
+            "GasPremium": "1",
+            "GasLimit": 25000,
+            "Method": 0,
+            "Params": ""
         }"#;
 
     const EXAMPLE_CBOR_DATA: &str =
         "8a005501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c6285501b882619d46558f3d9e316d11b48dcf211327025a0144000186a01961a84200014200010040";
 
-    const EXAMPLE_CBOR_DATA_CONV: &str = "8a004300ec075501dfe49184d46adc8f89d44638beb45f78fcad259001401a000f4240430009c4430009c402581d845501dfe49184d46adc8f89d44638beb45f78fcad2590430003e80040";
+    //const EXAMPLE_CBOR_DATA_CONV: &str = "8a004300ec075501dfe49184d46adc8f89d44638beb45f78fcad259001401a000f4240430009c4430009c402581d845501dfe49184d46adc8f89d44638beb45f78fcad2590430003e80040";
 
     #[test]
     fn json_to_cbor() {
-        let message_api: UnsignedMessageAPI =
+        let message_api : MessageTxAPI =
             serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE).expect("FIXME");
-        println!("{:?}", message_api);
 
-        let message = UnsignedMessage::try_from(&message_api).expect("FIXME");
+        let message = match message_api {
+            MessageTxAPI::Message(msg) => msg,
+            _ => panic!("Shouldn't be SignedMessage"),
+        };
 
         let message_cbor: Vec<u8> = to_vec(&message).expect("Cbor serialization failed");
         let message_cbor_hex = encode(message_cbor);
 
-        println!("{:?}", message_cbor_hex);
         assert_eq!(EXAMPLE_CBOR_DATA, message_cbor_hex)
     }
 
@@ -294,54 +279,44 @@ mod tests {
     fn cbor_to_json() {
         let cbor_buffer = decode(EXAMPLE_CBOR_DATA).expect("FIXME");
 
-        let message: UnsignedMessage = from_slice(&cbor_buffer).expect("could not decode cbor");
+        let message = MessageTxAPI::Message(from_slice(&cbor_buffer).expect("could not decode cbor"));
 
-        let message_user_api =
-            UnsignedMessageAPI::try_from(message).expect("could not convert message");
+        let message_json =
+            serde_json::to_string_pretty(&message).expect("could not serialize as JSON");
 
-        let message_user_api_json =
-            serde_json::to_string_pretty(&message_user_api).expect("could not serialize as JSON");
+        const EXPECTED_MESSAGE_JSON: &str = r#"{
+  "From": "f1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
+  "To": "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+  "Sequence": 1,
+  "Value": "100000",
+  "MethodNum": 0,
+  "Params": "",
+  "GasLimit": 25000,
+  "GasFeeCap": "1",
+  "GasPremium": "1"
+}"#;
 
-        println!("{:?}", message_user_api_json);
-
-        let message_api: UnsignedMessageAPI =
-            serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE).expect("FIXME");
-
-        assert_eq!(message_api, message_user_api)
-    }
-
-    #[test]
-    fn conversion_unsigned_messages() {
-        let cbor_bytes = decode(EXAMPLE_CBOR_DATA_CONV).unwrap();
-
-        let message: UnsignedMessage = from_slice(&cbor_bytes).expect("could not decode cbor");
-
-        let message_api: UnsignedMessageAPI =
-            UnsignedMessageAPI::try_from(message.clone()).unwrap();
-
-        let message_back = UnsignedMessage::try_from(&message_api).unwrap();
-
-        assert_eq!(message, message_back);
+        assert_eq!(EXPECTED_MESSAGE_JSON, message_json)
     }
 
     #[test]
     fn conversion_signed_messages() {
         const EXAMPLE_SIGNED_MESSAGE: &str = r#"
         {
-            "message": {
-                "to": "f14ole2akjiw5qizembmw6r2e6yvj5ygmxgczervy",
-                "from": "f1iuj7atowet37tsmeehwxfvyjv2pqhsnyvb6niay",
-                "nonce": 37,
-                "value": "1000000000000000",
-                "gasfeecap": "1890700000",
-                "gaspremium": "150000",
-                "gaslimit": 2101318,
-                "method": 0,
-                "params": ""
+            "Message": {
+                "To": "f14ole2akjiw5qizembmw6r2e6yvj5ygmxgczervy",
+                "From": "f1iuj7atowet37tsmeehwxfvyjv2pqhsnyvb6niay",
+                "Nonce": 37,
+                "Value": "1000000000000000",
+                "GasFeeCap": "1890700000",
+                "GasPremium": "150000",
+                "GasLimit": 2101318,
+                "Method": 0,
+                "Params": ""
             },
-            "signature": {
-                "type": 1,
-                "data": "f3w5IcXFvWpWEAFp9LOAzixIsPjkgVaFx5XwynXx2sgZJ57yLIHLJi8CepHwoYeaWfZTRRUucHPARhi6iE2qqgA="
+            "Signature": {
+                "Type": 1,
+                "Data": "f3w5IcXFvWpWEAFp9LOAzixIsPjkgVaFx5XwynXx2sgZJ57yLIHLJi8CepHwoYeaWfZTRRUucHPARhi6iE2qqgA="
             }
         }"#;
 
@@ -349,8 +324,9 @@ mod tests {
             serde_json::from_str(EXAMPLE_SIGNED_MESSAGE).expect("FIXME");
         println!("{:?}", signed_message);
 
-        let _signed_message = SignedMessage::try_from(&signed_message).expect("FIXME");
+        let signed_message_json =
+        serde_json::to_string_pretty(&signed_message).expect("could not serialize as JSON");
 
-        assert!(true);
+        assert_eq!(signed_message_json, EXAMPLE_SIGNED_MESSAGE);
     }
 }

@@ -3,6 +3,18 @@ use core::{array::TryFromSliceError, convert::TryInto};
 
 static CID_PREFIX: &[u8] = &[0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20];
 
+pub fn blake2b_256(ingest: &[u8]) -> [u8; 32] {
+    let digest = Params::new()
+        .hash_length(32)
+        .to_state()
+        .update(ingest)
+        .finalize();
+
+    let mut ret = [0u8; 32];
+    ret.clone_from_slice(digest.as_bytes());
+    ret
+}
+
 /// transform a message into a hashed message ready to be signed and following Filecoin standard
 pub fn get_digest(message: &[u8]) -> Result<[u8; 32], TryFromSliceError> {
     let message_hashed = Params::new()

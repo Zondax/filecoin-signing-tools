@@ -17,7 +17,7 @@ fil_actor_init = { git = "https://github.com/filecoin-project/builtin-actors" }
 fil_actor_multisig = { git = "https://github.com/filecoin-project/builtin-actors" }
 fil_actor_paych = { git = "https://github.com/filecoin-project/builtin-actors" }
 
-fvm_shared = "0.4.1"
+fvm_shared = "0.5.1"
 cid = "=0.8.3"
 base64 = "0.13.0"
 

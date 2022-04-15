@@ -35,7 +35,6 @@ arbitrary = { optional = true, features = ["derive"], version = "1" }
 ffi-support = { optional = true, version = "0.4" }
 
 tiny-bip39 = "0.8.0"
-num_bigint_chainsafe = { package = "forest_bigint", version = "0.1.2"}
 
 zx-bip44 = "0.1.0"
 
@@ -44,7 +43,7 @@ fil_actor_init = { git = "https://github.com/filecoin-project/builtin-actors" }
 fil_actor_multisig = { git = "https://github.com/filecoin-project/builtin-actors" }
 fil_actor_paych = { git = "https://github.com/filecoin-project/builtin-actors" }
 
-fvm_shared = "0.4.1"
+fvm_shared = "0.5.1"
 fvm_ipld_encoding = "0.1.0"
 cid = "=0.8.3"
 
