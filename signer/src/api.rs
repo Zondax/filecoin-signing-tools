@@ -80,6 +80,7 @@ impl MessageParams {
 
 /// Signed message api structure
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "PascalCase")]
 pub struct SignedMessageAPI {
     #[serde(with = "MessageAPI")]
     pub message: Message,
@@ -301,32 +302,35 @@ mod tests {
 
     #[test]
     fn conversion_signed_messages() {
-        const EXAMPLE_SIGNED_MESSAGE: &str = r#"
-        {
-            "Message": {
-                "To": "f14ole2akjiw5qizembmw6r2e6yvj5ygmxgczervy",
-                "From": "f1iuj7atowet37tsmeehwxfvyjv2pqhsnyvb6niay",
-                "Nonce": 37,
-                "Value": "1000000000000000",
-                "GasFeeCap": "1890700000",
-                "GasPremium": "150000",
-                "GasLimit": 2101318,
-                "Method": 0,
-                "Params": ""
-            },
-            "Signature": {
-                "Type": 1,
-                "Data": "f3w5IcXFvWpWEAFp9LOAzixIsPjkgVaFx5XwynXx2sgZJ57yLIHLJi8CepHwoYeaWfZTRRUucHPARhi6iE2qqgA="
-            }
-        }"#;
+        const EXAMPLE_SIGNED_MESSAGE: &str = r#"{
+  "Message": {
+    "From": "f1iuj7atowet37tsmeehwxfvyjv2pqhsnyvb6niay",
+    "To": "f14ole2akjiw5qizembmw6r2e6yvj5ygmxgczervy",
+    "Sequence": 37,
+    "Value": "1000000000000000",
+    "MethodNum": 0,
+    "Params": "",
+    "GasLimit": 2101318,
+    "GasFeeCap": "1890700000",
+    "GasPremium": "150000"
+  },
+  "Signature": {
+    "Type": 1,
+    "Data": "f3w5IcXFvWpWEAFp9LOAzixIsPjkgVaFx5XwynXx2sgZJ57yLIHLJi8CepHwoYeaWfZTRRUucHPARhi6iE2qqgA="
+  }
+}"#;
 
-        let signed_message: SignedMessageAPI =
+        let message_api: MessageTxAPI =
             serde_json::from_str(EXAMPLE_SIGNED_MESSAGE).expect("FIXME");
-        println!("{:?}", signed_message);
+
+        let signed_message = match message_api {
+            MessageTxAPI::SignedMessage(smsg) => smsg,
+            _ => panic!("Shouldn't be Message"),
+        };
 
         let signed_message_json =
         serde_json::to_string_pretty(&signed_message).expect("could not serialize as JSON");
 
-        assert_eq!(signed_message_json, EXAMPLE_SIGNED_MESSAGE);
+        assert_eq!(EXAMPLE_SIGNED_MESSAGE, signed_message_json);
     }
 }
