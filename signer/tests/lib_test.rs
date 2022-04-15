@@ -138,7 +138,8 @@ fn test_key_recover_mainnet() {
 fn parse_unsigned_transaction() {
     let test_value = common::load_test_vectors("../test_vectors/txs.json").unwrap();
     let cbor = test_value[0]["cbor"].as_str().unwrap();
-    let to_expected = Address::from_str(test_value[0]["transaction"]["to"].as_str().unwrap()).unwrap();
+    let to_expected =
+        Address::from_str(test_value[0]["transaction"]["to"].as_str().unwrap()).unwrap();
 
     let cbor_data = RawBytes::new(hex::decode(&cbor).unwrap());
 
@@ -221,7 +222,10 @@ fn parse_transaction_signed_with_network() {
         MessageTxAPI::SignedMessage(tx) => (tx.message.to, tx.message.from),
     };
 
-    assert_eq!(to, Address::from_str(&"f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()).unwrap());
+    assert_eq!(
+        to,
+        Address::from_str(&"f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()).unwrap()
+    );
     assert_eq!(
         from,
         Address::from_str(&"f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string()).unwrap()
@@ -239,7 +243,10 @@ fn parse_transaction_signed_with_network_testnet() {
         MessageTxAPI::SignedMessage(tx) => (tx.message.to, tx.message.from),
     };
 
-    assert_eq!(to, Address::from_str(&"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()).unwrap());
+    assert_eq!(
+        to,
+        Address::from_str(&"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()).unwrap()
+    );
     assert_eq!(
         from,
         Address::from_str(&"t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string()).unwrap()
@@ -304,7 +311,7 @@ fn sign_bls_transaction() {
         gas_fee_cap: TokenAmount::from_str(&"2500".to_string()).unwrap(),
         gas_premium: TokenAmount::from_str(&"2500".to_string()).unwrap(),
         method_num: 0,
-        params: RawBytes::new(vec!()),
+        params: RawBytes::new(vec![]),
     };
 
     let raw_sig = transaction_sign_raw(&message, &bls_key).unwrap();
@@ -327,8 +334,7 @@ fn test_verify_bls_signature() {
     let test_value = common::load_test_vectors("../test_vectors/bls_signature.json").unwrap();
 
     let sig = Signature::new_bls(hex::decode(test_value["sig"].as_str().unwrap()).unwrap());
-    let message =
-        RawBytes::new(hex::decode(test_value["cbor"].as_str().unwrap()).unwrap());
+    let message = RawBytes::new(hex::decode(test_value["cbor"].as_str().unwrap()).unwrap());
 
     let result = verify_signature(&sig, &message).unwrap();
 
@@ -356,7 +362,8 @@ fn test_verify_aggregated_signature() {
 
             Message {
                 version: 0,
-                to: Address::from_str(&"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()).unwrap(),
+                to: Address::from_str(&"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string())
+                    .unwrap(),
                 from: bls_address,
                 sequence: 1,
                 value: TokenAmount::from_str(&"100000".to_string()).unwrap(),
@@ -364,7 +371,7 @@ fn test_verify_aggregated_signature() {
                 gas_fee_cap: TokenAmount::from_str(&"2500".to_string()).unwrap(),
                 gas_premium: TokenAmount::from_str(&"2500".to_string()).unwrap(),
                 method_num: 0,
-                params: RawBytes::new(vec!()),
+                params: RawBytes::new(vec![]),
             }
         })
         .collect();

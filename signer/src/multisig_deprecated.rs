@@ -1,5 +1,5 @@
-use fvm_shared::clock::ChainEpoch;
 use fvm_ipld_encoding::tuple::*;
+use fvm_shared::clock::ChainEpoch;
 
 /// Constructor parameters for multisig actor V1 (deprecated)
 #[derive(Serialize_tuple, Deserialize_tuple)]

@@ -3,11 +3,11 @@ use std::convert::TryFrom;
 use serde::{Deserialize, Serialize};
 
 use fvm_ipld_encoding::RawBytes;
-use fvm_shared::message::Message;
 use fvm_shared::crypto::signature::Signature;
+use fvm_shared::message::Message;
 
 use extras::init::ExecParamsAPI;
-use extras::{multisig, paych, message::MessageAPI, signature::SignatureAPI};
+use extras::{message::MessageAPI, multisig, paych, signature::SignatureAPI};
 
 use crate::error::SignerError;
 
@@ -166,12 +166,8 @@ pub struct ProposalMessageParamsAPI {
 impl MessageTxAPI {
     pub fn get_message(&self) -> Message {
         match self {
-            MessageTxAPI::Message(message) => {
-                message.to_owned()
-            }
-            MessageTxAPI::SignedMessage(signed_message) => {
-                signed_message.message.to_owned()
-            }
+            MessageTxAPI::Message(message) => message.to_owned(),
+            MessageTxAPI::SignedMessage(signed_message) => signed_message.message.to_owned(),
         }
     }
 }
@@ -212,7 +208,8 @@ impl TryFrom<MessageTxNetwork> for MessageTxAPI {
                 let mut to_address: fvm_shared::address::Address = message_tx.message.to.to_owned();
                 to_address.set_network(network);
 
-                let mut from_address: fvm_shared::address::Address = message_tx.message.from.to_owned();
+                let mut from_address: fvm_shared::address::Address =
+                    message_tx.message.from.to_owned();
                 from_address.set_network(network);
 
                 let tmp = message_tx.message.clone();
@@ -234,13 +231,12 @@ impl TryFrom<MessageTxNetwork> for MessageTxAPI {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use fvm_ipld_encoding::{from_slice, to_vec};
     use hex::{decode, encode};
 
-    use crate::api::{SignedMessageAPI, MessageTxAPI};
+    use crate::api::{MessageTxAPI, SignedMessageAPI};
 
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
         {
@@ -262,7 +258,7 @@ mod tests {
 
     #[test]
     fn json_to_cbor() {
-        let message_api : MessageTxAPI =
+        let message_api: MessageTxAPI =
             serde_json::from_str(EXAMPLE_UNSIGNED_MESSAGE).expect("FIXME");
 
         let message = match message_api {
@@ -280,7 +276,8 @@ mod tests {
     fn cbor_to_json() {
         let cbor_buffer = decode(EXAMPLE_CBOR_DATA).expect("FIXME");
 
-        let message = MessageTxAPI::Message(from_slice(&cbor_buffer).expect("could not decode cbor"));
+        let message =
+            MessageTxAPI::Message(from_slice(&cbor_buffer).expect("could not decode cbor"));
 
         let message_json =
             serde_json::to_string_pretty(&message).expect("could not serialize as JSON");
@@ -329,7 +326,7 @@ mod tests {
         };
 
         let signed_message_json =
-        serde_json::to_string_pretty(&signed_message).expect("could not serialize as JSON");
+            serde_json::to_string_pretty(&signed_message).expect("could not serialize as JSON");
 
         assert_eq!(EXAMPLE_SIGNED_MESSAGE, signed_message_json);
     }

@@ -5,11 +5,9 @@ use std::str::FromStr;
 
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
-use libsecp256k1::util::{
-    COMPRESSED_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE,
-};
-use fvm_shared::message::Message;
 use fvm_shared::crypto::signature::{Signature, SignatureType};
+use fvm_shared::message::Message;
+use libsecp256k1::util::{COMPRESSED_PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SIGNATURE_SIZE};
 use num_traits::FromPrimitive;
 use rayon::prelude::*;
 use zx_bip44::BIP44Path;
@@ -19,15 +17,13 @@ use cid::Cid;
 use fil_actor_init::{ExecParams, Method as MethodInit};
 use fil_actor_multisig as multisig;
 use fil_actor_paych as paych;
+use fvm_ipld_encoding::{from_slice, to_vec, Cbor, RawBytes};
 use fvm_shared::address::{Address, Network, Protocol};
-use fvm_ipld_encoding::{from_slice, to_vec, RawBytes, Cbor};
 
 use bls_signatures::PublicKey as BLSPublicKey;
 use libsecp256k1::PublicKey as SECP256K1PublicKey;
 
-use crate::api::{
-    MessageParams, MessageTxAPI, MessageTxNetwork, SignedMessageAPI,
-};
+use crate::api::{MessageParams, MessageTxAPI, MessageTxNetwork, SignedMessageAPI};
 use crate::error::SignerError;
 use crate::extended_key::ExtendedSecretKey;
 use crate::multisig_deprecated::ConstructorParamsV1;
@@ -269,9 +265,7 @@ pub fn key_recover_bls(
 ///
 /// * `message` - a filecoin message (aka transaction)
 ///
-pub fn transaction_serialize(
-    message: &Message,
-) -> Result<Vec<u8>, SignerError> {
+pub fn transaction_serialize(message: &Message) -> Result<Vec<u8>, SignerError> {
     let message_cbor = message.marshal_cbor()?;
     Ok(message_cbor)
 }
@@ -283,10 +277,7 @@ pub fn transaction_serialize(
 /// * `hexstring` - the cbor hexstring to parse
 /// * `testnet` - boolean value `true` if testnet or `false` for mainnet
 ///
-pub fn transaction_parse(
-    cbor: &Vec<u8>,
-    testnet: bool,
-) -> Result<MessageTxAPI, SignerError> {
+pub fn transaction_parse(cbor: &Vec<u8>, testnet: bool) -> Result<MessageTxAPI, SignerError> {
     let message: MessageTxAPI = from_slice(cbor)?;
 
     let message_tx_with_network = MessageTxNetwork {
@@ -340,17 +331,11 @@ pub fn transaction_sign_raw(
     private_key: &PrivateKey,
 ) -> Result<Signature, SignerError> {
     // the `from` address protocol let us know which signing scheme to use
-    let signature = match message
-        .from
-        .protocol()
-    {
-        fvm_shared::address::Protocol::Secp256k1 => transaction_sign_secp56k1_raw(
-            message,
-            private_key,
-        )?,
-        fvm_shared::address::Protocol::BLS => {
-            transaction_sign_bls_raw(message, private_key)?
+    let signature = match message.from.protocol() {
+        fvm_shared::address::Protocol::Secp256k1 => {
+            transaction_sign_secp56k1_raw(message, private_key)?
         }
+        fvm_shared::address::Protocol::BLS => transaction_sign_bls_raw(message, private_key)?,
         _ => {
             return Err(SignerError::GenericString(
                 "Unknown signing protocol".to_string(),
@@ -382,10 +367,7 @@ pub fn transaction_sign(
     Ok(signed_message)
 }
 
-fn verify_secp256k1_signature(
-    signature: &Signature,
-    cbor: &Vec<u8>,
-) -> Result<bool, SignerError> {
+fn verify_secp256k1_signature(signature: &Signature, cbor: &Vec<u8>) -> Result<bool, SignerError> {
     let network = Network::Testnet;
 
     let signature_rs = libsecp256k1::Signature::parse_standard_slice(&signature.bytes[..64])?;
@@ -415,13 +397,14 @@ fn verify_secp256k1_signature(
         return Ok(false);
     }
 
-    Ok(libsecp256k1::verify(&blob_to_sign, &signature_rs, &public_key))
+    Ok(libsecp256k1::verify(
+        &blob_to_sign,
+        &signature_rs,
+        &public_key,
+    ))
 }
 
-fn verify_bls_signature(
-    signature: &Signature,
-    cbor: &Vec<u8>,
-) -> Result<bool, SignerError> {
+fn verify_bls_signature(signature: &Signature, cbor: &Vec<u8>) -> Result<bool, SignerError> {
     // TODO: need a function to extract from public key from cbor buffer directly
     let message = transaction_parse(cbor, true)?;
     let message = message.get_message();
@@ -444,15 +427,10 @@ fn verify_bls_signature(
 /// * `signature` - RSV format signature or BLS signature
 /// * `cbor_buffer` - the CBOR transaction to verify the signature against
 ///
-pub fn verify_signature(
-    signature: &Signature,
-    cbor: &Vec<u8>,
-) -> Result<bool, SignerError> {
+pub fn verify_signature(signature: &Signature, cbor: &Vec<u8>) -> Result<bool, SignerError> {
     // TODO: pass signature.bytes instead of the full signature
     let result = match signature.sig_type {
-        SignatureType::Secp256k1 => {
-            verify_secp256k1_signature(signature, cbor)?
-        }
+        SignatureType::Secp256k1 => verify_secp256k1_signature(signature, cbor)?,
         SignatureType::BLS => verify_bls_signature(signature, cbor)?,
     };
 
@@ -469,9 +447,7 @@ fn extract_from_pub_key_from_message(
     Ok(pk)
 }
 
-fn extract_bls_signing_bytes_from_message(
-    cbor_message: &Vec<u8>,
-) -> Result<Vec<u8>, SignerError> {
+fn extract_bls_signing_bytes_from_message(cbor_message: &Vec<u8>) -> Result<Vec<u8>, SignerError> {
     let message = transaction_parse(cbor_message, true)?;
     let unsigned_message_api = message.get_message();
 
@@ -600,7 +576,7 @@ pub fn create_multisig(
         gas_fee_cap: fvm_shared::econ::TokenAmount::from_str(&gas_fee_cap)?,
         gas_premium: fvm_shared::econ::TokenAmount::from_str(&gas_premium)?,
         method_num: MethodInit::Exec as u64,
-        params: serialized_params
+        params: serialized_params,
     };
 
     Ok(multisig_create_message)
@@ -641,9 +617,8 @@ pub fn proposal_multisig_message(
         params: RawBytes::new(base64::decode(proposal_serialized_params)?),
     };
 
-    let params =
-        RawBytes::serialize(propose_params_multisig)
-            .map_err(|err| SignerError::GenericString(err.to_string()))?;
+    let params = RawBytes::serialize(propose_params_multisig)
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     let multisig_propose_message = Message {
         version: 0,
@@ -884,10 +859,8 @@ pub fn update_pymtchan(
 
     let update_payment_channel_params = paych::UpdateChannelStateParams { sv, secret: vec![] };
 
-    let serialized_params = RawBytes::serialize(
-        update_payment_channel_params,
-    )
-    .map_err(|err| SignerError::GenericString(err.to_string()))?;
+    let serialized_params = RawBytes::serialize(update_payment_channel_params)
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
     // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
     let pch_update_message_api = Message {
@@ -925,7 +898,7 @@ pub fn settle_pymtchan(
     // TODO:  don't hardcode gas limit and gas price; use a gas estimator!
     let pch_settle_message_api = Message {
         version: 0,
-        to: fvm_shared::address::Address::from_str(&pch_address)?, 
+        to: fvm_shared::address::Address::from_str(&pch_address)?,
         from: fvm_shared::address::Address::from_str(&from_address)?,
         sequence: nonce,
         value: fvm_shared::econ::TokenAmount::from_str(&"0".to_string())?,
@@ -933,7 +906,7 @@ pub fn settle_pymtchan(
         gas_fee_cap: fvm_shared::econ::TokenAmount::from_str(&gas_fee_cap)?,
         gas_premium: fvm_shared::econ::TokenAmount::from_str(&gas_premium)?,
         method_num: paych::Method::Settle as u64,
-        params: RawBytes::new(vec!()),
+        params: RawBytes::new(vec![]),
     };
 
     Ok(pch_settle_message_api)
@@ -966,7 +939,7 @@ pub fn collect_pymtchan(
         gas_fee_cap: fvm_shared::econ::TokenAmount::from_str(&gas_fee_cap)?,
         gas_premium: fvm_shared::econ::TokenAmount::from_str(&gas_premium)?,
         method_num: paych::Method::Collect as u64,
-        params: RawBytes::new(vec!()),
+        params: RawBytes::new(vec![]),
     };
 
     Ok(pch_collect_message)
@@ -1265,12 +1238,12 @@ pub fn get_cid(message_api: MessageTxAPI) -> Result<String, SignerError> {
             let cid = message.cid()?;
 
             Ok(cid.to_string())
-        },
+        }
         _ => Err(SignerError::GenericString(
             "SignedMessage cid not available.".to_string(),
         )),
         /*
-        FIXME: fix the SignedMessage struct 
+        FIXME: fix the SignedMessage struct
         MessageTxAPI::SignedMessage(signed_message) => {
             let cid = signed_message.cid()?;
 

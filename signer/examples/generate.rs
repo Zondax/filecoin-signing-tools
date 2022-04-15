@@ -4,10 +4,10 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 
-use fvm_shared::address::Address;
-use fvm_shared::message::Message;
-use fvm_shared::econ::TokenAmount;
 use fvm_ipld_encoding::RawBytes;
+use fvm_shared::address::Address;
+use fvm_shared::econ::TokenAmount;
+use fvm_shared::message::Message;
 use std::str::FromStr;
 
 use hex::encode;
@@ -44,16 +44,18 @@ fn run(num_messages: usize) {
         .par_iter()
         .map(|sk| Message {
             version: 0,
-            to: fvm_shared::address::Address::from_str(&"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()).unwrap(),
-            from: Address::new_bls(&sk.public_key().as_bytes())
-                .unwrap(),
+            to: fvm_shared::address::Address::from_str(
+                &"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
+            )
+            .unwrap(),
+            from: Address::new_bls(&sk.public_key().as_bytes()).unwrap(),
             sequence: 1,
             value: TokenAmount::from_str(&"100000".to_string()).unwrap(),
             gas_limit: 25000,
             gas_fee_cap: TokenAmount::from_str(&"1".to_string()).unwrap(),
             gas_premium: TokenAmount::from_str(&"1".to_string()).unwrap(),
             method_num: 0,
-            params: RawBytes::new(vec!()),
+            params: RawBytes::new(vec![]),
         })
         .collect();
 
