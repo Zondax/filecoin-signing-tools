@@ -4,11 +4,11 @@ use std::convert::TryFrom;
 
 use wasm_bindgen::prelude::*;
 
-use filecoin_signer::api::{MessageParams, MessageTxAPI, UnsignedMessageAPI};
-use filecoin_signer::signature::Signature;
-use filecoin_signer::{CborBuffer, PrivateKey};
-
-mod utils;
+use filecoin_signer::api::{MessageParams, MessageTxAPI};
+use filecoin_signer::PrivateKey;
+use fvm_shared::message::Message;
+use fvm_shared::crypto::signature::Signature;
+use fvm_ipld_encoding::Cbor;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -185,14 +185,14 @@ pub fn transaction_serialize_raw(unsigned_message: JsValue) -> Result<Vec<u8>, J
     set_panic_hook();
 
     // TODO: Should be MessageTxAPI because it can be unsigned message or signed message
-    let unsigned_message: UnsignedMessageAPI = unsigned_message
+    let unsigned_message: Message = unsigned_message
         .into_serde()
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
     let cbor_buffer = filecoin_signer::transaction_serialize(&unsigned_message)
         .map_err(|e| JsValue::from(format!("Error converting to CBOR: {}", e)))?;
 
-    Ok(cbor_buffer.0.to_vec())
+    Ok(cbor_buffer)
 }
 
 #[wasm_bindgen(js_name = transactionParse)]
@@ -204,7 +204,7 @@ pub fn transaction_parse(cbor_js: JsValue, testnet: bool) -> Result<JsValue, JsV
         "CBOR message must be encoded as hexstring, base64 or a buffer",
     )?;
 
-    let message_parsed = filecoin_signer::transaction_parse(&CborBuffer(cbor_bytes), testnet)
+    let message_parsed = filecoin_signer::transaction_parse(&cbor_bytes, testnet)
         .map_err(|e| JsValue::from(e.to_string()))?;
 
     let tx = JsValue::from_serde(&message_parsed).map_err(|e| JsValue::from(e.to_string()))?;
@@ -252,7 +252,8 @@ pub fn transaction_sign_lotus(
         filecoin_signer::transaction_sign(&unsigned_message, &private_key_bytes)
             .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
 
-    let signed_message_lotus = utils::convert_to_lotus_signed_message(signed_message)?;
+    let signed_message_lotus = serde_json::to_string(&signed_message)
+        .map_err(|e| JsValue::from_str(format!("Error converting the into JSON: {}", e).as_str()))?;
 
     Ok(signed_message_lotus)
 }
@@ -273,7 +274,7 @@ pub fn transaction_sign_raw(
     let signed_message = filecoin_signer::transaction_sign_raw(&unsigned_message, &private_key)
         .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
 
-    let signed_message_js = JsValue::from_serde(&signed_message.as_bytes())
+    let signed_message_js = JsValue::from_serde(&signed_message.bytes())
         .map_err(|e| JsValue::from(format!("Error signing transaction: {}", e)))?;
 
     Ok(signed_message_js)
@@ -288,14 +289,14 @@ pub fn verify_signature(signature_js: JsValue, message_js: JsValue) -> Result<bo
         "Signature must be encoded as hexstring, base64 or a buffer",
     )?;
 
-    let sig = Signature::try_from(signature_bytes).map_err(|e| JsValue::from(e.to_string()))?;
+    let sig = Signature::unmarshal_cbor(&signature_bytes).map_err(|e| JsValue::from(e.to_string()))?;
 
     let message_bytes = extract_bytes(
         message_js,
         "Message must be encoded as hexstring, base64 or a buffer",
     )?;
 
-    filecoin_signer::verify_signature(&sig, &CborBuffer(message_bytes))
+    filecoin_signer::verify_signature(&sig, &message_bytes)
         .map_err(|e| JsValue::from_str(format!("Error verifying signature: {}", e).as_str()))
 }
 
@@ -933,7 +934,7 @@ pub fn serialize_params(params_value: JsValue) -> Result<Vec<u8>, JsValue> {
     let params_cbor = filecoin_signer::serialize_params(params)
         .map_err(|e| JsValue::from(format!("Error serializing parameters: {}", e)))?;
 
-    Ok(params_cbor.as_ref().to_vec())
+    Ok(params_cbor)
 }
 
 #[wasm_bindgen(js_name = deserializeParams)]

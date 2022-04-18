@@ -121,13 +121,11 @@ Arguments:
 * **testnet**: boolean value `true` if testnet or `false` for mainnet;
 
 ```rust
-use signer::{transaction_parse, CborBuffer};
+use signer::transaction_parse;
 use signer::api::MessageTxAPI;
 
 
-let cbor_data = CborBuffer(hex::decode("885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040").unwrap());
-
-
+let cbor_data = hex::decode("885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040").unwrap();
 let transaction = transaction_parse(&cbor_data, true).unwrap();
 
 match transaction {
@@ -245,7 +243,7 @@ Arguments :
 ```rust
 use signer::{transaction_sign_raw, verify_signature};
 
-let cbor_data = CborBuffer(hex::decode("885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040").unwrap());
+let cbor_data = hex::decode("885501fd1d0f4dfcd7e99afcb99a8326b7dc459d32c62855010f323f4709e8e4db0c1d4cd374f9f35201d26fb20144000186a0430009c41961a80040").unwrap();
 
 let private_key = PrivateKey::try_from("8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=".to_string()).unwrap();
 
@@ -524,11 +522,11 @@ sigs = messages
     .collect::<Vec<bls_signatures::Signature>>();
 
 // serialize messages
-let cbor_messages: Vec<CborBuffer>;
+let cbor_messages: Vec<Vec<u8>>;
 cbor_messages = messages
     .par_iter()
     .map(|message| transaction_serialize(message).unwrap())
-    .collect::<Vec<CborBuffer>>();
+    .collect::<Vec<Vec<u8>>>();
 
 let aggregated_signature = bls_signatures::aggregate(&sigs).unwrap();
 

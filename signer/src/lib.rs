@@ -41,15 +41,6 @@ const RAW: u64 = 0x55;
 /// Mnemonic string
 pub struct Mnemonic(pub String);
 
-/// CBOR message in a buffer
-pub struct CborBuffer(pub Vec<u8>);
-
-impl AsRef<[u8]> for CborBuffer {
-    fn as_ref(&self) -> &[u8] {
-        &self.0
-    }
-}
-
 pub const SIGNATURE_RECOVERY_SIZE: usize = SIGNATURE_SIZE + 1;
 
 /// Private key buffer
@@ -776,9 +767,9 @@ pub fn cancel_multisig_message(
 ///
 /// * `params` - Parameters to serialize
 
-pub fn serialize_params(params: MessageParams) -> Result<CborBuffer, SignerError> {
+pub fn serialize_params(params: MessageParams) -> Result<Vec<u8>, SignerError> {
     let serialized_params = params.serialize()?;
-    let message_cbor = CborBuffer(serialized_params.bytes().to_vec());
+    let message_cbor = serialized_params.bytes().to_vec();
     Ok(message_cbor)
 }
 
