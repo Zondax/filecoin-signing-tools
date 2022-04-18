@@ -10,7 +10,7 @@ use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 
 use fil_actor_multisig as multisig;
-use filecoin_signer::api::{MessageParams, MessageTxAPI};
+use filecoin_signer::api::{MessageParams, MessageTxAPI, MessageTx};
 use filecoin_signer::*;
 use fvm_shared::address::Address;
 use fvm_shared::crypto::signature::Signature;
@@ -141,7 +141,7 @@ fn parse_unsigned_transaction() {
     let to_expected =
         Address::from_str(test_value[0]["transaction"]["to"].as_str().unwrap()).unwrap();
 
-    let cbor_data = RawBytes::new(hex::decode(&cbor).unwrap());
+    let cbor_data = hex::decode(&cbor).unwrap();
 
     let unsigned_tx = transaction_parse(&cbor_data, true).expect("FIX ME");
     let to = match unsigned_tx {
@@ -155,7 +155,7 @@ fn parse_unsigned_transaction() {
 #[test]
 fn parse_signed_transaction() {
     // TODO: new test vector
-    let cbor_data = RawBytes::new(hex::decode(SIGNED_MESSAGE_CBOR).unwrap());
+    let cbor_data = hex::decode(SIGNED_MESSAGE_CBOR).unwrap();
 
     let signed_tx = transaction_parse(&cbor_data, true).expect("Could not parse");
     let signature = match signed_tx {
@@ -204,7 +204,7 @@ fn parse_transaction_with_network_testnet() {
     let unsigned_tx_testnet = transaction_parse(&cbor_data, testnet).expect("Could not parse");
     let (to, from) = match unsigned_tx_testnet {
         MessageTxAPI::Message(tx) => (tx.to, tx.from),
-        MessageTxAPI::SignedMessage(_) => panic!("Should be a Unsigned Message!"),
+        MessageTxAPI::SignedMessage(_) => panic!("Should be a Message!"),
     };
 
     assert_eq!(to, to_expected);
@@ -263,14 +263,14 @@ fn verify_invalid_signature() {
 
     // Path 44'/461'/0/0/0
     let pk = PrivateKey::try_from(private_key.to_string()).unwrap();
-    let message_user_api: Message =
+    let message_user_api: MessageTxAPI =
         serde_json::from_value(message).expect("Could not serialize unsigned message");
 
     // Sign
-    let signature = transaction_sign_raw(&message_user_api, &pk).unwrap();
+    let signature = transaction_sign_raw(&message_user_api.get_message(), &pk).unwrap();
 
     // Verify
-    let message_cbor = message_user_api.marshal_cbor().unwrap();
+    let message_cbor = message_user_api.get_message().marshal_cbor().unwrap();
 
     let valid_signature = verify_signature(&signature, &message_cbor);
     assert!(valid_signature.unwrap());
@@ -413,36 +413,36 @@ fn payment_channel_creation_bls_signing() {
     let from_pkey = tc_creation_bls["public_key"].as_str().unwrap();
 
     let pch_create_message_api = create_pymtchan(
-        tc_creation_bls["constructor_params"]["from"]
+        tc_creation_bls["constructor_params"]["From"]
             .as_str()
             .unwrap()
             .to_string(),
-        tc_creation_bls["constructor_params"]["to"]
+        tc_creation_bls["constructor_params"]["To"]
             .as_str()
             .unwrap()
             .to_string(),
-        tc_creation_bls["message"]["value"]
+        tc_creation_bls["message"]["Value"]
             .as_str()
             .unwrap()
             .to_string(),
-        tc_creation_bls["message"]["nonce"].as_u64().unwrap(),
-        tc_creation_bls["message"]["gaslimit"].as_i64().unwrap(),
-        tc_creation_bls["message"]["gasfeecap"]
+        tc_creation_bls["message"]["Nonce"].as_u64().unwrap(),
+        tc_creation_bls["message"]["GasLimit"].as_i64().unwrap(),
+        tc_creation_bls["message"]["GasFeeCap"]
             .as_str()
             .unwrap()
             .to_string(),
-        tc_creation_bls["message"]["gaspremium"]
+        tc_creation_bls["message"]["GasPremium"]
             .as_str()
             .unwrap()
             .to_string(),
     )
     .unwrap();
 
-    let pch_create_message_expected: Message =
+    let pch_create_message_expected: MessageTxAPI =
         serde_json::from_value(tc_creation_bls["message"].to_owned()).unwrap();
 
     assert_eq!(
-        serde_json::to_string(&pch_create_message_expected.params).unwrap(),
+        serde_json::to_string(&pch_create_message_expected.get_message().params).unwrap(),
         serde_json::to_string(&pch_create_message_api.params).unwrap()
     );
 
@@ -472,9 +472,14 @@ fn payment_channel_creation_secp256k1_signing() {
         .to_string();
     let privkey = PrivateKey::try_from(from_key).unwrap();
 
-    let pch_create_message: Message =
+    let pch_create_message_api: MessageTxAPI =
         serde_json::from_value(tc_creation_secp256k1["message"].to_owned())
             .expect("Could not serialize unsigned message");
+
+    let pch_create_message = match pch_create_message_api {
+        MessageTxAPI::Message(msg) => msg,
+        _ => panic!("Should be a Message"),
+    };
 
     let signed_message_result = transaction_sign(&pch_create_message, &privkey).unwrap();
     // TODO:  how do I check the signature of a transaction_sign() result
@@ -495,11 +500,11 @@ fn payment_channel_update() {
     let privkey = PrivateKey::try_from(from_key).unwrap();
 
     let pch_update_message_unsigned = update_pymtchan(
-        tc_update_secp256k1["message"]["to"]
+        tc_update_secp256k1["message"]["To"]
             .as_str()
             .unwrap()
             .to_string(),
-        tc_update_secp256k1["message"]["from"]
+        tc_update_secp256k1["message"]["From"]
             .as_str()
             .unwrap()
             .to_string(),
@@ -507,25 +512,25 @@ fn payment_channel_update() {
             .as_str()
             .unwrap()
             .to_string(),
-        tc_update_secp256k1["message"]["nonce"].as_u64().unwrap(),
-        tc_update_secp256k1["message"]["gaslimit"].as_i64().unwrap(),
-        tc_update_secp256k1["message"]["gasfeecap"]
+        tc_update_secp256k1["message"]["Nonce"].as_u64().unwrap(),
+        tc_update_secp256k1["message"]["GasLimit"].as_i64().unwrap(),
+        tc_update_secp256k1["message"]["GasFeeCap"]
             .as_str()
             .unwrap()
             .to_string(),
-        tc_update_secp256k1["message"]["gaspremium"]
+        tc_update_secp256k1["message"]["GasPremium"]
             .as_str()
             .unwrap()
             .to_string(),
     )
     .unwrap();
 
-    let pch_update_message_unsigned_expected: Message =
+    let pch_update_message_unsigned_expected: MessageTxAPI =
         serde_json::from_value(tc_update_secp256k1["message"].to_owned())
             .expect("Could not serialize unsigned message");
 
     assert_eq!(
-        serde_json::to_string(&pch_update_message_unsigned_expected).unwrap(),
+        serde_json::to_string(&pch_update_message_unsigned_expected.get_message()).unwrap(),
         serde_json::to_string(&pch_update_message_unsigned).unwrap()
     );
 
@@ -550,21 +555,21 @@ fn payment_channel_settle() {
     let privkey = PrivateKey::try_from(from_key).unwrap();
 
     let pch_settle_message_unsigned = settle_pymtchan(
-        tc_settle_secp256k1["message"]["to"]
+        tc_settle_secp256k1["message"]["To"]
             .as_str()
             .unwrap()
             .to_string(),
-        tc_settle_secp256k1["message"]["from"]
+        tc_settle_secp256k1["message"]["From"]
             .as_str()
             .unwrap()
             .to_string(),
-        tc_settle_secp256k1["message"]["nonce"].as_u64().unwrap(),
-        tc_settle_secp256k1["message"]["gaslimit"].as_i64().unwrap(),
-        tc_settle_secp256k1["message"]["gasfeecap"]
+        tc_settle_secp256k1["message"]["Nonce"].as_u64().unwrap(),
+        tc_settle_secp256k1["message"]["GasLimit"].as_i64().unwrap(),
+        tc_settle_secp256k1["message"]["GasFeeCap"]
             .as_str()
             .unwrap()
             .to_string(),
-        tc_settle_secp256k1["message"]["gaspremium"]
+        tc_settle_secp256k1["message"]["GasPremium"]
             .as_str()
             .unwrap()
             .to_string()
@@ -572,12 +577,12 @@ fn payment_channel_settle() {
     )
     .unwrap();
 
-    let pch_settle_message_unsigned_expected: Message =
+    let pch_settle_message_unsigned_expected: MessageTxAPI =
         serde_json::from_value(tc_settle_secp256k1["message"].to_owned())
             .expect("Could not serialize unsigned message");
 
     assert_eq!(
-        serde_json::to_string(&pch_settle_message_unsigned_expected).unwrap(),
+        serde_json::to_string(&pch_settle_message_unsigned_expected.get_message()).unwrap(),
         serde_json::to_string(&pch_settle_message_unsigned).unwrap()
     );
 
@@ -601,36 +606,36 @@ fn payment_channel_collect() {
     let privkey = PrivateKey::try_from(from_key).unwrap();
 
     let pch_collect_message_unsigned = collect_pymtchan(
-        tc_collect_secp256k1["message"]["to"]
+        tc_collect_secp256k1["message"]["To"]
             .as_str()
             .unwrap()
             .to_string(),
-        tc_collect_secp256k1["message"]["from"]
+        tc_collect_secp256k1["message"]["From"]
             .as_str()
             .unwrap()
             .to_string(),
-        tc_collect_secp256k1["message"]["nonce"].as_u64().unwrap(),
-        tc_collect_secp256k1["message"]["gaslimit"]
+        tc_collect_secp256k1["message"]["Nonce"].as_u64().unwrap(),
+        tc_collect_secp256k1["message"]["GasLimit"]
             .as_i64()
             .unwrap(),
-        tc_collect_secp256k1["message"]["gasfeecap"]
+        tc_collect_secp256k1["message"]["GasFeeCap"]
             .as_str()
             .unwrap()
             .to_string(),
-        tc_collect_secp256k1["message"]["gaspremium"]
+        tc_collect_secp256k1["message"]["GasPremium"]
             .as_str()
             .unwrap()
             .to_string(),
     )
     .unwrap();
 
-    let pch_collect_message_unsigned_expected: Message =
+    let pch_collect_message_unsigned_expected: MessageTxAPI =
         serde_json::from_value(tc_collect_secp256k1["message"].to_owned())
             .expect("Could not serialize unsigned message");
 
     assert_eq!(
         serde_json::to_string(&pch_collect_message_unsigned_expected).unwrap(),
-        serde_json::to_string(&pch_collect_message_unsigned).unwrap()
+        serde_json::to_string(&MessageTxAPI::Message(pch_collect_message_unsigned.clone())).unwrap()
     );
 
     // Sign
@@ -682,53 +687,53 @@ fn support_multisig_create() {
     let test_value = common::load_test_vectors("../test_vectors/multisig.json").unwrap();
 
     let multisig_create_message = create_multisig(
-        test_value["create"]["message"]["from"]
+        test_value["create"]["message"]["From"]
             .as_str()
             .unwrap()
             .to_string(),
         vec![
-            test_value["create"]["constructor_params"]["signers"][0]
+            test_value["create"]["constructor_params"]["Signers"][0]
                 .as_str()
                 .unwrap()
                 .to_string(),
-            test_value["create"]["constructor_params"]["signers"][1]
+            test_value["create"]["constructor_params"]["Signers"][1]
                 .as_str()
                 .unwrap()
                 .to_string(),
         ],
-        test_value["create"]["message"]["value"]
+        test_value["create"]["message"]["Value"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["create"]["constructor_params"]["num_approvals_threshold"]
+        test_value["create"]["constructor_params"]["NumApprovalsThreshold"]
             .as_u64()
             .unwrap(),
-        test_value["create"]["message"]["nonce"].as_u64().unwrap(),
-        test_value["create"]["constructor_params"]["unlock_duration"]
+        test_value["create"]["message"]["Nonce"].as_u64().unwrap(),
+        test_value["create"]["constructor_params"]["UnlockDuration"]
             .as_i64()
             .unwrap(),
-        test_value["create"]["constructor_params"]["start_epoch"]
+        test_value["create"]["constructor_params"]["StartEpoch"]
             .as_i64()
             .unwrap(),
-        test_value["create"]["message"]["gaslimit"]
+        test_value["create"]["message"]["GasLimit"]
             .as_i64()
             .unwrap(),
-        test_value["create"]["message"]["gasfeecap"]
+        test_value["create"]["message"]["GasFeeCap"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["create"]["message"]["gaspremium"]
+        test_value["create"]["message"]["GasPremium"]
             .as_str()
             .unwrap()
             .to_string(),
     )
     .unwrap();
 
-    let multisig_create_message_expected: Message =
+    let multisig_create_message_expected: MessageTxAPI =
         serde_json::from_value(test_value["create"]["message"].to_owned()).unwrap();
 
     assert_eq!(
-        serde_json::to_string(&multisig_create_message_expected).unwrap(),
+        serde_json::to_string(&multisig_create_message_expected.get_message()).unwrap(),
         serde_json::to_string(&multisig_create_message).unwrap()
     );
 
@@ -745,49 +750,49 @@ fn support_multisig_propose_message() {
     let test_value = common::load_test_vectors("../test_vectors/multisig.json").unwrap();
 
     let multisig_proposal_message = proposal_multisig_message(
-        test_value["propose"]["message"]["to"]
+        test_value["propose"]["message"]["To"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["propose"]["proposal_params"]["to"]
+        test_value["propose"]["proposal_params"]["To"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["propose"]["message"]["from"]
+        test_value["propose"]["message"]["From"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["propose"]["proposal_params"]["value"]
+        test_value["propose"]["proposal_params"]["Value"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["propose"]["message"]["nonce"].as_u64().unwrap(),
-        test_value["propose"]["message"]["gaslimit"]
+        test_value["propose"]["message"]["Nonce"].as_u64().unwrap(),
+        test_value["propose"]["message"]["GasLimit"]
             .as_i64()
             .unwrap(),
-        test_value["propose"]["message"]["gasfeecap"]
+        test_value["propose"]["message"]["GasFeeCap"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["propose"]["message"]["gaspremium"]
+        test_value["propose"]["message"]["GasPremium"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["propose"]["proposal_params"]["method"]
+        test_value["propose"]["proposal_params"]["Method"]
             .as_u64()
             .unwrap(),
-        test_value["propose"]["proposal_params"]["params"]
+        test_value["propose"]["proposal_params"]["Params"]
             .as_str()
             .unwrap()
             .to_string(),
     )
     .unwrap();
 
-    let multisig_proposal_message_expected: Message =
+    let multisig_proposal_message_expected: MessageTxAPI =
         serde_json::from_value(test_value["propose"]["message"].to_owned()).unwrap();
 
     assert_eq!(
-        serde_json::to_string(&multisig_proposal_message_expected).unwrap(),
+        serde_json::to_string(&multisig_proposal_message_expected.get_message()).unwrap(),
         serde_json::to_string(&multisig_proposal_message).unwrap()
     );
 
@@ -801,49 +806,49 @@ fn support_multisig_approve_message() {
     let test_value = common::load_test_vectors("../test_vectors/multisig.json").unwrap();
 
     let multisig_approval_message = approve_multisig_message(
-        test_value["approve"]["message"]["to"]
+        test_value["approve"]["message"]["To"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["approve"]["approval_params"]["txn_id"]
+        test_value["approve"]["approval_params"]["TxnID"]
             .as_i64()
             .unwrap(),
-        test_value["approve"]["proposal_params"]["requester"]
+        test_value["approve"]["proposal_params"]["Requester"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["approve"]["proposal_params"]["to"]
+        test_value["approve"]["proposal_params"]["To"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["approve"]["proposal_params"]["value"]
+        test_value["approve"]["proposal_params"]["Value"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["approve"]["message"]["from"]
+        test_value["approve"]["message"]["From"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["approve"]["message"]["nonce"].as_u64().unwrap(),
-        test_value["approve"]["message"]["gaslimit"]
+        test_value["approve"]["message"]["Nonce"].as_u64().unwrap(),
+        test_value["approve"]["message"]["GasLimit"]
             .as_i64()
             .unwrap(),
-        test_value["approve"]["message"]["gasfeecap"]
+        test_value["approve"]["message"]["GasFeeCap"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["approve"]["message"]["gaspremium"]
+        test_value["approve"]["message"]["GasPremium"]
             .as_str()
             .unwrap()
             .to_string(),
     )
     .unwrap();
 
-    let multisig_approval_message_expected: Message =
+    let multisig_approval_message_expected: MessageTxAPI =
         serde_json::from_value(test_value["approve"]["message"].to_owned()).unwrap();
 
     assert_eq!(
-        serde_json::to_string(&multisig_approval_message_expected).unwrap(),
+        serde_json::to_string(&multisig_approval_message_expected.get_message()).unwrap(),
         serde_json::to_string(&multisig_approval_message).unwrap()
     );
 
@@ -857,49 +862,49 @@ fn support_multisig_cancel_message() {
     let test_value = common::load_test_vectors("../test_vectors/multisig.json").unwrap();
 
     let multisig_cancel_message = cancel_multisig_message(
-        test_value["cancel"]["message"]["to"]
+        test_value["cancel"]["message"]["To"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["cancel"]["cancel_params"]["txn_id"]
+        test_value["cancel"]["cancel_params"]["TxnID"]
             .as_i64()
             .unwrap(),
-        test_value["cancel"]["proposal_params"]["requester"]
+        test_value["cancel"]["proposal_params"]["Requester"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["cancel"]["proposal_params"]["to"]
+        test_value["cancel"]["proposal_params"]["To"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["cancel"]["proposal_params"]["value"]
+        test_value["cancel"]["proposal_params"]["Value"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["cancel"]["message"]["from"]
+        test_value["cancel"]["message"]["From"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["cancel"]["message"]["nonce"].as_u64().unwrap(),
-        test_value["cancel"]["message"]["gaslimit"]
+        test_value["cancel"]["message"]["Nonce"].as_u64().unwrap(),
+        test_value["cancel"]["message"]["GasLimit"]
             .as_i64()
             .unwrap(),
-        test_value["cancel"]["message"]["gasfeecap"]
+        test_value["cancel"]["message"]["GasFeeCap"]
             .as_str()
             .unwrap()
             .to_string(),
-        test_value["cancel"]["message"]["gaspremium"]
+        test_value["cancel"]["message"]["GasPremium"]
             .as_str()
             .unwrap()
             .to_string(),
     )
     .unwrap();
 
-    let multisig_cancel_message_expected: Message =
+    let multisig_cancel_message_expected: MessageTxAPI =
         serde_json::from_value(test_value["cancel"]["message"].to_owned()).unwrap();
 
     assert_eq!(
-        serde_json::to_string(&multisig_cancel_message_expected).unwrap(),
+        serde_json::to_string(&multisig_cancel_message_expected.get_message()).unwrap(),
         serde_json::to_string(&multisig_cancel_message).unwrap()
     );
 

@@ -3,11 +3,16 @@ use std::convert::TryFrom;
 use serde::{Deserialize, Serialize};
 
 use fvm_ipld_encoding::RawBytes;
-use fvm_shared::crypto::signature::Signature;
 use fvm_shared::message::Message;
 
 use extras::init::ExecParamsAPI;
-use extras::{message::MessageAPI, multisig, paych, signature::SignatureAPI};
+use extras::{
+    message::MessageAPI,
+    multisig,
+    paych,
+    signed_message::ref_fvm::SignedMessage,
+    signed_message::SignedMessageAPI
+};
 
 use crate::error::SignerError;
 
@@ -78,23 +83,32 @@ impl MessageParams {
     }
 }
 
-/// Signed message api structure
-#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct SignedMessageAPI {
-    #[serde(with = "MessageAPI")]
-    pub message: Message,
-    #[serde(with = "SignatureAPI")]
-    pub signature: Signature,
-}
-
 /// Structure containing an `UnsignedMessageAPI` or a `SignedMessageAPI`
 #[derive(Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum MessageTxAPI {
     #[serde(with = "MessageAPI")]
     Message(Message),
-    SignedMessage(SignedMessageAPI),
+    #[serde(with = "SignedMessageAPI")]
+    SignedMessage(SignedMessage),
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(untagged)]
+pub enum MessageTx {
+    Message(Message),
+    SignedMessage(SignedMessage),
+}
+
+impl TryFrom<MessageTx> for MessageTxAPI {
+    type Error = SignerError;
+
+    fn try_from(message_tx: MessageTx) -> Result<MessageTxAPI, Self::Error> {
+        match message_tx {
+            MessageTx::Message(msg) => Ok(MessageTxAPI::Message(msg)),
+            MessageTx::SignedMessage(smsg) => Ok(MessageTxAPI::SignedMessage(smsg)),
+        }
+    }
 }
 
 /// Create multisig message api structure
@@ -220,12 +234,12 @@ impl TryFrom<MessageTxNetwork> for MessageTxAPI {
                     ..tmp
                 };
 
-                let signed_message_api = SignedMessageAPI {
+                let signed_message = SignedMessage {
                     message: message_with_network,
                     signature: message_tx.signature,
                 };
 
-                Ok(MessageTxAPI::SignedMessage(signed_message_api))
+                Ok(MessageTxAPI::SignedMessage(signed_message))
             }
         }
     }
@@ -236,7 +250,7 @@ mod tests {
     use fvm_ipld_encoding::{from_slice, to_vec};
     use hex::{decode, encode};
 
-    use crate::api::{MessageTxAPI, SignedMessageAPI};
+    use crate::api::MessageTxAPI;
 
     const EXAMPLE_UNSIGNED_MESSAGE: &str = r#"
         {
@@ -320,13 +334,9 @@ mod tests {
         let message_api: MessageTxAPI =
             serde_json::from_str(EXAMPLE_SIGNED_MESSAGE).expect("FIXME");
 
-        let signed_message = match message_api {
-            MessageTxAPI::SignedMessage(smsg) => smsg,
-            _ => panic!("Shouldn't be Message"),
-        };
 
         let signed_message_json =
-            serde_json::to_string_pretty(&signed_message).expect("could not serialize as JSON");
+            serde_json::to_string_pretty(&message_api).expect("could not serialize as JSON");
 
         assert_eq!(EXAMPLE_SIGNED_MESSAGE, signed_message_json);
     }
