@@ -17,10 +17,10 @@ default = ["console_error_panic_hook"]
 tiny-bip39 = "0.8.0"
 thiserror = "1.0.20"
 serde_json = "1.0.79"
-libsecp256k1 = "0.6"
+libsecp256k1 = "0.7.0"
 hex = { git = "https://github.com/Zondax/rust-hex", rev = "6e35fb48999278c8c6c75b099baa4ea2a9d1d12b" }
 base64 = "0.13.0"
-js-sys = "0.3.42"
+js-sys = "0.3.57"
 wasm-bindgen-futures = "0.4.15"
 serde = { version = "1.0", features = ["derive"] }
 

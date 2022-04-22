@@ -18,11 +18,11 @@ pub struct MessageAPI {
     pub from: Address,
     #[serde(with = "address")]
     pub to: Address,
-    #[serde(alias = "Nonce")]
+    #[serde(rename = "Nonce")]
     pub sequence: u64,
     #[serde(with = "tokenamount")]
     pub value: TokenAmount,
-    #[serde(alias = "Method")]
+    #[serde(rename = "Method")]
     pub method_num: MethodNum,
     #[serde(with = "rawbytes")]
     pub params: RawBytes,

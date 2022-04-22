@@ -38,13 +38,13 @@ describeCall('createPymtChan', function() {
     let recoveredKey = filecoin_signer.keyRecover(paymentchannel_create.private_key, true)
 
     let create_pymtchan = filecoin_signer.createPymtChanWithFee(
-      paymentchannel_create.constructor_params.from,
-      paymentchannel_create.constructor_params.to,
-      paymentchannel_create.message.value,
-      paymentchannel_create.message.nonce,
-      paymentchannel_create.message.gaslimit.toString(),
-      paymentchannel_create.message.gasfeecap,
-      paymentchannel_create.message.gaspremium,
+      paymentchannel_create.constructor_params["From"],
+      paymentchannel_create.constructor_params["To"],
+      paymentchannel_create.message["Value"],
+      paymentchannel_create.message["Nonce"],
+      paymentchannel_create.message["GasLimit"].toString(),
+      paymentchannel_create.message["GasFeeCap"],
+      paymentchannel_create.message["GasPremium"],
     )
 
     let signedMessage = filecoin_signer.transactionSignLotus(create_pymtchan, paymentchannel_create.private_key)
@@ -66,19 +66,19 @@ describeCall('createPymtChan', function() {
     let paymentchannel_create = dataTxs.creation.bls
 
     let create_pymtchan = filecoin_signer.createPymtChanWithFee(
-      paymentchannel_create.constructor_params.from,
-      paymentchannel_create.constructor_params.to,
-      paymentchannel_create.message.value,
-      paymentchannel_create.message.nonce,
-      paymentchannel_create.message.gaslimit.toString(),
-      paymentchannel_create.message.gasfeecap,
-      paymentchannel_create.message.gaspremium,
+      paymentchannel_create.constructor_params["From"],
+      paymentchannel_create.constructor_params["To"],
+      paymentchannel_create.message["Value"],
+      paymentchannel_create.message["Nonce"],
+      paymentchannel_create.message["GasLimit"].toString(),
+      paymentchannel_create.message["GasFeeCap"],
+      paymentchannel_create.message["GasPremium"],
     )
 
     let signedMessage = filecoin_signer.transactionSignLotus(create_pymtchan, paymentchannel_create.private_key)
     signedMessage = JSON.parse(signedMessage)
 
-    assert.deepStrictEqual(paymentchannel_create.message.params, create_pymtchan.params)
+    assert.deepStrictEqual(paymentchannel_create.message["Params"], create_pymtchan["Params"])
 
     // TODO: verify signature
     // but with which lib ?
@@ -92,13 +92,13 @@ describeCall('updatePymtChan', function() {
     let recoveredKey = filecoin_signer.keyRecover(paymentchannel_update.private_key, true)
 
     let update_pymtchan = filecoin_signer.updatePymtChanWithFee(
-      paymentchannel_update.message.to,
-      paymentchannel_update.message.from,
+      paymentchannel_update.message["To"],
+      paymentchannel_update.message["From"],
       paymentchannel_update.voucher_base64,
-      paymentchannel_update.message.nonce,
-      paymentchannel_update.message.gaslimit.toString(),
-      paymentchannel_update.message.gasfeecap,
-      paymentchannel_update.message.gaspremium,
+      paymentchannel_update.message["Nonce"],
+      paymentchannel_update.message["GasLimit"].toString(),
+      paymentchannel_update.message["GasFeeCap"],
+      paymentchannel_update.message["GasPremium"],
     )
 
     let signedMessage = filecoin_signer.transactionSignLotus(update_pymtchan, paymentchannel_update.private_key)
@@ -124,12 +124,12 @@ describeCall('settlePymtChan', function() {
 
 
     let settle_pymtchan = filecoin_signer.settlePymtChanWithFee(
-      paymentchannel_settle.message.to,
-      paymentchannel_settle.message.from,
-      paymentchannel_settle.message.nonce,
-      paymentchannel_settle.message.gaslimit.toString(),
-      paymentchannel_settle.message.gasfeecap,
-      paymentchannel_settle.message.gaspremium,
+      paymentchannel_settle.message["To"],
+      paymentchannel_settle.message["From"],
+      paymentchannel_settle.message["Nonce"],
+      paymentchannel_settle.message["GasLimit"].toString(),
+      paymentchannel_settle.message["GasFeeCap"],
+      paymentchannel_settle.message["GasPremium"],
     )
 
     let signedMessage = filecoin_signer.transactionSignLotus(settle_pymtchan, paymentchannel_settle.private_key)
@@ -152,12 +152,12 @@ describeCall('collectPymtChan', function() {
     let recoveredKey = filecoin_signer.keyRecover(paymentchannel_collect.private_key, true)
 
     let collect_pymtchan = filecoin_signer.collectPymtChanWithFee(
-      paymentchannel_collect.message.to,
-      paymentchannel_collect.message.from,
-      paymentchannel_collect.message.nonce,
-      paymentchannel_collect.message.gaslimit.toString(),
-      paymentchannel_collect.message.gasfeecap,
-      paymentchannel_collect.message.gaspremium,
+      paymentchannel_collect.message["To"],
+      paymentchannel_collect.message["From"],
+      paymentchannel_collect.message["Nonce"],
+      paymentchannel_collect.message["GasLimit"].toString(),
+      paymentchannel_collect.message["GasFeeCap"],
+      paymentchannel_collect.message["GasPremium"],
     )
 
     let signedMessage = filecoin_signer.transactionSignLotus(collect_pymtchan, paymentchannel_collect.private_key)

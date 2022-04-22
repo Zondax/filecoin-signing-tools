@@ -31,17 +31,19 @@ describeCall('createMultisig', function() {
   it('should return a create multisig transaction', function() {
     const multisig_create = dataTxs.create
 
+    console.log(typeof multisig_create.constructor_params["Signers"])
+
     let create_multisig_transaction = filecoin_signer.createMultisigWithFee(
-      multisig_create.message.from,
-      multisig_create.constructor_params.signers,
-      multisig_create.message.value,
-      multisig_create.constructor_params.num_approvals_threshold,
-      multisig_create.message.nonce,
-      multisig_create.constructor_params.unlock_duration.toString(),
-      multisig_create.constructor_params.start_epoch.toString(),
-      multisig_create.message.gaslimit.toString(),
-      multisig_create.message.gasfeecap,
-      multisig_create.message.gaspremium,
+      multisig_create.message["From"],
+      multisig_create.constructor_params["Signers"],
+      multisig_create.message["Value"],
+      multisig_create.constructor_params["NumApprovalsThreshold"],
+      multisig_create.message["Nonce"],
+      multisig_create.constructor_params["UnlockDuration"].toString(),
+      multisig_create.constructor_params["StartEpoch"].toString(),
+      multisig_create.message["GasLimit"].toString(),
+      multisig_create.message["GasFeeCap"],
+      multisig_create.message["GasPremium"],
     )
 
     assert.deepStrictEqual(create_multisig_transaction, multisig_create.message)
@@ -51,16 +53,16 @@ describeCall('createMultisig', function() {
     const multisig_create = dataTxs.create
 
     let create_multisig_transaction = filecoin_signer.createMultisigWithFee(
-      multisig_create.message.from,
-      multisig_create.constructor_params.signers,
-      multisig_create.message.value,
-      multisig_create.constructor_params.num_approvals_threshold,
-      multisig_create.message.nonce,
+      multisig_create.message["From"],
+      multisig_create.constructor_params["Signers"],
+      multisig_create.message["Value"],
+      multisig_create.constructor_params["NumApprovalsThreshold"],
+      multisig_create.message["Nonce"],
       BigInt(-1).toString(),
-      multisig_create.constructor_params.start_epoch.toString(),
-      multisig_create.message.gaslimit.toString(),
-      multisig_create.message.gasfeecap,
-      multisig_create.message.gaspremium,
+      multisig_create.constructor_params["StartEpoch"].toString(),
+      multisig_create.message["GasLimit"].toString(),
+      multisig_create.message["GasFeeCap"],
+      multisig_create.message["GasPremium"],
     )
 
     assert(create_multisig_transaction)
@@ -92,16 +94,16 @@ describeCall('createMultisig', function() {
 
     assert.throws(
       () => filecoin_signer.createMultisigWithFee(
-        multisig_create.message.from,
-        multisig_create.constructor_params.signers,
-        multisig_create.message.value,
-        multisig_create.constructor_params.num_approvals_threshold,
-        multisig_create.message.nonce,
-        multisig_create.constructor_params.unlock_duration.toString(),
-        multisig_create.constructor_params.start_epoch.toString(),
+        multisig_create.message["From"],
+        multisig_create.constructor_params["Signers"],
+        multisig_create.message["Value"],
+        multisig_create.constructor_params["NumApprovalsThreshold"],
+        multisig_create.message["Nonce"],
+        multisig_create.constructor_params["UnlockDuration"].toString(),
+        multisig_create.constructor_params["StartEpoch"].toString(),
         '18446744073709551617',
-        multisig_create.message.gasfeecap,
-        multisig_create.message.gaspremium,
+        multisig_create.message["GasFeeCap"],
+        multisig_create.message["GasPremium"],
       ),
       /(number too large to fit in target type)/,
     )
@@ -115,16 +117,16 @@ describeCall('proposeMultisig', function() {
     const multisig_propose = dataTxs.propose
 
     let propose_multisig_transaction = filecoin_signer.proposeMultisigWithFee(
-      multisig_propose.message.to,
-      multisig_propose.proposal_params.to,
-      multisig_propose.message.from,
-      multisig_propose.proposal_params.value,
-      multisig_propose.message.nonce,
-      multisig_propose.message.gaslimit.toString(),
-      multisig_propose.message.gasfeecap,
-      multisig_propose.message.gaspremium,
-      multisig_propose.proposal_params.method,
-      multisig_propose.proposal_params.params,
+      multisig_propose.message["To"],
+      multisig_propose.proposal_params["To"],
+      multisig_propose.message["From"],
+      multisig_propose.proposal_params["Value"],
+      multisig_propose.message["Nonce"],
+      multisig_propose.message["GasLimit"].toString(),
+      multisig_propose.message["GasFeeCap"],
+      multisig_propose.message["GasPremium"],
+      multisig_propose.proposal_params["Method"],
+      multisig_propose.proposal_params["Params"],
     )
 
     assert.deepStrictEqual(multisig_propose.message, propose_multisig_transaction)
@@ -157,16 +159,16 @@ describeCall('approveMultisig', function() {
     const multisig_approve = dataTxs.approve
 
     let approve_multisig_transaction = filecoin_signer.approveMultisigWithFee(
-      multisig_approve.message.to,
-      multisig_approve.approval_params.txn_id,
-      multisig_approve.proposal_params.requester,
-      multisig_approve.proposal_params.to,
-      multisig_approve.proposal_params.value,
-      multisig_approve.message.from,
-      multisig_approve.message.nonce,
-      multisig_approve.message.gaslimit.toString(),
-      multisig_approve.message.gasfeecap,
-      multisig_approve.message.gaspremium,
+      multisig_approve.message["To"],
+      multisig_approve.approval_params["TxnID"],
+      multisig_approve.proposal_params["Requester"],
+      multisig_approve.proposal_params["To"],
+      multisig_approve.proposal_params["Value"],
+      multisig_approve.message["From"],
+      multisig_approve.message["Nonce"],
+      multisig_approve.message["GasLimit"].toString(),
+      multisig_approve.message["GasFeeCap"],
+      multisig_approve.message["GasPremium"],
     )
 
     assert.deepStrictEqual(multisig_approve.message, approve_multisig_transaction)
@@ -198,16 +200,16 @@ describeCall('cancelMultisig', function() {
     const multisig_cancel = dataTxs.cancel
 
     let cancel_multisig_transaction = filecoin_signer.cancelMultisigWithFee(
-      multisig_cancel.message.to,
-      multisig_cancel.cancel_params.txn_id,
-      multisig_cancel.proposal_params.requester,
-      multisig_cancel.proposal_params.to,
-      multisig_cancel.proposal_params.value,
-      multisig_cancel.message.from,
-      multisig_cancel.message.nonce,
-      multisig_cancel.message.gaslimit.toString(),
-      multisig_cancel.message.gasfeecap,
-      multisig_cancel.message.gaspremium,
+      multisig_cancel.message["To"],
+      multisig_cancel.cancel_params["TxnID"],
+      multisig_cancel.proposal_params["Requester"],
+      multisig_cancel.proposal_params["To"],
+      multisig_cancel.proposal_params["Value"],
+      multisig_cancel.message["From"],
+      multisig_cancel.message["Nonce"],
+      multisig_cancel.message["GasLimit"].toString(),
+      multisig_cancel.message["GasFeeCap"],
+      multisig_cancel.message["GasPremium"],
     )
 
     assert.deepStrictEqual(multisig_cancel.message, cancel_multisig_transaction)
