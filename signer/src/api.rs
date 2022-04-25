@@ -296,9 +296,9 @@ mod tests {
         const EXPECTED_MESSAGE_JSON: &str = r#"{
   "From": "f1xcbgdhkgkwht3hrrnui3jdopeejsoas2rujnkdi",
   "To": "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-  "Sequence": 1,
+  "Nonce": 1,
   "Value": "100000",
-  "MethodNum": 0,
+  "Method": 0,
   "Params": "",
   "GasLimit": 25000,
   "GasFeeCap": "1",
@@ -314,9 +314,9 @@ mod tests {
   "Message": {
     "From": "f1iuj7atowet37tsmeehwxfvyjv2pqhsnyvb6niay",
     "To": "f14ole2akjiw5qizembmw6r2e6yvj5ygmxgczervy",
-    "Sequence": 37,
+    "Nonce": 37,
     "Value": "1000000000000000",
-    "MethodNum": 0,
+    "Method": 0,
     "Params": "",
     "GasLimit": 2101318,
     "GasFeeCap": "1890700000",

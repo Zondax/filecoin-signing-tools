@@ -139,7 +139,7 @@ fn parse_unsigned_transaction() {
     let test_value = common::load_test_vectors("../test_vectors/txs.json").unwrap();
     let cbor = test_value[0]["cbor"].as_str().unwrap();
     let to_expected =
-        Address::from_str(test_value[0]["transaction"]["to"].as_str().unwrap()).unwrap();
+        Address::from_str(test_value[0]["transaction"]["To"].as_str().unwrap()).unwrap();
 
     let cbor_data = hex::decode(&cbor).unwrap();
 
@@ -175,8 +175,8 @@ fn parse_transaction_with_network() {
     let tc = test_value[1].to_owned();
     let cbor = tc["cbor"].as_str().unwrap();
     let testnet = tc["testnet"].as_bool().unwrap();
-    let to_expected = Address::from_str(tc["transaction"]["to"].as_str().unwrap()).unwrap();
-    let from_expected = Address::from_str(tc["transaction"]["from"].as_str().unwrap()).unwrap();
+    let to_expected = Address::from_str(tc["transaction"]["To"].as_str().unwrap()).unwrap();
+    let from_expected = Address::from_str(tc["transaction"]["From"].as_str().unwrap()).unwrap();
 
     let cbor_data = RawBytes::new(hex::decode(&cbor).unwrap());
 
@@ -196,8 +196,8 @@ fn parse_transaction_with_network_testnet() {
     let tc = test_value[0].to_owned();
     let cbor = tc["cbor"].as_str().unwrap();
     let testnet = tc["testnet"].as_bool().unwrap();
-    let to_expected = Address::from_str(tc["transaction"]["to"].as_str().unwrap()).unwrap();
-    let from_expected = Address::from_str(tc["transaction"]["from"].as_str().unwrap()).unwrap();
+    let to_expected = Address::from_str(tc["transaction"]["To"].as_str().unwrap()).unwrap();
+    let from_expected = Address::from_str(tc["transaction"]["From"].as_str().unwrap()).unwrap();
 
     let cbor_data = RawBytes::new(hex::decode(&cbor).unwrap());
 
