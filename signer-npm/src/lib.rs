@@ -237,9 +237,8 @@ pub fn transaction_sign(
 
     let private_key_bytes = extract_private_key(private_key_js)?;
 
-    let signed_message =
-        filecoin_signer::transaction_sign(&msg, &private_key_bytes)
-            .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
+    let signed_message = filecoin_signer::transaction_sign(&msg, &private_key_bytes)
+        .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
 
     let signed_message_js = JsValue::from_serde(&MessageTxAPI::SignedMessage(signed_message))
         .map_err(|e| JsValue::from(format!("Error signing transaction: {}", e)))?;
@@ -267,12 +266,13 @@ pub fn transaction_sign_lotus(
 
     let private_key_bytes = extract_private_key(private_key_js)?;
 
-    let signed_message =
-        filecoin_signer::transaction_sign(&msg, &private_key_bytes)
-            .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
+    let signed_message = filecoin_signer::transaction_sign(&msg, &private_key_bytes)
+        .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
 
     let signed_message_lotus = serde_json::to_string(&MessageTxAPI::SignedMessage(signed_message))
-        .map_err(|e| JsValue::from_str(format!("Error converting the into JSON: {}", e).as_str()))?;
+        .map_err(|e| {
+            JsValue::from_str(format!("Error converting the into JSON: {}", e).as_str())
+        })?;
 
     Ok(signed_message_lotus)
 }
@@ -319,7 +319,9 @@ pub fn verify_signature(signature_js: JsValue, message_js: JsValue) -> Result<bo
         fvm_shared::crypto::signature::BLS_SIG_LEN => Signature::new_bls(signature_bytes),
         fvm_shared::crypto::signature::SECP_SIG_LEN => Signature::new_secp256k1(signature_bytes),
         _ => {
-            return Err(JsValue::from_str("Signature doesn't match BLS or SECP256K length")) 
+            return Err(JsValue::from_str(
+                "Signature doesn't match BLS or SECP256K length",
+            ))
         }
     };
 
@@ -357,7 +359,9 @@ pub fn create_multisig_with_fee(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let addresses_strings: Vec<String> = addresses.into_serde().map_err(|e| JsValue::from(format!("Error converting addresses: {}", e)))?;
+    let addresses_strings: Vec<String> = addresses
+        .into_serde()
+        .map_err(|e| JsValue::from(format!("Error converting addresses: {}", e)))?;
 
     let se = i64::from_str_radix(&start_epoch, 10)
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
@@ -400,7 +404,9 @@ pub fn create_multisig(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let addresses_strings: Vec<String> = addresses.into_serde().map_err(|e| JsValue::from(format!("Error converting addresses: {}", e)))?;
+    let addresses_strings: Vec<String> = addresses
+        .into_serde()
+        .map_err(|e| JsValue::from(format!("Error converting addresses: {}", e)))?;
 
     let se = i64::from_str_radix(&start_epoch, 10)
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;

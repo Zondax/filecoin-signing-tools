@@ -10,7 +10,7 @@ use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 
 use fil_actor_multisig as multisig;
-use filecoin_signer::api::{MessageParams, MessageTxAPI, MessageTx};
+use filecoin_signer::api::{MessageParams, MessageTx, MessageTxAPI};
 use filecoin_signer::*;
 use fvm_shared::address::Address;
 use fvm_shared::crypto::signature::Signature;
@@ -635,7 +635,8 @@ fn payment_channel_collect() {
 
     assert_eq!(
         serde_json::to_string(&pch_collect_message_unsigned_expected).unwrap(),
-        serde_json::to_string(&MessageTxAPI::Message(pch_collect_message_unsigned.clone())).unwrap()
+        serde_json::to_string(&MessageTxAPI::Message(pch_collect_message_unsigned.clone()))
+            .unwrap()
     );
 
     // Sign

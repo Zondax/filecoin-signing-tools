@@ -25,7 +25,7 @@ use libsecp256k1::PublicKey as SECP256K1PublicKey;
 
 use extras::signed_message::ref_fvm::SignedMessage;
 
-use crate::api::{MessageParams, MessageTxAPI, MessageTx, MessageTxNetwork};
+use crate::api::{MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork};
 use crate::error::SignerError;
 use crate::extended_key::ExtendedSecretKey;
 use crate::multisig_deprecated::ConstructorParamsV1;
@@ -287,9 +287,9 @@ fn transaction_sign_secp56k1_raw(
     message: &Message,
     private_key: &PrivateKey,
 ) -> Result<Signature, SignerError> {
-
     let secret_key = libsecp256k1::SecretKey::parse_slice(&private_key.0)?;
-    let message_digest = libsecp256k1::Message::parse_slice(&utils::blake2b_256(&message.to_signing_bytes()))?;
+    let message_digest =
+        libsecp256k1::Message::parse_slice(&utils::blake2b_256(&message.to_signing_bytes()))?;
 
     let (signature_rs, recovery_id) = libsecp256k1::sign(&message_digest, &secret_key);
 
@@ -1232,7 +1232,7 @@ pub fn get_cid(message_api: MessageTxAPI) -> Result<String, SignerError> {
             let cid = message.cid()?;
 
             Ok(cid.to_string())
-        },
+        }
         MessageTxAPI::SignedMessage(signed_message) => {
             let cid = signed_message.cid()?;
 

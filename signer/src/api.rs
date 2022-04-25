@@ -7,11 +7,8 @@ use fvm_shared::message::Message;
 
 use extras::init::ExecParamsAPI;
 use extras::{
-    message::MessageAPI,
-    multisig,
-    paych,
-    signed_message::ref_fvm::SignedMessage,
-    signed_message::SignedMessageAPI
+    message::MessageAPI, multisig, paych, signed_message::ref_fvm::SignedMessage,
+    signed_message::SignedMessageAPI,
 };
 
 use crate::error::SignerError;
@@ -333,7 +330,6 @@ mod tests {
 
         let message_api: MessageTxAPI =
             serde_json::from_str(EXAMPLE_SIGNED_MESSAGE).expect("FIXME");
-
 
         let signed_message_json =
             serde_json::to_string_pretty(&message_api).expect("could not serialize as JSON");
