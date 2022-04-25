@@ -354,11 +354,14 @@ pub fn create_multisig_with_fee(
         .into_serde()
         .map_err(|e| JsValue::from(format!("Error converting addresses: {}", e)))?;
 
-    let se = start_epoch.parse::<i64>()
+    let se = start_epoch
+        .parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
-    let d = duration.parse::<i64>()
+    let d = duration
+        .parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
-    let gl = gas_limit.parse::<i64>()
+    let gl = gas_limit
+        .parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let multisig_transaction = filecoin_signer::create_multisig(
@@ -399,9 +402,11 @@ pub fn create_multisig(
         .into_serde()
         .map_err(|e| JsValue::from(format!("Error converting addresses: {}", e)))?;
 
-    let se = start_epoch.parse::<i64>()
+    let se = start_epoch
+        .parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
-    let d = duration.parse::<i64>()
+    let d = duration
+        .parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let multisig_transaction = filecoin_signer::create_multisig(
@@ -442,7 +447,8 @@ pub fn propose_multisig_with_fee(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let gl = gas_limit.parse::<i64>()
+    let gl = gas_limit
+        .parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let multisig_transaction = filecoin_signer::proposal_multisig_message(
@@ -517,7 +523,8 @@ pub fn approve_multisig_with_fee(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let gl = gas_limit.parse::<i64>()
+    let gl = gas_limit
+        .parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let multisig_transaction = filecoin_signer::approve_multisig_message(
@@ -592,7 +599,8 @@ pub fn cancel_multisig_with_fee(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let gl = gas_limit.parse::<i64>()
+    let gl = gas_limit
+        .parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let multisig_transaction = filecoin_signer::cancel_multisig_message(
@@ -663,7 +671,8 @@ pub fn create_pymtchan_with_fee(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let gl = gas_limit.parse::<i64>()
+    let gl = gas_limit
+        .parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let pch_transaction = filecoin_signer::create_pymtchan(
@@ -720,7 +729,8 @@ pub fn settle_pymtchan_with_fee(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let gl = gas_limit.parse::<i64>()
+    let gl = gas_limit
+        .parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let pch_transaction = filecoin_signer::settle_pymtchan(
@@ -774,7 +784,8 @@ pub fn collect_pymtchan_with_fee(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let gl = gas_limit.parse::<i64>()
+    let gl = gas_limit
+        .parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let pch_transaction = filecoin_signer::collect_pymtchan(
@@ -831,7 +842,8 @@ pub fn update_pymtchan_with_fee(
 
     // TODO: verify if `pch_address` is an actor address. Not needed but good improvement.
 
-    let gl = gas_limit.parse::<i64>()
+    let gl = gas_limit
+        .parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let pch_transaction = filecoin_signer::update_pymtchan(
@@ -906,15 +918,19 @@ pub fn create_voucher(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let tlmin = time_lock_min.parse::<i64>()
+    let tlmin = time_lock_min
+        .parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
-    let tlmax = time_lock_max.parse::<i64>()
+    let tlmax = time_lock_max
+        .parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
-    let l = lane.parse::<u64>()
+    let l = lane
+        .parse::<u64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
-    let msh = min_settle_height.parse::<i64>()
+    let msh = min_settle_height
+        .parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let voucher = filecoin_signer::create_voucher(

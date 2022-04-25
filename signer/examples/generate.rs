@@ -44,10 +44,8 @@ fn run(num_messages: usize) {
         .par_iter()
         .map(|sk| Message {
             version: 0,
-            to: fvm_shared::address::Address::from_str(
-                "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-            )
-            .unwrap(),
+            to: fvm_shared::address::Address::from_str("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy")
+                .unwrap(),
             from: Address::new_bls(&sk.public_key().as_bytes()).unwrap(),
             sequence: 1,
             value: TokenAmount::from_str("100000").unwrap(),

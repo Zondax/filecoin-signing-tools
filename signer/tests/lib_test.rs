@@ -362,8 +362,7 @@ fn test_verify_aggregated_signature() {
 
             Message {
                 version: 0,
-                to: Address::from_str("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy")
-                    .unwrap(),
+                to: Address::from_str("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy").unwrap(),
                 from: bls_address,
                 sequence: 1,
                 value: TokenAmount::from_str("100000").unwrap(),
@@ -389,7 +388,7 @@ fn test_verify_aggregated_signature() {
         .collect::<Vec<bls_signatures::Signature>>();
 
     // serialize messages
-    let cbor_messages : Vec<Vec<u8>> = messages
+    let cbor_messages: Vec<Vec<u8>> = messages
         .par_iter()
         .map(|message| transaction_serialize(message).unwrap())
         .collect::<Vec<Vec<u8>>>();
