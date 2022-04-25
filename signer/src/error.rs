@@ -36,7 +36,7 @@ pub enum SignerError {
     #[error("Base64 decode error | {0}")]
     DecodeError(#[from] base64::DecodeError),
     // Deserialize error
-    #[error("Cannot deserilaize parameters | {0}")]
+    #[error("Cannot deserialize parameters | {0}")]
     DeserializeError(#[from] fvm_ipld_encoding::Error),
 }
 

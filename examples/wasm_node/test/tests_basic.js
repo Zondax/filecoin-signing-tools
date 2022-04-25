@@ -229,7 +229,6 @@ describeCall('keyRecoverBLS', function() {
 
 describe('transactionSerialize', function() {
   it('should serialize transaction', function() {
-    console.log(dataTxs[0].transaction)
     assert.strictEqual(dataTxs[0].cbor, filecoin_signer.transactionSerialize(dataTxs[0].transaction))
   })
 
@@ -275,7 +274,7 @@ describe('transactionParse', function() {
 
     assert.throws(
       () => filecoin_signer.transactionParse(cbor_transaction_extra_bytes, false),
-      /Cannot deserilaize parameters \| Serialization error for Cbor protocol: trailing data at offset 64|CBOR decode error: too many terminals, data makes no sense/,
+      /Cannot deserialize parameters \| Serialization error for Cbor protocol: trailing data at offset 64|CBOR decode error: too many terminals, data makes no sense/,
     )
   })
 
@@ -285,7 +284,7 @@ describe('transactionParse', function() {
 
     assert.throws(
       () => filecoin_signer.transactionParse(cbor_transaction_extra_bytes, false),
-      /Cannot deserilaize parameters \| Serialization error for Cbor protocol: trailing data at offset 64|CBOR decode error: too many terminals, data makes no sense/,
+      /Cannot deserialize parameters \| Serialization error for Cbor protocol: trailing data at offset 64|CBOR decode error: too many terminals, data makes no sense/,
     )
   })
 })
