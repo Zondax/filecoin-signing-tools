@@ -88,8 +88,7 @@ fn sign() {
     }))
     .unwrap();
 
-    let answer_str =
-        serde_json::to_string(&answer.into_serde::<MessageTxAPI>().unwrap()).unwrap();
+    let answer_str = serde_json::to_string(&answer.into_serde::<MessageTxAPI>().unwrap()).unwrap();
 
     let expected_answer_str =
         serde_json::to_string(&expected_answer.into_serde::<MessageTxAPI>().unwrap()).unwrap();
