@@ -10,7 +10,7 @@ use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 
 use fil_actor_multisig as multisig;
-use filecoin_signer::api::{MessageParams, MessageTx, MessageTxAPI};
+use filecoin_signer::api::{MessageParams, MessageTxAPI};
 use filecoin_signer::*;
 use fvm_shared::address::Address;
 use fvm_shared::crypto::signature::Signature;
@@ -46,7 +46,7 @@ fn derive_key() {
     let private_key = test_value["private_key"].as_str().unwrap();
     let language_code = test_value["language_code"].as_str().unwrap();
 
-    let extended_key = key_derive(&mnemonic, "m/44'/461'/0/0/0", "", language_code).unwrap();
+    let extended_key = key_derive(mnemonic, "m/44'/461'/0/0/0", "", language_code).unwrap();
 
     assert_eq!(
         base64::encode(&extended_key.private_key.0),
@@ -62,13 +62,13 @@ fn derive_key_password() {
     let path = "m/44'/461'/0/0/0".to_string();
     let language_code = test_value["language_code"].as_str().unwrap();
 
-    let m = bip39::Mnemonic::from_phrase(&mnemonic, Language::English).unwrap();
+    let m = bip39::Mnemonic::from_phrase(mnemonic, Language::English).unwrap();
 
     let seed = Seed::new(&m, &password);
 
     let extended_key_expected = key_derive_from_seed(seed.as_bytes(), &path).unwrap();
 
-    let extended_key = key_derive(&mnemonic, &path, &password, &language_code).unwrap();
+    let extended_key = key_derive(mnemonic, &path, &password, language_code).unwrap();
 
     assert_eq!(
         base64::encode(&extended_key.private_key.0),
@@ -224,11 +224,11 @@ fn parse_transaction_signed_with_network() {
 
     assert_eq!(
         to,
-        Address::from_str(&"f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()).unwrap()
+        Address::from_str("f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy").unwrap()
     );
     assert_eq!(
         from,
-        Address::from_str(&"f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string()).unwrap()
+        Address::from_str("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba").unwrap()
     );
 }
 
@@ -245,11 +245,11 @@ fn parse_transaction_signed_with_network_testnet() {
 
     assert_eq!(
         to,
-        Address::from_str(&"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()).unwrap()
+        Address::from_str("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy").unwrap()
     );
     assert_eq!(
         from,
-        Address::from_str(&"t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba".to_string()).unwrap()
+        Address::from_str("t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba").unwrap()
     );
 }
 
@@ -303,13 +303,13 @@ fn sign_bls_transaction() {
     // Prepare message with BLS address
     let message = Message {
         version: 0,
-        to: Address::from_str(&"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string()).unwrap(),
+        to: Address::from_str("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy").unwrap(),
         from: bls_address,
         sequence: 1,
-        value: TokenAmount::from_str(&"100000".to_string()).unwrap(),
+        value: TokenAmount::from_str("100000").unwrap(),
         gas_limit: 25000,
-        gas_fee_cap: TokenAmount::from_str(&"2500".to_string()).unwrap(),
-        gas_premium: TokenAmount::from_str(&"2500".to_string()).unwrap(),
+        gas_fee_cap: TokenAmount::from_str("2500").unwrap(),
+        gas_premium: TokenAmount::from_str("2500").unwrap(),
         method_num: 0,
         params: RawBytes::new(vec![]),
     };
@@ -318,7 +318,7 @@ fn sign_bls_transaction() {
 
     dbg!(hex::encode(raw_sig.bytes()));
 
-    let sig = bls_signatures::Signature::from_bytes(&raw_sig.bytes()).expect("FIX ME");
+    let sig = bls_signatures::Signature::from_bytes(raw_sig.bytes()).expect("FIX ME");
 
     let bls_pk = bls_signatures::PublicKey::from_bytes(&bls_pubkey).unwrap();
 
@@ -362,14 +362,14 @@ fn test_verify_aggregated_signature() {
 
             Message {
                 version: 0,
-                to: Address::from_str(&"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string())
+                to: Address::from_str("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy")
                     .unwrap(),
                 from: bls_address,
                 sequence: 1,
-                value: TokenAmount::from_str(&"100000".to_string()).unwrap(),
+                value: TokenAmount::from_str("100000").unwrap(),
                 gas_limit: 25000,
-                gas_fee_cap: TokenAmount::from_str(&"2500".to_string()).unwrap(),
-                gas_premium: TokenAmount::from_str(&"2500".to_string()).unwrap(),
+                gas_fee_cap: TokenAmount::from_str("2500").unwrap(),
+                gas_premium: TokenAmount::from_str("2500").unwrap(),
                 method_num: 0,
                 params: RawBytes::new(vec![]),
             }
@@ -377,8 +377,7 @@ fn test_verify_aggregated_signature() {
         .collect();
 
     // sign messages
-    let sigs: Vec<bls_signatures::Signature>;
-    sigs = messages
+    let sigs: Vec<bls_signatures::Signature> = messages
         .par_iter()
         .zip(private_keys.par_iter())
         .map(|(message, pk)| {
@@ -390,8 +389,7 @@ fn test_verify_aggregated_signature() {
         .collect::<Vec<bls_signatures::Signature>>();
 
     // serialize messages
-    let cbor_messages: Vec<Vec<u8>>;
-    cbor_messages = messages
+    let cbor_messages : Vec<Vec<u8>> = messages
         .par_iter()
         .map(|message| transaction_serialize(message).unwrap())
         .collect::<Vec<Vec<u8>>>();
@@ -572,7 +570,6 @@ fn payment_channel_settle() {
         tc_settle_secp256k1["message"]["GasPremium"]
             .as_str()
             .unwrap()
-            .to_string()
             .to_string(),
     )
     .unwrap();

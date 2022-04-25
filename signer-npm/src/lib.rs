@@ -68,7 +68,7 @@ impl ExtendedKey {
 
 fn extract_private_key(private_key_js: JsValue) -> Result<PrivateKey, JsValue> {
     if let Some(s) = private_key_js.as_string() {
-        return Ok(PrivateKey::try_from(s).map_err(|e| JsValue::from(e.to_string()))?);
+        return PrivateKey::try_from(s).map_err(|e| JsValue::from(e.to_string()));
     }
 
     if private_key_js.is_object() {
@@ -130,7 +130,7 @@ pub fn key_derive(
     let key_address = filecoin_signer::key_derive(&mnemonic, &path, &password, &lc)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
 
-    Ok(ExtendedKey { 0: key_address })
+    Ok(ExtendedKey(key_address))
 }
 
 #[wasm_bindgen(js_name = keyDeriveFromSeed)]
@@ -142,7 +142,7 @@ pub fn key_derive_from_seed(seed: JsValue, path: String) -> Result<ExtendedKey, 
     let key_address = filecoin_signer::key_derive_from_seed(&seed_bytes, &path)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
 
-    Ok(ExtendedKey { 0: key_address })
+    Ok(ExtendedKey(key_address))
 }
 
 #[wasm_bindgen(js_name = keyRecover)]
@@ -154,7 +154,7 @@ pub fn key_recover(private_key_js: JsValue, testnet: bool) -> Result<ExtendedKey
     let key_address = filecoin_signer::key_recover(&private_key_bytes, testnet)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
 
-    Ok(ExtendedKey { 0: key_address })
+    Ok(ExtendedKey(key_address))
 }
 
 #[wasm_bindgen(js_name = keyRecoverBLS)]
@@ -166,7 +166,7 @@ pub fn key_recover_bls(private_key_js: JsValue, testnet: bool) -> Result<Extende
     let key_address = filecoin_signer::key_recover_bls(&private_key_bytes, testnet)
         .map_err(|e| JsValue::from(format!("Error deriving key: {}", e)))?;
 
-    Ok(ExtendedKey { 0: key_address })
+    Ok(ExtendedKey(key_address))
 }
 
 #[wasm_bindgen(js_name = transactionSerialize)]
@@ -190,7 +190,7 @@ pub fn transaction_serialize_raw(unsigned_message: JsValue) -> Result<Vec<u8>, J
     let msg = match unsigned_message {
         MessageTxAPI::Message(m) => m,
         MessageTxAPI::SignedMessage(_) => {
-            return Err(JsValue::from(format!("Can't serialize SignedMessage")))
+            return Err(JsValue::from("Can't serialize SignedMessage"))
         }
     };
 
@@ -231,7 +231,7 @@ pub fn transaction_sign(
     let msg = match unsigned_message {
         MessageTxAPI::Message(m) => m,
         MessageTxAPI::SignedMessage(_) => {
-            return Err(JsValue::from(format!("Can't serialize SignedMessage")))
+            return Err(JsValue::from("Can't serialize SignedMessage"))
         }
     };
 
@@ -260,7 +260,7 @@ pub fn transaction_sign_lotus(
     let msg = match unsigned_message {
         MessageTxAPI::Message(m) => m,
         MessageTxAPI::SignedMessage(_) => {
-            return Err(JsValue::from(format!("Can't serialize SignedMessage")))
+            return Err(JsValue::from("Can't serialize SignedMessage"))
         }
     };
 
@@ -291,7 +291,7 @@ pub fn transaction_sign_raw(
     let msg = match unsigned_message {
         MessageTxAPI::Message(m) => m,
         MessageTxAPI::SignedMessage(_) => {
-            return Err(JsValue::from(format!("Can't serialize SignedMessage")))
+            return Err(JsValue::from("Can't serialize SignedMessage"))
         }
     };
 
@@ -334,15 +334,6 @@ pub fn verify_signature(signature_js: JsValue, message_js: JsValue) -> Result<bo
         .map_err(|e| JsValue::from_str(format!("Error verifying signature: {}", e).as_str()))
 }
 
-fn signer_value_to_string(address_value: JsValue) -> Result<String, JsValue> {
-    let address = address_value.as_string();
-
-    match address {
-        Some(address) => Ok(address),
-        None => Err(JsValue::from_str("Not able to parse address")),
-    }
-}
-
 #[wasm_bindgen(js_name = createMultisigWithFee)]
 #[allow(clippy::too_many_arguments)]
 pub fn create_multisig_with_fee(
@@ -363,11 +354,11 @@ pub fn create_multisig_with_fee(
         .into_serde()
         .map_err(|e| JsValue::from(format!("Error converting addresses: {}", e)))?;
 
-    let se = i64::from_str_radix(&start_epoch, 10)
+    let se = start_epoch.parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
-    let d = i64::from_str_radix(&duration, 10)
+    let d = duration.parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
-    let gl = i64::from_str_radix(&gas_limit, 10)
+    let gl = gas_limit.parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let multisig_transaction = filecoin_signer::create_multisig(
@@ -408,9 +399,9 @@ pub fn create_multisig(
         .into_serde()
         .map_err(|e| JsValue::from(format!("Error converting addresses: {}", e)))?;
 
-    let se = i64::from_str_radix(&start_epoch, 10)
+    let se = start_epoch.parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
-    let d = i64::from_str_radix(&duration, 10)
+    let d = duration.parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let multisig_transaction = filecoin_signer::create_multisig(
@@ -451,7 +442,7 @@ pub fn propose_multisig_with_fee(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let gl = i64::from_str_radix(&gas_limit, 10)
+    let gl = gas_limit.parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let multisig_transaction = filecoin_signer::proposal_multisig_message(
@@ -526,7 +517,7 @@ pub fn approve_multisig_with_fee(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let gl = i64::from_str_radix(&gas_limit, 10)
+    let gl = gas_limit.parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let multisig_transaction = filecoin_signer::approve_multisig_message(
@@ -601,7 +592,7 @@ pub fn cancel_multisig_with_fee(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let gl = i64::from_str_radix(&gas_limit, 10)
+    let gl = gas_limit.parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let multisig_transaction = filecoin_signer::cancel_multisig_message(
@@ -672,7 +663,7 @@ pub fn create_pymtchan_with_fee(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let gl = i64::from_str_radix(&gas_limit, 10)
+    let gl = gas_limit.parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let pch_transaction = filecoin_signer::create_pymtchan(
@@ -729,7 +720,7 @@ pub fn settle_pymtchan_with_fee(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let gl = i64::from_str_radix(&gas_limit, 10)
+    let gl = gas_limit.parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let pch_transaction = filecoin_signer::settle_pymtchan(
@@ -783,7 +774,7 @@ pub fn collect_pymtchan_with_fee(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let gl = i64::from_str_radix(&gas_limit, 10)
+    let gl = gas_limit.parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let pch_transaction = filecoin_signer::collect_pymtchan(
@@ -840,7 +831,7 @@ pub fn update_pymtchan_with_fee(
 
     // TODO: verify if `pch_address` is an actor address. Not needed but good improvement.
 
-    let gl = i64::from_str_radix(&gas_limit, 10)
+    let gl = gas_limit.parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let pch_transaction = filecoin_signer::update_pymtchan(
@@ -915,15 +906,15 @@ pub fn create_voucher(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let tlmin = i64::from_str_radix(&time_lock_min, 10)
+    let tlmin = time_lock_min.parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
-    let tlmax = i64::from_str_radix(&time_lock_max, 10)
-        .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
-
-    let l = u64::from_str_radix(&lane, 10)
+    let tlmax = time_lock_max.parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
-    let msh = i64::from_str_radix(&min_settle_height, 10)
+    let l = lane.parse::<u64>()
+        .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
+
+    let msh = min_settle_height.parse::<i64>()
         .map_err(|e| JsValue::from(format!("Error converting to i64: {}", e)))?;
 
     let voucher = filecoin_signer::create_voucher(

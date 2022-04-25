@@ -26,7 +26,7 @@ pub fn get_digest(message: &[u8]) -> Result<[u8; 32], TryFromSliceError> {
     let cid_hashed = Params::new()
         .hash_length(32)
         .to_state()
-        .update(&CID_PREFIX)
+        .update(CID_PREFIX)
         .update(message_hashed.as_bytes())
         .finalize();
 

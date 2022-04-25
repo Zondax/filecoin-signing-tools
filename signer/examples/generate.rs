@@ -45,23 +45,22 @@ fn run(num_messages: usize) {
         .map(|sk| Message {
             version: 0,
             to: fvm_shared::address::Address::from_str(
-                &"t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
+                "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
             )
             .unwrap(),
             from: Address::new_bls(&sk.public_key().as_bytes()).unwrap(),
             sequence: 1,
-            value: TokenAmount::from_str(&"100000".to_string()).unwrap(),
+            value: TokenAmount::from_str("100000").unwrap(),
             gas_limit: 25000,
-            gas_fee_cap: TokenAmount::from_str(&"1".to_string()).unwrap(),
-            gas_premium: TokenAmount::from_str(&"1".to_string()).unwrap(),
+            gas_fee_cap: TokenAmount::from_str("1").unwrap(),
+            gas_premium: TokenAmount::from_str("1").unwrap(),
             method_num: 0,
             params: RawBytes::new(vec![]),
         })
         .collect();
 
     // sign messages
-    let sigs: Vec<Signature>;
-    sigs = messages
+    let sigs: Vec<Signature> = messages
         .par_iter()
         .zip(private_keys.par_iter())
         .map(|(message, sk)| {

@@ -91,9 +91,7 @@ impl TryFrom<Vec<u8>> for PrivateKey {
         if v.len() != SECRET_KEY_SIZE {
             return Err(SignerError::GenericString("Invalid Key Length".to_string()));
         }
-        let mut sk = PrivateKey {
-            0: [0; SECRET_KEY_SIZE],
-        };
+        let mut sk = PrivateKey([0; SECRET_KEY_SIZE]);
         sk.0.copy_from_slice(&v[..SECRET_KEY_SIZE]);
         Ok(sk)
     }
@@ -123,7 +121,7 @@ fn derive_extended_secret_key_from_mnemonic(
 
     match lang {
         Some(l) => {
-            let mnemonic = bip39::Mnemonic::from_phrase(&mnemonic, l)
+            let mnemonic = bip39::Mnemonic::from_phrase(mnemonic, l)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
             let seed = Seed::new(&mnemonic, password);
@@ -152,7 +150,7 @@ pub fn key_derive(
 ) -> Result<ExtendedKey, SignerError> {
     let esk = derive_extended_secret_key_from_mnemonic(mnemonic, path, password, language_code)?;
 
-    let mut address = Address::new_secp256k1(&esk.public_key().to_vec())?;
+    let mut address = Address::new_secp256k1(esk.public_key().as_ref())?;
 
     let bip44_path = BIP44Path::from_string(path)?;
 
@@ -178,7 +176,7 @@ pub fn key_derive(
 pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, SignerError> {
     let esk = derive_extended_secret_key(seed, path)?;
 
-    let mut address = Address::new_secp256k1(&esk.public_key().to_vec())?;
+    let mut address = Address::new_secp256k1(esk.public_key().as_ref())?;
 
     let bip44_path = BIP44Path::from_string(path)?;
 
@@ -240,9 +238,7 @@ pub fn key_recover_bls(
         address.set_network(Network::Mainnet);
     }
 
-    let mut secret_key = PrivateKey {
-        0: [0; SECRET_KEY_SIZE],
-    };
+    let mut secret_key = PrivateKey([0; SECRET_KEY_SIZE]);
     secret_key.0.copy_from_slice(&sk.as_bytes());
 
     Ok(ExtendedKey {
@@ -270,7 +266,7 @@ pub fn transaction_serialize(message: &Message) -> Result<Vec<u8>, SignerError> 
 /// * `hexstring` - the cbor hexstring to parse
 /// * `testnet` - boolean value `true` if testnet or `false` for mainnet
 ///
-pub fn transaction_parse(cbor: &Vec<u8>, testnet: bool) -> Result<MessageTxAPI, SignerError> {
+pub fn transaction_parse(cbor: &[u8], testnet: bool) -> Result<MessageTxAPI, SignerError> {
     let message: MessageTx = from_slice(cbor)?;
 
     let message_tx_with_network = MessageTxNetwork {
@@ -355,7 +351,7 @@ pub fn transaction_sign(
 
     let signed_message = SignedMessage {
         message: message.to_owned(),
-        signature: signature,
+        signature,
     };
 
     Ok(signed_message)
@@ -377,7 +373,7 @@ fn verify_secp256k1_signature(signature: &Signature, cbor: &Vec<u8>) -> Result<b
     let blob_to_sign = libsecp256k1::Message::parse_slice(&message_digest)?;
 
     let public_key = libsecp256k1::recover(&blob_to_sign, &signature_rs, &recovery_id)?;
-    let mut from = Address::new_secp256k1(&public_key.serialize().to_vec())?;
+    let mut from = Address::new_secp256k1(public_key.serialize().as_ref())?;
     from.set_network(network);
 
     let tx_from = match tx {
@@ -457,7 +453,7 @@ pub fn verify_aggregated_signature(
     // Get public keys from message
     let tmp: Result<Vec<_>, SignerError> = cbor_messages
         .iter()
-        .map(|cbor_message| extract_from_pub_key_from_message(cbor_message))
+        .map(extract_from_pub_key_from_message)
         .collect();
 
     let pks = match tmp {
@@ -472,7 +468,7 @@ pub fn verify_aggregated_signature(
     // Hashes
     let tmp: Result<Vec<_>, SignerError> = cbor_messages
         .iter()
-        .map(|cbor_message| extract_bls_signing_bytes_from_message(cbor_message))
+        .map(extract_bls_signing_bytes_from_message)
         .collect();
 
     let signing_bytes = match tmp {
@@ -563,7 +559,7 @@ pub fn create_multisig(
     let multisig_create_message = Message {
         version: 0,
         to: init_actor_address,
-        from: from,
+        from,
         sequence: nonce,
         value: fvm_shared::econ::TokenAmount::from_str(&value)?,
         gas_limit,
@@ -624,7 +620,7 @@ pub fn proposal_multisig_message(
         gas_fee_cap: fvm_shared::econ::TokenAmount::from_str(&gas_fee_cap)?,
         gas_premium: fvm_shared::econ::TokenAmount::from_str(&gas_premium)?,
         method_num: multisig::Method::Propose as u64,
-        params: params,
+        params,
     };
 
     Ok(multisig_propose_message)
@@ -670,12 +666,12 @@ fn approve_or_cancel_multisig_message(
         to: fvm_shared::address::Address::from_str(&multisig_address)?,
         from: fvm_shared::address::Address::from_str(&from_address)?,
         sequence: nonce,
-        value: fvm_shared::econ::TokenAmount::from_str(&"0")?,
+        value: fvm_shared::econ::TokenAmount::from_str("0")?,
         gas_limit,
         gas_fee_cap: fvm_shared::econ::TokenAmount::from_str(&gas_fee_cap)?,
         gas_premium: fvm_shared::econ::TokenAmount::from_str(&gas_premium)?,
         method_num: method,
-        params: params,
+        params,
     };
 
     Ok(multisig_unsigned_message_api)
@@ -862,7 +858,7 @@ pub fn update_pymtchan(
         to: fvm_shared::address::Address::from_str(&pch_address)?, // INIT_ACTOR_ADDR
         from: fvm_shared::address::Address::from_str(&from_address)?,
         sequence: nonce,
-        value: fvm_shared::econ::TokenAmount::from_str(&"0".to_string())?,
+        value: fvm_shared::econ::TokenAmount::from_str("0")?,
         gas_limit,
         gas_fee_cap: fvm_shared::econ::TokenAmount::from_str(&gas_fee_cap)?,
         gas_premium: fvm_shared::econ::TokenAmount::from_str(&gas_premium)?,
@@ -895,7 +891,7 @@ pub fn settle_pymtchan(
         to: fvm_shared::address::Address::from_str(&pch_address)?,
         from: fvm_shared::address::Address::from_str(&from_address)?,
         sequence: nonce,
-        value: fvm_shared::econ::TokenAmount::from_str(&"0".to_string())?,
+        value: fvm_shared::econ::TokenAmount::from_str("0")?,
         gas_limit,
         gas_fee_cap: fvm_shared::econ::TokenAmount::from_str(&gas_fee_cap)?,
         gas_premium: fvm_shared::econ::TokenAmount::from_str(&gas_premium)?,
@@ -928,7 +924,7 @@ pub fn collect_pymtchan(
         to: fvm_shared::address::Address::from_str(&pch_address)?,
         from: fvm_shared::address::Address::from_str(&from_address)?,
         sequence: nonce,
-        value: fvm_shared::econ::TokenAmount::from_str(&"0".to_string())?,
+        value: fvm_shared::econ::TokenAmount::from_str("0")?,
         gas_limit,
         gas_fee_cap: fvm_shared::econ::TokenAmount::from_str(&gas_fee_cap)?,
         gas_premium: fvm_shared::econ::TokenAmount::from_str(&gas_premium)?,
@@ -1059,40 +1055,40 @@ pub fn deserialize_params(
                 Some(multisig::Method::Propose) => {
                     let params = serialized_params.deserialize::<multisig::ProposeParams>()?;
 
-                    Ok(MessageParams::ProposeParams(params.into()))
+                    Ok(MessageParams::ProposeParams(params))
                 }
                 Some(multisig::Method::Approve) | Some(multisig::Method::Cancel) => {
                     let params = serialized_params.deserialize::<multisig::TxnIDParams>()?;
 
-                    Ok(MessageParams::TxnIDParams(params.into()))
+                    Ok(MessageParams::TxnIDParams(params))
                 }
                 Some(multisig::Method::AddSigner) => {
                     let params = serialized_params.deserialize::<multisig::AddSignerParams>()?;
 
-                    Ok(MessageParams::AddSignerParams(params.into()))
+                    Ok(MessageParams::AddSignerParams(params))
                 }
                 Some(multisig::Method::RemoveSigner) => {
                     let params = serialized_params.deserialize::<multisig::RemoveSignerParams>()?;
 
-                    Ok(MessageParams::RemoveSignerParams(params.into()))
+                    Ok(MessageParams::RemoveSignerParams(params))
                 }
                 Some(multisig::Method::SwapSigner) => {
                     let params = serialized_params.deserialize::<multisig::SwapSignerParams>()?;
 
-                    Ok(MessageParams::SwapSignerParams(params.into()))
+                    Ok(MessageParams::SwapSignerParams(params))
                 }
                 Some(multisig::Method::ChangeNumApprovalsThreshold) => {
                     let params = serialized_params
                         .deserialize::<multisig::ChangeNumApprovalsThresholdParams>()?;
 
                     Ok(MessageParams::ChangeNumApprovalsThresholdParams(
-                        params.into(),
+                        params,
                     ))
                 }
                 Some(multisig::Method::LockBalance) => {
                     let params = serialized_params.deserialize::<multisig::LockBalanceParams>()?;
 
-                    Ok(MessageParams::LockBalanceParams(params.into()))
+                    Ok(MessageParams::LockBalanceParams(params))
                 }
                 _ => Err(SignerError::GenericString(
                     "Unknown method for actor 'fil/2/multisig', 'fil/3/multisig', 'fil/4/multisig', 'fil/5/multisig', 'fil/6/multisig' or 'fil/7/multisig'.".to_string(),
@@ -1139,7 +1135,7 @@ pub fn deserialize_constructor_params(
         "fil/2/multisig" | "fil/3/multisig" | "fil/4/multisig" | "fil/5/multisig"
         | "fil/6/multisig" | "fil/7/multisig" => {
             let params = serialized_params.deserialize::<multisig::ConstructorParams>()?;
-            Ok(MessageParams::MultisigConstructorParams(params.into()))
+            Ok(MessageParams::MultisigConstructorParams(params))
         }
         "fil/2/paymentchannel"
         | "fil/3/paymentchannel"
@@ -1159,7 +1155,7 @@ pub fn deserialize_constructor_params(
                 unlock_duration: deprecated_multisig_params.unlock_duration,
                 start_epoch: 0,
             };
-            Ok(MessageParams::MultisigConstructorParams(params.into()))
+            Ok(MessageParams::MultisigConstructorParams(params))
         }
         _ => Err(SignerError::GenericString(
             "Code CID not supported.".to_string(),
@@ -1194,7 +1190,7 @@ pub fn verify_voucher_signature(
                 let recovery_id = libsecp256k1::RecoveryId::parse(signature.bytes()[64])?;
                 let message = libsecp256k1::Message::parse(&digest);
                 let public_key = libsecp256k1::recover(&message, &sig, &recovery_id)?;
-                let mut signer = Address::new_secp256k1(&public_key.serialize().to_vec())?;
+                let mut signer = Address::new_secp256k1(public_key.serialize().as_ref())?;
                 signer.set_network(address.network());
 
                 if signer.to_string() != address.to_string() {
