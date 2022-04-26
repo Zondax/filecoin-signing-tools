@@ -270,9 +270,7 @@ pub fn transaction_sign_lotus(
         .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
 
     let signed_message_lotus = serde_json::to_string(&MessageTxAPI::SignedMessage(signed_message))
-        .map_err(|e| {
-            JsValue::from_str(format!("Error converting into JSON: {}", e).as_str())
-        })?;
+        .map_err(|e| JsValue::from_str(format!("Error converting into JSON: {}", e).as_str()))?;
 
     Ok(signed_message_lotus)
 }
