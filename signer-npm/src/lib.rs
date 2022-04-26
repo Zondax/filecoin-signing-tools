@@ -182,11 +182,11 @@ pub fn transaction_serialize(message: JsValue) -> Result<String, JsValue> {
 pub fn transaction_serialize_raw(unsigned_message: JsValue) -> Result<Vec<u8>, JsValue> {
     set_panic_hook();
 
-    // TODO: Should be MessageTxAPI because it can be unsigned message or signed message
     let unsigned_message: MessageTxAPI = unsigned_message
         .into_serde()
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
+    // TODO: support SignedMessage
     let msg = match unsigned_message {
         MessageTxAPI::Message(m) => m,
         MessageTxAPI::SignedMessage(_) => {
@@ -231,7 +231,7 @@ pub fn transaction_sign(
     let msg = match unsigned_message {
         MessageTxAPI::Message(m) => m,
         MessageTxAPI::SignedMessage(_) => {
-            return Err(JsValue::from("Can't serialize SignedMessage"))
+            return Err(JsValue::from("Attempting to sign a SignedMessage."))
         }
     };
 
@@ -260,7 +260,7 @@ pub fn transaction_sign_lotus(
     let msg = match unsigned_message {
         MessageTxAPI::Message(m) => m,
         MessageTxAPI::SignedMessage(_) => {
-            return Err(JsValue::from("Can't serialize SignedMessage"))
+            return Err(JsValue::from("Attempting to sign a SignedMessage."))
         }
     };
 
@@ -271,7 +271,7 @@ pub fn transaction_sign_lotus(
 
     let signed_message_lotus = serde_json::to_string(&MessageTxAPI::SignedMessage(signed_message))
         .map_err(|e| {
-            JsValue::from_str(format!("Error converting the into JSON: {}", e).as_str())
+            JsValue::from_str(format!("Error converting into JSON: {}", e).as_str())
         })?;
 
     Ok(signed_message_lotus)
@@ -291,7 +291,7 @@ pub fn transaction_sign_raw(
     let msg = match unsigned_message {
         MessageTxAPI::Message(m) => m,
         MessageTxAPI::SignedMessage(_) => {
-            return Err(JsValue::from("Can't serialize SignedMessage"))
+            return Err(JsValue::from("Attempting to sign a SignedMessage."))
         }
     };
 

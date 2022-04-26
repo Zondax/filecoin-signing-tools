@@ -9,6 +9,7 @@ use super::json::address;
 use super::json::rawbytes;
 use super::json::tokenamount;
 
+#[cfg_attr(feature = "with-arbitrary", derive(arbitrary::Arbitrary))]
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "Message", rename_all = "PascalCase")]
 pub struct MessageAPI {

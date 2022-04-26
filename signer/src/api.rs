@@ -97,13 +97,11 @@ pub enum MessageTx {
     SignedMessage(SignedMessage),
 }
 
-impl TryFrom<MessageTx> for MessageTxAPI {
-    type Error = SignerError;
-
-    fn try_from(message_tx: MessageTx) -> Result<MessageTxAPI, Self::Error> {
+impl From<MessageTx> for MessageTxAPI {
+    fn from(message_tx: MessageTx) -> MessageTxAPI {
         match message_tx {
-            MessageTx::Message(msg) => Ok(MessageTxAPI::Message(msg)),
-            MessageTx::SignedMessage(smsg) => Ok(MessageTxAPI::SignedMessage(smsg)),
+            MessageTx::Message(msg) => MessageTxAPI::Message(msg),
+            MessageTx::SignedMessage(smsg) => MessageTxAPI::SignedMessage(smsg),
         }
     }
 }

@@ -270,7 +270,7 @@ pub fn transaction_parse(cbor: &[u8], testnet: bool) -> Result<MessageTxAPI, Sig
     let message: MessageTx = from_slice(cbor)?;
 
     let message_tx_with_network = MessageTxNetwork {
-        message_tx: MessageTxAPI::try_from(message)?,
+        message_tx: MessageTxAPI::from(message),
         testnet,
     };
 
