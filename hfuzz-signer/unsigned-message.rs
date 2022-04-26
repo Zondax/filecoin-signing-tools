@@ -1,8 +1,5 @@
-use core::convert::TryFrom;
-use filecoin_signer::api::{MessageTx, MessageTxAPI, MessageTxNetwork, UnsignedMessageAPI};
-use forest_message::UnsignedMessage;
-
 fn main() {
+    /* FIXME
     loop {
         honggfuzz::fuzz!(|data: (UnsignedMessageAPI, bool)| {
             let (unsigned_message_api, is_testnet) = data;
@@ -26,5 +23,5 @@ fn main() {
 
             assert_eq!(unsigned_message_api, another_uma)
         });
-    }
+    }*/
 }

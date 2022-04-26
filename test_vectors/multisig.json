@@ -1,93 +1,93 @@
 {
   "create": {
     "constructor_params": {
-      "signers": [
+      "Signers": [
         "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
         "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy"
       ],
-      "num_approvals_threshold": 1,
-      "unlock_duration": 0,
-      "start_epoch": 0
+      "NumApprovalsThreshold": 1,
+      "UnlockDuration": 0,
+      "StartEpoch": 0
     },
     "message": {
-      "to": "t01",
-      "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-      "nonce": 1,
-      "value": "1000",
-      "gaslimit": 1000000,
-      "gasfeecap": "2500",
-      "gaspremium": "2500",
-      "method": 2,
-      "params": "gtgqUwABVQAOZmlsLzcvbXVsdGlzaWdYMYSCVQEerxyKS7/usIcLF0Wx9XUDRwtxFlUB3+SRhNRq3I+J1EY4vrRfePytJZABAAA="
+      "To": "t01",
+      "From": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+      "Nonce": 1,
+      "Value": "1000",
+      "GasLimit": 1000000,
+      "GasFeeCap": "2500",
+      "GasPremium": "2500",
+      "Method": 2,
+      "Params": "gtgqUwABVQAOZmlsLzcvbXVsdGlzaWdYMYSCVQEerxyKS7/usIcLF0Wx9XUDRwtxFlUB3+SRhNRq3I+J1EY4vrRfePytJZABAAA="
     },
     "cbor": "8a0042000155011eaf1c8a4bbfeeb0870b1745b1f57503470b711601430003e81a000f4240430009c4430009c402584a82d82a53000155000e66696c2f372f6d756c74697369675831848255011eaf1c8a4bbfeeb0870b1745b1f57503470b71165501dfe49184d46adc8f89d44638beb45f78fcad2590010000"
   },
   "propose": {
     "proposal_params": {
-      "to": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
-      "value": "1000",
-      "method": 0,
-      "params": ""
+      "To": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+      "Value": "1000",
+      "Method": 0,
+      "Params": ""
     },
     "message": {
-      "to": "t01004",
-      "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-      "nonce": 1,
-      "value": "0",
-      "gaslimit": 1000000,
-      "gasfeecap": "2500",
-      "gaspremium": "2500",
-      "method": 2,
-      "params": "hFUB3+SRhNRq3I+J1EY4vrRfePytJZBDAAPoAEA="
+      "To": "t01004",
+      "From": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+      "Nonce": 1,
+      "Value": "0",
+      "GasLimit": 1000000,
+      "GasFeeCap": "2500",
+      "GasPremium": "2500",
+      "Method": 2,
+      "Params": "hFUB3+SRhNRq3I+J1EY4vrRfePytJZBDAAPoAEA="
     },
     "cbor": "8a004300ec0755011eaf1c8a4bbfeeb0870b1745b1f57503470b711601401a000f4240430009c4430009c402581d845501dfe49184d46adc8f89d44638beb45f78fcad2590430003e80040"
   },
   "approve": {
     "approval_params": {
-      "txn_id": 1234,
-      "proposal_hash_data": "+KzyZSly8Amuqh2bYc/NhnArMJPBnDBJYE8Z24yzePM="
+      "TxnID": 1234,
+      "ProposalHashData": "+KzyZSly8Amuqh2bYc/NhnArMJPBnDBJYE8Z24yzePM="
     },
     "proposal_params": {
-      "requester": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-      "to": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
-      "value": "1000",
-      "method": 0,
-      "params": ""
+      "Requester": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+      "To": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+      "Value": "1000",
+      "Method": 0,
+      "Params": ""
     },
     "message": {
-      "to": "t01004",
-      "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-      "nonce": 1,
-      "value": "0",
-      "gaslimit": 1000000,
-      "gasfeecap": "2500",
-      "gaspremium": "2500",
-      "method": 3,
-      "params": "ghkE0lgg+KzyZSly8Amuqh2bYc/NhnArMJPBnDBJYE8Z24yzePM="
+      "To": "t01004",
+      "From": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+      "Nonce": 1,
+      "Value": "0",
+      "GasLimit": 1000000,
+      "GasFeeCap": "2500",
+      "GasPremium": "2500",
+      "Method": 3,
+      "Params": "ghkE0lgg+KzyZSly8Amuqh2bYc/NhnArMJPBnDBJYE8Z24yzePM="
     },
     "cbor": "8a004300ec0755011eaf1c8a4bbfeeb0870b1745b1f57503470b711601401a000f4240430009c4430009c4035826821904d25820f8acf2652972f009aeaa1d9b61cfcd86702b3093c19c3049604f19db8cb378f3"
   },
   "cancel": {
     "proposal_params": {
-      "requester": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-      "to": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
-      "value": "1000",
-      "method": 0,
-      "params": ""
+      "Requester": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+      "To": "t137sjdbgunloi7couiy4l5nc7pd6k2jmq32vizpy",
+      "Value": "1000",
+      "Method": 0,
+      "Params": ""
     },
     "cancel_params": {
-      "txn_id": 1234
+      "TxnID": 1234
     },
     "message": {
-      "to": "t01004",
-      "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-      "nonce": 1,
-      "value": "0",
-      "gaslimit": 1000000,
-      "gasfeecap": "2500",
-      "gaspremium": "2500",
-      "method": 4,
-      "params": "ghkE0lgg+KzyZSly8Amuqh2bYc/NhnArMJPBnDBJYE8Z24yzePM="
+      "To": "t01004",
+      "From": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+      "Nonce": 1,
+      "Value": "0",
+      "GasLimit": 1000000,
+      "GasFeeCap": "2500",
+      "GasPremium": "2500",
+      "Method": 4,
+      "Params": "ghkE0lgg+KzyZSly8Amuqh2bYc/NhnArMJPBnDBJYE8Z24yzePM="
     },
     "cbor": "8a004300ec0755011eaf1c8a4bbfeeb0870b1745b1f57503470b711601401a000f4240430009c4430009c4045826821904d25820f8acf2652972f009aeaa1d9b61cfcd86702b3093c19c3049604f19db8cb378f3"
   }

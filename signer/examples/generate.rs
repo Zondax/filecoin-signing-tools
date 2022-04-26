@@ -4,10 +4,11 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 
-use filecoin_signer::api::UnsignedMessageAPI;
-use forest_address::Address;
-use forest_message::UnsignedMessage;
-use std::convert::TryFrom;
+use fvm_ipld_encoding::RawBytes;
+use fvm_shared::address::Address;
+use fvm_shared::econ::TokenAmount;
+use fvm_shared::message::Message;
+use std::str::FromStr;
 
 use hex::encode;
 use std::fs;
@@ -17,7 +18,7 @@ struct TestCase {
     pub pk: String,
     pub sk: String,
     pub sig: String,
-    pub message: UnsignedMessageAPI,
+    pub message: Message,
 }
 
 //////////////////////////////
@@ -41,29 +42,26 @@ fn run(num_messages: usize) {
     // generate messages
     let messages: Vec<_> = private_keys
         .par_iter()
-        .map(|sk| UnsignedMessageAPI {
-            to: "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy".to_string(),
-            from: Address::new_bls(&sk.public_key().as_bytes())
-                .unwrap()
-                .to_string(),
-            nonce: 1,
-            value: "100000".to_string(),
+        .map(|sk| Message {
+            version: 0,
+            to: fvm_shared::address::Address::from_str("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy")
+                .unwrap(),
+            from: Address::new_bls(&sk.public_key().as_bytes()).unwrap(),
+            sequence: 1,
+            value: TokenAmount::from_str("100000").unwrap(),
             gas_limit: 25000,
-            gas_fee_cap: "1".to_string(),
-            gas_premium: "1".to_string(),
-            method: 0,
-            params: "".to_owned(),
+            gas_fee_cap: TokenAmount::from_str("1").unwrap(),
+            gas_premium: TokenAmount::from_str("1").unwrap(),
+            method_num: 0,
+            params: RawBytes::new(vec![]),
         })
         .collect();
 
     // sign messages
-    let sigs: Vec<Signature>;
-    sigs = messages
+    let sigs: Vec<Signature> = messages
         .par_iter()
         .zip(private_keys.par_iter())
-        .map(|(message_api, sk)| {
-            let message = UnsignedMessage::try_from(message_api).expect("FIXME");
-
+        .map(|(message, sk)| {
             let sign_bytes = message.to_signing_bytes();
 
             sk.sign(sign_bytes)

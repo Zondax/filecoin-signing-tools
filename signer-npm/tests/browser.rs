@@ -2,7 +2,7 @@
 
 #![cfg(target_arch = "wasm32")]
 
-use filecoin_signer::api::SignedMessageAPI;
+use filecoin_signer::api::MessageTxAPI;
 use serde_json::json;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_test::*;
@@ -48,15 +48,15 @@ fn key_derive() {
 fn sign() {
     let example_unsigned_message = JsValue::from_serde(&json!(
     {
-        "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-        "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-        "nonce": 1,
-        "value": "100000",
-        "gaslimit": 25000,
-        "gasfeecap": "1",
-        "gaspremium": "1",
-        "method": 0,
-        "params": ""
+        "To": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        "From": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+        "Nonce": 1,
+        "Value": "100000",
+        "GasLimit": 25000,
+        "GasFeeCap": "1",
+        "GasPremium": "1",
+        "Method": 0,
+        "Params": ""
     }))
     .unwrap();
 
@@ -70,29 +70,28 @@ fn sign() {
 
     let expected_answer = JsValue::from_serde(&json!(
     {
-        "message" : {
-        "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-        "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-        "nonce": 1,
-        "value": "100000",
-        "gaslimit": 25000,
-        "gasfeecap": "1",
-        "gaspremium": "1",
-        "method": 0,
-        "params": ""
+        "Message" : {
+        "To": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+        "From": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+        "Nonce": 1,
+        "Value": "100000",
+        "GasLimit": 25000,
+        "GasFeeCap": "1",
+        "GasPremium": "1",
+        "Method": 0,
+        "Params": ""
         },
-        "signature" : {
-        "type": 1,
-        "data":"nFuTI7MxEXqTQ0QmmQTmqbUsNZfHFXlNjz+susVDkAk1SrRCdJKxlVZZrM4vUtVBSYgtMIeigNfpqdKGIFhoWQA="
+        "Signature" : {
+        "Type": 1,
+        "Data":"nFuTI7MxEXqTQ0QmmQTmqbUsNZfHFXlNjz+susVDkAk1SrRCdJKxlVZZrM4vUtVBSYgtMIeigNfpqdKGIFhoWQA="
         }
     }))
     .unwrap();
 
-    let answer_str =
-        serde_json::to_string(&answer.into_serde::<SignedMessageAPI>().unwrap()).unwrap();
+    let answer_str = serde_json::to_string(&answer.into_serde::<MessageTxAPI>().unwrap()).unwrap();
 
     let expected_answer_str =
-        serde_json::to_string(&expected_answer.into_serde::<SignedMessageAPI>().unwrap()).unwrap();
+        serde_json::to_string(&expected_answer.into_serde::<MessageTxAPI>().unwrap()).unwrap();
 
     assert_eq!(answer_str, expected_answer_str);
 }

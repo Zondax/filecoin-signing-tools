@@ -274,7 +274,7 @@ describe('transactionParse', function() {
 
     assert.throws(
       () => filecoin_signer.transactionParse(cbor_transaction_extra_bytes, false),
-      /Error: CBOR decode error: too many terminals, data makes no sense|Encoding error \| trailing data at offset 64/,
+      /Cannot deserialize parameters \| Serialization error for Cbor protocol: trailing data at offset 64|CBOR decode error: too many terminals, data makes no sense/,
     )
   })
 
@@ -284,7 +284,7 @@ describe('transactionParse', function() {
 
     assert.throws(
       () => filecoin_signer.transactionParse(cbor_transaction_extra_bytes, false),
-      /Error: CBOR decode error: too many terminals, data makes no sense|Encoding error \| trailing data at offset 64/,
+      /Cannot deserialize parameters \| Serialization error for Cbor protocol: trailing data at offset 64|CBOR decode error: too many terminals, data makes no sense/,
     )
   })
 })
@@ -296,8 +296,7 @@ describe('transactionSign', function() {
     const example_key = MASTER_NODE.derivePath(child.path)
 
     var signed_tx = filecoin_signer.transactionSign(tx.transaction, example_key.privateKey.toString('base64'))
-    console.log(signed_tx.signature)
-    const signature = Buffer.from(signed_tx.signature.data, 'base64')
+    const signature = Buffer.from(signed_tx["Signature"]["Data"], 'base64')
 
     let message_digest = getDigest(Buffer.from(tx.cbor, 'hex'))
 
@@ -317,16 +316,12 @@ describe('transactionSign', function() {
   })
 })
 
-describe('transactionSignLotus', function() {
+describeCall('transactionSignLotus', function() {
   it('should sign transaction and return a Lotus compatible json string', function() {
     let data = fs.readFileSync('../../test_vectors/signed_message.json')
     let tc = JSON.parse(data)
 
-    console.log(tc.tx.Message)
-
     var signed_tx = filecoin_signer.transactionSignLotus(tc.tx.Message, tc.pk)
-
-    console.log(signed_tx)
 
     assert.deepStrictEqual(JSON.parse(signed_tx), tc.tx)
   })
@@ -383,15 +378,15 @@ describe('verifySignature', function() {
     const signature = Buffer.from('f3w5IcXFvWpWEAFp9LOAzixIsPjkgVaFx5XwynXx2sgZJ57yLIHLJi8CepHwoYeaWfZTRRUucHPARhi6iE2qqgA=', 'base64')
 
     const message =  {
-      to: 'f14ole2akjiw5qizembmw6r2e6yvj5ygmxgczervy',
-      from: 'f1iuj7atowet37tsmeehwxfvyjv2pqhsnyvb6niay',
-      nonce: 37,
-      value: '1000000000000000',
-      gaslimit: 2101318,
-      gasfeecap: '1890700000',
-      gaspremium: '150000',
-      method: 0,
-      params: ''
+      To: 'f14ole2akjiw5qizembmw6r2e6yvj5ygmxgczervy',
+      From: 'f1iuj7atowet37tsmeehwxfvyjv2pqhsnyvb6niay',
+      Nonce: 37,
+      Value: '1000000000000000',
+      GasLimit: 2101318,
+      GasFeeCap: '1890700000',
+      GasPremium: '150000',
+      Method: 0,
+      Params: ''
     }
 
     const cbor = filecoin_signer.transactionSerialize(message)
@@ -408,18 +403,14 @@ describe('verifySignature', function() {
     const tc = dataTxs[4]
 
     const signed_tx = filecoin_signer.transactionSign(tc.message, Buffer.from(tc.sk, 'hex').toString('base64'))
-    console.log(signed_tx)
     const raw_signature = filecoin_signer.transactionSignRaw(tc.message, Buffer.from(tc.sk, 'hex').toString('base64'))
 
     const hex_sig = Buffer.from(raw_signature).toString('hex')
-    console.log(hex_sig)
     assert.strictEqual(hex_sig, tc.sig)
 
-    const signature = Buffer.from(signed_tx.signature.data, 'base64')
-    console.log(signature.toString('hex'))
+    const signature = Buffer.from(signed_tx["Signature"]["Data"], 'base64')
     const tx = filecoin_signer.transactionSerialize(tc.message)
     const v = filecoin_signer.verifySignature(signature.toString('hex'), tx)
-    console.log('v', v)
 
     assert.strictEqual(v, true)
   })
@@ -504,20 +495,20 @@ describeCall('GetCid', function() {
 
   it('get cid from issue #422', function() {
     const signedMessage = {
-      message: {
-        to: 'f14ole2akjiw5qizembmw6r2e6yvj5ygmxgczervy',
-        from: 'f1iuj7atowet37tsmeehwxfvyjv2pqhsnyvb6niay',
-        nonce: 37,
-        value: '1000000000000000',
-        gas_limit: 2101318,
-        gas_fee_cap: '1890700000',
-        gas_premium: '150000',
-        method: 0,
-        params: ''
+      Message: {
+        To: 'f14ole2akjiw5qizembmw6r2e6yvj5ygmxgczervy',
+        From: 'f1iuj7atowet37tsmeehwxfvyjv2pqhsnyvb6niay',
+        Nonce: 37,
+        Value: '1000000000000000',
+        GasLimit: 2101318,
+        GasFeeCap: '1890700000',
+        GasPremium: '150000',
+        Method: 0,
+        Params: ''
       },
-      signature: {
-        type: 1,
-        data: 'f3w5IcXFvWpWEAFp9LOAzixIsPjkgVaFx5XwynXx2sgZJ57yLIHLJi8CepHwoYeaWfZTRRUucHPARhi6iE2qqgA='
+      Signature: {
+        Type: 1,
+        Data: 'f3w5IcXFvWpWEAFp9LOAzixIsPjkgVaFx5XwynXx2sgZJ57yLIHLJi8CepHwoYeaWfZTRRUucHPARhi6iE2qqgA='
       }
     }
     const cid = filecoin_signer.getCid(signedMessage)
@@ -540,7 +531,7 @@ describeCall('BLS support', function() {
     it(`BLS signing test case n°${i}`, function() {
       var signed_tx = filecoin_signer.transactionSign(tc.message, Buffer.from(tc.sk, 'hex').toString('base64'))
 
-      const signature = Buffer.from(signed_tx.signature.data, 'base64')
+      const signature = Buffer.from(signed_tx["Signature"]["Data"], 'base64')
 
       // Signature representation is R, S & V
       console.log('Signature  :', signature.toString('hex'))
@@ -565,7 +556,7 @@ describe('Transaction Serialization - Parameterized', function() {
   for (let i = 0; i < jsonData.length; i += 1) {
     let tc = jsonData[i]
     if (!tc.message.params) {
-      tc.message['params'] = ''
+      tc.message['Params'] = ''
     }
 
     if (tc.not_implemented) {
@@ -599,7 +590,7 @@ describe('Transaction Deserialization - Parameterized', function() {
   for (let i = 0; i < jsonData.length; i += 1) {
     let tc = jsonData[i]
     if (!tc.message.params) {
-      tc.message['params'] = ''
+      tc.message['Params'] = ''
     }
 
     if (tc.not_implemented) {

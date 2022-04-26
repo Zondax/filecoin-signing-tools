@@ -44,7 +44,7 @@ pub mod cid {
 
 pub mod rawbytes {
     use base64::{decode, encode};
-    use fvm_shared::encoding::RawBytes;
+    use fvm_ipld_encoding::RawBytes;
     use serde::{de, Deserialize, Deserializer, Serializer};
 
     pub fn serialize<S>(raw: &RawBytes, serializer: S) -> Result<S::Ok, S::Error>
@@ -121,5 +121,24 @@ pub mod tokenamount {
     {
         let s = String::deserialize(deserializer)?;
         TokenAmount::from_str(&s).map_err(de::Error::custom)
+    }
+}
+
+pub mod serde_base64_vector {
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(v: &[u8], serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&base64::encode(v))
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        base64::decode(s).map_err(serde::de::Error::custom)
     }
 }

@@ -2,20 +2,20 @@
   "description": "get cid from signed message",
   "valid": true,
   "signed_message": {
-    "message": {
-      "to": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
-      "from": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
-      "nonce": 1,
-      "value": "100000",
-      "gas_limit": 2500000,
-      "gas_fee_cap": "1",
-      "gas_premium": "1",
-      "method": 0,
-      "params": ""
+    "Message": {
+      "To": "t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
+      "From": "t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba",
+      "Nonce": 1,
+      "Value": "100000",
+      "GasLimit": 2500000,
+      "GasFeeCap": "1",
+      "GasPremium": "1",
+      "Method": 0,
+      "Params": ""
     },
-    "signature": {
-      "type": 1,
-      "data": "0wRrFJZFIVh8m0JD+f5C55YrxD6YAWtCXWYihrPTKdMfgMhYAy86MVhs43hSLXnV+47UReRIe8qFdHRJqFlreAE="
+    "Signature": {
+      "Type": 1,
+      "Data": "0wRrFJZFIVh8m0JD+f5C55YrxD6YAWtCXWYihrPTKdMfgMhYAy86MVhs43hSLXnV+47UReRIe8qFdHRJqFlreAE="
     }
   },
   "cid": "bafy2bzacebaiinljwwctblf7czp4zxwhz4747z6tpricgn5cumd4xhebftcvu"

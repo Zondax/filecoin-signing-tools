@@ -17,9 +17,6 @@ pub enum SignerError {
     /// Hex Error
     #[error("Hex decoding error | {0}")]
     HexDecode(#[from] hex::FromHexError),
-    /// InvalidBigInt error
-    #[error("InvalidBigInt error")]
-    InvalidBigInt(#[from] num_bigint_chainsafe::ParseBigIntError),
     /// Generic error message
     #[error("Error: `{0}`")]
     GenericString(String),
@@ -39,14 +36,8 @@ pub enum SignerError {
     #[error("Base64 decode error | {0}")]
     DecodeError(#[from] base64::DecodeError),
     // Deserialize error
-    #[error("Cannot deserilaize parameters | {0}")]
-    DeserializeError(#[from] forest_encoding::Error),
-    // forest encoding error
-    #[error("Encoding error | {0}")]
-    EncodingError(#[from] forest_encoding::error::Error),
-
-    #[error("Encoding error | {0}")]
-    EncodingFVMError(#[from] fvm_shared::encoding::Error),
+    #[error("Cannot deserialize parameters | {0}")]
+    DeserializeError(#[from] fvm_ipld_encoding::Error),
 }
 
 #[cfg(feature = "with-ffi-support")]
@@ -57,7 +48,6 @@ impl From<SignerError> for ffi_support::ExternError {
             SignerError::Secp256k1(_) => 2,
             SignerError::KeyDecoding() => 3,
             SignerError::HexDecode(_) => 4,
-            SignerError::InvalidBigInt(_) => 5,
             SignerError::GenericString(_) => 6,
             SignerError::ParseIntError(_) => 7,
             SignerError::BLS(_) => 8,
@@ -65,8 +55,6 @@ impl From<SignerError> for ffi_support::ExternError {
             SignerError::TryFromSlice(_) => 10,
             SignerError::DecodeError(_) => 11,
             SignerError::DeserializeError(_) => 12,
-            SignerError::EncodingError(_) => 13,
-            SignerError::EncodingFVMError(_) => 14,
         };
         Self::new_error(ffi_support::ErrorCode::new(code), e.to_string())
     }
@@ -75,12 +63,6 @@ impl From<SignerError> for ffi_support::ExternError {
 // We need to use from because InvalidKeyLength does not implement as_dyn_err
 impl From<InvalidKeyLength> for SignerError {
     fn from(err: InvalidKeyLength) -> SignerError {
-        SignerError::GenericString(err.to_string())
-    }
-}
-
-impl From<forest_address::Error> for SignerError {
-    fn from(err: forest_address::Error) -> SignerError {
         SignerError::GenericString(err.to_string())
     }
 }

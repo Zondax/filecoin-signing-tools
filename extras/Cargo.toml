@@ -12,11 +12,13 @@ serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0"
 serde_alias = "0.0.2"
 
-fil_actor_cron = { git = "https://github.com/filecoin-project/builtin-actors", rev = "6bdc9412e8b456706b796bc4f9b9015b39107b62"}
-fil_actor_init = { git = "https://github.com/filecoin-project/builtin-actors", rev = "6bdc9412e8b456706b796bc4f9b9015b39107b62"}
-fil_actor_multisig = { git = "https://github.com/filecoin-project/builtin-actors", rev = "6bdc9412e8b456706b796bc4f9b9015b39107b62"}
-fil_actor_paych = { git = "https://github.com/filecoin-project/builtin-actors", rev = "6bdc9412e8b456706b796bc4f9b9015b39107b62"}
+fil_actor_cron = "7.2.0"
+fil_actor_init = "7.2.0"
+fil_actor_multisig = "7.2.0"
+fil_actor_paych = "7.2.0"
 
-fvm_shared = "0.3.1"
+fvm_shared = "0.6.0"
 cid = "=0.8.3"
 base64 = "0.13.0"
+
+fvm_ipld_encoding = "0.1.0"

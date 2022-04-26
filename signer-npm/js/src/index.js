@@ -9,12 +9,6 @@ const ExtendedKey = require('./extendedkey')
 const { getDigest, getCoinTypeFromPath, addressAsBytes, bytesToAddress, tryToPrivateKeyBuffer } = require('./utils')
 const { ProtocolIndicator } = require('./constants')
 
-const lowercaseKeys = obj =>
-  Object.keys(obj).reduce((acc, key) => {
-    acc[key.toLowerCase()] = obj[key]
-    return acc
-  }, {})
-
 function generateMnemonic() {
   // 256 so it generate 24 words
   return bip39.generateMnemonic(256)
@@ -61,54 +55,52 @@ function serializeBigNum(gasprice) {
 }
 
 function transactionSerializeRaw(message) {
-  message = lowercaseKeys(message)
-
-  if (!('to' in message) || typeof message.to !== 'string') {
-    throw new Error("'to' is a required field and has to be a 'string'")
+  if (!('To' in message) || typeof message['To'] !== 'string') {
+    throw new Error("'To' is a required field and has to be a 'string'")
   }
-  if (!('from' in message) || typeof message.from !== 'string') {
-    throw new Error("'from' is a required field and has to be a 'string'")
+  if (!('From' in message) || typeof message['From'] !== 'string') {
+    throw new Error("'From' is a required field and has to be a 'string'")
   }
-  if (!('nonce' in message) || typeof message.nonce !== 'number') {
-    throw new Error("'nonce' is a required field and has to be a 'number'")
+  if (!('Nonce' in message) || typeof message['Nonce'] !== 'number') {
+    throw new Error("'Nonce' is a required field and has to be a 'number'")
   }
-  if (!('value' in message) || typeof message.value !== 'string' || message.value === '' || message.value.includes('-')) {
-    throw new Error("'value' is a required field and has to be a 'string' but not empty or negative")
+  if (!('Value' in message) || typeof message['Value'] !== 'string' || message['Value'] === '' || message['Value'].includes('-')) {
+    throw new Error("'Value' is a required field and has to be a 'string' but not empty or negative")
   }
-  if (!('gasfeecap' in message) || typeof message.gasfeecap !== 'string') {
-    throw new Error("'gasfeecap' is a required field and has to be a 'string'")
+  if (!('GasFeeCap' in message) || typeof message['GasFeeCap'] !== 'string') {
+    throw new Error("'GasFeeCap' is a required field and has to be a 'string'")
   }
-  if (!('gaspremium' in message) || typeof message.gaspremium !== 'string') {
-    throw new Error("'gaspremium' is a required field and has to be a 'string'")
+  if (!('GasPremium' in message) || typeof message['GasPremium'] !== 'string') {
+    throw new Error("'GasPremium' is a required field and has to be a 'string'")
   }
-  if (!('gaslimit' in message) || typeof message.gaslimit !== 'number') {
-    throw new Error("'gaslimit' is a required field and has to be a 'number'")
+  if (!('GasLimit' in message) || typeof message['GasLimit'] !== 'number') {
+    throw new Error("'GasLimit' is a required field and has to be a 'number'")
   }
-  if (!('method' in message) || typeof message.method !== 'number') {
-    throw new Error("'method' is a required field and has to be a 'number'")
+  if (!('Method' in message) || typeof message['Method'] !== 'number') {
+    throw new Error("'Method' is a required field and has to be a 'number'")
   }
-  if (!('params' in message) || typeof message.params !== 'string') {
-    throw new Error("'params' is a required field and has to be a 'string'")
+  if (!('Params' in message) || typeof message['Params'] !== 'string') {
+    throw new Error("'Params' is a required field and has to be a 'string'")
   }
 
-  const to = addressAsBytes(message.to)
-  const from = addressAsBytes(message.from)
+  const to = addressAsBytes(message['To'])
+  const from = addressAsBytes(message['From'])
 
-  const value = serializeBigNum(message.value)
-  const gasfeecap = serializeBigNum(message.gasfeecap)
-  const gaspremium = serializeBigNum(message.gaspremium)
+  const value = serializeBigNum(message['Value'])
+  const gasfeecap = serializeBigNum(message['GasFeeCap'])
+  const gaspremium = serializeBigNum(message['GasPremium'])
 
   const message_to_encode = [
     0,
     to,
     from,
-    message.nonce,
+    message['Nonce'],
     value,
-    message.gaslimit,
+    message['GasLimit'],
     gasfeecap,
     gaspremium,
-    message.method,
-    Buffer.from(message.params, 'base64'),
+    message['Method'],
+    Buffer.from(message['Params'], 'base64'),
   ]
 
   return cbor.encode(message_to_encode)
@@ -131,18 +123,18 @@ function transactionParse(cborMessage, testnet) {
 
   const message = {}
 
-  message.to = bytesToAddress(decoded[1], testnet)
-  message.from = bytesToAddress(decoded[2], testnet)
-  message.nonce = decoded[3]
+  message['To'] = bytesToAddress(decoded[1], testnet)
+  message['From'] = bytesToAddress(decoded[2], testnet)
+  message['Nonce'] = decoded[3]
   if (decoded[4][0] === 0x01) {
     throw new Error('Value cant be negative')
   }
-  message.value = new BN(Buffer.from(decoded[4]).toString('hex'), 16).toString(10)
-  message.gaslimit = decoded[5]
-  message.gasfeecap = new BN(Buffer.from(decoded[6]).toString('hex'), 16).toString(10)
-  message.gaspremium = new BN(Buffer.from(decoded[7]).toString('hex'), 16).toString(10)
-  message.method = decoded[8]
-  message.params = decoded[9].toString()
+  message['Value'] = new BN(Buffer.from(decoded[4]).toString('hex'), 16).toString(10)
+  message['GasLimit'] = decoded[5]
+  message['GasFeeCap'] = new BN(Buffer.from(decoded[6]).toString('hex'), 16).toString(10)
+  message['GasPremium'] = new BN(Buffer.from(decoded[7]).toString('hex'), 16).toString(10)
+  message['Method'] = decoded[8]
+  message['Params'] = decoded[9].toString()
 
   return message
 }
@@ -172,37 +164,13 @@ function transactionSign(unsignedMessage, privateKey) {
 
   const signedMessage = {}
 
-  signedMessage.message = lowercaseKeys(unsignedMessage)
-
   // TODO: support BLS scheme
-  signedMessage.signature = {
-    data: signature.toString('base64'),
-    type: ProtocolIndicator.SECP256K1,
+  signedMessage['Signature'] = {
+    Data: signature.toString('base64'),
+    Type: ProtocolIndicator.SECP256K1,
   }
 
   return signedMessage
-}
-
-function transactionSignLotus(unsignedMessage, privateKey) {
-  const signedMessage = transactionSign(unsignedMessage, privateKey)
-
-  return JSON.stringify({
-    Message: {
-      From: signedMessage.message.from,
-      GasLimit: signedMessage.message.gaslimit,
-      GasFeeCap: signedMessage.message.gasfeecap,
-      GasPremium: signedMessage.message.gaspremium,
-      Method: signedMessage.message.method,
-      Nonce: signedMessage.message.nonce,
-      Params: signedMessage.message.params,
-      To: signedMessage.message.to,
-      Value: signedMessage.message.value,
-    },
-    Signature: {
-      Data: signedMessage.signature.data,
-      Type: signedMessage.signature.type,
-    },
-  })
 }
 
 // TODO: new function 'verifySignature(signedMessage)'; Makes more sense ?
@@ -232,13 +200,13 @@ function verifySignature(signature, message) {
 // eslint-disable-next-line no-unused-vars
 function createPymtChan(from, to, amount, nonce) {
   if (typeof from !== 'string') {
-    throw new Error('`from` address has to be a string.')
+    throw new Error('`From` address has to be a string.')
   }
   if (typeof to !== 'string') {
-    throw new Error('`to` address has to be a string.')
+    throw new Error('`To` address has to be a string.')
   }
   if (typeof amount !== 'string') {
-    throw new Error('`amount` address has to be a string.')
+    throw new Error('`Value` address has to be a string.')
   }
   let constructorParams = [to, from]
   let serializedConstructorParams = cbor.encode(constructorParams)
@@ -251,14 +219,14 @@ function createPymtChan(from, to, amount, nonce) {
   ]
   let serializedParams = cbor.encode(execParams)
   let message = {
-    from: from,
-    to: 't01',
-    nonce: nonce,
-    value: new BN(amount).toString(10),
-    gasprice: new BN('100').toString(10),
-    gaslimit: 200000000,
-    method: MethodInit.Exec,
-    params: serializedParams.toString('base64'),
+    From: from,
+    To: 't01',
+    Nonce: nonce,
+    Value: new BN(amount).toString(10),
+    GasPrice: new BN('100').toString(10),
+    GasLimit: 200000000,
+    Method: MethodInit.Exec,
+    Params: serializedParams.toString('base64'),
   }
 
   return message
@@ -273,14 +241,14 @@ function settlePymtChan(pch, from, nonce) {
     throw new Error('`from` address has to be a string.')
   }
   let message = {
-    from: from,
-    to: pch,
-    nonce: nonce,
-    value: new BN('0'.toString('hex'), 16).toString(10),
-    gasprice: new BN('100'.toString('hex'), 16).toString(10),
-    gaslimit: 200000000,
-    method: MethodPaych.Settle,
-    params: '',
+    From: from,
+    To: pch,
+    Nonce: nonce,
+    Value: new BN('0'.toString('hex'), 16).toString(10),
+    GasPrice: new BN('100'.toString('hex'), 16).toString(10),
+    GasLimit: 200000000,
+    Method: MethodPaych.Settle,
+    Params: '',
   }
   return message
 }
@@ -294,14 +262,14 @@ function collectPymtChan(pch, from, nonce) {
     throw new Error('`from` address has to be a string.')
   }
   let message = {
-    from: from,
-    to: pch,
-    nonce: nonce,
-    value: new BN('0'.toString('hex'), 16).toString(10),
-    gasprice: new BN('100'.toString('hex'), 16).toString(10),
-    gaslimit: 200000000,
-    method: MethodPaych.Collect,
-    params: '',
+    From: from,
+    To: pch,
+    Nonce: nonce,
+    Value: new BN('0'.toString('hex'), 16).toString(10),
+    GasPrice: new BN('100'.toString('hex'), 16).toString(10),
+    GasLimit: 200000000,
+    Method: MethodPaych.Collect,
+    Params: '',
   }
   return message
 }
@@ -322,14 +290,14 @@ function updatePymtChan(pch, from, signedVoucherBase64, nonce) {
   let updateChannelStateParams = [signedVoucher, Buffer.alloc(0), Buffer.alloc(0)]
   let serializedParams = cbor.encode(updateChannelStateParams)
   let message = {
-    from: from,
-    to: pch,
-    nonce: nonce,
-    value: new BN('0'.toString('hex'), 16).toString(10),
-    gasprice: new BN('100'.toString('hex'), 16).toString(10),
-    gaslimit: 200000000,
-    method: MethodPaych.UpdateChannelState,
-    params: serializedParams.toSTring('base64'),
+    From: from,
+    To: pch,
+    Nonce: nonce,
+    Value: new BN('0'.toString('hex'), 16).toString(10),
+    GasPrice: new BN('100'.toString('hex'), 16).toString(10),
+    GasLimit: 200000000,
+    Method: MethodPaych.UpdateChannelState,
+    Params: serializedParams.toSTring('base64'),
   }
   return message
 }
@@ -377,7 +345,6 @@ module.exports = {
   transactionSerializeRaw,
   transactionParse,
   transactionSign,
-  transactionSignLotus,
   transactionSignRaw,
   verifySignature,
   addressAsBytes,

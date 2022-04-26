@@ -46,16 +46,14 @@ impl TryFrom<&[u8]> for ExtendedSecretKey {
 
         ExtendedSecretKey::new(
             SecretKey::parse_slice(master_private_key)?,
-            &master_chain_code,
+            master_chain_code,
         )
     }
 }
 
 impl ExtendedSecretKey {
     pub fn new(secret_key: SecretKey, chain_code: &[u8]) -> Result<Self, SignerError> {
-        let mut tmp = ChainCode {
-            0: Default::default(),
-        };
+        let mut tmp = ChainCode(Default::default());
         tmp.0.copy_from_slice(chain_code);
 
         Ok(ExtendedSecretKey {
@@ -104,10 +102,10 @@ impl ExtendedSecretKey {
         let hmac_result = hmac.finalize().into_bytes();
         let (secret_key_shift, child_chain_code) = hmac_result.split_at(32);
 
-        let mut child_secret_key = self.secret_key.clone();
+        let mut child_secret_key = self.secret_key;
         child_secret_key.tweak_add_assign(&SecretKey::parse_slice(secret_key_shift)?)?;
 
-        ExtendedSecretKey::new(child_secret_key, &child_chain_code)
+        ExtendedSecretKey::new(child_secret_key, child_chain_code)
     }
 
     pub fn derive_bip44(&self, path: &BIP44Path) -> Result<ExtendedSecretKey, SignerError> {
