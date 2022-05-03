@@ -4,21 +4,39 @@ use fil_actor_miner::{
     SubmitWindowedPoStParams, ProveCommitSectorParams, CheckSectorProvenParams, ExtendSectorExpirationParams,
     ExpirationExtension, TerminateSectorsParams, TerminationDeclaration, DeclareFaultsParams, FaultDeclaration,
     DeclareFaultsRecoveredParams, RecoveryDeclaration, CompactPartitionsParams, CompactSectorNumbersParams, 
-    ReportConsensusFaultParams, WithdrawBalanceParams, WorkerKeyChange, PreCommitSectorBatchParams, 
+    ReportConsensusFaultParams, WithdrawBalanceParams, PreCommitSectorBatchParams, 
     SectorPreCommitInfo, ApplyRewardParams, DisputeWindowedPoStParams, ProveCommitAggregateParams, ReplicaUpdate, ProveReplicaUpdatesParams,
 };
-use fvm_ipld_encoding::{serde_bytes, RawBytes};
+use serde::{Deserialize, Serialize};
+use fvm_shared::sector::{
+    PoStProof, RegisteredPoStProof, RegisteredSealProof, RegisteredUpdateProof, SectorNumber,
+    StoragePower,
+};
+use fvm_ipld_bitfield::UnvalidatedBitField;
+use fvm_shared::smooth::FilterEstimate;
+use fvm_ipld_encoding::{serde_bytes, BytesDe};
 use fvm_shared::address::Address;
+use fvm_shared::bigint::bigint_ser;
 use fvm_shared::clock::ChainEpoch;
 use fvm_shared::econ::TokenAmount;
+use fvm_shared::randomness::Randomness;
+use fvm_shared::deal::DealID;
+use cid::Cid;
+
+use super::json::address;
+use super::json::tokenamount;
+use super::json::vec_address;
 
 /// Storage miner actor constructor params are defined here so the power actor can send them to the init actor
 /// to instantiate miners.
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "MinerConstructorParams")]
 pub struct MinerConstructorParamsAPI {
+    #[serde(with = "address")]
     pub owner: Address,
+    #[serde(with = "address")]
     pub worker: Address,
+    #[serde(with = "vec_address")]
     pub control_addresses: Vec<Address>,
     pub window_post_proof_type: RegisteredPoStProof,
     #[serde(with = "serde_bytes")]
@@ -29,7 +47,9 @@ pub struct MinerConstructorParamsAPI {
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "ChangeWorkerAddressParams")]
 pub struct ChangeWorkerAddressParamsAPI {
+    #[serde(with = "address")]
     pub new_worker: Address,
+    #[serde(with = "vec_address")]
     pub new_control_addresses: Vec<Address>,
 }
 
@@ -66,7 +86,8 @@ pub struct DeferredCronEventParamsAPI {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct PoStPartition {
+#[serde(remote = "PoStPartition")]
+pub struct PoStPartitionAPI {
     /// Partitions are numbered per-deadline, from zero.
     pub index: u64,
     /// Sectors skipped while proving that weren't already declared faulty.
@@ -194,7 +215,7 @@ pub struct ReportConsensusFaultParamsAPI {
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "WithdrawBalanceParams")]
 pub struct WithdrawBalanceParamsAPI {
-    #[serde(with = "bigint_ser")]
+    #[serde(with = "tokenamount")]
     pub amount_requested: TokenAmount,
 }
 
@@ -226,9 +247,9 @@ pub struct SectorPreCommitInfoAPI {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(remote = "ApplyRewardParams")]
 pub struct ApplyRewardParamsAPI {
-    #[serde(with = "bigint_ser")]
+    #[serde(with = "tokenamount")]
     pub reward: TokenAmount,
-    #[serde(with = "bigint_ser")]
+    #[serde(with = "tokenamount")]
     pub penalty: TokenAmount,
 }
 
@@ -262,6 +283,6 @@ pub struct ReplicaUpdateAPI {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(remote = "ProveReplicaUpdatesParams")]
-pub struct ProveReplicaUpdatesParams {
+pub struct ProveReplicaUpdatesParamsAPI {
     pub updates: Vec<ReplicaUpdate>,
 }
