@@ -40,14 +40,14 @@ pub enum MessageParams {
     PaychConstructorParams(fil_actor_paych::ConstructorParams),
     #[serde(with = "paych::UpdateChannelStateParamsAPI")]
     UpdateChannelStateParams(fil_actor_paych::UpdateChannelStateParams),
-    #[serde(with = "miner::MinerConstructorParamsAPI")]
-    MinerConstructorParams(fil_actor_miner::MinerConstructorParams),
+    //#[serde(with = "miner::MinerConstructorParamsAPI")]
+    //MinerConstructorParams(fil_actor_miner::MinerConstructorParams),
     #[serde(with = "miner::ChangeWorkerAddressParamsAPI")]
     ChangeWorkerAddressParams(fil_actor_miner::ChangeWorkerAddressParams),
     #[serde(with = "miner::ChangePeerIDParamsAPI")]
     ChangePeerIDParams(fil_actor_miner::ChangePeerIDParams),
-    #[serde(with = "miner::ChangeMultiaddrsParamsAPI")]
-    ChangeMultiaddrsParams(fil_actor_miner::ChangeMultiaddrsParams),
+    //#[serde(with = "miner::ChangeMultiaddrsParamsAPI")]
+    //ChangeMultiaddrsParams(fil_actor_miner::ChangeMultiaddrsParams),
     //ConfirmSectorProofsParams(fil_actor_miner::ConfirmSectorProofsParams),
     //DeferredCronEventParams(fil_actor_miner::DeferredCronEventParams),
     //SubmitWindowedPoStParams(fil_actor_miner::SubmitWindowedPoStParams),
@@ -63,7 +63,8 @@ pub enum MessageParams {
     #[serde(with = "miner::WithdrawBalanceParamsAPI")]
     WithdrawBalanceParams(fil_actor_miner::WithdrawBalanceParams),
     //PreCommitSectorBatchParams(fil_actor_miner::PreCommitSectorBatchParams),
-    //ApplyRewardParams(fil_actor_miner::ApplyRewardParams),
+    #[serde(with = "miner::ApplyRewardParamsAPI")]
+    ApplyRewardParams(fil_actor_miner::ApplyRewardParams),
     //DisputeWindowedPoStParams(fil_actor_miner::DisputeWindowedPoStParams),
     //ProveCommitAggregateParams(fil_actor_miner::ProveCommitAggregateParams),
     //ProveReplicaUpdatesParams(fil_actor_miner::ProveReplicaUpdatesParams),
@@ -101,15 +102,17 @@ impl MessageParams {
                 .map_err(|err| SignerError::GenericString(err.to_string()))?,
             MessageParams::UpdateChannelStateParams(params) => RawBytes::serialize(&params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?,
-            MessageParams::MinerConstructorParams(params) => RawBytes::serialize(&params)
-                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            //MessageParams::MinerConstructorParams(params) => RawBytes::serialize(&params)
+            //    .map_err(|err| SignerError::GenericString(err.to_string()))?,
             MessageParams::ChangeWorkerAddressParams(params) => RawBytes::serialize(&params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?,
             MessageParams::ChangePeerIDParams(params) => RawBytes::serialize(&params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?,
-            MessageParams::ChangeMultiaddrsParams(params) => RawBytes::serialize(&params)
-                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            //MessageParams::ChangeMultiaddrsParams(params) => RawBytes::serialize(&params)
+            //    .map_err(|err| SignerError::GenericString(err.to_string()))?,
             MessageParams::WithdrawBalanceParams(params) => RawBytes::serialize(&params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            MessageParams::ApplyRewardParams(params) => RawBytes::serialize(&params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?,
         };
 

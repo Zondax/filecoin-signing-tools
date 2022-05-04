@@ -2,7 +2,7 @@ use fil_actor_multisig::{
     AddSignerParams, ChangeNumApprovalsThresholdParams, ConstructorParams, LockBalanceParams,
     ProposeParams, RemoveSignerParams, SwapSignerParams, Transaction, TxnID, TxnIDParams,
 };
-use fvm_ipld_encoding::{serde_bytes, RawBytes};
+use fvm_ipld_encoding::RawBytes;
 use fvm_shared::address::Address;
 use fvm_shared::clock::ChainEpoch;
 use fvm_shared::econ::TokenAmount;
@@ -13,6 +13,7 @@ use super::json::address;
 use super::json::rawbytes;
 use super::json::tokenamount;
 use super::json::vec_address;
+use super::json::serde_base64_vector;
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 #[serde(remote = "Transaction", rename_all = "PascalCase")]
@@ -62,10 +63,11 @@ pub struct ProposeParamsAPI {
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "TxnIDParams", rename_all = "PascalCase")]
 pub struct TxnIDParamsAPI {
+    #[serde(alias = "ID")]
     pub id: TxnID,
     /// Optional hash of proposal to ensure an operation can only apply to a
     /// specific proposal.
-    #[serde(with = "serde_bytes")]
+    #[serde(with = "serde_base64_vector")]
     pub proposal_hash: Vec<u8>,
 }
 

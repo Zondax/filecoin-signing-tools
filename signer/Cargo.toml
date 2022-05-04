@@ -39,10 +39,10 @@ tiny-bip39 = "0.8.0"
 zx-bip44 = "0.1.0"
 
 extras = { path = "../extras"}
-fil_actor_init = "7.2.0"
-fil_actor_multisig = "7.2.0"
-fil_actor_paych = "7.2.0"
-fil_actor_miner = "7.2.0"
+fil_actor_init = "=7.2.0"
+fil_actor_multisig = "=7.2.0"
+fil_actor_paych = "=7.2.0"
+fil_actor_miner = "=7.2.0"
 
 fvm_shared = "=0.6.0"
 fvm_ipld_encoding = "0.1.0"

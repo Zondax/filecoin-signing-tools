@@ -28,6 +28,7 @@ use serde::{Deserialize, Serialize};
 use super::json::address;
 use super::json::tokenamount;
 use super::json::vec_address;
+use super::json::serde_base64_vector;
 
 /// Storage miner actor constructor params are defined here so the power actor can send them to the init actor
 /// to instantiate miners.
@@ -41,7 +42,7 @@ pub struct MinerConstructorParamsAPI {
     #[serde(with = "vec_address")]
     pub control_addresses: Vec<Address>,
     pub window_post_proof_type: RegisteredPoStProof,
-    #[serde(with = "serde_bytes")]
+    #[serde(with = "serde_base64_vector")]
     pub peer_id: Vec<u8>,
     pub multi_addresses: Vec<BytesDe>,
 }
@@ -58,7 +59,7 @@ pub struct ChangeWorkerAddressParamsAPI {
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "ChangePeerIDParams")]
 pub struct ChangePeerIDParamsAPI {
-    #[serde(with = "serde_bytes")]
+    #[serde(with = "serde_base64_vector")]
     pub new_id: Vec<u8>,
 }
 
@@ -206,11 +207,11 @@ pub struct CompactSectorNumbersParamsAPI {
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "ReportConsensusFaultParams")]
 pub struct ReportConsensusFaultParamsAPI {
-    #[serde(with = "serde_bytes")]
+    #[serde(with = "serde_base64_vector")]
     pub header1: Vec<u8>,
-    #[serde(with = "serde_bytes")]
+    #[serde(with = "serde_base64_vector")]
     pub header2: Vec<u8>,
-    #[serde(with = "serde_bytes")]
+    #[serde(with = "serde_base64_vector")]
     pub header_extra: Vec<u8>,
 }
 
@@ -266,7 +267,7 @@ pub struct DisputeWindowedPoStParamsAPI {
 #[serde(remote = "ProveCommitAggregateParams")]
 pub struct ProveCommitAggregateParamsAPI {
     pub sector_numbers: UnvalidatedBitField,
-    #[serde(with = "serde_bytes")]
+    #[serde(with = "serde_base64_vector")]
     pub aggregate_proof: Vec<u8>,
 }
 
@@ -279,7 +280,7 @@ pub struct ReplicaUpdateAPI {
     pub new_sealed_cid: Cid,
     pub deals: Vec<DealID>,
     pub update_proof_type: RegisteredUpdateProof,
-    #[serde(with = "serde_bytes")]
+    #[serde(with = "serde_base64_vector")]
     pub replica_proof: Vec<u8>,
 }
 
