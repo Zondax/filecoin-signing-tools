@@ -33,7 +33,7 @@ use super::json::serde_base64_vector;
 /// Storage miner actor constructor params are defined here so the power actor can send them to the init actor
 /// to instantiate miners.
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "MinerConstructorParams")]
+#[serde(remote = "MinerConstructorParams", rename_all = "PascalCase")]
 pub struct MinerConstructorParamsAPI {
     #[serde(with = "address")]
     pub owner: Address,
@@ -48,7 +48,7 @@ pub struct MinerConstructorParamsAPI {
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "ChangeWorkerAddressParams")]
+#[serde(remote = "ChangeWorkerAddressParams", rename_all = "PascalCase")]
 pub struct ChangeWorkerAddressParamsAPI {
     #[serde(with = "address")]
     pub new_worker: Address,
@@ -57,20 +57,20 @@ pub struct ChangeWorkerAddressParamsAPI {
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "ChangePeerIDParams")]
+#[serde(remote = "ChangePeerIDParams", rename_all = "PascalCase")]
 pub struct ChangePeerIDParamsAPI {
     #[serde(with = "serde_base64_vector")]
     pub new_id: Vec<u8>,
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "ChangeMultiaddrsParams")]
+#[serde(remote = "ChangeMultiaddrsParams", rename_all = "PascalCase")]
 pub struct ChangeMultiaddrsParamsAPI {
     pub new_multi_addrs: Vec<BytesDe>,
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "ConfirmSectorProofsParams")]
+#[serde(remote = "ConfirmSectorProofsParams", rename_all = "PascalCase")]
 pub struct ConfirmSectorProofsParamsAPI {
     pub sectors: Vec<SectorNumber>,
     pub reward_smoothed: FilterEstimate,
@@ -80,7 +80,7 @@ pub struct ConfirmSectorProofsParamsAPI {
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "DeferredCronEventParams")]
+#[serde(remote = "DeferredCronEventParams", rename_all = "PascalCase")]
 pub struct DeferredCronEventParamsAPI {
     #[serde(with = "serde_bytes")]
     pub event_payload: Vec<u8>,
@@ -89,7 +89,7 @@ pub struct DeferredCronEventParamsAPI {
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "PoStPartition")]
+#[serde(remote = "PoStPartition", rename_all = "PascalCase")]
 pub struct PoStPartitionAPI {
     /// Partitions are numbered per-deadline, from zero.
     pub index: u64,
@@ -99,7 +99,7 @@ pub struct PoStPartitionAPI {
 
 /// Information submitted by a miner to provide a Window PoSt.
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "SubmitWindowedPoStParams")]
+#[serde(remote = "SubmitWindowedPoStParams", rename_all = "PascalCase")]
 pub struct SubmitWindowedPoStParamsAPI {
     /// The deadline index which the submission targets.
     pub deadline: u64,
@@ -115,7 +115,7 @@ pub struct SubmitWindowedPoStParamsAPI {
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "ProveCommitSectorParams")]
+#[serde(remote = "ProveCommitSectorParams", rename_all = "PascalCase")]
 pub struct ProveCommitSectorParamsAPI {
     pub sector_number: SectorNumber,
     #[serde(with = "serde_bytes")]
@@ -123,19 +123,19 @@ pub struct ProveCommitSectorParamsAPI {
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "CheckSectorProvenParams")]
+#[serde(remote = "CheckSectorProvenParams", rename_all = "PascalCase")]
 pub struct CheckSectorProvenParamsAPI {
     pub sector_number: SectorNumber,
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "ExtendSectorExpirationParams")]
+#[serde(remote = "ExtendSectorExpirationParams", rename_all = "PascalCase")]
 pub struct ExtendSectorExpirationParamsAPI {
     pub extensions: Vec<ExpirationExtension>,
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "ExpirationExtension")]
+#[serde(remote = "ExpirationExtension", rename_all = "PascalCase")]
 pub struct ExpirationExtensionAPI {
     pub deadline: u64,
     pub partition: u64,
@@ -144,13 +144,13 @@ pub struct ExpirationExtensionAPI {
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "TerminateSectorsParams")]
+#[serde(remote = "TerminateSectorsParams", rename_all = "PascalCase")]
 pub struct TerminateSectorsParamsAPI {
     pub terminations: Vec<TerminationDeclaration>,
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "TerminationDeclaration")]
+#[serde(remote = "TerminationDeclaration", rename_all = "PascalCase")]
 pub struct TerminationDeclarationAPI {
     pub deadline: u64,
     pub partition: u64,
@@ -158,13 +158,13 @@ pub struct TerminationDeclarationAPI {
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "DeclareFaultsParams")]
+#[serde(remote = "DeclareFaultsParams", rename_all = "PascalCase")]
 pub struct DeclareFaultsParamsAPI {
     pub faults: Vec<FaultDeclaration>,
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "FaultDeclaration")]
+#[serde(remote = "FaultDeclaration", rename_all = "PascalCase")]
 pub struct FaultDeclarationAPI {
     /// The deadline to which the faulty sectors are assigned, in range [0..WPoStPeriodDeadlines)
     pub deadline: u64,
@@ -175,13 +175,13 @@ pub struct FaultDeclarationAPI {
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "DeclareFaultsRecoveredParams")]
+#[serde(remote = "DeclareFaultsRecoveredParams", rename_all = "PascalCase")]
 pub struct DeclareFaultsRecoveredParamsAPI {
     pub recoveries: Vec<RecoveryDeclaration>,
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "RecoveryDeclaration")]
+#[serde(remote = "RecoveryDeclaration", rename_all = "PascalCase")]
 pub struct RecoveryDeclarationAPI {
     /// The deadline to which the recovered sectors are assigned, in range [0..WPoStPeriodDeadlines)
     pub deadline: u64,
@@ -192,20 +192,20 @@ pub struct RecoveryDeclarationAPI {
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "CompactPartitionsParams")]
+#[serde(remote = "CompactPartitionsParams", rename_all = "PascalCase")]
 pub struct CompactPartitionsParamsAPI {
     pub deadline: u64,
     pub partitions: UnvalidatedBitField,
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "CompactSectorNumbersParams")]
+#[serde(remote = "CompactSectorNumbersParams", rename_all = "PascalCase")]
 pub struct CompactSectorNumbersParamsAPI {
     pub mask_sector_numbers: UnvalidatedBitField,
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "ReportConsensusFaultParams")]
+#[serde(remote = "ReportConsensusFaultParams", rename_all = "PascalCase")]
 pub struct ReportConsensusFaultParamsAPI {
     #[serde(with = "serde_base64_vector")]
     pub header1: Vec<u8>,
@@ -216,20 +216,20 @@ pub struct ReportConsensusFaultParamsAPI {
 }
 
 #[derive(Serialize, Deserialize)]
-#[serde(remote = "WithdrawBalanceParams")]
+#[serde(remote = "WithdrawBalanceParams", rename_all = "PascalCase")]
 pub struct WithdrawBalanceParamsAPI {
     #[serde(with = "tokenamount")]
     pub amount_requested: TokenAmount,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(remote = "PreCommitSectorBatchParams")]
+#[serde(remote = "PreCommitSectorBatchParams", rename_all = "PascalCase")]
 pub struct PreCommitSectorBatchParamsAPI {
     pub sectors: Vec<SectorPreCommitInfo>,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(remote = "SectorPreCommitInfo")]
+#[serde(remote = "SectorPreCommitInfo", rename_all = "PascalCase")]
 pub struct SectorPreCommitInfoAPI {
     pub seal_proof: RegisteredSealProof,
     pub sector_number: SectorNumber,
@@ -248,7 +248,7 @@ pub struct SectorPreCommitInfoAPI {
 
 // * Added in v2 -- param was previously a big int.
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(remote = "ApplyRewardParams")]
+#[serde(remote = "ApplyRewardParams", rename_all = "PascalCase")]
 pub struct ApplyRewardParamsAPI {
     #[serde(with = "tokenamount")]
     pub reward: TokenAmount,
@@ -257,14 +257,14 @@ pub struct ApplyRewardParamsAPI {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
-#[serde(remote = "DisputeWindowedPoStParams")]
+#[serde(remote = "DisputeWindowedPoStParams", rename_all = "PascalCase")]
 pub struct DisputeWindowedPoStParamsAPI {
     pub deadline: u64,
     pub post_index: u64, // only one is allowed at a time to avoid loading too many sector infos.
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(remote = "ProveCommitAggregateParams")]
+#[serde(remote = "ProveCommitAggregateParams", rename_all = "PascalCase")]
 pub struct ProveCommitAggregateParamsAPI {
     pub sector_numbers: UnvalidatedBitField,
     #[serde(with = "serde_base64_vector")]
@@ -272,7 +272,7 @@ pub struct ProveCommitAggregateParamsAPI {
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-#[serde(remote = "ReplicaUpdate")]
+#[serde(remote = "ReplicaUpdate", rename_all = "PascalCase")]
 pub struct ReplicaUpdateAPI {
     pub sector_number: SectorNumber,
     pub deadline: u64,
@@ -285,7 +285,7 @@ pub struct ReplicaUpdateAPI {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(remote = "ProveReplicaUpdatesParams")]
+#[serde(remote = "ProveReplicaUpdatesParams", rename_all = "PascalCase")]
 pub struct ProveReplicaUpdatesParamsAPI {
     pub updates: Vec<ReplicaUpdate>,
 }

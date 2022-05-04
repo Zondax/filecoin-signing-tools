@@ -12,11 +12,11 @@ serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0"
 serde_alias = "0.0.2"
 
-fil_actor_cron = "=7.2.0"
-fil_actor_init = "=7.2.0"
-fil_actor_multisig = "=7.2.0"
-fil_actor_paych = "=7.2.0"
-fil_actor_miner = "=7.2.0"
+fil_actor_cron = "=7.2.1"
+fil_actor_init = "=7.2.1"
+fil_actor_multisig = "=7.2.1"
+fil_actor_paych = "=7.2.1"
+fil_actor_miner = "=7.2.1"
 
 fvm_shared = "=0.6.0"
 cid = "=0.8.3"
