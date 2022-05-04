@@ -1,8 +1,8 @@
 pub mod cron;
 pub mod init;
+pub mod miner;
 pub mod multisig;
 pub mod paych;
-pub mod miner;
 
 pub mod message;
 pub mod signature;

@@ -7,7 +7,7 @@ use fvm_shared::message::Message;
 
 use extras::init::ExecParamsAPI;
 use extras::{
-    message::MessageAPI, multisig, paych, miner, signed_message::ref_fvm::SignedMessage,
+    message::MessageAPI, miner, multisig, paych, signed_message::ref_fvm::SignedMessage,
     signed_message::SignedMessageAPI,
 };
 
