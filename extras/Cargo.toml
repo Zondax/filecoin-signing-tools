@@ -22,5 +22,5 @@ fvm_shared = "0.6.0"
 cid = "=0.8.3"
 base64 = "0.13.0"
 
-fvm_ipld_encoding = "=0.1.0"
+fvm_ipld_encoding = "0.1.0"
 fvm_ipld_bitfield = "0.5.1"
