@@ -11,9 +11,9 @@ use serde::{Deserialize, Serialize};
 
 use super::json::address;
 use super::json::rawbytes;
+use super::json::serde_base64_vector;
 use super::json::tokenamount;
 use super::json::vec_address;
-use super::json::serde_base64_vector;
 
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 #[serde(remote = "Transaction", rename_all = "PascalCase")]

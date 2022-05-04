@@ -26,9 +26,9 @@ use fvm_shared::smooth::FilterEstimate;
 use serde::{Deserialize, Serialize};
 
 use super::json::address;
+use super::json::serde_base64_vector;
 use super::json::tokenamount;
 use super::json::vec_address;
-use super::json::serde_base64_vector;
 
 /// Storage miner actor constructor params are defined here so the power actor can send them to the init actor
 /// to instantiate miners.
