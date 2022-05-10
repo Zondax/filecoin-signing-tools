@@ -36,5 +36,20 @@
       "Params": "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
     },
     "serialized_params": "hFUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihAB1gtglUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW"
+  },
+  {
+    "description": "serialize parameters to cbor data test with PascalCase n°5",
+    "params": {
+      "ID": 1234,
+      "ProposalHash": "+KzyZSly8Amuqh2bYc/NhnArMJPBnDBJYE8Z24yzePM="
+    },
+    "serialized_params": "ghkE0lgg+KzyZSly8Amuqh2bYc/NhnArMJPBnDBJYE8Z24yzePM="
+  },
+  {
+    "description": "serialize parameters to cbor data test with PascalCase n°6",
+    "params": {
+      "AmountRequested": "120"
+    },
+    "serialized_params": "gUIAeA=="
   }
 ]

@@ -7,7 +7,7 @@ use fvm_shared::message::Message;
 
 use extras::init::ExecParamsAPI;
 use extras::{
-    message::MessageAPI, multisig, paych, signed_message::ref_fvm::SignedMessage,
+    message::MessageAPI, miner, multisig, paych, signed_message::ref_fvm::SignedMessage,
     signed_message::SignedMessageAPI,
 };
 
@@ -40,6 +40,34 @@ pub enum MessageParams {
     PaychConstructorParams(fil_actor_paych::ConstructorParams),
     #[serde(with = "paych::UpdateChannelStateParamsAPI")]
     UpdateChannelStateParams(fil_actor_paych::UpdateChannelStateParams),
+    //#[serde(with = "miner::MinerConstructorParamsAPI")]
+    //MinerConstructorParams(fil_actor_miner::MinerConstructorParams),
+    #[serde(with = "miner::ChangeWorkerAddressParamsAPI")]
+    ChangeWorkerAddressParams(fil_actor_miner::ChangeWorkerAddressParams),
+    #[serde(with = "miner::ChangePeerIDParamsAPI")]
+    ChangePeerIDParams(fil_actor_miner::ChangePeerIDParams),
+    //#[serde(with = "miner::ChangeMultiaddrsParamsAPI")]
+    //ChangeMultiaddrsParams(fil_actor_miner::ChangeMultiaddrsParams),
+    //ConfirmSectorProofsParams(fil_actor_miner::ConfirmSectorProofsParams),
+    //DeferredCronEventParams(fil_actor_miner::DeferredCronEventParams),
+    //SubmitWindowedPoStParams(fil_actor_miner::SubmitWindowedPoStParams),
+    //ProveCommitSectorParams(fil_actor_miner::ProveCommitSectorParams),
+    //CheckSectorProvenParams(fil_actor_miner::CheckSectorProvenParams),
+    //ExtendSectorExpirationParams(fil_actor_miner::ExtendSectorExpirationParams),
+    //TerminateSectorsParams(fil_actor_miner::TerminateSectorsParams),
+    //DeclareFaultsParams(fil_actor_miner::DeclareFaultsParams),
+    //DeclareFaultsRecoveredParams(fil_actor_miner::DeclareFaultsRecoveredParams),
+    //CompactPartitionsParams(fil_actor_miner::CompactPartitionsParams),
+    //CompactSectorNumbersParams(fil_actor_miner::CompactSectorNumbersParams),
+    //ReportConsensusFaultParams(fil_actor_miner::ReportConsensusFaultParams),
+    #[serde(with = "miner::WithdrawBalanceParamsAPI")]
+    WithdrawBalanceParams(fil_actor_miner::WithdrawBalanceParams),
+    //PreCommitSectorBatchParams(fil_actor_miner::PreCommitSectorBatchParams),
+    #[serde(with = "miner::ApplyRewardParamsAPI")]
+    ApplyRewardParams(fil_actor_miner::ApplyRewardParams),
+    //DisputeWindowedPoStParams(fil_actor_miner::DisputeWindowedPoStParams),
+    //ProveCommitAggregateParams(fil_actor_miner::ProveCommitAggregateParams),
+    //ProveReplicaUpdatesParams(fil_actor_miner::ProveReplicaUpdatesParams),
 }
 
 impl MessageParams {
@@ -73,6 +101,18 @@ impl MessageParams {
             MessageParams::PaychConstructorParams(params) => RawBytes::serialize(&params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?,
             MessageParams::UpdateChannelStateParams(params) => RawBytes::serialize(&params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            //MessageParams::MinerConstructorParams(params) => RawBytes::serialize(&params)
+            //    .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            MessageParams::ChangeWorkerAddressParams(params) => RawBytes::serialize(&params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            MessageParams::ChangePeerIDParams(params) => RawBytes::serialize(&params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            //MessageParams::ChangeMultiaddrsParams(params) => RawBytes::serialize(&params)
+            //    .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            MessageParams::WithdrawBalanceParams(params) => RawBytes::serialize(&params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            MessageParams::ApplyRewardParams(params) => RawBytes::serialize(&params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?,
         };
 
