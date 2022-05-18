@@ -19,7 +19,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-compat": "^4.0.2",
     "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-jest": "^26.1.5",
+    "eslint-plugin-jest": "^26.2.2",
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-prefer-object-spread": "^1.2.1",
     "eslint-plugin-prettier": "^4.0.0",
