@@ -1,8 +1,8 @@
 #![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used,))]
 
+use lazy_static::lazy_static;
 use std::convert::TryFrom;
 use std::str::FromStr;
-use lazy_static::lazy_static;
 
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
@@ -43,7 +43,8 @@ const RAW: u64 = 0x55;
 lazy_static! {
     static ref OLD_CODE_CID_INIT: Regex = Regex::new(r"fil\/[0-7]\/init").unwrap();
     static ref OLD_CODE_CID_MULTISIG: Regex = Regex::new(r"fil\/[2-7]\/multisig").unwrap();
-    static ref OLD_CODE_CID_PAYMENTCHANNEL: Regex = Regex::new(r"fil\/[2-7]\/paymentchannel").unwrap();
+    static ref OLD_CODE_CID_PAYMENTCHANNEL: Regex =
+        Regex::new(r"fil\/[2-7]\/paymentchannel").unwrap();
 }
 /// Mnemonic string
 pub struct Mnemonic(pub String);
@@ -1047,13 +1048,13 @@ pub fn deserialize_params(
     if OLD_CODE_CID_INIT.is_match(actor_type.as_bytes()) {
         match FromPrimitive::from_u64(method) {
             Some(MethodInit::Exec) => {
-                let params : ExecParams = RawBytes::deserialize(&serialized_params)?;
+                let params: ExecParams = RawBytes::deserialize(&serialized_params)?;
                 return Ok(MessageParams::ExecParams(params));
             }
             _ => {
                 return Err(SignerError::GenericString(
-                "Unknown method for actor 'fil/[0-7]/init'."
-                    .to_string()));
+                    "Unknown method for actor 'fil/[0-7]/init'.".to_string(),
+                ));
             }
         }
     }
@@ -1090,9 +1091,7 @@ pub fn deserialize_params(
                 let params = serialized_params
                     .deserialize::<multisig::ChangeNumApprovalsThresholdParams>()?;
 
-                return Ok(MessageParams::ChangeNumApprovalsThresholdParams(
-                    params,
-                ));
+                return Ok(MessageParams::ChangeNumApprovalsThresholdParams(params));
             }
             Some(multisig::Method::LockBalance) => {
                 let params = serialized_params.deserialize::<multisig::LockBalanceParams>()?;
@@ -1111,7 +1110,8 @@ pub fn deserialize_params(
     if OLD_CODE_CID_PAYMENTCHANNEL.is_match(actor_type.as_bytes()) {
         match FromPrimitive::from_u64(method) {
             Some(paych::Method::UpdateChannelState) => {
-                let params : fil_actor_paych::UpdateChannelStateParams = RawBytes::deserialize(&serialized_params)?;
+                let params: fil_actor_paych::UpdateChannelStateParams =
+                    RawBytes::deserialize(&serialized_params)?;
 
                 return Ok(MessageParams::UpdateChannelStateParams(params));
             }
@@ -1121,13 +1121,15 @@ pub fn deserialize_params(
             }
             _ => {
                 return Err(SignerError::GenericString(
-                "Unknown method fo actor 'fil/[2-7]/paymentchannel'."
-                    .to_string()));
+                    "Unknown method fo actor 'fil/[2-7]/paymentchannel'.".to_string(),
+                ));
             }
         }
     }
-    
-    Err(SignerError::GenericString("Actor type not supported.".to_string()))
+
+    Err(SignerError::GenericString(
+        "Actor type not supported.".to_string(),
+    ))
 }
 
 /// Deserialize Constructor Params
@@ -1154,8 +1156,7 @@ pub fn deserialize_constructor_params(
     }
 
     if code_cid.as_str() == "fil/1/multisig" {
-        let deprecated_multisig_params =
-        serialized_params.deserialize::<ConstructorParamsV1>()?;
+        let deprecated_multisig_params = serialized_params.deserialize::<ConstructorParamsV1>()?;
         let params = multisig::ConstructorParams {
             signers: deprecated_multisig_params.signers,
             num_approvals_threshold: deprecated_multisig_params.num_approvals_threshold,
@@ -1165,8 +1166,9 @@ pub fn deserialize_constructor_params(
         return Ok(MessageParams::MultisigConstructorParams(params));
     }
 
-    Err(SignerError::GenericString("Code CID not supported.".to_string()))
-
+    Err(SignerError::GenericString(
+        "Code CID not supported.".to_string(),
+    ))
 }
 
 /// Verify Voucher signature
