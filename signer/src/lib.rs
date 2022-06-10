@@ -1,4 +1,4 @@
-#![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used,))]
+#![cfg_attr(not(test), deny(clippy::expect_used,))]
 
 use lazy_static::lazy_static;
 use std::convert::TryFrom;
@@ -41,13 +41,11 @@ pub mod utils;
 const RAW: u64 = 0x55;
 
 lazy_static! {
-    #[allow(clippy::unwrap_used)]
-    static ref OLD_CODE_CID_INIT: Regex = Regex::new(r"fil\/[0-7]\/init").unwrap();
-    #[allow(clippy::unwrap_used)]
-    static ref OLD_CODE_CID_MULTISIG: Regex = Regex::new(r"fil\/[2-7]\/multisig").unwrap();
-    #[allow(clippy::unwrap_used)]
+    static ref OLD_CODE_CID_INIT: Regex = Regex::new(r"fil\\/[0-7]\\/init").unwrap();
+    static ref OLD_CODE_CID_MULTISIG: Regex = Regex::new(r"fil\\/[2-7]\\/multisig").unwrap();
     static ref OLD_CODE_CID_PAYMENTCHANNEL: Regex =
-        Regex::new(r"fil\/[2-7]\/paymentchannel").unwrap();
+        Regex::new(r"fil\\/[2-7]\\/paymentchannel").unwrap();
+
 }
 /// Mnemonic string
 pub struct Mnemonic(pub String);
