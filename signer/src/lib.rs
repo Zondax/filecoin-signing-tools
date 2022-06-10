@@ -45,7 +45,6 @@ lazy_static! {
     static ref OLD_CODE_CID_MULTISIG: Regex = Regex::new(r"fil\\/[2-7]\\/multisig").unwrap();
     static ref OLD_CODE_CID_PAYMENTCHANNEL: Regex =
         Regex::new(r"fil\\/[2-7]\\/paymentchannel").unwrap();
-
 }
 /// Mnemonic string
 pub struct Mnemonic(pub String);
