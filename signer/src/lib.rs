@@ -41,8 +41,11 @@ pub mod utils;
 const RAW: u64 = 0x55;
 
 lazy_static! {
+    #[allow(clippy::unwrap_used)]
     static ref OLD_CODE_CID_INIT: Regex = Regex::new(r"fil\/[0-7]\/init").unwrap();
+    #[allow(clippy::unwrap_used)]
     static ref OLD_CODE_CID_MULTISIG: Regex = Regex::new(r"fil\/[2-7]\/multisig").unwrap();
+    #[allow(clippy::unwrap_used)]
     static ref OLD_CODE_CID_PAYMENTCHANNEL: Regex =
         Regex::new(r"fil\/[2-7]\/paymentchannel").unwrap();
 }
