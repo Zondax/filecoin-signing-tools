@@ -2,6 +2,7 @@
 
 use std::convert::TryFrom;
 use std::str::FromStr;
+use lazy_static::lazy_static;
 
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
@@ -24,6 +25,7 @@ use bls_signatures::PublicKey as BLSPublicKey;
 use libsecp256k1::PublicKey as SECP256K1PublicKey;
 
 use extras::signed_message::ref_fvm::SignedMessage;
+use regex::bytes::Regex;
 
 use crate::api::{MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork};
 use crate::error::SignerError;
@@ -38,6 +40,11 @@ pub mod utils;
 
 const RAW: u64 = 0x55;
 
+lazy_static! {
+    static ref OLD_CODE_CID_INIT: Regex = Regex::new(r"fil\/[0-7]\/init").unwrap();
+    static ref OLD_CODE_CID_MULTISIG: Regex = Regex::new(r"fil\/[2-7]\/multisig").unwrap();
+    static ref OLD_CODE_CID_PAYMENTCHANNEL: Regex = Regex::new(r"fil\/[2-7]\/paymentchannel").unwrap();
+}
 /// Mnemonic string
 pub struct Mnemonic(pub String);
 
@@ -1036,86 +1043,91 @@ pub fn deserialize_params(
     let params_decode = base64::decode(params_b64_string)?;
     let serialized_params = RawBytes::new(params_decode);
 
-    match actor_type.as_str() {
-        "fil/1/init" | "fil/2/init" | "fil/3/init" | "fil/4/init" | "fil/5/init" | "fil/6/init" | "fil/7/init" => {
-            match FromPrimitive::from_u64(method) {
-                Some(MethodInit::Exec) => {
-                    let params : ExecParams = RawBytes::deserialize(&serialized_params)?;
-
-                    Ok(MessageParams::ExecParams(params))
-                }
-                _ => Err(SignerError::GenericString(
-                    "Unknown method for actor 'fil/2/init', 'fil/3/init', 'fil/4/init', 'fil/5/init', 'fil/6/init' or 'fil/7/init' ."
-                        .to_string(),
-                )),
+    // Deserialize pre-FVM init actor
+    if OLD_CODE_CID_INIT.is_match(actor_type.as_bytes()) {
+        match FromPrimitive::from_u64(method) {
+            Some(MethodInit::Exec) => {
+                let params : ExecParams = RawBytes::deserialize(&serialized_params)?;
+                return Ok(MessageParams::ExecParams(params));
+            }
+            _ => {
+                return Err(SignerError::GenericString(
+                "Unknown method for actor 'fil/[0-7]/init'."
+                    .to_string()));
             }
         }
-        "fil/2/multisig" | "fil/3/multisig" | "fil/4/multisig" | "fil/5/multisig" | "fil/6/multisig" | "fil/7/multisig" => {
-            match FromPrimitive::from_u64(method) {
-                Some(multisig::Method::Propose) => {
-                    let params = serialized_params.deserialize::<multisig::ProposeParams>()?;
-
-                    Ok(MessageParams::ProposeParams(params))
-                }
-                Some(multisig::Method::Approve) | Some(multisig::Method::Cancel) => {
-                    let params = serialized_params.deserialize::<multisig::TxnIDParams>()?;
-
-                    Ok(MessageParams::TxnIDParams(params))
-                }
-                Some(multisig::Method::AddSigner) => {
-                    let params = serialized_params.deserialize::<multisig::AddSignerParams>()?;
-
-                    Ok(MessageParams::AddSignerParams(params))
-                }
-                Some(multisig::Method::RemoveSigner) => {
-                    let params = serialized_params.deserialize::<multisig::RemoveSignerParams>()?;
-
-                    Ok(MessageParams::RemoveSignerParams(params))
-                }
-                Some(multisig::Method::SwapSigner) => {
-                    let params = serialized_params.deserialize::<multisig::SwapSignerParams>()?;
-
-                    Ok(MessageParams::SwapSignerParams(params))
-                }
-                Some(multisig::Method::ChangeNumApprovalsThreshold) => {
-                    let params = serialized_params
-                        .deserialize::<multisig::ChangeNumApprovalsThresholdParams>()?;
-
-                    Ok(MessageParams::ChangeNumApprovalsThresholdParams(
-                        params,
-                    ))
-                }
-                Some(multisig::Method::LockBalance) => {
-                    let params = serialized_params.deserialize::<multisig::LockBalanceParams>()?;
-
-                    Ok(MessageParams::LockBalanceParams(params))
-                }
-                _ => Err(SignerError::GenericString(
-                    "Unknown method for actor 'fil/2/multisig', 'fil/3/multisig', 'fil/4/multisig', 'fil/5/multisig', 'fil/6/multisig' or 'fil/7/multisig'.".to_string(),
-                )),
-            }
-        }
-        "fil/2/paymentchannel" | "fil/3/paymentchannel" | "fil/4/paymentchannel" | "fil/5/paymentchannel" | "fil/6/paymentchannel" | "fil/7/paymentchannel" => {
-            match FromPrimitive::from_u64(method) {
-                Some(paych::Method::UpdateChannelState) => {
-                    let params : fil_actor_paych::UpdateChannelStateParams = RawBytes::deserialize(&serialized_params)?;
-
-                    Ok(MessageParams::UpdateChannelStateParams(params))
-                }
-                Some(paych::Method::Settle) | Some(paych::Method::Collect) => {
-                    /* Note : those method doesn't have params to decode */
-                    Ok(MessageParams::MessageParamsSerialized("".to_string()))
-                }
-                _ => Err(SignerError::GenericString(
-                    "Unknown method fo actor 'fil/2/paymentchannel', 'fil/3/paymentchannel', 'fil/4/paymentchannel', fil/5/paymentchannel, fil/6/paymentchannel or fil/7/paymentchannel'."
-                        .to_string(),
-                )),
-            }
-        }
-        _ => Err(SignerError::GenericString(
-            "Actor type not supported.".to_string(),
-        )),
     }
+
+    // Deserialize pre-FVM multisig actor
+    if OLD_CODE_CID_MULTISIG.is_match(actor_type.as_bytes()) {
+        match FromPrimitive::from_u64(method) {
+            Some(multisig::Method::Propose) => {
+                let params = serialized_params.deserialize::<multisig::ProposeParams>()?;
+
+                return Ok(MessageParams::ProposeParams(params));
+            }
+            Some(multisig::Method::Approve) | Some(multisig::Method::Cancel) => {
+                let params = serialized_params.deserialize::<multisig::TxnIDParams>()?;
+
+                return Ok(MessageParams::TxnIDParams(params));
+            }
+            Some(multisig::Method::AddSigner) => {
+                let params = serialized_params.deserialize::<multisig::AddSignerParams>()?;
+
+                return Ok(MessageParams::AddSignerParams(params));
+            }
+            Some(multisig::Method::RemoveSigner) => {
+                let params = serialized_params.deserialize::<multisig::RemoveSignerParams>()?;
+
+                return Ok(MessageParams::RemoveSignerParams(params));
+            }
+            Some(multisig::Method::SwapSigner) => {
+                let params = serialized_params.deserialize::<multisig::SwapSignerParams>()?;
+
+                return Ok(MessageParams::SwapSignerParams(params));
+            }
+            Some(multisig::Method::ChangeNumApprovalsThreshold) => {
+                let params = serialized_params
+                    .deserialize::<multisig::ChangeNumApprovalsThresholdParams>()?;
+
+                return Ok(MessageParams::ChangeNumApprovalsThresholdParams(
+                    params,
+                ));
+            }
+            Some(multisig::Method::LockBalance) => {
+                let params = serialized_params.deserialize::<multisig::LockBalanceParams>()?;
+
+                return Ok(MessageParams::LockBalanceParams(params));
+            }
+            _ => {
+                return Err(SignerError::GenericString(
+                    "Unknown method for actor 'fil/[2-7]/multisig'.".to_string(),
+                ));
+            }
+        }
+    }
+
+    // Deserialize pre-FVM paymentchannel actor
+    if OLD_CODE_CID_PAYMENTCHANNEL.is_match(actor_type.as_bytes()) {
+        match FromPrimitive::from_u64(method) {
+            Some(paych::Method::UpdateChannelState) => {
+                let params : fil_actor_paych::UpdateChannelStateParams = RawBytes::deserialize(&serialized_params)?;
+
+                return Ok(MessageParams::UpdateChannelStateParams(params));
+            }
+            Some(paych::Method::Settle) | Some(paych::Method::Collect) => {
+                /* Note : those method doesn't have params to decode */
+                return Ok(MessageParams::MessageParamsSerialized("".to_string()));
+            }
+            _ => {
+                return Err(SignerError::GenericString(
+                "Unknown method fo actor 'fil/[2-7]/paymentchannel'."
+                    .to_string()));
+            }
+        }
+    }
+    
+    Err(SignerError::GenericString("Actor type not supported.".to_string()))
 }
 
 /// Deserialize Constructor Params
@@ -1131,36 +1143,30 @@ pub fn deserialize_constructor_params(
     let params_decode = base64::decode(params_b64_string)?;
     let serialized_params = RawBytes::new(params_decode);
 
-    match code_cid.as_str() {
-        "fil/2/multisig" | "fil/3/multisig" | "fil/4/multisig" | "fil/5/multisig"
-        | "fil/6/multisig" | "fil/7/multisig" => {
-            let params = serialized_params.deserialize::<multisig::ConstructorParams>()?;
-            Ok(MessageParams::MultisigConstructorParams(params))
-        }
-        "fil/2/paymentchannel"
-        | "fil/3/paymentchannel"
-        | "fil/4/paymentchannel"
-        | "fil/5/paymentchannel"
-        | "fil/6/paymentchannel"
-        | "fil/7/paymentchannel" => {
-            let params = serialized_params.deserialize::<paych::ConstructorParams>()?;
-            Ok(MessageParams::PaychConstructorParams(params.into()))
-        }
-        "fil/1/multisig" => {
-            let deprecated_multisig_params =
-                serialized_params.deserialize::<ConstructorParamsV1>()?;
-            let params = multisig::ConstructorParams {
-                signers: deprecated_multisig_params.signers,
-                num_approvals_threshold: deprecated_multisig_params.num_approvals_threshold,
-                unlock_duration: deprecated_multisig_params.unlock_duration,
-                start_epoch: 0,
-            };
-            Ok(MessageParams::MultisigConstructorParams(params))
-        }
-        _ => Err(SignerError::GenericString(
-            "Code CID not supported.".to_string(),
-        )),
+    if OLD_CODE_CID_MULTISIG.is_match(code_cid.as_bytes()) {
+        let params = serialized_params.deserialize::<multisig::ConstructorParams>()?;
+        return Ok(MessageParams::MultisigConstructorParams(params));
     }
+
+    if OLD_CODE_CID_PAYMENTCHANNEL.is_match(code_cid.as_bytes()) {
+        let params = serialized_params.deserialize::<paych::ConstructorParams>()?;
+        return Ok(MessageParams::PaychConstructorParams(params.into()));
+    }
+
+    if code_cid.as_str() == "fil/1/multisig" {
+        let deprecated_multisig_params =
+        serialized_params.deserialize::<ConstructorParamsV1>()?;
+        let params = multisig::ConstructorParams {
+            signers: deprecated_multisig_params.signers,
+            num_approvals_threshold: deprecated_multisig_params.num_approvals_threshold,
+            unlock_duration: deprecated_multisig_params.unlock_duration,
+            start_epoch: 0,
+        };
+        return Ok(MessageParams::MultisigConstructorParams(params));
+    }
+
+    Err(SignerError::GenericString("Code CID not supported.".to_string()))
+
 }
 
 /// Verify Voucher signature
