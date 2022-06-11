@@ -51,8 +51,8 @@ lazy_static! {
 // from lotus cli cmd: 'lotus state actor-cids'
 const ACTOR_INIT_CODE: &str = "bafk2bzaceaejm2x4jwqownf5jyxjbga4pwim7d7lw6yfxdvgyuetybrwzc7tu";
 const ACTOR_MULTISIG_CODE: &str = "bafk2bzaceczfz65fvn662qrkdgtmokve7oj3wmdgkbhvucwaigyihues3u6ke";
-const ACTOR_PAYMENTCHANNEL_CODE: &str = "bafk2bzaceaguosntcgqhbd5cknw6xe5fa6qxjxarft6osxmuh6ju2y4zrxmsi";
-
+const ACTOR_PAYMENTCHANNEL_CODE: &str =
+    "bafk2bzaceaguosntcgqhbd5cknw6xe5fa6qxjxarft6osxmuh6ju2y4zrxmsi";
 
 /// Mnemonic string
 pub struct Mnemonic(pub String);
@@ -1064,7 +1064,9 @@ pub fn deserialize_params(
     }
 
     // Deserialize pre-FVM multisig actor
-    if OLD_CODE_CID_MULTISIG.is_match(actor_type.as_bytes()) || actor_type.as_str() == ACTOR_MULTISIG_CODE {
+    if OLD_CODE_CID_MULTISIG.is_match(actor_type.as_bytes())
+        || actor_type.as_str() == ACTOR_MULTISIG_CODE
+    {
         match FromPrimitive::from_u64(method) {
             Some(multisig::Method::Propose) => {
                 let params = serialized_params.deserialize::<multisig::ProposeParams>()?;
@@ -1111,7 +1113,9 @@ pub fn deserialize_params(
     }
 
     // Deserialize pre-FVM paymentchannel actor
-    if OLD_CODE_CID_PAYMENTCHANNEL.is_match(actor_type.as_bytes()) || actor_type.as_str() == ACTOR_PAYMENTCHANNEL_CODE {
+    if OLD_CODE_CID_PAYMENTCHANNEL.is_match(actor_type.as_bytes())
+        || actor_type.as_str() == ACTOR_PAYMENTCHANNEL_CODE
+    {
         match FromPrimitive::from_u64(method) {
             Some(paych::Method::UpdateChannelState) => {
                 let params: fil_actor_paych::UpdateChannelStateParams =
@@ -1149,12 +1153,16 @@ pub fn deserialize_constructor_params(
     let params_decode = base64::decode(params_b64_string)?;
     let serialized_params = RawBytes::new(params_decode);
 
-    if OLD_CODE_CID_MULTISIG.is_match(code_cid.as_bytes()) || code_cid.as_str() == ACTOR_MULTISIG_CODE {
+    if OLD_CODE_CID_MULTISIG.is_match(code_cid.as_bytes())
+        || code_cid.as_str() == ACTOR_MULTISIG_CODE
+    {
         let params = serialized_params.deserialize::<multisig::ConstructorParams>()?;
         return Ok(MessageParams::MultisigConstructorParams(params));
     }
 
-    if OLD_CODE_CID_PAYMENTCHANNEL.is_match(code_cid.as_bytes()) || code_cid.as_str() == ACTOR_PAYMENTCHANNEL_CODE {
+    if OLD_CODE_CID_PAYMENTCHANNEL.is_match(code_cid.as_bytes())
+        || code_cid.as_str() == ACTOR_PAYMENTCHANNEL_CODE
+    {
         let params = serialized_params.deserialize::<paych::ConstructorParams>()?;
         return Ok(MessageParams::PaychConstructorParams(params.into()));
     }
