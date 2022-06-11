@@ -16,7 +16,7 @@
     "serialized_params": "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW",
     "code_cid": "fil/2/paymentchannel",
     "method": 7,
-    "error": "Unknown method fo actor 'fil\/2\/paymentchannel'."
+    "error": "Unknown method for actor 'fil/[2-7]/paymentchannel'."
   },
   {
     "description": "deserialize params should fail with wrong actor type for method",

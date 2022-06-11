@@ -450,7 +450,7 @@ describeCall('DeserializeParams', function() {
         assert.throws(() => {
             filecoin_signer.deserializeParams(tc.serialized_params, tc.code_cid, tc.method)
           },
-          new RegExp(tc.error),
+          tc.error,
         )
       }
     })

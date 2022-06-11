@@ -41,10 +41,10 @@ pub mod utils;
 const RAW: u64 = 0x55;
 
 lazy_static! {
-    static ref OLD_CODE_CID_INIT: Regex = Regex::new(r"fil\\/[0-7]\\/init").unwrap();
-    static ref OLD_CODE_CID_MULTISIG: Regex = Regex::new(r"fil\\/[2-7]\\/multisig").unwrap();
+    static ref OLD_CODE_CID_INIT: Regex = Regex::new(r"fil/[0-7]/init").unwrap();
+    static ref OLD_CODE_CID_MULTISIG: Regex = Regex::new(r"fil/[2-7]/multisig").unwrap();
     static ref OLD_CODE_CID_PAYMENTCHANNEL: Regex =
-        Regex::new(r"fil\\/[2-7]\\/paymentchannel").unwrap();
+        Regex::new(r"fil/[2-7]/paymentchannel").unwrap();
 }
 /// Mnemonic string
 pub struct Mnemonic(pub String);
@@ -1121,7 +1121,7 @@ pub fn deserialize_params(
             }
             _ => {
                 return Err(SignerError::GenericString(
-                    "Unknown method fo actor 'fil/[2-7]/paymentchannel'.".to_string(),
+                    "Unknown method for actor 'fil/[2-7]/paymentchannel'.".to_string(),
                 ));
             }
         }
