@@ -31,8 +31,6 @@ describeCall('createMultisig', function() {
   it('should return a create multisig transaction', function() {
     const multisig_create = dataTxs.create
 
-    console.log(typeof multisig_create.constructor_params["Signers"])
-
     let create_multisig_transaction = filecoin_signer.createMultisigWithFee(
       multisig_create.message["From"],
       multisig_create.constructor_params["Signers"],
