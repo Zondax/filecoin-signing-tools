@@ -1,5 +1,5 @@
-use serde_json::{json, Value};
 use lazy_static::lazy_static;
+use serde_json::{json, Value};
 
 lazy_static! {
     pub static ref ACTOR_CODE_CIDS: Value = json!(
@@ -35,9 +35,13 @@ lazy_static! {
 }
 
 pub fn actor_code_included(actor_code: &str, actor_type: String) -> bool {
-    match ACTOR_CODE_CIDS[actor_type].as_object().unwrap().values().rfind(|x| x.as_str().unwrap() == actor_code) {
+    match ACTOR_CODE_CIDS[actor_type]
+        .as_object()
+        .unwrap()
+        .values()
+        .rfind(|x| x.as_str().unwrap() == actor_code)
+    {
         Some(_) => true,
         None => false,
     }
-
-} 
+}

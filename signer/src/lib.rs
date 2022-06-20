@@ -28,17 +28,17 @@ use extras::signed_message::ref_fvm::SignedMessage;
 use regex::bytes::Regex;
 
 use crate::api::{MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork};
+use crate::code_cid::{actor_code_included, ACTOR_CODE_CIDS};
 use crate::error::SignerError;
 use crate::extended_key::ExtendedSecretKey;
 use crate::multisig_deprecated::ConstructorParamsV1;
-use crate::code_cid::{ACTOR_CODE_CIDS, actor_code_included};
 
 pub mod api;
+pub mod code_cid;
 pub mod error;
 pub mod extended_key;
 pub mod multisig_deprecated;
 pub mod utils;
-pub mod code_cid;
 
 const RAW: u64 = 0x55;
 
@@ -522,7 +522,7 @@ pub fn create_multisig(
     gas_limit: i64,
     gas_fee_cap: String,
     gas_premium: String,
-    network: String
+    network: String,
 ) -> Result<Message, SignerError> {
     let from = fvm_shared::address::Address::from_str(&sender_address)?;
     let signers_tmp: Result<Vec<fvm_shared::address::Address>, _> = addresses
@@ -555,7 +555,9 @@ pub fn create_multisig(
     let serialized_constructor_params = RawBytes::serialize(constructor_params_multisig)
         .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-    let cid_string = ACTOR_CODE_CIDS["multisig"][network].as_str().ok_or( SignerError::GenericString("network unknown".to_string()))?;
+    let cid_string = ACTOR_CODE_CIDS["multisig"][network]
+        .as_str()
+        .ok_or(SignerError::GenericString("network unknown".to_string()))?;
 
     let message_params_multisig = ExecParams {
         code_cid: Cid::from_str(cid_string)?,
@@ -809,7 +811,9 @@ pub fn create_pymtchan(
         RawBytes::serialize::<paych::ConstructorParams>(create_payment_channel_params)
             .map_err(|err| SignerError::GenericString(err.to_string()))?;
 
-    let cid_string = ACTOR_CODE_CIDS["paymentchannel"][network].as_str().ok_or( SignerError::GenericString("network unknown".to_string()))?;
+    let cid_string = ACTOR_CODE_CIDS["paymentchannel"][network]
+        .as_str()
+        .ok_or(SignerError::GenericString("network unknown".to_string()))?;
 
     let message_params_create_pymtchan = ExecParams {
         code_cid: Cid::from_str(cid_string)?,
@@ -1050,8 +1054,8 @@ pub fn deserialize_params(
     let serialized_params = RawBytes::new(params_decode);
 
     // Deserialize pre-FVM init actor
-    if OLD_CODE_CID_INIT.is_match(actor_type.as_bytes()) || 
-        actor_code_included(&actor_type, "init".to_string()) 
+    if OLD_CODE_CID_INIT.is_match(actor_type.as_bytes())
+        || actor_code_included(&actor_type, "init".to_string())
     {
         match FromPrimitive::from_u64(method) {
             Some(MethodInit::Exec) => {
@@ -1067,8 +1071,8 @@ pub fn deserialize_params(
     }
 
     // Deserialize pre-FVM multisig actor
-    if OLD_CODE_CID_MULTISIG.is_match(actor_type.as_bytes()) ||
-        actor_code_included(&actor_type, "multisig".to_string()) 
+    if OLD_CODE_CID_MULTISIG.is_match(actor_type.as_bytes())
+        || actor_code_included(&actor_type, "multisig".to_string())
     {
         match FromPrimitive::from_u64(method) {
             Some(multisig::Method::Propose) => {
@@ -1116,8 +1120,8 @@ pub fn deserialize_params(
     }
 
     // Deserialize pre-FVM paymentchannel actor
-    if OLD_CODE_CID_PAYMENTCHANNEL.is_match(actor_type.as_bytes()) ||
-        actor_code_included(&actor_type, "paymentchannel".to_string())
+    if OLD_CODE_CID_PAYMENTCHANNEL.is_match(actor_type.as_bytes())
+        || actor_code_included(&actor_type, "paymentchannel".to_string())
     {
         match FromPrimitive::from_u64(method) {
             Some(paych::Method::UpdateChannelState) => {
@@ -1165,7 +1169,7 @@ pub fn deserialize_constructor_params(
 
     if OLD_CODE_CID_PAYMENTCHANNEL.is_match(code_cid.as_bytes())
         || actor_code_included(&code_cid, "paymentchannel".to_string())
-    {    
+    {
         let params = serialized_params.deserialize::<paych::ConstructorParams>()?;
         return Ok(MessageParams::PaychConstructorParams(params.into()));
     }
