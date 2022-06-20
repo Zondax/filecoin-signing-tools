@@ -42,6 +42,7 @@ describeCall('createMultisig', function() {
       multisig_create.message["GasLimit"].toString(),
       multisig_create.message["GasFeeCap"],
       multisig_create.message["GasPremium"],
+      "mainnet"
     )
 
     assert.deepStrictEqual(create_multisig_transaction, multisig_create.message)
@@ -61,6 +62,7 @@ describeCall('createMultisig', function() {
       multisig_create.message["GasLimit"].toString(),
       multisig_create.message["GasFeeCap"],
       multisig_create.message["GasPremium"],
+      "mainnet"
     )
 
     assert(create_multisig_transaction)
@@ -102,6 +104,7 @@ describeCall('createMultisig', function() {
         '18446744073709551617',
         multisig_create.message["GasFeeCap"],
         multisig_create.message["GasPremium"],
+        "mainnet"
       ),
       /(number too large to fit in target type)/,
     )
