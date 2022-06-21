@@ -45,6 +45,7 @@ describeCall('createPymtChan', function() {
       paymentchannel_create.message["GasLimit"].toString(),
       paymentchannel_create.message["GasFeeCap"],
       paymentchannel_create.message["GasPremium"],
+      "mainnet"
     )
 
     let signedMessage = filecoin_signer.transactionSignLotus(create_pymtchan, paymentchannel_create.private_key)
@@ -73,6 +74,7 @@ describeCall('createPymtChan', function() {
       paymentchannel_create.message["GasLimit"].toString(),
       paymentchannel_create.message["GasFeeCap"],
       paymentchannel_create.message["GasPremium"],
+      "mainnet"
     )
 
     let signedMessage = filecoin_signer.transactionSignLotus(create_pymtchan, paymentchannel_create.private_key)

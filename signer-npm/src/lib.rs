@@ -345,6 +345,7 @@ pub fn create_multisig_with_fee(
     gas_limit: String,
     gas_fee_cap: String,
     gas_premium: String,
+    network: String,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
@@ -373,6 +374,7 @@ pub fn create_multisig_with_fee(
         gl,
         gas_fee_cap,
         gas_premium,
+        network,
     )
     .map_err(|e| {
         JsValue::from_str(format!("Error creating multisig transaction: {}", e).as_str())
@@ -393,6 +395,7 @@ pub fn create_multisig(
     nonce: u32,
     duration: String,
     start_epoch: String,
+    network: String,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
@@ -418,6 +421,7 @@ pub fn create_multisig(
         0,
         "0".to_string(),
         "0".to_string(),
+        network,
     )
     .map_err(|e| {
         JsValue::from_str(format!("Error creating multisig transaction: {}", e).as_str())
@@ -666,6 +670,7 @@ pub fn create_pymtchan_with_fee(
     gas_limit: String,
     gas_fee_cap: String,
     gas_premium: String,
+    network: String,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
@@ -681,6 +686,7 @@ pub fn create_pymtchan_with_fee(
         gl,
         gas_fee_cap,
         gas_premium,
+        network,
     )
     .map_err(|e| JsValue::from_str(format!("Error creating payment channel: {}", e).as_str()))?;
 
@@ -696,6 +702,7 @@ pub fn create_pymtchan(
     to_address: String,
     amount: String,
     nonce: u32,
+    network: String,
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
@@ -707,6 +714,7 @@ pub fn create_pymtchan(
         0,
         "0".to_string(),
         "0".to_string(),
+        network,
     )
     .map_err(|e| JsValue::from_str(format!("Error creating payment channel: {}", e).as_str()))?;
 

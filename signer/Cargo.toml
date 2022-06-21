@@ -49,6 +49,8 @@ fvm_ipld_encoding = "0.1.0"
 cid = "=0.8.3"
 
 num-traits = "0.2"
+regex = "1"
+lazy_static = "1.4.0"
 
 [dev-dependencies]
 rand_chacha = "0.3.1"

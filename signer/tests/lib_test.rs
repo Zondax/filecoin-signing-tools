@@ -432,6 +432,7 @@ fn payment_channel_creation_bls_signing() {
             .as_str()
             .unwrap()
             .to_string(),
+        "mainnet".to_string(),
     )
     .unwrap();
 
@@ -723,6 +724,7 @@ fn support_multisig_create() {
             .as_str()
             .unwrap()
             .to_string(),
+        "mainnet".to_string(),
     )
     .unwrap();
 
