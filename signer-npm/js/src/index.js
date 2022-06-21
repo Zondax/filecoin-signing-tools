@@ -6,6 +6,7 @@ const BN = require('bn.js')
 const { MethodInit, MethodPaych } = require('./methods')
 
 const ExtendedKey = require('./extendedkey')
+const FilecoinRPC = require('./utils/index')
 const { getDigest, getCoinTypeFromPath, addressAsBytes, bytesToAddress, tryToPrivateKeyBuffer } = require('./utils')
 const { ProtocolIndicator } = require('./constants')
 
@@ -349,4 +350,5 @@ module.exports = {
   verifySignature,
   addressAsBytes,
   bytesToAddress,
+  FilecoinRPC,
 }
