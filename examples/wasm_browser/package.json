@@ -21,7 +21,7 @@
     "filecoin"
   ],
   "dependencies": {
-    "@zondax/filecoin-signing-tools": "^0"
+    "@zondax/filecoin-signing-tools": "^1"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^11.0.0",
