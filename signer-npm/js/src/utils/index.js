@@ -41,7 +41,7 @@ class FilecoinRPC {
       jsonrpc: '2.0',
       method: 'Filecoin.StateWaitMsg',
       id: 1,
-      params: [cid, null],
+      params: [cid, 0, null, false],
     })
 
     return response.data
