@@ -5,31 +5,31 @@ lazy_static! {
     pub static ref ACTOR_CODE_CIDS: Value = json!(
     {
         "init": {
-            "butterflynet": "bafk2bzacebjzrzjtrq7fops45chsb5xwr2ljmsbpn6rdhaeofhgazqfnnnvia",
+            "butterflynet": "bafk2bzaceahxin3sf5f6ude5j6we4yeqlg66s5qe4tu7lwp26jcg7yp2ns6hi",
             "calibrationnet": "bafk2bzaceadyfilb22bcvzvnpzbg2lyg6npmperyq6es2brvzjdh5rmywc4ry",
-            "caterpillarnet": "bafk2bzacedrygc7pawj6rgfy5uawgfkykias2phw7lgjfj7yyxtfpk3wsyj7c",
-            "devnet": "bafk2bzacedetk52vj6vfpqw3wfd5shnkfigokmyhrfojhtvz43336m43thham",
-            "mainnet": "bafk2bzacecxkeddlvo5azclqbasrlymu3a2k3y6jsbaeov4lix5pwzdra5bek",
-            "testing": "bafk2bzacecioxkb2gqaze7lnaq7xj2aibiqgapl4jq2qyccjbvuzanzzkwqnc",
-            "testing-fake-proofs": "bafk2bzacebwfsgvfuuogwodiq53m23ggae5saavabeqouttmo6s52pdmzmg36"
+            "caterpillarnet": "bafk2bzacedajw5ptnwfdidv6m4rvd4c2m7dve4lhfbawygl5idkalcxbiiudu",
+            "devnet": "bafk2bzacedarbnovmucppbjkcwsxopludrj5ttmtm7mzfqsugmxdnqevqso7o",
+            "mainnet": "bafk2bzaceaipvjhoxmtofsnv3aj6gj5ida4afdrxa4ewku2hfipdlxpaektlw",
+            "testing": "bafk2bzacecqk6zlwein7tzy7yrrhtj4pzavrkofgpyxvvw5ktr3w4x4ml4lis",
+            "testing-fake-proofs": "bafk2bzacebwkqd6e7gdphfzw2kdmbokdh2bly6fvzgfopxzy7quq4l67gmkks"
         },
         "multisig": {
-            "butterflynet": "bafk2bzacecumdo2d2vpmkd66vqdkj32zu6m54ddpaqiqcchybq7fljygips6e",
+            "butterflynet": "bafk2bzacectfmzjtniypgl4whm42sws5aupihqgfikwsr7p5yoq3bmqaogldi",
             "calibrationnet": "bafk2bzacec66wmb4kohuzvuxsulhcgiwju7sqkldwfpmmgw7dbbwgm5l2574q",
-            "caterpillarnet": "bafk2bzacececbmijm2t4uemwgrspnnslpgnksozvshrwgf3ozh6zncz7aqr4c",
-            "devnet": "bafk2bzacebtypmb6dqnhowzttf643kbgtdhf6iclasc4ffxkkq5atriqc42g6",
-            "mainnet": "bafk2bzacebqhfu4doyffwknjsw7vjldpkccf253i6sncx6ty7ofm2q3d2ttys",
-            "testing": "bafk2bzacecyeqb2ilsuoxfphqpfxrtwaz7vfbrq3kq67j5uof6sbrw675zbry",
-            "testing-fake-proofs": "bafk2bzacecyeqb2ilsuoxfphqpfxrtwaz7vfbrq3kq67j5uof6sbrw675zbry"
+            "caterpillarnet": "bafk2bzaceb3kh5hjh6eebb5236xp7crn2owyyo7irap6sy4ns76uc7om6pxuy",
+            "devnet": "bafk2bzaced4gcxjwy6garxwfw6y5a2k4jewj4t5nzopjy4qwnimhjtnsgo3ss",
+            "mainnet": "bafk2bzacebhldfjuy4o5v7amrhp5p2gzv2qo5275jut4adnbyp56fxkwy5fag",
+            "testing": "bafk2bzacea5zp2g6ag5qfuro7zw6kyku2swxs57wjxncaaxbih5iqflqy4ghm",
+            "testing-fake-proofs": "bafk2bzacea5zp2g6ag5qfuro7zw6kyku2swxs57wjxncaaxbih5iqflqy4ghm"
         },
         "paymentchannel": {
-            "butterflynet": "bafk2bzacecmsfeq364zbysebk4xkpmtcxe4bv4lrlfdzidqoudnsdihph4d6u",
+            "butterflynet": "bafk2bzacecbwu54ce5mjgp2pqxyj6kpn2vlgiu5wv2lj2byjiegxnn3infd5i",
             "calibrationnet": "bafk2bzaceblot4pemhfgwb3lceellwrpgxaqkpselzbpqu32maffpopdunlha",
-            "caterpillarnet": "bafk2bzacedv3lmu3ut7nrl5zpxl22je2qiognakt3m4eibux4x74nwibdegeu",
-            "devnet": "bafk2bzacedvd4cfhfz7duxkudnu2cxbqkmanodgvpf623jmtz75njif5d5d3a",
-            "mainnet": "bafk2bzacebk5kb6ofhksspgv3wp6uwbcrn7x37ego54bgakywseg7bgw4ffdq",
-            "testing": "bafk2bzacedsi4nwln57uqf2vhjma3qfsmavjhyjwk6bch2nl3zbwmwln3cgk6",
-            "testing-fake-proofs": "bafk2bzacedsi4nwln57uqf2vhjma3qfsmavjhyjwk6bch2nl3zbwmwln3cgk6"
+            "caterpillarnet": "bafk2bzacedl5am53e4mtxpzligcycxvmkolfkhfiuavww2dq3ukgaqwowj7vw",
+            "devnet": "bafk2bzaceb3isfguytt6cs4xecyoonbhhekmngfbap2msggbwyde7zch3a6w4",
+            "mainnet": "bafk2bzacebalad3f72wyk7qyilvfjijcwubdspytnyzlrhvn73254gqis44rq",
+            "testing": "bafk2bzaced47dbtbygmfwnyfsp5iihzhhdmnkpuyc5nlnfgc4mkkvlsgvj2do",
+            "testing-fake-proofs": "bafk2bzaced47dbtbygmfwnyfsp5iihzhhdmnkpuyc5nlnfgc4mkkvlsgvj2do"
         }
     });
 }
