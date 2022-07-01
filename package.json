@@ -1,0 +1,32 @@
+{
+  "name": "filecoin-signing-tools",
+  "private": true,
+  "description": "Filecoin signing tools",
+  "version": "0.0.0",
+  "author": "Zondax GmbH <info@zondax.ch>",
+  "homepage": "zondax.ch",
+  "license": "private",
+  "scripts": {},
+  "dependencies": {
+    "n": "^8.2.0"
+  },
+  "devDependencies": {
+    "@ipld/dag-cbor": "^7.0.2",
+    "@types/node": "^18.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.28.0",
+    "@typescript-eslint/parser": "^5.30.0",
+    "eslint": "^8.18.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-compat": "^4.0.2",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jest": "^26.5.3",
+    "eslint-plugin-jsx-a11y": "^6.6.0",
+    "eslint-plugin-prefer-object-spread": "^1.2.1",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-react": "^7.30.0",
+    "multiformats": "^9.7.0",
+    "prettier": "^2.7.1",
+    "typescript": "^4.7.4"
+  },
+  "keywords": []
+}
