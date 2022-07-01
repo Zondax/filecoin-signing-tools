@@ -160,4 +160,4 @@ jobs:
           key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
       - run: make install_wasmpack SILENT=true
       - run: make link_npm
-      - run: node examples/wasm_node/payment_channel.js
+      - run: cd examples/wasm_node && yarn test:pc

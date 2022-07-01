@@ -8,7 +8,8 @@
   "scripts": {
     "test": "mocha",
     "test:js": "PURE_JS=True mocha",
-    "test:spec": "mocha test/test.spec.js"
+    "test:spec": "mocha test/test.spec.js",
+    "test:pc": "node payment_channel.js"
   },
   "repository": {
     "type": "git",
