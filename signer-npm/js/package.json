@@ -1,6 +1,5 @@
 {
-  "name": "@zondax/filecoin-signing-tools",
-  "version": "0.2.0",
+  "name": "js",
   "main": "src/index.js",
   "scripts": {
     "lint": "eslint src/**"
