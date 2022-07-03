@@ -1,5 +1,5 @@
 const filecoin_signer = require('@zondax/filecoin-signing-tools')
-const FilecoinRPC = require('@zondax/filecoin-signing-tools/utils')
+const FilecoinRPC = require('@zondax/filecoin-signing-tools/rpc')
 const bip39 = require('bip39')
 const bip32 = require('bip32')
 const axios = require('axios')

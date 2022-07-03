@@ -42,7 +42,7 @@
       "import": "./nodejs/filecoin_signer_wasm.js"
     },
     "./js": "./js/src/index.js",
-    "./utils": "./js/src/utils/index.js"
+    "./rpc": "./rpc/index.js"
   },
   "browserslist": [
     "> 1%",
