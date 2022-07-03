@@ -18,8 +18,9 @@ build_npm:
 	rm -rf signer-npm/pkg/
 	wasm-pack build --no-typescript --target nodejs --out-dir pkg/nodejs  signer-npm/
 	wasm-pack build --no-typescript --target browser --out-dir pkg/browser signer-npm/
-	# For the pure js we need the node_modules folder when using `yarn link`
+	# For the pure js and rpc we need the node_modules folder when using `yarn link`
 	cd signer-npm/js && yarn install && yarn lint
+	cd signer-npm/rpc && yarn install && yarn lint
 	cd signer-npm && make build
 	cp signer-npm/README.md signer-npm/pkg/README.md
 
