@@ -19,7 +19,8 @@
     "README.md",
     "nodejs/*",
     "browser/*",
-    "js/*"
+    "js/*",
+    "rpc/*"
   ],
   "dependencies": {
     "axios": "^0.24.0",
