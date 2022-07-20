@@ -21,7 +21,6 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.zondax.react_native_ffi_example",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
