@@ -31,7 +31,10 @@
     "react-native-randombytes": "^3.6.1",
     "react-native-udp": "^2.7.0",
     "react-native-web": "0.17.7",
-    "stream": "^0.0.2"
+    "stream": "^0.0.2",
+    "react-native-fs": "^2.20.0",
+    "react-native-wasm": "^0.1.3",
+    "react-native-web": "0.17.7"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",

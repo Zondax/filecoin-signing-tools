@@ -15,6 +15,7 @@ process.browser = false
 if (typeof Buffer === 'undefined') global.Buffer = require('buffer').Buffer
 if (typeof TextDecoder === 'undefined') require('fastestsmallesttextencoderdecoder')
 if (typeof BigInt === 'undefined') global.BigInt = require('node-biginteger')
+if (typeof WebAssembly === 'undefined') global.WebAssembly = require('react-native-wasm/src/WebAssembly').WebAssembly
 
 // global.location = global.location || { port: 80 }
 const isDev = typeof __DEV__ === 'boolean' && __DEV__
@@ -25,4 +26,4 @@ if (typeof localStorage !== 'undefined') {
 
 // If using the crypto shim, uncomment the following line to ensure
 // crypto is loaded first, so it can populate global.crypto
-global.crypto = require('@peculiar/webcrypto')
+//global.crypto = require('@peculiar/webcrypto')
