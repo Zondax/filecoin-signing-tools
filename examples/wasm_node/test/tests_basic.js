@@ -523,7 +523,7 @@ const bls_tests_vectors_path = '../generated_test_cases.json'
 let rawBLSData = fs.readFileSync(bls_tests_vectors_path)
 let jsonBLSData = JSON.parse(rawBLSData)
 
-describeCall('BLS support', function() {
+describe('BLS support', function() {
 
   for (let i = 0; i < jsonBLSData.length; i += 1) {
     let tc = jsonBLSData[i]

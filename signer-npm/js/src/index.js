@@ -139,21 +139,43 @@ function transactionParse(cborMessage, testnet) {
   return message
 }
 
-function transactionSignRaw(unsignedMessage, privateKey) {
-  if (typeof unsignedMessage === 'object') {
-    unsignedMessage = transactionSerializeRaw(unsignedMessage)
-  }
-  if (typeof unsignedMessage === 'string') {
-    unsignedMessage = Buffer.from(unsignedMessage, 'hex')
+function transactionSignRaw(message, privateKey) {
+  if (typeof message !== 'object') {
+    throw new Error("'message' need to be an object. Cannot be under CBOR format.")
   }
 
+  const serializedMessage = transactionSerializeRaw(message)
+  const from = message.From
+
+  switch (from[1]) {
+    case '1':
+      // Protocol 1 - SECP256K1
+      return signSecpk256k1(serializedMessage, privateKey)
+    case '3':
+      // Protocol 1 - BLS
+      return signBLS(serializedMessage, privateKey)
+    default:
+      throw new Error("Unknown protocol. Can't sign transaction.")
+  }
+}
+
+function signSecpk256k1(message, privateKey) {
   // verify format and convert to buffer if needed
   privateKey = tryToPrivateKeyBuffer(privateKey)
 
-  const messageDigest = getDigest(unsignedMessage)
-  const signature = secp256k1.ecdsaSign(messageDigest, privateKey)
+  const digest = getDigest(message)
+  const signature = secp256k1.ecdsaSign(digest, privateKey)
 
   return Buffer.concat([Buffer.from(signature.signature), Buffer.from([signature.recid])])
+}
+
+function signBLS(message, privateKey) {
+  const sk = SecretKey.fromBytes(privateKey)
+  const digest = getDigest(message)
+
+  const signature = sk.sign(digest)
+
+  return Buffer.from(signature.toBytes())
 }
 
 function transactionSign(unsignedMessage, privateKey) {
