@@ -333,7 +333,7 @@ println!("{}", result);
 
 ```
 
-## create_multisig
+## [DEPRECATED] create_multisig
 
 Utilitary function to create a create multisig message. Return an unsigned message.
 
@@ -366,7 +366,7 @@ println!("{}", result);
 
 ```
 
-## proposal_multisig_message
+## [DEPRECATED] proposal_multisig_message
 
 Utilitary function to create a proposal multisig message. Return an unsigned message.
 
@@ -404,7 +404,7 @@ println!("{}", result);
 
 ```
 
-## approve_multisig_message
+## [DEPRECATED] approve_multisig_message
 
 Utilitary function to create an approve multisig message. Return an unsigned message.
 
@@ -436,7 +436,7 @@ println!("{}", result);
 
 ```
 
-## cancel_multisig_message
+## [DEPRECATED] cancel_multisig_message
 
 Utilitary function to create a cancel multisig message. Return an unsigned message.
 

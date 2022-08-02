@@ -283,7 +283,7 @@ const result = signer_wasm.verifySignature(signatureRSV, cbor_transaction);
 console.log(result);
 ```
 
-## createMultisig
+## [DEPRECATED] createMultisig
 
 Return a create multisig transaction.
 
@@ -310,7 +310,7 @@ let create_multisig_transaction = filecoin_signer.createMultisig(sender_address,
 console.log(create_multisig_transaction);
 ```
 
-## proposeMultisig
+## [DEPRECATED] proposeMultisig
 
 Return a proposal multisig transaction.
 
@@ -336,7 +336,7 @@ let propose_multisig_transaction = filecoin_signer.proposeMultisig("t01", to_add
 console.log(propose_multisig_transaction);
 ```
 
-## approveMultisig
+## [DEPRECATED] approveMultisig
 
 Return an approval multisig transaction.
 
@@ -365,7 +365,7 @@ let approve_multisig_transaction = filecoin_signer.approveMultisig("t01", 1234, 
 console.log(approve_multisig_transaction);
 ```
 
-## cancelMultisig
+## [DEPRECATED] cancelMultisig
 
 Return a cancel multisig transaction.
 
