@@ -3,7 +3,6 @@ const bip32 = require('bip32')
 const cbor = require('@ipld/dag-cbor')
 const secp256k1 = require('secp256k1')
 const BN = require('bn.js')
-const { MethodInit, MethodPaych } = require('./methods')
 
 const ExtendedKey = require('./extendedkey')
 const { getDigest, getCoinTypeFromPath, addressAsBytes, bytesToAddress, tryToPrivateKeyBuffer } = require('./utils')
@@ -195,111 +194,6 @@ function verifySignature(signature, message) {
 
   const publicKey = secp256k1.ecdsaRecover(signature.slice(0, -1), signature[64], messageDigest, false)
   return secp256k1.ecdsaVerify(signature.slice(0, -1), messageDigest, publicKey)
-}
-
-// eslint-disable-next-line no-unused-vars
-function createPymtChan(from, to, amount, nonce) {
-  if (typeof from !== 'string') {
-    throw new Error('`From` address has to be a string.')
-  }
-  if (typeof to !== 'string') {
-    throw new Error('`To` address has to be a string.')
-  }
-  if (typeof amount !== 'string') {
-    throw new Error('`Value` address has to be a string.')
-  }
-  let constructorParams = [to, from]
-  let serializedConstructorParams = cbor.encode(constructorParams)
-
-  let execParams = [
-    {
-      42: Buffer.from('000155001466696C2F312F7061796D656E746368616E6E656C', 'hex'),
-    },
-    serializedConstructorParams,
-  ]
-  let serializedParams = cbor.encode(execParams)
-  let message = {
-    From: from,
-    To: 't01',
-    Nonce: nonce,
-    Value: new BN(amount).toString(10),
-    GasPrice: new BN('100').toString(10),
-    GasLimit: 200000000,
-    Method: MethodInit.Exec,
-    Params: serializedParams.toString('base64'),
-  }
-
-  return message
-}
-
-// eslint-disable-next-line no-unused-vars
-function settlePymtChan(pch, from, nonce) {
-  if (typeof pch !== 'string') {
-    throw new Error('`pch` address has to be a string.')
-  }
-  if (typeof from !== 'string') {
-    throw new Error('`from` address has to be a string.')
-  }
-  let message = {
-    From: from,
-    To: pch,
-    Nonce: nonce,
-    Value: new BN('0'.toString('hex'), 16).toString(10),
-    GasPrice: new BN('100'.toString('hex'), 16).toString(10),
-    GasLimit: 200000000,
-    Method: MethodPaych.Settle,
-    Params: '',
-  }
-  return message
-}
-
-// eslint-disable-next-line no-unused-vars
-function collectPymtChan(pch, from, nonce) {
-  if (typeof pch !== 'string') {
-    throw new Error('`pch` address has to be a string.')
-  }
-  if (typeof from !== 'string') {
-    throw new Error('`from` address has to be a string.')
-  }
-  let message = {
-    From: from,
-    To: pch,
-    Nonce: nonce,
-    Value: new BN('0'.toString('hex'), 16).toString(10),
-    GasPrice: new BN('100'.toString('hex'), 16).toString(10),
-    GasLimit: 200000000,
-    Method: MethodPaych.Collect,
-    Params: '',
-  }
-  return message
-}
-
-// eslint-disable-next-line no-unused-vars
-function updatePymtChan(pch, from, signedVoucherBase64, nonce) {
-  if (typeof pch !== 'string') {
-    throw new Error('`pch` address has to be a string.')
-  }
-  if (typeof from !== 'string') {
-    throw new Error('`from` address has to be a string.')
-  }
-  if (typeof signedVoucherBase64 !== 'string') {
-    throw new Error('`signedVoucher` has to be a base64 string.')
-  }
-  let cborSignedVoucher = Buffer.from(signedVoucherBase64, 'base64')
-  let signedVoucher = cbor.decode(cborSignedVoucher)
-  let updateChannelStateParams = [signedVoucher, Buffer.alloc(0), Buffer.alloc(0)]
-  let serializedParams = cbor.encode(updateChannelStateParams)
-  let message = {
-    From: from,
-    To: pch,
-    Nonce: nonce,
-    Value: new BN('0'.toString('hex'), 16).toString(10),
-    GasPrice: new BN('100'.toString('hex'), 16).toString(10),
-    GasLimit: 200000000,
-    Method: MethodPaych.UpdateChannelState,
-    Params: serializedParams.toSTring('base64'),
-  }
-  return message
 }
 
 // eslint-disable-next-line no-unused-vars

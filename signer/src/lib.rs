@@ -13,7 +13,6 @@ use num_traits::FromPrimitive;
 use rayon::prelude::*;
 use zx_bip44::BIP44Path;
 
-use cid::multihash::Multihash;
 use cid::Cid;
 use fil_actor_init::{ExecParams, Method as MethodInit};
 use fil_actor_multisig as multisig;
@@ -39,8 +38,6 @@ pub mod error;
 pub mod extended_key;
 pub mod multisig_deprecated;
 pub mod utils;
-
-const RAW: u64 = 0x55;
 
 lazy_static! {
     static ref OLD_CODE_CID_INIT: Regex = Regex::new(r"fil/[0-7]/init").unwrap();
@@ -511,6 +508,10 @@ pub fn verify_aggregated_signature(
 /// * `duration` - Duration of the multisig
 ///
 #[allow(clippy::too_many_arguments)]
+#[deprecated(
+    since = "1.1.0",
+    note = "use `serialize_params` instead and then create transaction"
+)]
 pub fn create_multisig(
     sender_address: String,
     addresses: Vec<String>,
@@ -602,6 +603,10 @@ pub fn create_multisig(
 /// * `proposal_serialized_params` - The proposal parameters serialized
 ///
 #[allow(clippy::too_many_arguments)]
+#[deprecated(
+    since = "1.1.0",
+    note = "use `serialize_params` instead and then create transaction"
+)]
 pub fn proposal_multisig_message(
     multisig_address: String,
     to_address: String,
@@ -704,6 +709,10 @@ fn approve_or_cancel_multisig_message(
 /// * `nonce` - Nonce of the message
 ///
 #[allow(clippy::too_many_arguments)]
+#[deprecated(
+    since = "1.1.0",
+    note = "use `serialize_params` instead and then create transaction"
+)]
 pub fn approve_multisig_message(
     multisig_address: String,
     message_id: i64,
@@ -744,6 +753,10 @@ pub fn approve_multisig_message(
 /// * `nonce` - Nonce of the message
 ///
 #[allow(clippy::too_many_arguments)]
+#[deprecated(
+    since = "1.1.0",
+    note = "use `serialize_params` instead and then create transaction"
+)]
 pub fn cancel_multisig_message(
     multisig_address: String,
     message_id: i64,
@@ -792,6 +805,10 @@ pub fn serialize_params(params: MessageParams) -> Result<Vec<u8>, SignerError> {
 /// * `value` - Amount to put in the payment channel initially
 /// * `nonce` - Nonce of the message; should be from_address's MpoolGetNonce() value
 ///
+#[deprecated(
+    since = "1.1.0",
+    note = "use `serialize_params` instead and then create transaction"
+)]
 pub fn create_pymtchan(
     from_address: String,
     to_address: String,
@@ -851,6 +868,10 @@ pub fn create_pymtchan(
 /// * `signed_voucher` - A SignedVoucher to be associated with the payment channel
 /// * `nonce` - Nonce of the message; should be from_address's MpoolGetNonce() value
 ///
+#[deprecated(
+    since = "1.1.0",
+    note = "use `serialize_params` instead and then create transaction"
+)]
 pub fn update_pymtchan(
     pch_address: String,
     from_address: String,
@@ -894,6 +915,10 @@ pub fn update_pymtchan(
 /// * `from_address` - A string address
 /// * `nonce` - Nonce of the message; should be from_address's MpoolGetNonce() value
 ///
+#[deprecated(
+    since = "1.1.0",
+    note = "use `serialize_params` instead and then create transaction"
+)]
 pub fn settle_pymtchan(
     pch_address: String,
     from_address: String,
@@ -927,6 +952,10 @@ pub fn settle_pymtchan(
 /// * `from_address` - A string address
 /// * `nonce` - Nonce of the message; should be from_address's MpoolGetNonce() value
 ///
+#[deprecated(
+    since = "1.1.0",
+    note = "use `serialize_params` instead and then create transaction"
+)]
 pub fn collect_pymtchan(
     pch_address: String,
     from_address: String,
