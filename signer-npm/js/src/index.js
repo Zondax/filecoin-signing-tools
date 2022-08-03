@@ -3,7 +3,6 @@ const bip32 = require('bip32')
 const cbor = require('@ipld/dag-cbor')
 const secp256k1 = require('secp256k1')
 const BN = require('bn.js')
-const { MethodInit, MethodPaych } = require('./methods')
 
 const ExtendedKey = require('./extendedkey')
 const { getDigest, getCoinTypeFromPath, addressAsBytes, bytesToAddress, tryToPrivateKeyBuffer } = require('./utils')
