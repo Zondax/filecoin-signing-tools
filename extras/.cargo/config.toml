@@ -1,0 +1,2 @@
+[target.aarch64-linux-android]
+linker = "/home/lola/Workspace/Zondax/filecoin-signing-tools/signer-ffi/NDK/arm64/bin/aarch64-linux-android-clang"

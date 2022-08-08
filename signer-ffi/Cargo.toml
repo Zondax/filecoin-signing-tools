@@ -2,13 +2,13 @@
 ffi-support = "0.4"
 filecoin-signer = { features = ["with-ffi-support"], path = "../signer" }
 hex = { git = "https://github.com/Zondax/rust-hex", rev="6e35fb48999278c8c6c75b099baa4ea2a9d1d12b" }
-jni = { optional = true, version = "0.17" }
+jni = { optional = true, version = "0.19.0" }
 
 [features]
 with-jni = ["jni"]
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "lib"]
 
 [package]
 authors = ["Zondax <info@zondax.ch>"]
