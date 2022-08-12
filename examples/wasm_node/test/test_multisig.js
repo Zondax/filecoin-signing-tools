@@ -31,7 +31,39 @@ describeCall('createMultisig', function() {
   it('should return a create multisig transaction', function() {
     const multisig_create = dataTxs.create
 
-    let create_multisig_transaction = filecoin_signer.createMultisigWithFee(
+    let constructor_params = { 
+      Signers: multisig_create.constructor_params["Signers"],
+      NumApprovalsThreshold: multisig_create.constructor_params["NumApprovalsThreshold"],
+      UnlockDuration: multisig_create.constructor_params["UnlockDuration"],
+      StartEpoch: multisig_create.constructor_params["StartEpoch"]
+    }
+
+    console.log(constructor_params)
+
+    let params = {
+      CodeCid: 'bafk2bzacebhldfjuy4o5v7amrhp5p2gzv2qo5275jut4adnbyp56fxkwy5fag',
+      ConstructorParams: Buffer.from(filecoin_signer.serializeParams(constructor_params)).toString('base64')
+    }
+
+    console.log(params)
+
+    let serialized_params = filecoin_signer.serializeParams(params);
+
+    console.log(Buffer.from(serialized_params).toString('base64'))
+
+    let create_multisig_transaction = {
+      To: multisig_create.message["To"],
+      From: multisig_create.message["From"],
+      Nonce: multisig_create.message["Nonce"],
+      Value: multisig_create.message["Value"],
+      GasLimit: multisig_create.message["GasLimit"],
+      GasFeeCap: multisig_create.message["GasFeeCap"],
+      GasPremium: multisig_create.message["GasPremium"],
+      Method: multisig_create.message["Method"],
+      Params: Buffer.from(serialized_params).toString('base64')
+    }
+
+    /*let create_multisig_transaction = filecoin_signer.createMultisigWithFee(
       multisig_create.message["From"],
       multisig_create.constructor_params["Signers"],
       multisig_create.message["Value"],
@@ -43,7 +75,7 @@ describeCall('createMultisig', function() {
       multisig_create.message["GasFeeCap"],
       multisig_create.message["GasPremium"],
       "mainnet"
-    )
+    )*/
 
     assert.deepStrictEqual(create_multisig_transaction, multisig_create.message)
   })
