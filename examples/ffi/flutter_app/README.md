@@ -22,7 +22,7 @@ cp `$GENERATED_LIB_DIR/libfilecoin_signer_ffi.so` `$EXAMPLE_DIR/android/src/jniL
 3. Run the example using the SDK:
 
 ```bash
-flutter run
+flutter run --no-sound-null-safety
 ```
 
 ## Troubleshooting

@@ -37,9 +37,9 @@ class Filecoin {
       .lookup<NativeFunction<Void Function(Pointer)>>("filecoin_signer_extended_key_free")
       .asFunction();
 
-  static final Pointer Function(Pointer<Utf8>, Pointer<Utf8>, Pointer) keyDerive =
+  static final Pointer Function(Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>, Pointer) keyDerive =
     filecoin
-      .lookup<NativeFunction<Pointer Function(Pointer<Utf8>, Pointer<Utf8>, Pointer)>>("filecoin_signer_key_derive")
+      .lookup<NativeFunction<Pointer Function(Pointer<Utf8>, Pointer<Utf8>, Pointer<Utf8>, Pointer)>>("filecoin_signer_key_derive")
       .asFunction();
 
   static final void Function(Pointer<Utf8>) stringFree =
