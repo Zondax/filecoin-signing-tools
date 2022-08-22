@@ -5,7 +5,7 @@ use std::convert::TryFrom;
 use wasm_bindgen::prelude::*;
 
 use filecoin_signer::api::{MessageParams, MessageTxAPI};
-use filecoin_signer::PrivateKey;
+use filecoin_signer::{PrivateKey, ProposalHashDataAPI};
 use fvm_shared::crypto::signature::Signature;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -1018,6 +1018,22 @@ pub fn verify_voucher_signature(
 
     let result = filecoin_signer::verify_voucher_signature(voucher_base64, address_signer)
         .map_err(|e| JsValue::from(format!("Error verifying voucher signature: {}", e)))?;
+
+    Ok(result)
+}
+
+#[wasm_bindgen(js_name = computeProposalHash)]
+pub fn compute_proposal_hash(
+    proposal_data_api: JsValue,
+) -> Result<String, JsValue> {
+    set_panic_hook();
+
+    let proposal_data: ProposalHashDataAPI  = proposal_data_api
+        .into_serde()
+        .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
+
+    let result = filecoin_signer::compute_proposal_hash(proposal_data)
+        .map_err(|e| JsValue::from(format!("Fail to compute proposal hash: {}", e)))?;
 
     Ok(result)
 }

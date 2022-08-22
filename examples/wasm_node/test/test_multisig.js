@@ -66,25 +66,23 @@ describeCall('createMultisig', function() {
     let constructor_params = { 
       Signers: multisig_create.constructor_params["Signers"],
       NumApprovalsThreshold: multisig_create.constructor_params["NumApprovalsThreshold"],
-      UnlockDuration: BigInt(-1).toString(),
+      UnlockDuration: -1,
       StartEpoch: multisig_create.constructor_params["StartEpoch"]
     }
 
-    filecoin_signer.serializeParams(constructor_params)
+    let serialized_params = filecoin_signer.serializeParams(constructor_params);
 
-    /*let create_multisig_transaction = filecoin_signer.createMultisigWithFee(
-      multisig_create.message["From"],
-      multisig_create.constructor_params["Signers"],
-      multisig_create.message["Value"],
-      multisig_create.constructor_params["NumApprovalsThreshold"],
-      multisig_create.message["Nonce"],
-      BigInt(-1).toString(),
-      multisig_create.constructor_params["StartEpoch"].toString(),
-      multisig_create.message["GasLimit"].toString(),
-      multisig_create.message["GasFeeCap"],
-      multisig_create.message["GasPremium"],
-      "mainnet"
-    )*/
+    let create_multisig_transaction = {
+      To: multisig_create.message["To"],
+      From: multisig_create.message["From"],
+      Nonce: multisig_create.message["Nonce"],
+      Value: multisig_create.message["Value"],
+      GasLimit: multisig_create.message["GasLimit"],
+      GasFeeCap: multisig_create.message["GasFeeCap"],
+      GasPremium: multisig_create.message["GasPremium"],
+      Method: multisig_create.message["Method"],
+      Params: Buffer.from(serialized_params).toString('base64')
+    }
 
     assert(create_multisig_transaction)
   })
@@ -116,15 +114,13 @@ describeCall('createMultisig', function() {
     let constructor_params = { 
       Signers: multisig_create.constructor_params["Signers"],
       NumApprovalsThreshold: multisig_create.constructor_params["NumApprovalsThreshold"],
-      UnlockDuration: '18446744073709551617',
+      UnlockDuration: 18446744073709551617,
       StartEpoch: multisig_create.constructor_params["StartEpoch"]
     }
 
-    filecoin_signer.serializeParams(constructor_params)
-
     assert.throws(
       () => filecoin_signer.serializeParams(constructor_params),
-      /(number too large to fit in target type)/,
+      /(Error parsing parameters: data did not match any variant of untagged enum MessageParams)/,
     )
 
   })
@@ -197,17 +193,23 @@ describeCall('approveMultisig', function() {
   it('should return an approval multisig transaction', function() {
     const multisig_approve = dataTxs.approve
 
-    let proposal_params = { 
-      To: multisig_approve.approval_params["To"],
-      Value: multisig_approve.approval_params["Value"],
-      Method: multisig_approve.approval_params["Method"],
-      Params: multisig_approve.approval_params["Params"]
+    let proposal_params = {
+      Requester: multisig_approve.proposal_params["Requester"],
+      To: multisig_approve.proposal_params["To"],
+      Value: multisig_approve.proposal_params["Value"],
+      Method: multisig_approve.proposal_params["Method"],
+      Params: multisig_approve.proposal_params["Params"]
     }
 
+    console.log(proposal_params)
+    const proposalHash = filecoin_signer.computeProposalHash(proposal_params)
+
     let approve_params = {
-      Id: multisig_approve.approval_params["TxnID"],
-      Proposal: Buffer.from(filecoin_signer.serializeParams(proposal_params)).toString('base64')
+      ID: multisig_approve.approval_params["TxnID"],
+      ProposalHash: proposalHash.toString('base64')
     }
+
+    console.log(approve_params)
 
     let serialized_params = filecoin_signer.serializeParams(approve_params);
 
@@ -264,16 +266,19 @@ describeCall('cancelMultisig', function() {
   it('should return a cancel multisig transaction', function() {
     const multisig_cancel = dataTxs.cancel
 
-    let proposal_params = { 
-      To: multisig_cancel.cancel_params["To"],
-      Value: multisig_cancel.cancel_params["Value"],
-      Method: multisig_cancel.cancel_params["Method"],
-      Params: multisig_cancel.cancel_params["Params"]
+    let proposal_params = {
+      Requester: multisig_cancel.proposal_params["Requester"],
+      To: multisig_cancel.proposal_params["To"],
+      Value: multisig_cancel.proposal_params["Value"],
+      Method: multisig_cancel.proposal_params["Method"],
+      Params: multisig_cancel.proposal_params["Params"]
     }
 
+    const proposalHash = filecoin_signer.computeProposalHash(proposal_params)
+
     let cancel_params = {
-      Id: multisig_cancel.cancel_params["TxnID"],
-      Proposal: Buffer.from(filecoin_signer.serializeParams(proposal_params)).toString('base64')
+      ID: multisig_cancel.cancel_params["TxnID"],
+      ProposalHash: proposalHash.toString('base64')
     }
 
     let serialized_params = filecoin_signer.serializeParams(cancel_params);
