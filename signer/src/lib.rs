@@ -26,6 +26,9 @@ use libsecp256k1::PublicKey as SECP256K1PublicKey;
 use extras::signed_message::ref_fvm::SignedMessage;
 use regex::bytes::Regex;
 
+use fvm_shared::econ::TokenAmount;
+use fvm_shared::MethodNum;
+
 use crate::api::{MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork};
 use crate::code_cid::{actor_code_included, ACTOR_CODE_CIDS};
 use crate::error::SignerError;
@@ -103,6 +106,20 @@ impl TryFrom<Vec<u8>> for PrivateKey {
         sk.0.copy_from_slice(&v[..SECRET_KEY_SIZE]);
         Ok(sk)
     }
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct ProposalHashDataAPI {
+    #[serde(with = "extras::json::option_address")]
+    pub requester: Option<Address>,
+    #[serde(with = "extras::json::address")]
+    pub to: Address,
+    #[serde(with = "extras::json::tokenamount")]
+    pub value: TokenAmount,
+    pub method: MethodNum,
+    #[serde(with = "extras::json::rawbytes")]
+    pub params: RawBytes,
 }
 
 /// Generates a random mnemonic (English - 24 words)
@@ -1271,6 +1288,29 @@ pub fn verify_voucher_signature(
             "Voucher not signed.".to_string(),
         )),
     }
+}
+
+/// Compute proposal hash
+///
+/// # Arguments
+///
+/// * `proposal_hash_data` - The proposal hash;
+pub fn compute_proposal_hash(
+    proposal_hash_data: ProposalHashDataAPI,
+) -> Result<String, SignerError> {
+    let proposal_data = multisig::ProposalHashData {
+        requester: proposal_hash_data.requester.as_ref(),
+        to: &proposal_hash_data.to,
+        value: &proposal_hash_data.value,
+        method: &proposal_hash_data.method,
+        params: &proposal_hash_data.params,
+    };
+
+    let serialize_proposal_data = RawBytes::serialize(proposal_data)
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
+    let proposal_hash = utils::blake2b_256(&serialize_proposal_data);
+
+    Ok(base64::encode(proposal_hash))
 }
 
 /// Return the CID of a message

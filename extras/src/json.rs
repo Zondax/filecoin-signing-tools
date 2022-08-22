@@ -102,6 +102,37 @@ pub mod vec_address {
     }
 }
 
+pub mod option_address {
+    use super::address;
+    use fvm_shared::address::Address;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    pub fn serialize<S>(address: &Option<Address>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct W<'a>(#[serde(with = "address")] &'a Address);
+
+        match address {
+            Some(a) => serializer.serialize_some(&W(a)),
+            None => serializer.serialize_none(),
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Address>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct W(#[serde(with = "address")] Address);
+
+        Ok(Option::deserialize(deserializer)?.map(|W(inner)| inner))
+    }
+}
+
 pub mod tokenamount {
     use fvm_shared::econ::TokenAmount;
     use serde::{de, Deserialize, Deserializer, Serializer};
