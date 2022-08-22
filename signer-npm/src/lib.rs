@@ -1023,12 +1023,10 @@ pub fn verify_voucher_signature(
 }
 
 #[wasm_bindgen(js_name = computeProposalHash)]
-pub fn compute_proposal_hash(
-    proposal_data_api: JsValue,
-) -> Result<String, JsValue> {
+pub fn compute_proposal_hash(proposal_data_api: JsValue) -> Result<String, JsValue> {
     set_panic_hook();
 
-    let proposal_data: ProposalHashDataAPI  = proposal_data_api
+    let proposal_data: ProposalHashDataAPI = proposal_data_api
         .into_serde()
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 

@@ -1303,17 +1303,15 @@ pub fn compute_proposal_hash(
         to: &proposal_hash_data.to,
         value: &proposal_hash_data.value,
         method: &proposal_hash_data.method,
-        params: &proposal_hash_data.params
+        params: &proposal_hash_data.params,
     };
 
     let serialize_proposal_data = RawBytes::serialize(proposal_data)
-    .map_err(|err| SignerError::GenericString(err.to_string()))?;
+        .map_err(|err| SignerError::GenericString(err.to_string()))?;
     let proposal_hash = utils::blake2b_256(&serialize_proposal_data);
-
 
     Ok(base64::encode(proposal_hash))
 }
-
 
 /// Return the CID of a message
 ///

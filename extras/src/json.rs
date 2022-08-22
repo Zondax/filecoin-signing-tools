@@ -103,15 +103,14 @@ pub mod vec_address {
 }
 
 pub mod option_address {
-    use fvm_shared::address::Address;
-    use serde::{Serializer, Serialize, Deserialize, Deserializer};
     use super::address;
+    use fvm_shared::address::Address;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     pub fn serialize<S>(address: &Option<Address>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-
         #[derive(Serialize)]
         #[serde(transparent)]
         struct W<'a>(#[serde(with = "address")] &'a Address);
@@ -129,7 +128,7 @@ pub mod option_address {
         #[derive(Deserialize)]
         #[serde(transparent)]
         struct W(#[serde(with = "address")] Address);
-    
+
         Ok(Option::deserialize(deserializer)?.map(|W(inner)| inner))
     }
 }
