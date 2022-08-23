@@ -151,19 +151,6 @@ describeCall('proposeMultisig', function() {
       Params: Buffer.from(serialized_params).toString('base64')
     }
 
-    /*let propose_multisig_transaction = filecoin_signer.proposeMultisigWithFee(
-      multisig_propose.message["To"],
-      multisig_propose.proposal_params["To"],
-      multisig_propose.message["From"],
-      multisig_propose.proposal_params["Value"],
-      multisig_propose.message["Nonce"],
-      multisig_propose.message["GasLimit"].toString(),
-      multisig_propose.message["GasFeeCap"],
-      multisig_propose.message["GasPremium"],
-      multisig_propose.proposal_params["Method"],
-      multisig_propose.proposal_params["Params"],
-    )*/
-
     assert.deepStrictEqual(multisig_propose.message, propose_multisig_transaction)
   })
 
@@ -225,19 +212,6 @@ describeCall('approveMultisig', function() {
       Params: Buffer.from(serialized_params).toString('base64')
     }
 
-    /*let approve_multisig_transaction = filecoin_signer.approveMultisigWithFee(
-      multisig_approve.message["To"],
-      multisig_approve.approval_params["TxnID"],
-      multisig_approve.proposal_params["Requester"],
-      multisig_approve.proposal_params["To"],
-      multisig_approve.proposal_params["Value"],
-      multisig_approve.message["From"],
-      multisig_approve.message["Nonce"],
-      multisig_approve.message["GasLimit"].toString(),
-      multisig_approve.message["GasFeeCap"],
-      multisig_approve.message["GasPremium"],
-    )*/
-
     assert.deepStrictEqual(multisig_approve.message, approve_multisig_transaction)
   })
 
@@ -294,19 +268,6 @@ describeCall('cancelMultisig', function() {
       Method: multisig_cancel.message["Method"],
       Params: Buffer.from(serialized_params).toString('base64')
     }
-
-    /*let cancel_multisig_transaction = filecoin_signer.cancelMultisigWithFee(
-      multisig_cancel.message["To"],
-      multisig_cancel.cancel_params["TxnID"],
-      multisig_cancel.proposal_params["Requester"],
-      multisig_cancel.proposal_params["To"],
-      multisig_cancel.proposal_params["Value"],
-      multisig_cancel.message["From"],
-      multisig_cancel.message["Nonce"],
-      multisig_cancel.message["GasLimit"].toString(),
-      multisig_cancel.message["GasFeeCap"],
-      multisig_cancel.message["GasPremium"],
-    )*/
 
     assert.deepStrictEqual(multisig_cancel.message, cancel_multisig_transaction)
   })

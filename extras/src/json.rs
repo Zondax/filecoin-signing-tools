@@ -155,6 +155,29 @@ pub mod tokenamount {
     }
 }
 
+pub mod bigint {
+    use fvm_shared::bigint::BigInt;
+    use serde::{de, Deserialize, Deserializer, Serializer};
+    use std::str::FromStr;
+
+    pub fn serialize<S>(token_amount: &BigInt, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let s = token_amount.to_string();
+        serializer.serialize_str(&s)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<BigInt, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        BigInt::from_str(&s).map_err(de::Error::custom)
+    }
+}
+
+
 pub mod serde_base64_vector {
     use serde::{self, Deserialize, Deserializer, Serializer};
 

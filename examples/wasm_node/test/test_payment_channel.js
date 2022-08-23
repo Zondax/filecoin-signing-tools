@@ -37,7 +37,32 @@ describeCall('createPymtChan', function() {
     let paymentchannel_create = dataTxs.creation.secp256k1
     let recoveredKey = filecoin_signer.keyRecover(paymentchannel_create.private_key, true)
 
-    let create_pymtchan = filecoin_signer.createPymtChanWithFee(
+    let constructor_params = { 
+      From: paymentchannel_create.constructor_params["From"],
+      To: paymentchannel_create.constructor_params["To"],
+    }
+
+    let params = {
+      CodeCid: 'bafk2bzacebalad3f72wyk7qyilvfjijcwubdspytnyzlrhvn73254gqis44rq',
+      ConstructorParams: Buffer.from(filecoin_signer.serializeParams(constructor_params)).toString('base64')
+    }
+
+    let serialized_params = filecoin_signer.serializeParams(params);
+
+    let create_pymtchan = {
+      To: paymentchannel_create.message["To"],
+      From: paymentchannel_create.message["From"],
+      Nonce: paymentchannel_create.message["Nonce"],
+      Value: paymentchannel_create.message["Value"],
+      GasLimit: paymentchannel_create.message["GasLimit"],
+      GasFeeCap: paymentchannel_create.message["GasFeeCap"],
+      GasPremium: paymentchannel_create.message["GasPremium"],
+      Method: paymentchannel_create.message["Method"],
+      Params: Buffer.from(serialized_params).toString('base64')
+    }
+
+
+    /*let create_pymtchan = filecoin_signer.createPymtChanWithFee(
       paymentchannel_create.constructor_params["From"],
       paymentchannel_create.constructor_params["To"],
       paymentchannel_create.message["Value"],
@@ -46,7 +71,7 @@ describeCall('createPymtChan', function() {
       paymentchannel_create.message["GasFeeCap"],
       paymentchannel_create.message["GasPremium"],
       "mainnet"
-    )
+    )*/
 
     let signedMessage = filecoin_signer.transactionSignLotus(create_pymtchan, paymentchannel_create.private_key)
     signedMessage = JSON.parse(signedMessage)
@@ -66,7 +91,31 @@ describeCall('createPymtChan', function() {
   it('create payment channel transaction and sign (BLS)', function() {
     let paymentchannel_create = dataTxs.creation.bls
 
-    let create_pymtchan = filecoin_signer.createPymtChanWithFee(
+    let constructor_params = { 
+      From: paymentchannel_create.constructor_params["From"],
+      To: paymentchannel_create.constructor_params["To"],
+    }
+
+    let params = {
+      CodeCid: 'bafk2bzacebalad3f72wyk7qyilvfjijcwubdspytnyzlrhvn73254gqis44rq',
+      ConstructorParams: Buffer.from(filecoin_signer.serializeParams(constructor_params)).toString('base64')
+    }
+
+    let serialized_params = filecoin_signer.serializeParams(params);
+
+    let create_pymtchan = {
+      To: paymentchannel_create.message["To"],
+      From: paymentchannel_create.message["From"],
+      Nonce: paymentchannel_create.message["Nonce"],
+      Value: paymentchannel_create.message["Value"],
+      GasLimit: paymentchannel_create.message["GasLimit"],
+      GasFeeCap: paymentchannel_create.message["GasFeeCap"],
+      GasPremium: paymentchannel_create.message["GasPremium"],
+      Method: paymentchannel_create.message["Method"],
+      Params: Buffer.from(serialized_params).toString('base64')
+    }
+
+    /*let create_pymtchan = filecoin_signer.createPymtChanWithFee(
       paymentchannel_create.constructor_params["From"],
       paymentchannel_create.constructor_params["To"],
       paymentchannel_create.message["Value"],
@@ -75,7 +124,7 @@ describeCall('createPymtChan', function() {
       paymentchannel_create.message["GasFeeCap"],
       paymentchannel_create.message["GasPremium"],
       "mainnet"
-    )
+    )*/
 
     let signedMessage = filecoin_signer.transactionSignLotus(create_pymtchan, paymentchannel_create.private_key)
     signedMessage = JSON.parse(signedMessage)
@@ -93,7 +142,30 @@ describeCall('updatePymtChan', function() {
     let paymentchannel_update = dataTxs.update.secp256k1
     let recoveredKey = filecoin_signer.keyRecover(paymentchannel_update.private_key, true)
 
-    let update_pymtchan = filecoin_signer.updatePymtChanWithFee(
+    let voucher = filecoin_signer.deserializeVoucher(paymentchannel_update.voucher_base64)
+
+    console.log(voucher)
+
+    let params = { 
+      Sv: voucher,
+      Secret: "",
+    }
+
+    let serialized_params = filecoin_signer.serializeParams(params)
+
+    let update_pymtchan = {
+      To: paymentchannel_create.message["To"],
+      From: paymentchannel_create.message["From"],
+      Nonce: paymentchannel_create.message["Nonce"],
+      Value: paymentchannel_create.message["Value"],
+      GasLimit: paymentchannel_create.message["GasLimit"],
+      GasFeeCap: paymentchannel_create.message["GasFeeCap"],
+      GasPremium: paymentchannel_create.message["GasPremium"],
+      Method: paymentchannel_create.message["Method"],
+      Params: Buffer.from(serialized_params).toString('base64')
+    }
+
+    /*let update_pymtchan = filecoin_signer.updatePymtChanWithFee(
       paymentchannel_update.message["To"],
       paymentchannel_update.message["From"],
       paymentchannel_update.voucher_base64,
@@ -101,7 +173,7 @@ describeCall('updatePymtChan', function() {
       paymentchannel_update.message["GasLimit"].toString(),
       paymentchannel_update.message["GasFeeCap"],
       paymentchannel_update.message["GasPremium"],
-    )
+    )*/
 
     let signedMessage = filecoin_signer.transactionSignLotus(update_pymtchan, paymentchannel_update.private_key)
     signedMessage = JSON.parse(signedMessage)

@@ -122,6 +122,13 @@ pub struct ProposalHashDataAPI {
     pub params: RawBytes,
 }
 
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(transparent)]
+pub struct SignedVoucherWrapper(
+    #[serde(with = "extras::paych::SignedVoucherAPI")]
+    paych::SignedVoucher
+);
+
 /// Generates a random mnemonic (English - 24 words)
 pub fn key_generate_mnemonic() -> Result<Mnemonic, SignerError> {
     let mnemonic = bip39::Mnemonic::new(MnemonicType::Words24, Language::English);
@@ -1288,6 +1295,30 @@ pub fn verify_voucher_signature(
             "Voucher not signed.".to_string(),
         )),
     }
+}
+
+/// Serialize voucher
+///
+/// # Arguments
+///
+/// * `voucher` - The voucher data;
+pub fn serialize_voucher(voucher: SignedVoucherWrapper) -> Result<String, SignerError> {
+    let serialized_voucher = to_vec(&voucher)?;
+
+    Ok(base64::encode(serialized_voucher))
+}
+
+/// Deserialize voucher
+///
+/// # Arguments
+///
+/// * `voucher_base64_string` - The voucher data;
+pub fn deserialize_voucher(voucher_base64_string: String) -> Result<SignedVoucherWrapper, SignerError> {
+    let serialized_voucher = base64::decode(&voucher_base64_string)?;
+
+    let signed_voucher: paych::SignedVoucher = from_slice(&serialized_voucher)?;
+
+    Ok(SignedVoucherWrapper(signed_voucher))
 }
 
 /// Compute proposal hash
