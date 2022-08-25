@@ -144,8 +144,6 @@ describeCall('updatePymtChan', function() {
 
     let voucher = filecoin_signer.deserializeVoucher(paymentchannel_update.voucher_base64)
 
-    console.log(voucher)
-
     let params = { 
       Sv: voucher,
       Secret: "",
@@ -154,14 +152,14 @@ describeCall('updatePymtChan', function() {
     let serialized_params = filecoin_signer.serializeParams(params)
 
     let update_pymtchan = {
-      To: paymentchannel_create.message["To"],
-      From: paymentchannel_create.message["From"],
-      Nonce: paymentchannel_create.message["Nonce"],
-      Value: paymentchannel_create.message["Value"],
-      GasLimit: paymentchannel_create.message["GasLimit"],
-      GasFeeCap: paymentchannel_create.message["GasFeeCap"],
-      GasPremium: paymentchannel_create.message["GasPremium"],
-      Method: paymentchannel_create.message["Method"],
+      To: paymentchannel_update.message["To"],
+      From: paymentchannel_update.message["From"],
+      Nonce: paymentchannel_update.message["Nonce"],
+      Value: paymentchannel_update.message["Value"],
+      GasLimit: paymentchannel_update.message["GasLimit"],
+      GasFeeCap: paymentchannel_update.message["GasFeeCap"],
+      GasPremium: paymentchannel_update.message["GasPremium"],
+      Method: paymentchannel_update.message["Method"],
       Params: Buffer.from(serialized_params).toString('base64')
     }
 
@@ -196,15 +194,27 @@ describeCall('settlePymtChan', function() {
     let paymentchannel_settle = dataTxs.settle.secp256k1
     let recoveredKey = filecoin_signer.keyRecover(paymentchannel_settle.private_key, true)
 
+    let settle_pymtchan = {
+      To: paymentchannel_settle.message["To"],
+      From: paymentchannel_settle.message["From"],
+      Nonce: paymentchannel_settle.message["Nonce"],
+      Value: paymentchannel_settle.message["Value"],
+      GasLimit: paymentchannel_settle.message["GasLimit"],
+      GasFeeCap: paymentchannel_settle.message["GasFeeCap"],
+      GasPremium: paymentchannel_settle.message["GasPremium"],
+      Method: paymentchannel_settle.message["Method"],
+      Params: ''
+    }
 
-    let settle_pymtchan = filecoin_signer.settlePymtChanWithFee(
+
+    /*let settle_pymtchan = filecoin_signer.settlePymtChanWithFee(
       paymentchannel_settle.message["To"],
       paymentchannel_settle.message["From"],
       paymentchannel_settle.message["Nonce"],
       paymentchannel_settle.message["GasLimit"].toString(),
       paymentchannel_settle.message["GasFeeCap"],
       paymentchannel_settle.message["GasPremium"],
-    )
+    )*/
 
     let signedMessage = filecoin_signer.transactionSignLotus(settle_pymtchan, paymentchannel_settle.private_key)
     signedMessage = JSON.parse(signedMessage)
@@ -225,14 +235,26 @@ describeCall('collectPymtChan', function() {
     let paymentchannel_collect = dataTxs.collect.secp256k1
     let recoveredKey = filecoin_signer.keyRecover(paymentchannel_collect.private_key, true)
 
-    let collect_pymtchan = filecoin_signer.collectPymtChanWithFee(
+    let collect_pymtchan = {
+      To: paymentchannel_collect.message["To"],
+      From: paymentchannel_collect.message["From"],
+      Nonce: paymentchannel_collect.message["Nonce"],
+      Value: paymentchannel_collect.message["Value"],
+      GasLimit: paymentchannel_collect.message["GasLimit"],
+      GasFeeCap: paymentchannel_collect.message["GasFeeCap"],
+      GasPremium: paymentchannel_collect.message["GasPremium"],
+      Method: paymentchannel_collect.message["Method"],
+      Params: ''
+    }
+
+    /*let collect_pymtchan = filecoin_signer.collectPymtChanWithFee(
       paymentchannel_collect.message["To"],
       paymentchannel_collect.message["From"],
       paymentchannel_collect.message["Nonce"],
       paymentchannel_collect.message["GasLimit"].toString(),
       paymentchannel_collect.message["GasFeeCap"],
       paymentchannel_collect.message["GasPremium"],
-    )
+    )*/
 
     let signedMessage = filecoin_signer.transactionSignLotus(collect_pymtchan, paymentchannel_collect.private_key)
     signedMessage = JSON.parse(signedMessage)

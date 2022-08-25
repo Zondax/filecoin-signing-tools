@@ -196,3 +196,34 @@ pub mod serde_base64_vector {
         base64::decode(s).map_err(serde::de::Error::custom)
     }
 }
+
+pub mod option_signature {
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use fvm_shared::crypto::signature::Signature;
+    use super::super::signature::SignatureAPI;
+
+    pub fn serialize<S>(signature: &Option<Signature>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct W<'a>(#[serde(with = "SignatureAPI")]&'a Signature);
+
+        match signature {
+            Some(s) => serializer.serialize_some(&W(&s)),
+            None => serializer.serialize_none(),
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Signature>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct W(#[serde(with = "SignatureAPI")]Signature);
+
+        Ok(Option::deserialize(deserializer)?.map(|W(inner)| inner))
+    }
+}

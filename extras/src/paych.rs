@@ -14,6 +14,8 @@ use super::json::address;
 use super::json::rawbytes;
 use super::json::bigint;
 use super::json::serde_base64_vector;
+use super::json::option_signature;
+
 
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "ConstructorParams", rename_all = "PascalCase")]
@@ -40,6 +42,7 @@ pub struct SignedVoucherAPI {
     pub amount: BigInt,
     pub min_settle_height: ChainEpoch,
     pub merges: Vec<Merge>,
+    #[serde(with = "option_signature")]
     pub signature: Option<Signature>,
 }
 
@@ -65,6 +68,7 @@ pub struct PaymentVerifyParamsAPI {
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "UpdateChannelStateParams", rename_all = "PascalCase")]
 pub struct UpdateChannelStateParamsAPI {
+    #[serde(with = "SignedVoucherAPI")]
     pub sv: SignedVoucher,
     #[serde(with = "serde_base64_vector")]
     pub secret: Vec<u8>,
