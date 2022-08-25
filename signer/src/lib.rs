@@ -125,8 +125,7 @@ pub struct ProposalHashDataAPI {
 #[derive(serde::Serialize, serde::Deserialize)]
 #[serde(transparent)]
 pub struct SignedVoucherWrapper(
-    #[serde(with = "extras::paych::SignedVoucherAPI")]
-    paych::SignedVoucher
+    #[serde(with = "extras::paych::SignedVoucherAPI")] paych::SignedVoucher,
 );
 
 /// Generates a random mnemonic (English - 24 words)
@@ -1313,7 +1312,9 @@ pub fn serialize_voucher(voucher: SignedVoucherWrapper) -> Result<String, Signer
 /// # Arguments
 ///
 /// * `voucher_base64_string` - The voucher data;
-pub fn deserialize_voucher(voucher_base64_string: String) -> Result<SignedVoucherWrapper, SignerError> {
+pub fn deserialize_voucher(
+    voucher_base64_string: String,
+) -> Result<SignedVoucherWrapper, SignerError> {
     let serialized_voucher = base64::decode(&voucher_base64_string)?;
 
     let signed_voucher: paych::SignedVoucher = from_slice(&serialized_voucher)?;

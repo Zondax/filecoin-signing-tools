@@ -177,7 +177,6 @@ pub mod bigint {
     }
 }
 
-
 pub mod serde_base64_vector {
     use serde::{self, Deserialize, Deserializer, Serializer};
 
@@ -198,9 +197,9 @@ pub mod serde_base64_vector {
 }
 
 pub mod option_signature {
-    use serde::{Deserialize, Deserializer, Serialize, Serializer};
-    use fvm_shared::crypto::signature::Signature;
     use super::super::signature::SignatureAPI;
+    use fvm_shared::crypto::signature::Signature;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     pub fn serialize<S>(signature: &Option<Signature>, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -208,7 +207,7 @@ pub mod option_signature {
     {
         #[derive(Serialize)]
         #[serde(transparent)]
-        struct W<'a>(#[serde(with = "SignatureAPI")]&'a Signature);
+        struct W<'a>(#[serde(with = "SignatureAPI")] &'a Signature);
 
         match signature {
             Some(s) => serializer.serialize_some(&W(&s)),
@@ -222,7 +221,7 @@ pub mod option_signature {
     {
         #[derive(Deserialize)]
         #[serde(transparent)]
-        struct W(#[serde(with = "SignatureAPI")]Signature);
+        struct W(#[serde(with = "SignatureAPI")] Signature);
 
         Ok(Option::deserialize(deserializer)?.map(|W(inner)| inner))
     }

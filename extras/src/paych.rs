@@ -11,11 +11,10 @@ use fvm_shared::MethodNum;
 use serde::{Deserialize, Serialize};
 
 use super::json::address;
-use super::json::rawbytes;
 use super::json::bigint;
-use super::json::serde_base64_vector;
 use super::json::option_signature;
-
+use super::json::rawbytes;
+use super::json::serde_base64_vector;
 
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "ConstructorParams", rename_all = "PascalCase")]
