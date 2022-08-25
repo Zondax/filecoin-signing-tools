@@ -5,7 +5,7 @@ use std::convert::TryFrom;
 use wasm_bindgen::prelude::*;
 
 use filecoin_signer::api::{MessageParams, MessageTxAPI};
-use filecoin_signer::{PrivateKey, ProposalHashDataAPI};
+use filecoin_signer::{PrivateKey, ProposalHashDataAPI, SignedVoucherWrapper};
 use fvm_shared::crypto::signature::Signature;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -1020,6 +1020,37 @@ pub fn verify_voucher_signature(
         .map_err(|e| JsValue::from(format!("Error verifying voucher signature: {}", e)))?;
 
     Ok(result)
+}
+
+#[wasm_bindgen(js_name = serializeVoucher)]
+pub fn serialize_voucher(voucher_api: JsValue) -> Result<String, JsValue> {
+    set_panic_hook();
+
+    let voucher: SignedVoucherWrapper = voucher_api
+        .into_serde()
+        .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
+
+    let result = filecoin_signer::serialize_voucher(voucher)
+        .map_err(|e| JsValue::from(format!("Couldn't serialize voucher: {}", e)))?;
+
+    Ok(result)
+}
+
+#[wasm_bindgen(js_name = deserializeVoucher)]
+pub fn deserialize_voucher(voucher_base64_string: String) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let voucher = filecoin_signer::deserialize_voucher(voucher_base64_string)
+        .map_err(|e| JsValue::from(format!("Couldn't serialize voucher: {}", e)))?;
+
+    let voucher_api = JsValue::from_serde(&voucher).map_err(|e| {
+        JsValue::from(format!(
+            "Error converting constructor parameters to json object: {}",
+            e
+        ))
+    })?;
+
+    Ok(voucher_api)
 }
 
 #[wasm_bindgen(js_name = computeProposalHash)]

@@ -11,7 +11,10 @@ use fvm_shared::MethodNum;
 use serde::{Deserialize, Serialize};
 
 use super::json::address;
+use super::json::bigint;
+use super::json::option_signature;
 use super::json::rawbytes;
+use super::json::serde_base64_vector;
 
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "ConstructorParams", rename_all = "PascalCase")]
@@ -29,15 +32,16 @@ pub struct SignedVoucherAPI {
     pub channel_addr: Address,
     pub time_lock_min: ChainEpoch,
     pub time_lock_max: ChainEpoch,
-    #[serde(with = "serde_bytes")]
+    #[serde(with = "serde_base64_vector")]
     pub secret_pre_image: Vec<u8>,
     pub extra: Option<ModVerifyParams>,
     pub lane: u64,
     pub nonce: u64,
-    #[serde(with = "bigint_ser")]
+    #[serde(with = "bigint")]
     pub amount: BigInt,
     pub min_settle_height: ChainEpoch,
     pub merges: Vec<Merge>,
+    #[serde(with = "option_signature")]
     pub signature: Option<Signature>,
 }
 
@@ -56,15 +60,16 @@ pub struct ModVerifyParamsAPI {
 pub struct PaymentVerifyParamsAPI {
     #[serde(with = "rawbytes")]
     pub extra: RawBytes,
-    #[serde(with = "serde_bytes")]
+    #[serde(with = "serde_base64_vector")]
     pub proof: Vec<u8>,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "UpdateChannelStateParams", rename_all = "PascalCase")]
 pub struct UpdateChannelStateParamsAPI {
+    #[serde(with = "SignedVoucherAPI")]
     pub sv: SignedVoucher,
-    #[serde(with = "serde_bytes")]
+    #[serde(with = "serde_base64_vector")]
     pub secret: Vec<u8>,
 }
 

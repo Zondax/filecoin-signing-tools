@@ -155,6 +155,28 @@ pub mod tokenamount {
     }
 }
 
+pub mod bigint {
+    use fvm_shared::bigint::BigInt;
+    use serde::{de, Deserialize, Deserializer, Serializer};
+    use std::str::FromStr;
+
+    pub fn serialize<S>(token_amount: &BigInt, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let s = token_amount.to_string();
+        serializer.serialize_str(&s)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<BigInt, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        BigInt::from_str(&s).map_err(de::Error::custom)
+    }
+}
+
 pub mod serde_base64_vector {
     use serde::{self, Deserialize, Deserializer, Serializer};
 
@@ -171,5 +193,36 @@ pub mod serde_base64_vector {
     {
         let s = String::deserialize(deserializer)?;
         base64::decode(s).map_err(serde::de::Error::custom)
+    }
+}
+
+pub mod option_signature {
+    use super::super::signature::SignatureAPI;
+    use fvm_shared::crypto::signature::Signature;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    pub fn serialize<S>(signature: &Option<Signature>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct W<'a>(#[serde(with = "SignatureAPI")] &'a Signature);
+
+        match signature {
+            Some(s) => serializer.serialize_some(&W(&s)),
+            None => serializer.serialize_none(),
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Signature>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct W(#[serde(with = "SignatureAPI")] Signature);
+
+        Ok(Option::deserialize(deserializer)?.map(|W(inner)| inner))
     }
 }
