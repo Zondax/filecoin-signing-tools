@@ -1,29 +1,30 @@
-const blake = require('blakejs')
-const base32Decode = require('base32-decode')
-const base32Encode = require('base32-encode')
-const leb = require('leb128')
+import blake from 'blakejs'
+import base32Decode from 'base32-decode'
+import base32Encode from 'base32-encode'
+// @ts-ignore
+import leb from 'leb128'
 
-const assert = require('assert')
-const {
+import assert from 'assert'
+import {
   UnknownProtocolIndicator,
   InvalidPayloadLength,
   ProtocolNotSupported,
   InvalidChecksumAddress,
   InvalidPrivateKeyFormat,
-} = require('./errors')
+} from './errors'
 
 const { ProtocolIndicator } = require('./constants')
 
 const CID_PREFIX = Buffer.from([0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20])
 
-function getCID(message) {
+export function getCID(message: Buffer): Buffer {
   const blakeCtx = blake.blake2bInit(32)
   blake.blake2bUpdate(blakeCtx, message)
   const hash = Buffer.from(blake.blake2bFinal(blakeCtx))
   return Buffer.concat([CID_PREFIX, hash])
 }
 
-function getDigest(message) {
+export function getDigest(message: Buffer): Buffer {
   // digest = blake2-256( prefix + blake2b-256(tx) )
 
   const blakeCtx = blake.blake2bInit(32)
@@ -31,24 +32,24 @@ function getDigest(message) {
   return Buffer.from(blake.blake2bFinal(blakeCtx))
 }
 
-function getPayloadSECP256K1(uncompressedPublicKey) {
+export function getPayloadSECP256K1(uncompressedPublicKey: Uint8Array): Buffer {
   // blake2b-160
   const blakeCtx = blake.blake2bInit(20)
   blake.blake2bUpdate(blakeCtx, uncompressedPublicKey)
   return Buffer.from(blake.blake2bFinal(blakeCtx))
 }
 
-function getChecksum(payload) {
+export function getChecksum(payload: Buffer): Buffer {
   const blakeCtx = blake.blake2bInit(4)
   blake.blake2bUpdate(blakeCtx, payload)
   return Buffer.from(blake.blake2bFinal(blakeCtx))
 }
 
-function getCoinTypeFromPath(path) {
+export function getCoinTypeFromPath(path: string): string {
   return path.split('/')[2].slice(0, -1)
 }
 
-function addressAsBytes(address) {
+export function addressAsBytes(address: string): Buffer {
   let address_decoded, payload, checksum
   const protocolIndicator = address[1]
   const protocolIndicatorByte = `0${protocolIndicator}`
@@ -102,7 +103,7 @@ function addressAsBytes(address) {
   return bytes_address
 }
 
-function bytesToAddress(payload, testnet) {
+export function bytesToAddress(payload: Buffer, testnet: boolean): string {
   const protocolIndicator = payload[0]
 
   switch (Number(protocolIndicator)) {
@@ -145,7 +146,7 @@ function bytesToAddress(payload, testnet) {
   )
 }
 
-function tryToPrivateKeyBuffer(privateKey) {
+export function tryToPrivateKeyBuffer(privateKey: string | Buffer): Buffer {
   if (typeof privateKey === 'string') {
     // We should have a padding!
     if (privateKey.slice(-1) === '=') {
@@ -158,15 +159,4 @@ function tryToPrivateKeyBuffer(privateKey) {
   assert(privateKey.length === 32)
 
   return privateKey
-}
-
-module.exports = {
-  getCID,
-  getDigest,
-  getPayloadSECP256K1,
-  getChecksum,
-  getCoinTypeFromPath,
-  addressAsBytes,
-  bytesToAddress,
-  tryToPrivateKeyBuffer,
 }

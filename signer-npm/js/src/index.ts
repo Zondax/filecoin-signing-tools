@@ -1,19 +1,19 @@
-const bip39 = require('bip39')
-const bip32 = require('bip32')
-const cbor = require('@ipld/dag-cbor')
-const secp256k1 = require('secp256k1')
-const BN = require('bn.js')
+import bip39 from 'bip39'
+import bip32 from 'bip32'
+import cbor, {ByteView} from '@ipld/dag-cbor'
+import secp256k1 from 'secp256k1'
+import BN from 'bn.js'
 
-const ExtendedKey = require('./extendedkey')
-const { getDigest, getCoinTypeFromPath, addressAsBytes, bytesToAddress, tryToPrivateKeyBuffer } = require('./utils')
-const { ProtocolIndicator } = require('./constants')
+import ExtendedKey from './extendedkey'
+import { getDigest, getCoinTypeFromPath, addressAsBytes, bytesToAddress, tryToPrivateKeyBuffer } from './utils'
+import { ProtocolIndicator } from './constants'
 
-function generateMnemonic() {
+export function generateMnemonic(): string {
   // 256 so it generate 24 words
   return bip39.generateMnemonic(256)
 }
 
-function keyDeriveFromSeed(seed, path) {
+export function keyDeriveFromSeed(seed: string | Buffer, path: string): ExtendedKey {
   if (typeof seed === 'string') {
     seed = Buffer.from(seed, 'hex')
   }
@@ -21,6 +21,10 @@ function keyDeriveFromSeed(seed, path) {
   const masterKey = bip32.fromSeed(seed)
 
   const childKey = masterKey.derivePath(path)
+
+  if (!childKey.privateKey) {
+    throw new Error("privateKey not generated")
+  }
 
   let testnet = false
   if (getCoinTypeFromPath(path) === '1') {
@@ -30,7 +34,7 @@ function keyDeriveFromSeed(seed, path) {
   return new ExtendedKey(childKey.privateKey, testnet)
 }
 
-function keyDerive(mnemonic, path, password) {
+export function keyDerive(mnemonic: string, path: string, password: string | undefined): ExtendedKey {
   if (password === undefined) {
     throw new Error("'password' argument must be of type string or an instance of Buffer or ArrayBuffer. Received undefined")
   }
@@ -39,12 +43,12 @@ function keyDerive(mnemonic, path, password) {
   return keyDeriveFromSeed(seed, path)
 }
 
-function keyRecover(privateKey, testnet) {
+export function keyRecover(privateKey: Buffer, testnet: boolean): ExtendedKey {
   privateKey = tryToPrivateKeyBuffer(privateKey)
   return new ExtendedKey(privateKey, testnet)
 }
 
-function serializeBigNum(gasprice) {
+export function serializeBigNum(gasprice: string): Buffer {
   if (gasprice == '0') {
     return Buffer.from('')
   }
@@ -53,7 +57,7 @@ function serializeBigNum(gasprice) {
   return Buffer.concat([Buffer.from('00', 'hex'), gaspriceBuffer])
 }
 
-function transactionSerializeRaw(message) {
+export function transactionSerializeRaw(message: any) {
   if (!('To' in message) || typeof message['To'] !== 'string') {
     throw new Error("'To' is a required field and has to be a 'string'")
   }
@@ -105,13 +109,13 @@ function transactionSerializeRaw(message) {
   return cbor.encode(message_to_encode)
 }
 
-function transactionSerialize(message) {
+export function transactionSerialize(message: any): string {
   const raw_cbor = transactionSerializeRaw(message)
   return Buffer.from(raw_cbor).toString('hex')
 }
 
-function transactionParse(cborMessage, testnet) {
-  const decoded = cbor.decode(Buffer.from(cborMessage, 'hex'))
+export function transactionParse(cborMessage: string, testnet: boolean): any {
+  const decoded: any = cbor.decode(Buffer.from(cborMessage, 'hex'))
 
   if (decoded[0] !== 0) {
     throw new Error('Unsupported version')
@@ -120,7 +124,7 @@ function transactionParse(cborMessage, testnet) {
     throw new Error('The cbor is missing some fields... please verify you have 9 fields.')
   }
 
-  const message = {}
+  const message: any = {}
 
   message['To'] = bytesToAddress(decoded[1], testnet)
   message['From'] = bytesToAddress(decoded[2], testnet)
@@ -138,7 +142,7 @@ function transactionParse(cborMessage, testnet) {
   return message
 }
 
-function transactionSignRaw(unsignedMessage, privateKey) {
+export function transactionSignRaw(unsignedMessage: any, privateKey: string | Buffer): Buffer {
   if (typeof unsignedMessage === 'object') {
     unsignedMessage = transactionSerializeRaw(unsignedMessage)
   }
@@ -155,13 +159,13 @@ function transactionSignRaw(unsignedMessage, privateKey) {
   return Buffer.concat([Buffer.from(signature.signature), Buffer.from([signature.recid])])
 }
 
-function transactionSign(unsignedMessage, privateKey) {
+export function transactionSign(unsignedMessage: any, privateKey: string| Buffer): any {
   if (typeof unsignedMessage !== 'object') {
     throw new Error("'message' need to be an object. Cannot be under CBOR format.")
   }
   const signature = transactionSignRaw(unsignedMessage, privateKey)
 
-  const signedMessage = {}
+  const signedMessage: any = {}
 
   // TODO: support BLS scheme
   signedMessage['Signature'] = {
@@ -173,7 +177,7 @@ function transactionSign(unsignedMessage, privateKey) {
 }
 
 // TODO: new function 'verifySignature(signedMessage)'; Makes more sense ?
-function verifySignature(signature, message) {
+export function verifySignature(signature: string | Buffer, message: any): boolean {
   if (typeof message === 'object') {
     message = transactionSerializeRaw(message)
   }
@@ -197,7 +201,7 @@ function verifySignature(signature, message) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function signVoucher(unsignedVoucherBase64, privateKey) {
+export function signVoucher(unsignedVoucherBase64: string, privateKey: string): string {
   if (typeof unsignedVoucherBase64 !== 'string') {
     throw new Error('`unsignedVoucher` has to be a base64 string.')
   }
@@ -207,40 +211,25 @@ function signVoucher(unsignedVoucherBase64, privateKey) {
   let cborUnsignedVoucher = Buffer.from(unsignedVoucherBase64, 'base64')
 
   // verify format and convert to buffer if needed
-  privateKey = tryToPrivateKeyBuffer(privateKey)
+  const privateKeyBuff = tryToPrivateKeyBuffer(privateKey)
 
   const messageDigest = getDigest(cborUnsignedVoucher)
-  const signature = secp256k1.ecdsaSign(messageDigest, privateKey)
+  const signature = secp256k1.ecdsaSign(messageDigest, privateKeyBuff)
 
-  let unsignedVoucher = cbor.decode(cborUnsignedVoucher)
+  let unsignedVoucher: any = cbor.decode(cborUnsignedVoucher)
 
   unsignedVoucher[9] = signature
 
   const signedVoucher = cbor.encode(unsignedVoucher)
 
-  return signedVoucher.toString('base64')
+  return Buffer.from(signedVoucher).toString('base64')
 }
 
 // eslint-disable-next-line no-unused-vars
-function createVoucher(timeLockMin, timeLockMax, amount, lane, nonce, minSettleHeight) {
+export function createVoucher(timeLockMin: string, timeLockMax: string, amount: string, lane: string, nonce: string, minSettleHeight: string): string {
   let voucher = [timeLockMin, timeLockMax, Buffer.alloc(0), null, lane, nonce, amount, minSettleHeight, [], Buffer.alloc(0)]
 
   let serializedVoucher = cbor.encode(voucher)
 
-  return serializedVoucher.toString('base64')
-}
-
-module.exports = {
-  generateMnemonic,
-  keyDerive,
-  keyDeriveFromSeed,
-  keyRecover,
-  transactionSerialize,
-  transactionSerializeRaw,
-  transactionParse,
-  transactionSign,
-  transactionSignRaw,
-  verifySignature,
-  addressAsBytes,
-  bytesToAddress,
+  return Buffer.from(serializedVoucher).toString('base64')
 }
