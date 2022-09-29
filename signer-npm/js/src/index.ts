@@ -1,6 +1,6 @@
 import bip39 from 'bip39'
 import bip32 from 'bip32'
-import cbor, {ByteView} from '@ipld/dag-cbor'
+import cbor from '@ipld/dag-cbor'
 import secp256k1 from 'secp256k1'
 import BN from 'bn.js'
 
@@ -23,7 +23,7 @@ export function keyDeriveFromSeed(seed: string | Buffer, path: string): Extended
   const childKey = masterKey.derivePath(path)
 
   if (!childKey.privateKey) {
-    throw new Error("privateKey not generated")
+    throw new Error('privateKey not generated')
   }
 
   let testnet = false
@@ -159,7 +159,7 @@ export function transactionSignRaw(unsignedMessage: any, privateKey: string | Bu
   return Buffer.concat([Buffer.from(signature.signature), Buffer.from([signature.recid])])
 }
 
-export function transactionSign(unsignedMessage: any, privateKey: string| Buffer): any {
+export function transactionSign(unsignedMessage: any, privateKey: string | Buffer): any {
   if (typeof unsignedMessage !== 'object') {
     throw new Error("'message' need to be an object. Cannot be under CBOR format.")
   }
@@ -226,7 +226,14 @@ export function signVoucher(unsignedVoucherBase64: string, privateKey: string): 
 }
 
 // eslint-disable-next-line no-unused-vars
-export function createVoucher(timeLockMin: string, timeLockMax: string, amount: string, lane: string, nonce: string, minSettleHeight: string): string {
+export function createVoucher(
+  timeLockMin: string,
+  timeLockMax: string,
+  amount: string,
+  lane: string,
+  nonce: string,
+  minSettleHeight: string,
+): string {
   let voucher = [timeLockMin, timeLockMax, Buffer.alloc(0), null, lane, nonce, amount, minSettleHeight, [], Buffer.alloc(0)]
 
   let serializedVoucher = cbor.encode(voucher)
