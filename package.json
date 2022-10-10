@@ -23,7 +23,7 @@
     "eslint-plugin-jsx-a11y": "^6.6.1",
     "eslint-plugin-prefer-object-spread": "^1.2.1",
     "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-react": "^7.31.0",
+    "eslint-plugin-react": "^7.31.9",
     "multiformats": "^9.7.1",
     "prettier": "^2.7.1",
     "typescript": "^4.7.4"
