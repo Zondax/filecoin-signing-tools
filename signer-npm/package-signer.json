@@ -42,8 +42,8 @@
       "require": "./nodejs/filecoin_signer_wasm.js",
       "import": "./nodejs/filecoin_signer_wasm.js"
     },
-    "./js": "./js/src/index.js",
-    "./rpc": "./rpc/index.js"
+    "./js": "./js/dist/index.js",
+    "./rpc": "./rpc/dist/index.js"
   },
   "browserslist": [
     "> 1%",

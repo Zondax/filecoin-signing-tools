@@ -1,14 +1,18 @@
-const base32Encode = require('base32-encode')
-const secp256k1 = require('secp256k1')
-const { getPayloadSECP256K1, getChecksum } = require('./utils')
+import base32Encode from 'base32-encode'
+import secp256k1 from 'secp256k1'
+import { getPayloadSECP256K1, getChecksum } from './utils.js'
 
-class ExtendedKey {
-  constructor(privateKey, testnet) {
+export default class ExtendedKey {
+  publicKey: Buffer
+  privateKey: Buffer
+  address: string
+
+  constructor(privateKey: Buffer, testnet: boolean) {
     const pubKey = secp256k1.publicKeyCreate(privateKey)
 
-    let uncompressedPublicKey = new Uint8Array(65)
+    const uncompressedPublicKey = new Uint8Array(65)
     secp256k1.publicKeyConvert(pubKey, false, uncompressedPublicKey)
-    uncompressedPublicKey = Buffer.from(uncompressedPublicKey)
+    const uncompressedPublicKeyBuf = Buffer.from(uncompressedPublicKey)
 
     const payload = getPayloadSECP256K1(uncompressedPublicKey)
     const checksum = getChecksum(Buffer.concat([Buffer.from('01', 'hex'), payload]))
@@ -24,7 +28,7 @@ class ExtendedKey {
         padding: false,
       }).toLowerCase()
 
-    this.publicKey = uncompressedPublicKey // Buffer
+    this.publicKey = uncompressedPublicKeyBuf // Buffer
     this.privateKey = privateKey // Buffer
     this.address = address // String
   }
@@ -53,5 +57,3 @@ class ExtendedKey {
     return this.privateKey.toString('base64')
   }
 }
-
-module.exports = ExtendedKey

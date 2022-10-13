@@ -1,16 +1,18 @@
-const bip39 = require('bip39')
-const bip32 = require('bip32')
-const { getDigest, getDigestVoucher, blake2b256 } = require('./utils')
-const secp256k1 = require('secp256k1')
-const fs = require('fs')
-const assert = require('assert')
+import * as filecoin_signer_js from '@zondax/filecoin-signing-tools/js'
+import filecoin_signer_wasm from '@zondax/filecoin-signing-tools'
 
 // Test twice for wasm version and pure js version
-if (process.env.PURE_JS) {
-  var filecoin_signer = require('@zondax/filecoin-signing-tools/js')
-} else {
-  var filecoin_signer = require('@zondax/filecoin-signing-tools')
-}
+let filecoin_signer = process.env.PURE_JS ? filecoin_signer_js : filecoin_signer_wasm
+
+
+import bip32 from 'bip32'
+import fs from 'fs'
+import assert from 'assert'
+
+import bip39 from 'bip39'
+import * as cbor from '@ipld/dag-cbor'
+import { getDigest, getDigestVoucher, blake2b256 } from './utils.js'
+import secp256k1 from 'secp256k1'
 
 /* Load Txs test data */
 let rawdataTxs = fs.readFileSync('../../test_vectors/txs.json')

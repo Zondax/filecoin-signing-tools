@@ -1,7 +1,11 @@
-const axios = require('axios')
+import axios, { AxiosInstance } from 'axios'
 
-class FilecoinRPC {
-  constructor(args) {
+type Args = { url: string; token: string }
+
+export default class FilecoinRPC {
+  requester: AxiosInstance
+
+  constructor(args: Args) {
     if (!('url' in args && 'token' in args)) {
       throw new Error('FilecoinRPC required an `url` and a `token` to communicate with the node.')
     }
@@ -12,7 +16,7 @@ class FilecoinRPC {
     })
   }
 
-  async getNonce(address) {
+  async getNonce(address: string) {
     let response = await this.requester.post('', {
       jsonrpc: '2.0',
       method: 'Filecoin.MpoolGetNonce',
@@ -23,7 +27,7 @@ class FilecoinRPC {
     return response.data
   }
 
-  async sendSignedMessage(signedMessage) {
+  async sendSignedMessage(signedMessage: any) {
     let response = await this.requester.post('', {
       jsonrpc: '2.0',
       method: 'Filecoin.MpoolPush',
@@ -47,7 +51,7 @@ class FilecoinRPC {
     return response.data
   }
 
-  async getGasEstimation(message) {
+  async getGasEstimation(message: any) {
     let response = await this.requester.post('', {
       jsonrpc: '2.0',
       method: 'Filecoin.GasEstimateMessageGas',
@@ -58,7 +62,7 @@ class FilecoinRPC {
     return response.data
   }
 
-  async readState(address) {
+  async readState(address: string) {
     let response = await this.requester.post('', {
       jsonrpc: '2.0',
       method: 'Filecoin.StateReadState',
@@ -69,5 +73,3 @@ class FilecoinRPC {
     return response.data
   }
 }
-
-module.exports = FilecoinRPC

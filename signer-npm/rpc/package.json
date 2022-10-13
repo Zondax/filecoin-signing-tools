@@ -1,9 +1,12 @@
 {
   "name": "rpc",
   "description": "Filecoin RPC",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.ts",
+  "type": "module",
   "scripts": {
-    "lint": "eslint src/**"
+    "lint": "eslint src/**",
+    "build": "tsc"
   },
   "author": "Zondax <info@zondax.ch>",
   "license": "Apache-2.0",
@@ -11,6 +14,8 @@
     "extends": "airbnb-base"
   },
   "dependencies": {
-    "axios": "^0.27.2"
+    "axios": "^0.27.2",
+    "eslint": "^8.25.0",
+    "typescript": "^4.8.4"
   }
 }
