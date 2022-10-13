@@ -1,12 +1,12 @@
 import bip39 from 'bip39'
 import bip32 from 'bip32'
-import cbor from '@ipld/dag-cbor'
+import * as cbor from '@ipld/dag-cbor'
 import secp256k1 from 'secp256k1'
 import BN from 'bn.js'
 
-import ExtendedKey from './extendedkey'
-import { getDigest, getCoinTypeFromPath, addressAsBytes, bytesToAddress, tryToPrivateKeyBuffer } from './utils'
-import { ProtocolIndicator } from './constants'
+import ExtendedKey from './extendedkey.js'
+import { getDigest, getCoinTypeFromPath, addressAsBytes, bytesToAddress, tryToPrivateKeyBuffer } from './utils.js'
+import { ProtocolIndicator } from './constants.js'
 
 export function generateMnemonic(): string {
   // 256 so it generate 24 words

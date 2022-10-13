@@ -1,6 +1,6 @@
 import base32Encode from 'base32-encode'
 import secp256k1 from 'secp256k1'
-import { getPayloadSECP256K1, getChecksum } from './utils'
+import { getPayloadSECP256K1, getChecksum } from './utils.js'
 
 export default class ExtendedKey {
   publicKey: Buffer
