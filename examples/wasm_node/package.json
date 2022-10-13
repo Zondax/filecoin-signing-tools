@@ -22,7 +22,7 @@
     "filecoin"
   ],
   "dependencies": {
-    "axios": "^0.27.2",
+    "axios": "^1.1.2",
     "cids": "^1.1.9"
   },
   "devDependencies": {
