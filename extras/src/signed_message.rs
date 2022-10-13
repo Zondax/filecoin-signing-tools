@@ -13,7 +13,7 @@ pub mod ref_fvm {
     use fvm_shared::message::Message;
 
     /// Represents a wrapped message with signature bytes.
-    #[derive(Debug, Serialize_tuple, Deserialize_tuple)]
+    #[derive(Debug, Serialize_tuple, Deserialize_tuple, Clone)]
     pub struct SignedMessage {
         pub message: Message,
         pub signature: Signature,
