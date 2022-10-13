@@ -1,9 +1,12 @@
 {
   "name": "rpc",
   "description": "Filecoin RPC",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.ts",
+  "type": "module",
   "scripts": {
-    "lint": "eslint src/**"
+    "lint": "eslint src/**",
+    "build": "tsc"
   },
   "author": "Zondax <info@zondax.ch>",
   "license": "Apache-2.0",

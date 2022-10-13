@@ -1,12 +1,9 @@
-const filecoin_signer = require('@zondax/filecoin-signing-tools')
-const FilecoinRPC = require('@zondax/filecoin-signing-tools/rpc')
-const bip39 = require('bip39')
-const bip32 = require('bip32')
-const axios = require('axios')
-const { getDigest } = require('./test/utils')
-const secp256k1 = require('secp256k1')
-const assert = require('assert')
-const cbor = require('@ipld/dag-cbor')
+import filecoin_signer from '@zondax/filecoin-signing-tools'
+import FilecoinRPC from '@zondax/filecoin-signing-tools/rpc'
+import axios from 'axios'
+import secp256k1 from 'secp256k1'
+import assert from 'assert'
+import * as cbor from '@ipld/dag-cbor'
 
 const URL = process.env.URL
 const TOKEN = process.env.TOKEN
