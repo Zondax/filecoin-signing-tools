@@ -5,9 +5,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "mocha",
-    "test:js": "PURE_JS=True mocha",
+    "test": "mocha -r esm",
+    "test:js": "PURE_JS=True mocha -r esm",
     "test:spec": "mocha test/test.spec.js",
     "test:pc": "node payment_channel.js"
   },
@@ -23,7 +24,8 @@
   ],
   "dependencies": {
     "axios": "^1.1.2",
-    "cids": "^1.1.9"
+    "cids": "^1.1.9",
+    "esm": "^3.2.25"
   },
   "devDependencies": {
     "bip32": "^2.0.6",

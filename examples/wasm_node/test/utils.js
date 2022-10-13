@@ -1,4 +1,4 @@
-const blake = require('blakejs')
+import blake from 'blakejs'
 
 const CID_PREFIX = Buffer.from([0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20])
 
@@ -28,4 +28,4 @@ function blake2b256(message) {
   return blake.blake2bFinal(blakeCtx)
 }
 
-module.exports = { getCID, getDigest, getDigestVoucher, blake2b256 }
+export { getCID, getDigest, getDigestVoucher, blake2b256 }
