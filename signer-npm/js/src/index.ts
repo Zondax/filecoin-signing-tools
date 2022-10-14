@@ -1,5 +1,6 @@
 import bip39 from 'bip39'
-import bip32 from 'bip32'
+import * as bip32Default from 'bip32'
+import * as ecc from 'tiny-secp256k1'
 import * as cbor from '@ipld/dag-cbor'
 import secp256k1 from 'secp256k1'
 import BN from 'bn.js'
@@ -7,6 +8,9 @@ import BN from 'bn.js'
 import ExtendedKey from './extendedkey.js'
 import { getDigest, getCoinTypeFromPath, addressAsBytes, bytesToAddress, tryToPrivateKeyBuffer } from './utils.js'
 import { ProtocolIndicator } from './constants.js'
+
+// You must wrap a tiny-secp256k1 compatible implementation
+const bip32 = bip32Default.BIP32Factory(ecc)
 
 export function generateMnemonic(): string {
   // 256 so it generate 24 words
