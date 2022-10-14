@@ -5,7 +5,7 @@ import filecoin_signer_wasm from '@zondax/filecoin-signing-tools'
 let filecoin_signer = process.env.PURE_JS ? filecoin_signer_js : filecoin_signer_wasm
 
 
-import bip32 from 'bip32'
+import * as bip32 from 'bip32'
 import fs from 'fs'
 import assert from 'assert'
 

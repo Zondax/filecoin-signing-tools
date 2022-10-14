@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import bip32 from 'bip32'
+import * as bip32 from 'bip32'
 import assert from 'assert'
 import bip39 from 'bip39'
 import * as utils from './utils.js'
