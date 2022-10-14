@@ -330,7 +330,7 @@ pub fn verify_signature(signature_js: JsValue, message_js: JsValue) -> Result<bo
 
     filecoin_signer::verify_signature(&sig, &message_bytes)
         .map_err(|e| JsValue::from_str(format!("Error verifying signature: {}", e).as_str()))
-}   
+}
 
 #[wasm_bindgen(js_name = signVoucher)]
 pub fn sign_voucher(voucher: String, private_key_js: JsValue) -> Result<JsValue, JsValue> {
