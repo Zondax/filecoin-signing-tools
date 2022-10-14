@@ -1,6 +1,4 @@
 const filecoin_signer = require('@zondax/filecoin-signer')
-const bip39 = require('bip39')
-const bip32 = require('bip32')
 const axios = require('axios')
 
 const URL = process.env.URL

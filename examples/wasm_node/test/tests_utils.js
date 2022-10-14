@@ -1,7 +1,8 @@
 import assert from 'assert'
-import * as utils from './utils.js'
 import secp256k1 from 'secp256k1'
 import fs from 'fs'
+
+import * as utils from './utils.js'
 
 let rawdata = fs.readFileSync('../../test_vectors/utils.json')
 let data = JSON.parse(rawdata)

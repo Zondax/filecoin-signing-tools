@@ -1,16 +1,15 @@
 import * as filecoin_signer_js from '@zondax/filecoin-signing-tools/js'
 import filecoin_signer_wasm from '@zondax/filecoin-signing-tools'
 
-// Test twice for wasm version and pure js version
-let filecoin_signer = process.env.PURE_JS ? filecoin_signer_js : filecoin_signer_wasm
-
-import bip32 from 'bip32'
+import * as bip32Default from 'bip32'
+import * as ecc from 'tiny-secp256k1';
 import fs from 'fs'
 import assert from 'assert'
 
-import bip39 from 'bip39'
-import { getDigest, getDigestVoucher, blake2b256 } from './utils.js'
-import secp256k1 from 'secp256k1'
+const bip32 = bip32Default.BIP32Factory(ecc)
+
+// Test twice for wasm version and pure js version
+let filecoin_signer = process.env.PURE_JS ? filecoin_signer_js : filecoin_signer_wasm
 
 /* Load wallet test data */
 let rawdataWallet = fs.readFileSync('../../test_vectors/wallet.json')

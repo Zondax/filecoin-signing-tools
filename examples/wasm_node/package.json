@@ -25,10 +25,11 @@
   "dependencies": {
     "axios": "^1.1.2",
     "cids": "^1.1.9",
-    "esm": "^3.2.25"
+    "esm": "^3.2.25",
+    "tiny-secp256k1": "^2.2.1"
   },
   "devDependencies": {
-    "bip32": "^2.0.6",
+    "bip32": "^3.1.0",
     "bip39": "^3.0.4",
     "blakejs": "^1.2.1",
     "mocha": "^10.0.0",
