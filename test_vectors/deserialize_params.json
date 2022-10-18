@@ -3,7 +3,7 @@
     "description": "deserialize cbor base64 string parameters (Swap parameters)",
     "valid": true,
     "serialized_params": "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW",
-    "code_cid": "fil/2/multisig",
+    "code_cid": "multisig",
     "method": 7,
     "params": {
       "From": "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy",
@@ -14,7 +14,7 @@
     "description": "deserialize params should fail with wrong actor type for method",
     "valid": false,
     "serialized_params": "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW",
-    "code_cid": "fil/2/paymentchannel",
+    "code_cid": "paymentchannel",
     "method": 7,
     "error": "Unknown method for actor 'fil/[2-7]/paymentchannel'."
   },
@@ -22,7 +22,7 @@
     "description": "deserialize params should fail with wrong actor type for method",
     "valid": false,
     "serialized_params": "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW",
-    "code_cid": "fil/1/paymentchannel",
+    "code_cid": "paymentchannel",
     "method": 7,
     "error": "Actor type not supported."
   },
@@ -30,7 +30,7 @@
     "description": "should deserialize exec params",
     "valid": true,
     "serialized_params": "gtgqUwABVQAOZmlsLzIvbXVsdGlzaWdYIISBVQFsOq0x8u0ZMgRuqvDv48DeLC/TkwEYZBoAA9qL",
-    "code_cid": "fil/1/init",
+    "code_cid": "init",
     "method": 2,
     "params": {
       "CodeCid": "bafkqadtgnfwc6mrpnv2wy5djonuwo",
