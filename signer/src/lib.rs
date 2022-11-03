@@ -624,8 +624,7 @@ pub fn deserialize_params(
     let serialized_params = RawBytes::new(params_decode);
 
     // Deserialize pre-FVM init actor
-    if actor_type.as_str() == "init"
-    {
+    if actor_type.as_str() == "init" {
         match FromPrimitive::from_u64(method) {
             Some(MethodInit::Exec) => {
                 let params: ExecParams = RawBytes::deserialize(&serialized_params)?;
@@ -640,8 +639,7 @@ pub fn deserialize_params(
     }
 
     // Deserialize pre-FVM multisig actor
-    if actor_type.as_str() == "multisig"
-    {
+    if actor_type.as_str() == "multisig" {
         match FromPrimitive::from_u64(method) {
             Some(multisig::Method::Propose) => {
                 let params = serialized_params.deserialize::<multisig::ProposeParams>()?;
@@ -688,8 +686,7 @@ pub fn deserialize_params(
     }
 
     // Deserialize pre-FVM paymentchannel actor
-    if actor_type.as_str() == "paymentchannel"
-    {
+    if actor_type.as_str() == "paymentchannel" {
         match FromPrimitive::from_u64(method) {
             Some(paych::Method::UpdateChannelState) => {
                 let params: fil_actor_paych::UpdateChannelStateParams =
@@ -727,14 +724,12 @@ pub fn deserialize_constructor_params(
     let params_decode = base64::decode(params_b64_string)?;
     let serialized_params = RawBytes::new(params_decode);
 
-    if code_cid.as_str() == "multisig"
-    {
+    if code_cid.as_str() == "multisig" {
         let params = serialized_params.deserialize::<multisig::ConstructorParams>()?;
         return Ok(MessageParams::MultisigConstructorParams(params));
     }
 
-    if code_cid.as_str() == "paymentchannel"
-    {
+    if code_cid.as_str() == "paymentchannel" {
         let params = serialized_params.deserialize::<paych::ConstructorParams>()?;
         return Ok(MessageParams::PaychConstructorParams(params.into()));
     }
