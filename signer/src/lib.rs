@@ -30,24 +30,15 @@ use fvm_shared::econ::TokenAmount;
 use fvm_shared::MethodNum;
 
 use crate::api::{MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork};
-use crate::code_cid::{actor_code_included, ACTOR_CODE_CIDS};
 use crate::error::SignerError;
 use crate::extended_key::ExtendedSecretKey;
 use crate::multisig_deprecated::ConstructorParamsV1;
 
 pub mod api;
-pub mod code_cid;
 pub mod error;
 pub mod extended_key;
 pub mod multisig_deprecated;
 pub mod utils;
-
-lazy_static! {
-    static ref OLD_CODE_CID_INIT: Regex = Regex::new(r"fil/[0-7]/init").unwrap();
-    static ref OLD_CODE_CID_MULTISIG: Regex = Regex::new(r"fil/[2-7]/multisig").unwrap();
-    static ref OLD_CODE_CID_PAYMENTCHANNEL: Regex =
-        Regex::new(r"fil/[2-7]/paymentchannel").unwrap();
-}
 
 /// Mnemonic string
 pub struct Mnemonic(pub String);
@@ -633,9 +624,7 @@ pub fn deserialize_params(
     let serialized_params = RawBytes::new(params_decode);
 
     // Deserialize pre-FVM init actor
-    if OLD_CODE_CID_INIT.is_match(actor_type.as_bytes())
-        || actor_code_included(&actor_type, "init".to_string())
-    {
+    if actor_type.as_str() == "init" {
         match FromPrimitive::from_u64(method) {
             Some(MethodInit::Exec) => {
                 let params: ExecParams = RawBytes::deserialize(&serialized_params)?;
@@ -643,16 +632,14 @@ pub fn deserialize_params(
             }
             _ => {
                 return Err(SignerError::GenericString(
-                    "Unknown method for actor 'fil/[0-7]/init'.".to_string(),
+                    "Unknown method for init actor.".to_string(),
                 ));
             }
         }
     }
 
     // Deserialize pre-FVM multisig actor
-    if OLD_CODE_CID_MULTISIG.is_match(actor_type.as_bytes())
-        || actor_code_included(&actor_type, "multisig".to_string())
-    {
+    if actor_type.as_str() == "multisig" {
         match FromPrimitive::from_u64(method) {
             Some(multisig::Method::Propose) => {
                 let params = serialized_params.deserialize::<multisig::ProposeParams>()?;
@@ -692,16 +679,14 @@ pub fn deserialize_params(
             }
             _ => {
                 return Err(SignerError::GenericString(
-                    "Unknown method for actor 'fil/[2-7]/multisig'.".to_string(),
+                    "Unknown method for multisig actor.".to_string(),
                 ));
             }
         }
     }
 
     // Deserialize pre-FVM paymentchannel actor
-    if OLD_CODE_CID_PAYMENTCHANNEL.is_match(actor_type.as_bytes())
-        || actor_code_included(&actor_type, "paymentchannel".to_string())
-    {
+    if actor_type.as_str() == "paymentchannel" {
         match FromPrimitive::from_u64(method) {
             Some(paych::Method::UpdateChannelState) => {
                 let params: fil_actor_paych::UpdateChannelStateParams =
@@ -715,7 +700,7 @@ pub fn deserialize_params(
             }
             _ => {
                 return Err(SignerError::GenericString(
-                    "Unknown method for actor 'fil/[2-7]/paymentchannel'.".to_string(),
+                    "Unknown method for paymentchannel actor.".to_string(),
                 ));
             }
         }
@@ -739,16 +724,12 @@ pub fn deserialize_constructor_params(
     let params_decode = base64::decode(params_b64_string)?;
     let serialized_params = RawBytes::new(params_decode);
 
-    if OLD_CODE_CID_MULTISIG.is_match(code_cid.as_bytes())
-        || actor_code_included(&code_cid, "multisig".to_string())
-    {
+    if code_cid.as_str() == "multisig" {
         let params = serialized_params.deserialize::<multisig::ConstructorParams>()?;
         return Ok(MessageParams::MultisigConstructorParams(params));
     }
 
-    if OLD_CODE_CID_PAYMENTCHANNEL.is_match(code_cid.as_bytes())
-        || actor_code_included(&code_cid, "paymentchannel".to_string())
-    {
+    if code_cid.as_str() == "paymentchannel" {
         let params = serialized_params.deserialize::<paych::ConstructorParams>()?;
         return Ok(MessageParams::PaychConstructorParams(params.into()));
     }

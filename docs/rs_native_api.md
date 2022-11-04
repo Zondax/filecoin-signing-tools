@@ -299,7 +299,7 @@ Utilitary function to deserialize parameters of a message. Return decode Message
 Arguments
 
 * **params_b64_string**: Base64 string of the encoded parameters;
-* **actor_type**: String defining the actor type (e.g "fil/1/multisig")
+* **actor_type**: String defining the actor type (e.g "multisig")
 * **method**: Method number that indicate the method the parameters has been encoded for.
 
 ```rust
@@ -307,7 +307,7 @@ use signer::deserialize_params;
 
 let base64_params = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW".to_string();
 
-let result = deserialize_params(base64_params, "fil/1/multisig", 7).unwrap()
+let result = deserialize_params(base64_params, "multisig", 7).unwrap()
 
 println!("{}", result);
 
@@ -320,14 +320,14 @@ Utilitary function to deserialize specificaly constructor parameters. Return dec
 Arguments
 
 * **params_b64_string**: Base64 string of the encoded parameters;
-* **code_cid**: String defining the actor type (e.g "fil/1/multisig")
+* **code_cid**: String defining the actor type (e.g "multisig")
 
 ```rust
 use signer::deserialize_constructor_params;
 
 let base64_params = "glUB/R0PTfzX6Zr8uZqDJrfcRZ0yxihVAR6vHIpLv+6whwsXRbH1dQNHC3EW".to_string();
 
-let result = deserialize_constructor_params(base64_params, "fil/1/multisig").unwrap()
+let result = deserialize_constructor_params(base64_params, "multisig").unwrap()
 
 println!("{}", result);
 
