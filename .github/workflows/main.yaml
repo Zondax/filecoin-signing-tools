@@ -24,12 +24,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: true
-      - name: Restore/Save sscache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cache/sccache
-          key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
+      # - name: Restore/Save sscache
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: |
+      #       ~/.cache/sccache
+      #     key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
       - run: apt-get update -y && apt-get install -y libusb-1.0.0 libudev-dev
       - name: rustfmt
         run: |
