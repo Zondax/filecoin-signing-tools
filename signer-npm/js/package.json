@@ -25,7 +25,7 @@
   "devDependencies": {
     "@types/bn.js": "^5.1.1",
     "@types/secp256k1": "^4.0.3",
-    "eslint": "^8.25.0",
+    "eslint": "^8.27.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.2.1",
