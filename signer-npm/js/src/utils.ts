@@ -1,6 +1,8 @@
 import blake from 'blakejs'
 import base32Decode from 'base32-decode'
 import base32Encode from 'base32-encode'
+import BN from 'bn.js'
+
 // @ts-ignore
 import leb from 'leb128'
 
@@ -13,7 +15,7 @@ import {
   InvalidPrivateKeyFormat,
 } from './errors.js'
 
-import { ProtocolIndicator } from './constants.js'
+import { ProtocolIndicator, MaxSubaddressBytes } from './constants.js'
 
 const CID_PREFIX = Buffer.from([0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20])
 
@@ -50,7 +52,7 @@ export function getCoinTypeFromPath(path: string): string {
 }
 
 export function addressAsBytes(address: string): Buffer {
-  let address_decoded, payload, checksum
+  let address_decoded, payload, checksum, namespace, sub_address
   const protocolIndicator = address[1]
   const protocolIndicatorByte = `0${protocolIndicator}`
 
@@ -90,6 +92,18 @@ export function addressAsBytes(address: string): Buffer {
         throw new InvalidPayloadLength()
       }
       break
+    case ProtocolIndicator.DELEGATED:
+      namespace = address.slice(2, address.indexOf('f', 2) - 1)
+      sub_address = address.slice(address.indexOf('f', 2) + 1)
+      address_decoded = base32Decode(sub_address.toUpperCase(), 'RFC4648')
+
+      payload = Buffer.concat([new BN(namespace, 10).toBuffer('be', 8), Buffer.from(address_decoded.slice(0, -4))])
+      checksum = Buffer.from(address_decoded.slice(-4))
+
+      if (payload.byteLength > MaxSubaddressBytes) {
+        throw new InvalidPayloadLength()
+      }
+      break
     default:
       throw new UnknownProtocolIndicator()
   }
@@ -125,6 +139,11 @@ export function bytesToAddress(payload: Buffer, testnet: boolean): string {
         throw new InvalidPayloadLength()
       }
       break
+    case ProtocolIndicator.DELEGATED:
+      if (payload.slice(1).length < 8 + 1 || payload.slice(1).length > 8 + MaxSubaddressBytes) {
+        throw new InvalidPayloadLength()
+      }
+      break
     default:
       throw new UnknownProtocolIndicator()
   }
@@ -138,6 +157,19 @@ export function bytesToAddress(payload: Buffer, testnet: boolean): string {
 
   prefix += protocolIndicator
 
+  if (Number(protocolIndicator) === ProtocolIndicator.DELEGATED) {
+    let namespace = payload.slice(1, 9)
+    let subaddress = payload.slice(9)
+
+    return (
+      prefix +
+      new BN(namespace).toString(10) +
+      'f' +
+      base32Encode(Buffer.concat([subaddress, checksum]), 'RFC4648', {
+        padding: false,
+      }).toLowerCase()
+    )
+  }
   return (
     prefix +
     base32Encode(Buffer.concat([payload.slice(1), checksum]), 'RFC4648', {
