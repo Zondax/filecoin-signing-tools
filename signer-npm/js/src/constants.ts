@@ -6,4 +6,4 @@ export const ProtocolIndicator = {
   DELEGATED: 4,
 }
 
-export const MaxSubaddressBytes = 54;
+export const MaxSubaddressBytes = 54
