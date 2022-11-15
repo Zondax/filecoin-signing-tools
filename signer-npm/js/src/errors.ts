@@ -12,6 +12,20 @@ export class InvalidPayloadLength extends Error {
   }
 }
 
+export class InvalidNamespace extends Error {
+  constructor(...args: any[]) {
+    super(...args)
+    this.message = 'Invalid namespace.'
+  }
+}
+
+export class InvalidSubAddress extends Error {
+  constructor(...args: any[]) {
+    super(...args)
+    this.message = 'Invalid subAddress.'
+  }
+}
+
 export class ProtocolNotSupported extends Error {
   constructor(protocolName: string, ...args: any[]) {
     super(...args)
