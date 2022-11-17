@@ -16,7 +16,7 @@ serde_cbor = "0.11.1"
 serde_bytes = "0.11.5"
 rayon = "1"
 
-bls-signatures = {version = "0.11.3", default-features = false, features = ["pairing"]}
+bls-signatures = {version = "0.12.0", default-features = false, features = ["pairing"]}
 
 # Crypto related
 hex = { git = "https://github.com/Zondax/rust-hex", rev="6e35fb48999278c8c6c75b099baa4ea2a9d1d12b" }
