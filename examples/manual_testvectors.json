@@ -255,6 +255,24 @@
         "encoded_tx_hex": "8a00583103a7726b038022f75a384617585360cee629070a2d9d28712965e5f26ecc40858382803724ed34f2720336f09db631f074583103ad58df696e2d4e91ea86c881e938ba4ea81b395e12797b84b9cf314b9546705e839c7a99d606b247ddb4f9ac7a3414dd0144000186a01961a84200014200010040"
     },
     {
+        "description": "Using Protocol 4 addresses",
+        "valid": true,
+        "testnet": false,
+        "pure_js": true,
+        "message": {
+            "To": "f410f2qreez6evnfbqs6rvidgwm3b44hpxpvpeuoddga",
+            "From": "f410f2qreez6evnfbqs6rvidgwm3b44hpxpvpeuoddga",
+            "Nonce": 1,
+            "Value": "100000",
+            "GasLimit": 25000,
+            "GasPremium": "1",
+            "GasFeeCap": "1",
+            "Method": 0,
+            "Params": ""
+        },
+        "encoded_tx_hex": "8a0056040ad4224267c4ab4a184bd1aa066b3361e70efbbeaf56040ad4224267c4ab4a184bd1aa066b3361e70efbbeaf0144000186a01961a84200014200010040"
+    },
+    {
         "description": "Address protocol 1 Invalid payload length of 21 bytes",
         "valid": false,
         "testnet": false,
@@ -379,8 +397,8 @@
         "valid": false,
         "testnet": false,
         "message": {
-            "To": "faaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaryyc34i",
-            "From": "faaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaryyc34i",
+            "To": "faaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazuwnlsi",
+            "From": "faaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazuwnlsi",
             "Nonce": 1,
             "Value": "100000",
             "GasLimit": 25000,
@@ -389,7 +407,7 @@
             "Method": 0,
             "Params": ""
         },
-        "encoded_tx_hex": "8A0055040000000000000000000000000000000000000000550400000000000000000000000000000000000000000144000186A01961A84200014200010040"
+        "encoded_tx_hex": "8A0055050000000000000000000000000000000000000000550400000000000000000000000000000000000000000144000186A01961A84200014200010040"
     },
     {
         "description": "Negative sign byte",
