@@ -258,18 +258,19 @@
         "description": "Using Protocol 4 addresses",
         "valid": true,
         "testnet": false,
+        "pure_js": true,
         "message": {
             "To": "f410f2qreez6evnfbqs6rvidgwm3b44hpxpvpeuoddga",
             "From": "f410f2qreez6evnfbqs6rvidgwm3b44hpxpvpeuoddga",
             "Nonce": 1,
             "Value": "100000",
             "GasLimit": 25000,
-            "GasPremium": "2500",
+            "GasPremium": "1",
             "GasFeeCap": "1",
             "Method": 0,
             "Params": ""
         },
-        "encoded_tx_hex": "8a0056040ad4224267c4ab4a184bd1aa066b3361e70efbbeaf56040ad4224267c4ab4a184bd1aa066b3361e70efbbeaf0144000186a01961a8420001430009c40040"
+        "encoded_tx_hex": "8a0056040ad4224267c4ab4a184bd1aa066b3361e70efbbeaf56040ad4224267c4ab4a184bd1aa066b3361e70efbbeaf0144000186a01961a84200014200010040"
     },
     {
         "description": "Address protocol 1 Invalid payload length of 21 bytes",
