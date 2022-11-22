@@ -1297,10 +1297,10 @@ multiformats@^10.0.2:
   resolved "https://registry.yarnpkg.com/multiformats/-/multiformats-10.0.2.tgz#e549ae833dac77edb534bece4adf1d1a214879f0"
   integrity sha512-nJEHLFOYhO4L+aNApHhCnWqa31FyqAHv9Q77AhmwU3KsM2f1j7tuJpCk5ByZ33smzycNCpSG5klNIejIyfFx2A==
 
-n@^9.0.0:
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/n/-/n-9.0.0.tgz#0f57f3567d4e6721cbd62eec7972875fa69dfe84"
-  integrity sha512-OZie4DuAZASChFZnIkf5BYEYEhMe6utRTAWM+98aS6N0pRLNxcDEMwxSsy7is98zTlDICcQB2dym+u10pEOtBg==
+n@^9.0.1:
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/n/-/n-9.0.1.tgz#bd6cac69015ffec722f1aa867a59875f400d6ec0"
+  integrity sha512-SsKwY5iFdKd3xpsT4ISFmRLnCVcx+eNMc2NIlxMQL+w6zKK4hjaMvSZf8V+Fq2ipVCuuLD2fhVJSA6cszfJq9g==
 
 natural-compare-lite@^1.4.0:
   version "1.4.0"
