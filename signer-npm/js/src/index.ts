@@ -17,6 +17,32 @@ export function generateMnemonic(): string {
   return bip39.generateMnemonic(256)
 }
 
+export function validateAddressAsString(address: string): boolean {
+  try {
+    addressAsBytes(address)
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
+export function validateAddressAsBytes(bytes: Buffer): boolean {
+  try {
+    bytesToAddress(bytes, false)
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
+export function parseAddress(address: string): Buffer {
+  return addressAsBytes(address)
+}
+
+export function encodeAddress(bytes: Buffer, isTestnet: boolean): string {
+  return bytesToAddress(bytes, isTestnet)
+}
+
 export function keyDeriveFromSeed(seed: string | Buffer, path: string): ExtendedKey {
   if (typeof seed === 'string') {
     seed = Buffer.from(seed, 'hex')
