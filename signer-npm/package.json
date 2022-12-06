@@ -1,0 +1,91 @@
+{
+  "name": "@zondax/filecoin-signing-tools",
+  "collaborators": [
+    "Zondax <info@zondax.ch>"
+  ],
+  "typesVersions": {
+    "*": {
+      "js": ["js/dist/index.d.ts"],
+      "rpc": ["rpc/dist/index.d.ts"]
+    }
+  },
+  "scripts": {
+    "lint:js": "cd js && eslint src/**",
+    "lint:rpc": "cd rpc && eslint src/**",
+    "lint": "yarn lint:js && yarn lint:rpc",
+    "build:js": "cd js && tsc",
+    "build:rpc": "cd rpc && tsc",
+    "build": "yarn build:js && yarn build:rpc"
+  },
+  "keywords": [
+    "filecoin",
+    "zondax",
+    "cryptography"
+  ],
+  "description": "Filecoin Signing Tools",
+  "version": "0.0.0",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zondax/filecoin-signing-tools"
+  },
+  "files": [
+    "README.md",
+    "nodejs/*",
+    "browser/*",
+    "js/*",
+    "rpc/*"
+  ],
+  "dependencies": {
+    "@ipld/dag-cbor": "^8.0.0",
+    "axios": "^1.2.0",
+    "base32-decode": "^1.0.0",
+    "base32-encode": "^2.0.0",
+    "bip32": "^3.1.0",
+    "bip39": "^3.0.4",
+    "blakejs": "^1.2.1",
+    "bn.js": "^5.2.1",
+    "leb128": "^0.0.5",
+    "secp256k1": "^4.0.3",
+    "tiny-secp256k1": "^2.2.1"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.1",
+    "@types/secp256k1": "^4.0.3",
+    "eslint": "^8.29.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "mocha": "^10.1.0",
+    "prettier": "^2.8.0",
+    "typescript": "^4.9.3"
+  },
+  "main": "./browser/filecoin_signer_wasm.js",
+  "exports": {
+    ".": {
+      "browser": "./browser/filecoin_signer_wasm.js",
+      "node": "./nodejs/filecoin_signer_wasm.js",
+      "require": "./nodejs/filecoin_signer_wasm.js",
+      "import": "./nodejs/filecoin_signer_wasm.js"
+    },
+    "./js": {
+      "import": "./js/dist/index.js",
+      "require": "./js/dist/index.js",
+      "default": "./js/dist/index.js",
+      "types": "./js/dist/index.d.ts"
+    },
+    "./rpc": {
+      "import": "./rpc/dist/index.js",
+      "require": "./rpc/dist/index.js",
+      "default": "./rpc/dist/index.js",
+      "types": "./rpc/dist/index.d.ts"
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

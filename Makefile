@@ -19,8 +19,7 @@ build_npm:
 	wasm-pack build --no-typescript --target nodejs --out-dir pkg/nodejs  signer-npm/
 	wasm-pack build --no-typescript --target browser --out-dir pkg/browser signer-npm/
 	# For the pure js and rpc we need the node_modules folder when using `yarn link`
-	cd signer-npm/js && yarn install && yarn lint && yarn build
-	cd signer-npm/rpc && yarn install && yarn lint && yarn build
+	cd signer-npm && yarn install && yarn lint && yarn build
 	cd signer-npm && make build
 	cp signer-npm/README.md signer-npm/pkg/README.md
 
@@ -29,14 +28,13 @@ clean_npm:
 	rm -rf examples/wasm_browser/node_modules || true
 
 link_npm: build_npm
-	cd signer-npm/pkg && yarn unlink  || true
-	cd examples/wasm_node && yarn unlink $(NPM_PACKAGE_NAME) || true
-	cd examples/wasm_browser && yarn unlink $(NPM_PACKAGE_NAME) || true
+	cd signer-npm/pkg && yalc publish
+	cd examples/wasm_node && yalc add @zondax/filecoin-signing-tools@0.0.0 && yarn install
+	cd examples/wasm_browser && yalc add @zondax/filecoin-signing-tools@0.0.0
 
-#	# Now use it in other places
-	cd signer-npm/pkg && yarn link
-	cd examples/wasm_node && yarn link $(NPM_PACKAGE_NAME) && yarn install
-	cd examples/wasm_browser && yarn link $(NPM_PACKAGE_NAME)
+unlink_npm:
+	cd examples/wasm_node && yalc remove @zondax/filecoin-signing-tools
+	cd examples/wasm_browser && yalc remove @zondax/filecoin-signing-tools
 
 test_npm_unit: build_npm
 	#wasm-pack test --chrome --firefox --headless ./signer-npm
@@ -46,11 +44,13 @@ test_npm_unit: build_npm
 test_npm_node: link_npm
 	cd examples/wasm_node && yarn test
 	cd examples/wasm_node && yarn test:js
+	make unlink_npm
 
 test_npm: test_npm_unit test_npm_node
 
 demo_npm_browser: link_npm
 	cd examples/wasm_browser && yarn install && yarn certificate && yarn start
+	make unlink_npm
 
 install_deps_rust:
 ifeq ($(SILENT),)

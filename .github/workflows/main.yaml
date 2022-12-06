@@ -38,7 +38,7 @@ jobs:
       - name: clippy
         run: |
           cargo clippy --version
-          cargo clippy --all-features --all-targets 
+          cargo clippy --all-features --all-targets
       #- name: audit
       #  run: |
       #    cargo audit --version
@@ -134,6 +134,7 @@ jobs:
             ~/.cache/sccache
           key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
       - run: apt-get update && apt-get install -y firefox-esr libnss3
+      - run: npm install -g yalc
       - run: make install_wasmpack SILENT=true
       - run: |
           chown -R root:root /github/home
@@ -158,6 +159,7 @@ jobs:
           path: |
             ~/.cache/sccache
           key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
+      - run: npm install -g yalc
       - run: make install_wasmpack SILENT=true
       - run: make link_npm
       - run: cd examples/wasm_node && yarn test:pc
