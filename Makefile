@@ -28,14 +28,9 @@ clean_npm:
 	rm -rf examples/wasm_browser/node_modules || true
 
 link_npm: build_npm
-	cd signer-npm/pkg && yarn unlink  || true
-	cd examples/wasm_node && yarn unlink $(NPM_PACKAGE_NAME) || true
-	cd examples/wasm_browser && yarn unlink $(NPM_PACKAGE_NAME) || true
-
-#	# Now use it in other places
-	cd signer-npm/pkg && yarn link
-	cd examples/wasm_node && yarn link $(NPM_PACKAGE_NAME) && yarn install
-	cd examples/wasm_browser && yarn link $(NPM_PACKAGE_NAME)
+	cd signer-npm/pkg && yalc publish
+	cd examples/wasm_node && yalc add @zondax/filecoin-signing-tools@0.0.0 && yarn install
+	cd examples/wasm_browser && yalc add @zondax/filecoin-signing-tools@0.0.0
 
 test_npm_unit: build_npm
 	#wasm-pack test --chrome --firefox --headless ./signer-npm
