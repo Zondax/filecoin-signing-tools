@@ -3,6 +3,14 @@
   "collaborators": [
     "Zondax <info@zondax.ch>"
   ],
+  "scripts": {
+    "lint:js": "cd js && eslint src/**",
+    "lint:rpc": "cd rpc && eslint src/**",
+    "lint": "yarn lint:js && yarn lint:rpc",
+    "build:js": "cd js && tsc",
+    "build:rpc": "cd rpc && tsc",
+    "build": "yarn build:js && yarn build:rpc"
+  },
   "keywords": [
     "filecoin",
     "zondax",
@@ -23,16 +31,28 @@
     "rpc/*"
   ],
   "dependencies": {
-    "axios": "^0.24.0",
+    "@ipld/dag-cbor": "^8.0.0",
+    "axios": "^1.2.0",
     "base32-decode": "^1.0.0",
-    "base32-encode": "1.2.0",
+    "base32-encode": "^2.0.0",
     "bip32": "^3.1.0",
     "bip39": "^3.0.4",
-    "blakejs": "^1.1.1",
-    "bn.js": "^5.1.2",
-    "@ipld/dag-cbor": "^7.0.0",
-    "leb128": "0.0.5",
-    "secp256k1": "^4.0.3"
+    "blakejs": "^1.2.1",
+    "bn.js": "^5.2.1",
+    "leb128": "^0.0.5",
+    "secp256k1": "^4.0.3",
+    "tiny-secp256k1": "^2.2.1"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.1",
+    "@types/secp256k1": "^4.0.3",
+    "eslint": "^8.29.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "mocha": "^10.1.0",
+    "prettier": "^2.8.0",
+    "typescript": "^4.9.3"
   },
   "main": "./browser/filecoin_signer_wasm.js",
   "exports": {
