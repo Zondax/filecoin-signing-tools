@@ -32,6 +32,10 @@ link_npm: build_npm
 	cd examples/wasm_node && yalc add @zondax/filecoin-signing-tools@0.0.0 && yarn install
 	cd examples/wasm_browser && yalc add @zondax/filecoin-signing-tools@0.0.0
 
+unlink_npm:
+	cd examples/wasm_node && yalc remove @zondax/filecoin-signing-tools
+	cd examples/wasm_browser && yalc remove @zondax/filecoin-signing-tools
+
 test_npm_unit: build_npm
 	#wasm-pack test --chrome --firefox --headless ./signer-npm
 	wasm-pack test --firefox --headless ./signer-npm
@@ -40,11 +44,13 @@ test_npm_unit: build_npm
 test_npm_node: link_npm
 	cd examples/wasm_node && yarn test
 	cd examples/wasm_node && yarn test:js
+	make unlink_npm
 
 test_npm: test_npm_unit test_npm_node
 
 demo_npm_browser: link_npm
 	cd examples/wasm_browser && yarn install && yarn certificate && yarn start
+	make unlink_npm
 
 install_deps_rust:
 ifeq ($(SILENT),)
