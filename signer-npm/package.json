@@ -3,6 +3,12 @@
   "collaborators": [
     "Zondax <info@zondax.ch>"
   ],
+  "typesVersions": {
+    "*": {
+      "js": ["js/dist/index.d.ts"],
+      "rpc": ["rpc/dist/index.d.ts"]
+    }
+  },
   "scripts": {
     "lint:js": "cd js && eslint src/**",
     "lint:rpc": "cd rpc && eslint src/**",
@@ -62,8 +68,16 @@
       "require": "./nodejs/filecoin_signer_wasm.js",
       "import": "./nodejs/filecoin_signer_wasm.js"
     },
-    "./js": "./js/dist/index.js",
-    "./rpc": "./rpc/dist/index.js"
+    "./js": {
+      "import": "./js/dist/index.js",
+      "require": "./js/dist/index.js",
+      "types": "./js/dist/index.d.ts"
+    },
+    "./rpc": {
+      "import": "./rpc/dist/index.js",
+      "require": "./rpc/dist/index.js",
+      "types": "./rpc/dist/index.d.ts"
+    }
   },
   "browserslist": [
     "> 1%",
