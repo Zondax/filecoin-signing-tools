@@ -1,0 +1,28 @@
+{
+  "name": "@zondax/filecoin-signing-tools",
+  "collaborators": [
+    "Zondax <info@zondax.ch>"
+  ],
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "keywords": [
+    "filecoin",
+    "zondax",
+    "cryptography"
+  ],
+  "description": "Filecoin Signing Tools",
+  "version": "0.0.0",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zondax/filecoin-signing-tools"
+  },
+  "main": "./dist/index.js",
+  "browserslist": [
+    "> 1%",
+    "last 2 versions"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
