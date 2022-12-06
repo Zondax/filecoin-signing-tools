@@ -71,11 +71,13 @@
     "./js": {
       "import": "./js/dist/index.js",
       "require": "./js/dist/index.js",
+      "default": "./js/dist/index.js",
       "types": "./js/dist/index.d.ts"
     },
     "./rpc": {
       "import": "./rpc/dist/index.js",
       "require": "./rpc/dist/index.js",
+      "default": "./rpc/dist/index.js",
       "types": "./rpc/dist/index.d.ts"
     }
   },
