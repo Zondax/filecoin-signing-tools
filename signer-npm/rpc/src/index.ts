@@ -27,7 +27,7 @@ export default class FilecoinRPC {
     return response.data
   }
 
-  async sendSignedMessage(signedMessage: any) {
+  async sendSignedMessage(signedMessage: any, skipStateWaitMsg?: boolean) {
     let response = await this.requester.post('', {
       jsonrpc: '2.0',
       method: 'Filecoin.MpoolPush',
@@ -40,6 +40,8 @@ export default class FilecoinRPC {
     }
 
     let cid = response.data.result
+
+    if (skipStateWaitMsg) return cid
 
     response = await this.requester.post('', {
       jsonrpc: '2.0',
