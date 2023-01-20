@@ -1502,10 +1502,10 @@ ms@^2.1.1:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
 
-multiformats@^11.0.0:
-  version "11.0.0"
-  resolved "https://registry.yarnpkg.com/multiformats/-/multiformats-11.0.0.tgz#728dd8adfe4b169cd5b4b22d9dc1054d48bbe2d0"
-  integrity sha512-vqF8bmMtbxw9Zn3eTpk0OZQdBVmAT/+bTGwXb3C2qCNkp45aJMmkCDds3lrtObECWPf+KFjFtTOHkvCaT/c/xQ==
+multiformats@^11.0.0, multiformats@^11.0.1:
+  version "11.0.1"
+  resolved "https://registry.yarnpkg.com/multiformats/-/multiformats-11.0.1.tgz#ba58c3f69f032ab67dab4b48cc70f01ac2ca07fe"
+  integrity sha512-atWruyH34YiknSdL5yeIir00EDlJRpHzELYQxG7Iy29eCyL+VrZHpPrX5yqlik3jnuqpLpRKVZ0SGVb9UzKaSA==
 
 n@^9.0.1:
   version "9.0.1"
