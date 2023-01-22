@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios'
+import { GasEstimationResponse, GetNonceResponse, ReadStateResponse, SendSignMessageResponse, SignedMessage, TransactionRaw } from './types'
 
 type Args = { url: string; token: string }
 
@@ -16,7 +17,7 @@ export default class FilecoinRPC {
     })
   }
 
-  async getNonce(address: string) {
+  async getNonce(address: string): Promise<GetNonceResponse> {
     let response = await this.requester.post('', {
       jsonrpc: '2.0',
       method: 'Filecoin.MpoolGetNonce',
@@ -27,7 +28,7 @@ export default class FilecoinRPC {
     return response.data
   }
 
-  async sendSignedMessage(signedMessage: any, skipStateWaitMsg?: boolean) {
+  async sendSignedMessage(signedMessage: SignedMessage, skipStateWaitMsg?: boolean): Promise<SendSignMessageResponse> {
     let response = await this.requester.post('', {
       jsonrpc: '2.0',
       method: 'Filecoin.MpoolPush',
@@ -53,7 +54,7 @@ export default class FilecoinRPC {
     return response.data
   }
 
-  async getGasEstimation(message: any) {
+  async getGasEstimation(message: TransactionRaw): Promise<GasEstimationResponse> {
     let response = await this.requester.post('', {
       jsonrpc: '2.0',
       method: 'Filecoin.GasEstimateMessageGas',
@@ -64,7 +65,7 @@ export default class FilecoinRPC {
     return response.data
   }
 
-  async readState(address: string) {
+  async readState(address: string): Promise<ReadStateResponse> {
     let response = await this.requester.post('', {
       jsonrpc: '2.0',
       method: 'Filecoin.StateReadState',

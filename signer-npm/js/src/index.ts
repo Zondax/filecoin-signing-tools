@@ -8,6 +8,8 @@ import BN from 'bn.js'
 import ExtendedKey from './extendedkey.js'
 import { getDigest, getCoinTypeFromPath, addressAsBytes, bytesToAddress, tryToPrivateKeyBuffer } from './utils.js'
 import { ProtocolIndicator } from './constants.js'
+import { SignedMessage, TransactionRaw } from './types'
+import { ByteView } from '@ipld/dag-cbor'
 
 // You must wrap a tiny-secp256k1 compatible implementation
 const bip32 = bip32Default.BIP32Factory(ecc)
@@ -87,7 +89,7 @@ export function serializeBigNum(gasprice: string): Buffer {
   return Buffer.concat([Buffer.from('00', 'hex'), gaspriceBuffer])
 }
 
-export function transactionSerializeRaw(message: any) {
+export function transactionSerializeRaw(message: TransactionRaw): ByteView<any[]> {
   if (!('To' in message) || typeof message['To'] !== 'string') {
     throw new Error("'To' is a required field and has to be a 'string'")
   }
@@ -136,15 +138,15 @@ export function transactionSerializeRaw(message: any) {
     Buffer.from(message['Params'], 'base64'),
   ]
 
-  return cbor.encode(message_to_encode)
+  return cbor.encode<any[]>(message_to_encode)
 }
 
-export function transactionSerialize(message: any): string {
+export function transactionSerialize(message: TransactionRaw): string {
   const raw_cbor = transactionSerializeRaw(message)
   return Buffer.from(raw_cbor).toString('hex')
 }
 
-export function transactionParse(cborMessage: string, testnet: boolean): any {
+export function transactionParse(cborMessage: string, testnet: boolean): TransactionRaw {
   const decoded: any = cbor.decode(Buffer.from(cborMessage, 'hex'))
 
   if (decoded[0] !== 0) {
@@ -154,80 +156,79 @@ export function transactionParse(cborMessage: string, testnet: boolean): any {
     throw new Error('The cbor is missing some fields... please verify you have 9 fields.')
   }
 
-  const message: any = {}
-
-  message['To'] = bytesToAddress(decoded[1], testnet)
-  message['From'] = bytesToAddress(decoded[2], testnet)
-  message['Nonce'] = decoded[3]
   if (decoded[4][0] === 0x01) {
     throw new Error('Value cant be negative')
   }
-  message['Value'] = new BN(Buffer.from(decoded[4]).toString('hex'), 16).toString(10)
-  message['GasLimit'] = decoded[5]
-  message['GasFeeCap'] = new BN(Buffer.from(decoded[6]).toString('hex'), 16).toString(10)
-  message['GasPremium'] = new BN(Buffer.from(decoded[7]).toString('hex'), 16).toString(10)
-  message['Method'] = decoded[8]
-  message['Params'] = decoded[9].toString()
 
+  const message: TransactionRaw = {
+    To: bytesToAddress(decoded[1], testnet),
+    From: bytesToAddress(decoded[2], testnet),
+    Nonce: decoded[3],
+    Value: new BN(Buffer.from(decoded[4]).toString('hex'), 16).toString(10),
+    GasLimit: decoded[5],
+    GasFeeCap: new BN(Buffer.from(decoded[6]).toString('hex'), 16).toString(10),
+    GasPremium: new BN(Buffer.from(decoded[7]).toString('hex'), 16).toString(10),
+    Method: decoded[8],
+    Params: decoded[9].toString(),
+  }
   return message
 }
 
-export function transactionSignRaw(unsignedMessage: any, privateKey: string | Buffer): Buffer {
-  if (typeof unsignedMessage === 'object') {
-    unsignedMessage = transactionSerializeRaw(unsignedMessage)
-  }
-  if (typeof unsignedMessage === 'string') {
-    unsignedMessage = Buffer.from(unsignedMessage, 'hex')
-  }
+export function transactionSignRaw(unsignedMessage: TransactionRaw | string, privateKey: string | Buffer): Buffer {
+  let parsedMessage: ArrayLike<number>
+
+  if (typeof unsignedMessage === 'string') parsedMessage = Buffer.from(unsignedMessage, 'hex')
+  else if (typeof unsignedMessage === 'object') parsedMessage = transactionSerializeRaw(unsignedMessage)
+  else throw new Error('message must be TransactionRaw or hex string')
 
   // verify format and convert to buffer if needed
   privateKey = tryToPrivateKeyBuffer(privateKey)
 
-  const messageDigest = getDigest(unsignedMessage)
+  const messageDigest = getDigest(parsedMessage)
   const signature = secp256k1.ecdsaSign(messageDigest, privateKey)
 
   return Buffer.concat([Buffer.from(signature.signature), Buffer.from([signature.recid])])
 }
 
-export function transactionSign(unsignedMessage: any, privateKey: string | Buffer): any {
-  if (typeof unsignedMessage !== 'object') {
-    throw new Error("'message' need to be an object. Cannot be under CBOR format.")
-  }
+export function transactionSign(unsignedMessage: TransactionRaw, privateKey: string | Buffer): any {
+  if (typeof unsignedMessage !== 'object') throw new Error("'message' need to be an object. Cannot be under CBOR format.")
+
   const signature = transactionSignRaw(unsignedMessage, privateKey)
 
-  const signedMessage: any = {}
-
   // TODO: support BLS scheme
-  signedMessage['Signature'] = {
-    Data: signature.toString('base64'),
-    Type: ProtocolIndicator.SECP256K1,
+  const signedMessage: SignedMessage = {
+    Signature: {
+      Data: signature.toString('base64'),
+      Type: ProtocolIndicator.SECP256K1,
+    },
   }
 
   return signedMessage
 }
 
 // TODO: new function 'verifySignature(signedMessage)'; Makes more sense ?
-export function verifySignature(signature: string | Buffer, message: any): boolean {
-  if (typeof message === 'object') {
-    message = transactionSerializeRaw(message)
-  }
-  if (typeof message === 'string') {
-    message = Buffer.from(message, 'hex')
-  }
+export function verifySignature(signature: string | Buffer, message: TransactionRaw | string): boolean {
+  let messageBuf: ArrayLike<number>
+  if (typeof message === 'object') messageBuf = transactionSerializeRaw(message)
+  else if (typeof message === 'string') messageBuf = Buffer.from(message, 'hex')
+  else throw new Error('message must be TransactionRaw or hex string')
 
+  let signatureBuf: Buffer
   if (typeof signature === 'string') {
     // We should have a padding!
     if (signature.slice(-1) === '=') {
-      signature = Buffer.from(signature, 'base64')
+      signatureBuf = Buffer.from(signature, 'base64')
     } else {
-      signature = Buffer.from(signature, 'hex')
+      signatureBuf = Buffer.from(signature, 'hex')
     }
+  } else {
+    signatureBuf = signature
   }
 
-  const messageDigest = getDigest(message)
+  const messageDigest = getDigest(messageBuf)
 
-  const publicKey = secp256k1.ecdsaRecover(signature.slice(0, -1), signature[64], messageDigest, false)
-  return secp256k1.ecdsaVerify(signature.slice(0, -1), messageDigest, publicKey)
+  const publicKey = secp256k1.ecdsaRecover(signatureBuf.slice(0, -1), signatureBuf[64], messageDigest, false)
+  return secp256k1.ecdsaVerify(signatureBuf.slice(0, -1), messageDigest, publicKey)
 }
 
 // eslint-disable-next-line no-unused-vars
