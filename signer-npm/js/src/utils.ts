@@ -21,14 +21,14 @@ import { ProtocolIndicator, MaxSubaddressBytes } from './constants.js'
 
 const CID_PREFIX = Buffer.from([0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20])
 
-export function getCID(message: Buffer): Buffer {
+export function getCID(message: ArrayLike<number>): Buffer {
   const blakeCtx = blake.blake2bInit(32)
   blake.blake2bUpdate(blakeCtx, message)
   const hash = Buffer.from(blake.blake2bFinal(blakeCtx))
   return Buffer.concat([CID_PREFIX, hash])
 }
 
-export function getDigest(message: Buffer): Buffer {
+export function getDigest(message: ArrayLike<number>): Buffer {
   // digest = blake2-256( prefix + blake2b-256(tx) )
 
   const blakeCtx = blake.blake2bInit(32)
