@@ -29,3 +29,4 @@ examples/wasm_browser/yarn.lock
 examples/private_keys_base64.txt
 test_vectors/NOTES.md
 examples/wasm_browser/yarn-error.log
+.vscode
