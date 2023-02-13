@@ -5,8 +5,12 @@
   ],
   "typesVersions": {
     "*": {
-      "js": ["js/dist/index.d.ts"],
-      "rpc": ["rpc/dist/index.d.ts"]
+      "js": [
+        "js/dist/index.d.ts"
+      ],
+      "rpc": [
+        "rpc/dist/index.d.ts"
+      ]
     }
   },
   "scripts": {
