@@ -142,7 +142,7 @@ pub mod tokenamount {
     where
         S: Serializer,
     {
-        let s = token_amount.to_string();
+        let s = token_amount.atto().to_string();
         serializer.serialize_str(&s)
     }
 
