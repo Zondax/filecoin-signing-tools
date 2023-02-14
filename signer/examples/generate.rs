@@ -1,5 +1,6 @@
 use bls_signatures::Serialize;
 use bls_signatures::*;
+use fvm_shared::bigint::BigInt;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
@@ -9,6 +10,7 @@ use fvm_shared::address::Address;
 use fvm_shared::econ::TokenAmount;
 use fvm_shared::message::Message;
 use std::str::FromStr;
+use fvm_ipld_encoding::Cbor;
 
 use hex::encode;
 use std::fs;
@@ -48,10 +50,10 @@ fn run(num_messages: usize) {
                 .unwrap(),
             from: Address::new_bls(&sk.public_key().as_bytes()).unwrap(),
             sequence: 1,
-            value: TokenAmount::from_str("100000").unwrap(),
+            value: TokenAmount::from_atto(BigInt::from_str("100000").unwrap()),
             gas_limit: 25000,
-            gas_fee_cap: TokenAmount::from_str("1").unwrap(),
-            gas_premium: TokenAmount::from_str("1").unwrap(),
+            gas_fee_cap: TokenAmount::from_atto(BigInt::from_str("1").unwrap()),
+            gas_premium: TokenAmount::from_atto(BigInt::from_str("1").unwrap()),
             method_num: 0,
             params: RawBytes::new(vec![]),
         })
@@ -62,7 +64,8 @@ fn run(num_messages: usize) {
         .par_iter()
         .zip(private_keys.par_iter())
         .map(|(message, sk)| {
-            let sign_bytes = message.to_signing_bytes();
+            let message_cid = message.cid().unwrap();
+            let sign_bytes = message_cid.to_bytes();
 
             sk.sign(sign_bytes)
         })

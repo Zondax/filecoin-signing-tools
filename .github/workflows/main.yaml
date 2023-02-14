@@ -16,14 +16,18 @@ jobs:
 
   build:
     needs: [ configure ]
-    container:
-      image: zondax/rust-ci:latest
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           submodules: true
+      - name: Install latest stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
       - name: Restore/Save sscache
         uses: actions/cache@v2
         with:
