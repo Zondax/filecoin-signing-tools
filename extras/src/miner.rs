@@ -5,12 +5,14 @@ use fil_actor_miner::{
     ConfirmSectorProofsParams, DeclareFaultsParams, DeclareFaultsRecoveredParams,
     DeferredCronEventParams, DisputeWindowedPoStParams, ExpirationExtension,
     ExtendSectorExpirationParams, FaultDeclaration, MinerConstructorParams, PoStPartition,
-    PreCommitSectorBatchParams, ProveCommitAggregateParams, ProveCommitSectorParams,
-    ProveReplicaUpdatesParams, RecoveryDeclaration, ReplicaUpdate, ReportConsensusFaultParams,
-    SectorPreCommitInfo, SubmitWindowedPoStParams, TerminateSectorsParams, TerminationDeclaration,
+    PreCommitSectorBatchParams, PreCommitSectorBatchParams2, PreCommitSectorParams,
+    ProveCommitAggregateParams, ProveCommitSectorParams, ProveReplicaUpdatesParams,
+    RecoveryDeclaration, ReplicaUpdate, ReportConsensusFaultParams, SectorPreCommitInfo,
+    SubmitWindowedPoStParams, TerminateSectorsParams, TerminationDeclaration,
     WithdrawBalanceParams,
 };
-use fvm_ipld_bitfield::UnvalidatedBitField;
+use fil_actor_miner::CompactCommD;
+use fvm_ipld_bitfield::BitField;
 use fvm_ipld_encoding::{serde_bytes, BytesDe};
 use fvm_shared::address::Address;
 use fvm_shared::bigint::bigint_ser;
@@ -94,7 +96,7 @@ pub struct PoStPartitionAPI {
     /// Partitions are numbered per-deadline, from zero.
     pub index: u64,
     /// Sectors skipped while proving that weren't already declared faulty.
-    pub skipped: UnvalidatedBitField,
+    pub skipped: BitField,
 }
 
 /// Information submitted by a miner to provide a Window PoSt.
@@ -139,7 +141,7 @@ pub struct ExtendSectorExpirationParamsAPI {
 pub struct ExpirationExtensionAPI {
     pub deadline: u64,
     pub partition: u64,
-    pub sectors: UnvalidatedBitField,
+    pub sectors: BitField,
     pub new_expiration: ChainEpoch,
 }
 
@@ -154,7 +156,7 @@ pub struct TerminateSectorsParamsAPI {
 pub struct TerminationDeclarationAPI {
     pub deadline: u64,
     pub partition: u64,
-    pub sectors: UnvalidatedBitField,
+    pub sectors: BitField,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -171,7 +173,7 @@ pub struct FaultDeclarationAPI {
     /// Partition index within the deadline containing the faulty sectors.
     pub partition: u64,
     /// Sectors in the partition being declared faulty.
-    pub sectors: UnvalidatedBitField,
+    pub sectors: BitField,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -188,20 +190,20 @@ pub struct RecoveryDeclarationAPI {
     /// Partition index within the deadline containing the recovered sectors.
     pub partition: u64,
     /// Sectors in the partition being declared recovered.
-    pub sectors: UnvalidatedBitField,
+    pub sectors: BitField,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "CompactPartitionsParams", rename_all = "PascalCase")]
 pub struct CompactPartitionsParamsAPI {
     pub deadline: u64,
-    pub partitions: UnvalidatedBitField,
+    pub partitions: BitField,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "CompactSectorNumbersParams", rename_all = "PascalCase")]
 pub struct CompactSectorNumbersParamsAPI {
-    pub mask_sector_numbers: UnvalidatedBitField,
+    pub mask_sector_numbers: BitField,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -222,15 +224,21 @@ pub struct WithdrawBalanceParamsAPI {
     pub amount_requested: TokenAmount,
 }
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(remote = "PreCommitSectorBatchParams", rename_all = "PascalCase")]
-pub struct PreCommitSectorBatchParamsAPI {
+pub struct PreCommitSectorBatchParamsAPI  {
+    pub sectors: Vec<PreCommitSectorParams>,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(remote = "PreCommitSectorBatchParams2", rename_all = "PascalCase")]
+pub struct PreCommitSectorBatchParams2API {
     pub sectors: Vec<SectorPreCommitInfo>,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(remote = "SectorPreCommitInfo", rename_all = "PascalCase")]
-pub struct SectorPreCommitInfoAPI {
+#[serde(remote = "PreCommitSectorParams", rename_all = "PascalCase")]
+pub struct PreCommitSectorParamsAPI {
     pub seal_proof: RegisteredSealProof,
     pub sector_number: SectorNumber,
     /// CommR
@@ -245,6 +253,21 @@ pub struct SectorPreCommitInfoAPI {
     pub replace_sector_partition: u64,
     pub replace_sector_number: SectorNumber,
 }
+
+#[derive(Debug, Default, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[serde(remote = "SectorPreCommitInfo", rename_all = "PascalCase")]
+pub struct SectorPreCommitInfoAPI {
+    pub seal_proof: RegisteredSealProof,
+    pub sector_number: SectorNumber,
+    /// CommR
+    pub sealed_cid: Cid,
+    pub seal_rand_epoch: ChainEpoch,
+    pub deal_ids: Vec<DealID>,
+    pub expiration: ChainEpoch,
+    /// CommD
+    pub unsealed_cid: CompactCommD,
+}
+
 
 // * Added in v2 -- param was previously a big int.
 #[derive(Debug, Serialize, Deserialize)]
@@ -266,7 +289,7 @@ pub struct DisputeWindowedPoStParamsAPI {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(remote = "ProveCommitAggregateParams", rename_all = "PascalCase")]
 pub struct ProveCommitAggregateParamsAPI {
-    pub sector_numbers: UnvalidatedBitField,
+    pub sector_numbers: BitField,
     #[serde(with = "serde_base64_vector")]
     pub aggregate_proof: Vec<u8>,
 }

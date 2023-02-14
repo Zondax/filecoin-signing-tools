@@ -2,16 +2,15 @@ use fil_actor_paych::{
     ConstructorParams, Merge, ModVerifyParams, PaymentVerifyParams, SignedVoucher,
     UpdateChannelStateParams,
 };
-use fvm_ipld_encoding::{serde_bytes, RawBytes};
+use fvm_ipld_encoding::RawBytes;
 use fvm_shared::address::Address;
-use fvm_shared::bigint::{bigint_ser, BigInt};
 use fvm_shared::clock::ChainEpoch;
 use fvm_shared::crypto::signature::Signature;
+use fvm_shared::econ::TokenAmount;
 use fvm_shared::MethodNum;
 use serde::{Deserialize, Serialize};
 
 use super::json::address;
-use super::json::bigint;
 use super::json::option_signature;
 use super::json::rawbytes;
 use super::json::serde_base64_vector;
@@ -37,8 +36,7 @@ pub struct SignedVoucherAPI {
     pub extra: Option<ModVerifyParams>,
     pub lane: u64,
     pub nonce: u64,
-    #[serde(with = "bigint")]
-    pub amount: BigInt,
+    pub amount: TokenAmount,
     pub min_settle_height: ChainEpoch,
     pub merges: Vec<Merge>,
     #[serde(with = "option_signature")]

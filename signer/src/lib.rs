@@ -1,6 +1,4 @@
 #![cfg_attr(not(test), deny(clippy::expect_used,))]
-
-use lazy_static::lazy_static;
 use std::convert::TryFrom;
 use std::str::FromStr;
 
@@ -13,7 +11,6 @@ use num_traits::FromPrimitive;
 use rayon::prelude::*;
 use zx_bip44::BIP44Path;
 
-use cid::Cid;
 use fil_actor_init::{ExecParams, Method as MethodInit};
 use fil_actor_multisig as multisig;
 use fil_actor_paych as paych;
@@ -24,7 +21,6 @@ use bls_signatures::PublicKey as BLSPublicKey;
 use libsecp256k1::PublicKey as SECP256K1PublicKey;
 
 use extras::signed_message::ref_fvm::SignedMessage;
-use regex::bytes::Regex;
 
 use fvm_shared::econ::TokenAmount;
 use fvm_shared::MethodNum;
@@ -306,8 +302,9 @@ fn transaction_sign_secp56k1_raw(
     private_key: &PrivateKey,
 ) -> Result<Signature, SignerError> {
     let secret_key = libsecp256k1::SecretKey::parse_slice(&private_key.0)?;
+    let message_cid = message.cid()?;
     let message_digest =
-        libsecp256k1::Message::parse_slice(&utils::blake2b_256(&message.to_signing_bytes()))?;
+        libsecp256k1::Message::parse_slice(&utils::blake2b_256(&message_cid.to_bytes()))?;
 
     let (signature_rs, recovery_id) = libsecp256k1::sign(&message_digest, &secret_key);
 
@@ -325,7 +322,8 @@ fn transaction_sign_bls_raw(
     private_key: &PrivateKey,
 ) -> Result<Signature, SignerError> {
     let sk = bls_signatures::PrivateKey::from_bytes(&private_key.0)?;
-    let sig = sk.sign(message.to_signing_bytes());
+    let message_cid = message.cid()?;
+    let sig = sk.sign(message_cid.to_bytes());
     let signature = Signature::new_bls(sig.as_bytes());
 
     Ok(signature)
@@ -425,7 +423,8 @@ fn verify_bls_signature(signature: &Signature, cbor: &Vec<u8>) -> Result<bool, S
 
     let sig = bls_signatures::Signature::from_bytes(signature.bytes())?;
 
-    let signing_bytes = message.to_signing_bytes();
+    let message_cid = message.cid()?;
+    let signing_bytes = message_cid.to_bytes();
 
     let result = pk.verify(sig, signing_bytes);
 
@@ -463,7 +462,8 @@ fn extract_bls_signing_bytes_from_message(cbor_message: &Vec<u8>) -> Result<Vec<
     let message = transaction_parse(cbor_message, true)?;
     let unsigned_message_api = message.get_message();
 
-    Ok(unsigned_message_api.to_signing_bytes())
+    let message_cid = unsigned_message_api.cid()?;
+    Ok(message_cid.to_bytes())
 }
 
 pub fn verify_aggregated_signature(
@@ -597,7 +597,7 @@ pub fn create_voucher(
         extra: None,
         lane,
         nonce,
-        amount,
+        amount: TokenAmount::from_atto(amount),
         min_settle_height,
         merges: Vec::new(),
         signature: None,
