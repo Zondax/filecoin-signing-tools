@@ -1,4 +1,5 @@
 use cid::Cid;
+use fil_actor_miner::CompactCommD;
 use fil_actor_miner::{
     ApplyRewardParams, ChangeMultiaddrsParams, ChangePeerIDParams, ChangeWorkerAddressParams,
     CheckSectorProvenParams, CompactPartitionsParams, CompactSectorNumbersParams,
@@ -11,7 +12,6 @@ use fil_actor_miner::{
     SubmitWindowedPoStParams, TerminateSectorsParams, TerminationDeclaration,
     WithdrawBalanceParams,
 };
-use fil_actor_miner::CompactCommD;
 use fvm_ipld_bitfield::BitField;
 use fvm_ipld_encoding::{serde_bytes, BytesDe};
 use fvm_shared::address::Address;
@@ -226,7 +226,7 @@ pub struct WithdrawBalanceParamsAPI {
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 #[serde(remote = "PreCommitSectorBatchParams", rename_all = "PascalCase")]
-pub struct PreCommitSectorBatchParamsAPI  {
+pub struct PreCommitSectorBatchParamsAPI {
     pub sectors: Vec<PreCommitSectorParams>,
 }
 
@@ -267,7 +267,6 @@ pub struct SectorPreCommitInfoAPI {
     /// CommD
     pub unsealed_cid: CompactCommD,
 }
-
 
 // * Added in v2 -- param was previously a big int.
 #[derive(Debug, Serialize, Deserialize)]
