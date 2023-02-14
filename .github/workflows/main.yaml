@@ -52,13 +52,16 @@ jobs:
   tests_rust:
     needs: [ configure, build ]
     runs-on: ubuntu-latest
-    container:
-      image: zondax/rust-ci:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           submodules: true
+      - name: Install latest stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
       - name: Restore/Save sscache
         uses: actions/cache@v2
         with:
@@ -79,13 +82,16 @@ jobs:
   tests_ffi:
     needs: [ configure, build ]
     runs-on: ubuntu-latest
-    container:
-      image: zondax/rust-ci:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           submodules: true
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
       - name: Restore/Save sscache
         uses: actions/cache@v2
         with:
@@ -123,13 +129,16 @@ jobs:
   tests_npm:
     needs: [ configure, build ]
     runs-on: ubuntu-latest
-    container:
-      image: zondax/rust-ci:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           submodules: true
+      - name: Install latest stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
       - run: cargo --version
       - name: Restore/Save sscache
         uses: actions/cache@v2
@@ -150,13 +159,16 @@ jobs:
   devnet:
     needs: [ configure, build ]
     runs-on: ubuntu-latest
-    container:
-      image: zondax/rust-ci:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           submodules: true
+      - name: Install latest stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
       - name: Restore/Save sscache
         uses: actions/cache@v2
         with:
