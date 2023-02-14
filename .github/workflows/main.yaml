@@ -34,7 +34,7 @@ jobs:
           path: |
             ~/.cache/sccache
           key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
-      - run: apt-get update -y && apt-get install -y libusb-1.0.0 libudev-dev
+      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
       - name: rustfmt
         run: |
           cargo fmt --version
