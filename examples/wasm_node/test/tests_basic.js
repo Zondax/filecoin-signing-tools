@@ -263,7 +263,7 @@ describe('transactionParse', function () {
 
     assert.throws(
       () => filecoin_signer.transactionParse(cbor_transaction_extra_bytes, false),
-      /Cannot deserialize parameters \| Serialization error for Cbor protocol: trailing data at offset 64|CBOR decode error: too many terminals, data makes no sense/,
+      /Cannot deserialize parameters \| Serialization error for Cbor protocol: TrailingData|CBOR decode error: too many terminals, data makes no sense/,
     )
   })
 
@@ -273,7 +273,7 @@ describe('transactionParse', function () {
 
     assert.throws(
       () => filecoin_signer.transactionParse(cbor_transaction_extra_bytes, false),
-      /Cannot deserialize parameters \| Serialization error for Cbor protocol: trailing data at offset 64|CBOR decode error: too many terminals, data makes no sense/,
+      /Cannot deserialize parameters \| Serialization error for Cbor protocol: TrailingData|CBOR decode error: too many terminals, data makes no sense/,
     )
   })
 })
@@ -540,12 +540,6 @@ describe('Transaction Serialization - Parameterized', function () {
       continue
     }
 
-    if (tc.pure_js && !process.env.PURE_JS) {
-      // FIXME: Protocol 4 parsing not implemented in WASM
-      console.log('FIXME: Protocol 4 parsing not implemented in WASM')
-      continue
-    }
-
     it('Create Transaction : ' + tc.description, () => {
       if (tc.valid) {
         // Valid doesn't throw
@@ -575,12 +569,6 @@ describe('Transaction Deserialization - Parameterized', function () {
     if (tc.not_implemented) {
       // FIXME: Protocol 0 parsing not implemented in forest
       console.log('FIXME: Protocol 0 parsing not implemented in forest')
-      continue
-    }
-
-    if (tc.pure_js && !process.env.PURE_JS) {
-      // FIXME: Protocol 4 parsing not implemented in WASM
-      console.log('FIXME: Protocol 4 parsing not implemented in WASM')
       continue
     }
 

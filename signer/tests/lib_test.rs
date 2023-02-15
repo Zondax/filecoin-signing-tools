@@ -4,6 +4,7 @@ use std::str::FromStr;
 use bip39::{Language, Seed};
 use bls_signatures::Serialize;
 use fvm_ipld_encoding::{to_vec, Cbor, RawBytes};
+use fvm_shared::bigint::BigInt;
 use fvm_shared::message::Message;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
@@ -306,10 +307,10 @@ fn sign_bls_transaction() {
         to: Address::from_str("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy").unwrap(),
         from: bls_address,
         sequence: 1,
-        value: TokenAmount::from_str("100000").unwrap(),
+        value: TokenAmount::from_atto(BigInt::from_str("100000").unwrap()),
         gas_limit: 25000,
-        gas_fee_cap: TokenAmount::from_str("2500").unwrap(),
-        gas_premium: TokenAmount::from_str("2500").unwrap(),
+        gas_fee_cap: TokenAmount::from_atto(BigInt::from_str("2500").unwrap()),
+        gas_premium: TokenAmount::from_atto(BigInt::from_str("2500").unwrap()),
         method_num: 0,
         params: RawBytes::new(vec![]),
     };
@@ -326,7 +327,8 @@ fn sign_bls_transaction() {
 
     dbg!(hex::encode(&message_cbor));
 
-    assert!(bls_pk.verify(sig, &message.to_signing_bytes()));
+    let message_cid = message.cid().unwrap();
+    assert!(bls_pk.verify(sig, &message_cid.to_bytes()));
 }
 
 #[test]
@@ -365,10 +367,10 @@ fn test_verify_aggregated_signature() {
                 to: Address::from_str("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy").unwrap(),
                 from: bls_address,
                 sequence: 1,
-                value: TokenAmount::from_str("100000").unwrap(),
+                value: TokenAmount::from_atto(BigInt::from_str("100000").unwrap()),
                 gas_limit: 25000,
-                gas_fee_cap: TokenAmount::from_str("2500").unwrap(),
-                gas_premium: TokenAmount::from_str("2500").unwrap(),
+                gas_fee_cap: TokenAmount::from_atto(BigInt::from_str("2500").unwrap()),
+                gas_premium: TokenAmount::from_atto(BigInt::from_str("2500").unwrap()),
                 method_num: 0,
                 params: RawBytes::new(vec![]),
             }

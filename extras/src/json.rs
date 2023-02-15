@@ -134,7 +134,7 @@ pub mod option_address {
 }
 
 pub mod tokenamount {
-    use fvm_shared::econ::TokenAmount;
+    use fvm_shared::{bigint::BigInt, econ::TokenAmount};
     use serde::{de, Deserialize, Deserializer, Serializer};
     use std::str::FromStr;
 
@@ -142,7 +142,7 @@ pub mod tokenamount {
     where
         S: Serializer,
     {
-        let s = token_amount.to_string();
+        let s = token_amount.atto().to_string();
         serializer.serialize_str(&s)
     }
 
@@ -151,7 +151,9 @@ pub mod tokenamount {
         D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        TokenAmount::from_str(&s).map_err(de::Error::custom)
+        let amount = BigInt::from_str(&s).map_err(de::Error::custom)?;
+
+        Ok(TokenAmount::from_atto(amount))
     }
 }
 

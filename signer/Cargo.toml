@@ -20,7 +20,7 @@ bls-signatures = {version = "0.12.0", default-features = false, features = ["pai
 
 # Crypto related
 hex = { git = "https://github.com/Zondax/rust-hex", rev="6e35fb48999278c8c6c75b099baa4ea2a9d1d12b" }
-getrandom="0.1.14"
+getrandom = "0.1.14"
 libsecp256k1 = "0.6"
 blake2b_simd = "0.5.10"
 hmac = "0.8.1"
@@ -41,14 +41,15 @@ tiny-bip39 = "0.8.0"
 zx-bip44 = "0.1.0"
 
 extras = { path = "../extras"}
-fil_actor_init = "=7.2.1"
-fil_actor_multisig = "=7.2.1"
-fil_actor_paych = "=7.2.1"
-fil_actor_miner = "=7.2.1"
+fil_actor_init = "9.0.1"
+fil_actor_multisig = "9.0.1"
+fil_actor_paych = "9.0.1"
+fil_actor_miner = "9.0.1"
 
-fvm_shared = "=0.6.0"
-fvm_ipld_encoding = "0.1.0"
-cid = "=0.8.3"
+fvm_shared = "2.0.0"
+fvm_ipld_encoding = "0.2.3"
+cid = { version = "0.8.3", default-features = false, features = ["serde-codec"] }
+
 
 num-traits = "0.2"
 regex = "1"
