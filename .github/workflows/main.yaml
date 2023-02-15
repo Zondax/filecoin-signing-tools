@@ -146,7 +146,9 @@ jobs:
           path: |
             ~/.cache/sccache
           key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
-      - run: sudo apt-get update && sudo apt-get install -y firefox-esr libnss3
+      - run: |
+        sudo add-apt-repository ppa:mozillateam/ppa
+        sudo apt-get update && sudo apt-get install -y firefox-esr libnss3
       - run: npm install -g yalc
       - run: make install_wasmpack SILENT=true
       - run: |
