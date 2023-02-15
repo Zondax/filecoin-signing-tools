@@ -14,6 +14,7 @@ use super::json::address;
 use super::json::option_signature;
 use super::json::rawbytes;
 use super::json::serde_base64_vector;
+use super::json::tokenamount;
 
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "ConstructorParams", rename_all = "PascalCase")]
@@ -36,6 +37,7 @@ pub struct SignedVoucherAPI {
     pub extra: Option<ModVerifyParams>,
     pub lane: u64,
     pub nonce: u64,
+    #[serde(with = "tokenamount")]
     pub amount: TokenAmount,
     pub min_settle_height: ChainEpoch,
     pub merges: Vec<Merge>,

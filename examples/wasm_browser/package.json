@@ -20,9 +20,7 @@
     "rust",
     "filecoin"
   ],
-  "dependencies": {
-    "@zondax/filecoin-signing-tools": "file:.yalc/@zondax/filecoin-signing-tools"
-  },
+  "dependencies": {},
   "devDependencies": {
     "copy-webpack-plugin": "^11.0.0",
     "webpack": "^5.69.1",
