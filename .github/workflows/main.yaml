@@ -151,9 +151,6 @@ jobs:
           sudo apt-get update && sudo apt-get install -y firefox-esr libnss3
       - run: npm install -g yalc
       - run: make install_wasmpack SILENT=true
-      - run: |
-          chown -R root:root /github/home
-          chown -R root:root /home/github
       # Disabling Chrome (only Firefox) due to  https://github.com/Zondax/filecoin-signing-tools/issues/68
       - run: make test_npm_unit
       - run: make test_npm_node
