@@ -134,10 +134,10 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: true
-      - name: Install latest stable
+      - name: Install latest nightly
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly
           override: true
       - run: cargo --version
       - name: Restore/Save sscache

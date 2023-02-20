@@ -9,7 +9,7 @@ endif
 	curl -o /tmp/tmp.sh https://rustwasm.github.io/wasm-pack/installer/init.sh
 	chmod +x /tmp/tmp.sh
 	/tmp/tmp.sh -f
-	cargo install wasm-pack --force --version 0.10.2
+	cargo install wasm-pack --force --version 0.10.3
 #	curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 #	cargo install wasm-pack
 
