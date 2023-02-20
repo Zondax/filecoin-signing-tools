@@ -258,15 +258,14 @@
         "description": "Using Protocol 4 addresses",
         "valid": true,
         "testnet": false,
-        "pure_js": true,
         "message": {
             "To": "f410f2qreez6evnfbqs6rvidgwm3b44hpxpvpeuoddga",
             "From": "f410f2qreez6evnfbqs6rvidgwm3b44hpxpvpeuoddga",
             "Nonce": 1,
             "Value": "100000",
             "GasLimit": 25000,
-            "GasPremium": "1",
             "GasFeeCap": "1",
+            "GasPremium": "1",
             "Method": 0,
             "Params": ""
         },

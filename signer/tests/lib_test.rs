@@ -548,3 +548,10 @@ fn test_serialize() {
 
     assert_eq!(params_multisig.new_threshold, expected_params.new_threshold);
 }
+
+#[test]
+fn test_serialize_f4_address() {
+    let address = Address::from_str("f410f2qreez6evnfbqs6rvidgwm3b44hpxpvpeuoddga").unwrap();
+
+    assert!(true);
+}

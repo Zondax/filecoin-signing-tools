@@ -23,6 +23,7 @@
     "filecoin"
   ],
   "dependencies": {
+    "@zondax/filecoin-signing-tools": "file:.yalc/@zondax/filecoin-signing-tools",
     "axios": "^1.3.0",
     "cids": "^1.1.9",
     "esm": "^3.2.25",
