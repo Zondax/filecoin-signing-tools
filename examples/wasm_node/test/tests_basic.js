@@ -312,7 +312,7 @@ describeCall('transactionSignLotus', function () {
 
     var signed_tx = filecoin_signer.transactionSignLotus(tc.tx.Message, tc.pk)
 
-    assert.deepStrictEqual(JSON.parse(signed_tx), tc.tx)
+    assert.deepStrictEqual(signed_tx, tc.tx)
   })
 })
 

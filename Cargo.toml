@@ -11,3 +11,6 @@ members = [
 # Tell `rustc` to optimize for small code size.
 opt-level = "s"
 overflow-checks = true
+
+# [patch.crates-io]
+# fvm_shared = { version = "2.0.0", git = "https://github.com/filecoin-project/ref-fvm", tag = "fvm@v3.0.0-alpha.24" }

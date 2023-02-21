@@ -15,13 +15,15 @@ use fil_actor_init::{ExecParams, Method as MethodInit};
 use fil_actor_multisig as multisig;
 use fil_actor_paych as paych;
 use fvm_ipld_encoding::{from_slice, to_vec, Cbor, RawBytes};
-use fvm_shared::address::{Address, Network, Protocol};
+use fvm_shared::address::{set_current_network, Address, Network, Protocol};
 
 use bls_signatures::PublicKey as BLSPublicKey;
 use libsecp256k1::PublicKey as SECP256K1PublicKey;
 
 use extras::signed_message::ref_fvm::SignedMessage;
 
+use cid::multihash::MultihashDigest;
+use fvm_ipld_encoding::DAG_CBOR;
 use fvm_shared::econ::TokenAmount;
 use fvm_shared::MethodNum;
 
@@ -172,15 +174,17 @@ pub fn key_derive(
 
     let bip44_path = BIP44Path::from_string(path)?;
 
-    address.set_network(Network::Mainnet);
+    let mut network_str = "f".to_owned();
     if bip44_path.is_testnet() {
-        address.set_network(Network::Testnet);
+        network_str = "t".to_owned();
     }
+
+    let address = network_str + &address.to_string()[1..];
 
     Ok(ExtendedKey {
         private_key: PrivateKey(esk.secret_key()),
         public_key: PublicKey::SECP256K1PublicKey(SECP256K1PublicKey::parse(&esk.public_key())?),
-        address: address.to_string(),
+        address,
     })
 }
 
@@ -198,15 +202,17 @@ pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, Sign
 
     let bip44_path = BIP44Path::from_string(path)?;
 
-    address.set_network(Network::Mainnet);
+    let mut network_str = "f".to_owned();
     if bip44_path.is_testnet() {
-        address.set_network(Network::Testnet);
+        network_str = "t".to_owned();
     }
+
+    let address = network_str + &address.to_string()[1..];
 
     Ok(ExtendedKey {
         private_key: PrivateKey(esk.secret_key()),
         public_key: PublicKey::SECP256K1PublicKey(SECP256K1PublicKey::parse(&esk.public_key())?),
-        address: address.to_string(),
+        address,
     })
 }
 
@@ -220,18 +226,19 @@ pub fn key_derive_from_seed(seed: &[u8], path: &str) -> Result<ExtendedKey, Sign
 pub fn key_recover(private_key: &PrivateKey, testnet: bool) -> Result<ExtendedKey, SignerError> {
     let secret_key = libsecp256k1::SecretKey::parse_slice(&private_key.0)?;
     let public_key = libsecp256k1::PublicKey::from_secret_key(&secret_key);
-    let mut address = Address::new_secp256k1(&public_key.serialize())?;
+    let address = Address::new_secp256k1(&public_key.serialize())?;
 
+    let mut network_str = "f".to_owned();
     if testnet {
-        address.set_network(Network::Testnet);
-    } else {
-        address.set_network(Network::Mainnet);
+        network_str = "t".to_owned();
     }
+
+    let address = network_str + &address.to_string()[1..];
 
     Ok(ExtendedKey {
         private_key: PrivateKey(secret_key.serialize()),
         public_key: PublicKey::SECP256K1PublicKey(public_key),
-        address: address.to_string(),
+        address: address,
     })
 }
 
@@ -250,11 +257,12 @@ pub fn key_recover_bls(
 
     let mut address = Address::new_bls(&sk.public_key().as_bytes())?;
 
+    let mut network_str = "f".to_owned();
     if testnet {
-        address.set_network(Network::Testnet);
-    } else {
-        address.set_network(Network::Mainnet);
+        network_str = "t".to_owned();
     }
+
+    let address = network_str + &address.to_string()[1..];
 
     let mut secret_key = PrivateKey([0; SECRET_KEY_SIZE]);
     secret_key.0.copy_from_slice(&sk.as_bytes());
@@ -262,7 +270,7 @@ pub fn key_recover_bls(
     Ok(ExtendedKey {
         private_key: secret_key,
         public_key: PublicKey::BLSPublicKey(sk.public_key()),
-        address: address.to_string(),
+        address,
     })
 }
 
@@ -273,7 +281,7 @@ pub fn key_recover_bls(
 /// * `message` - a filecoin message (aka transaction)
 ///
 pub fn transaction_serialize(message: &Message) -> Result<Vec<u8>, SignerError> {
-    let message_cbor = message.marshal_cbor()?;
+    let message_cbor = to_vec(message)?;
     Ok(message_cbor)
 }
 
@@ -302,7 +310,9 @@ fn transaction_sign_secp56k1_raw(
     private_key: &PrivateKey,
 ) -> Result<Signature, SignerError> {
     let secret_key = libsecp256k1::SecretKey::parse_slice(&private_key.0)?;
-    let message_cid = message.cid()?;
+    let message_ser = to_vec(message)?;
+    let hash = cid::multihash::Code::Blake2b256.digest(&message_ser);
+    let message_cid = cid::Cid::new_v1(DAG_CBOR, hash);
     let message_digest =
         libsecp256k1::Message::parse_slice(&utils::blake2b_256(&message_cid.to_bytes()))?;
 
@@ -322,8 +332,10 @@ fn transaction_sign_bls_raw(
     private_key: &PrivateKey,
 ) -> Result<Signature, SignerError> {
     let sk = bls_signatures::PrivateKey::from_bytes(&private_key.0)?;
-    let message_cid = message.cid()?;
-    let sig = sk.sign(message_cid.to_bytes());
+    let message_ser = to_vec(message)?;
+    let hash = cid::multihash::Code::Blake2b256.digest(&message_ser);
+    let message_cid = cid::Cid::new_v1(DAG_CBOR, hash);
+    let sig = sk.sign(&message_cid.to_bytes());
     let signature = Signature::new_bls(sig.as_bytes());
 
     Ok(signature)
@@ -385,6 +397,7 @@ fn verify_secp256k1_signature(signature: &Signature, cbor: &Vec<u8>) -> Result<b
 
     // Should be default network here
     // FIXME: For now only testnet
+    // NOTE: It doesn't matter anymore because address don't understand network anymore. Bad.
     let tx = transaction_parse(cbor, network == Network::Testnet)?;
 
     // Decode the CBOR transaction hex string into CBOR transaction buffer
@@ -394,7 +407,6 @@ fn verify_secp256k1_signature(signature: &Signature, cbor: &Vec<u8>) -> Result<b
 
     let public_key = libsecp256k1::recover(&blob_to_sign, &signature_rs, &recovery_id)?;
     let mut from = Address::new_secp256k1(public_key.serialize().as_ref())?;
-    from.set_network(network);
 
     let tx_from = match tx {
         MessageTxAPI::Message(tx) => tx.from,
@@ -423,7 +435,9 @@ fn verify_bls_signature(signature: &Signature, cbor: &Vec<u8>) -> Result<bool, S
 
     let sig = bls_signatures::Signature::from_bytes(signature.bytes())?;
 
-    let message_cid = message.cid()?;
+    let message_ser = to_vec(&message)?;
+    let hash = cid::multihash::Code::Blake2b256.digest(&message_ser);
+    let message_cid = cid::Cid::new_v1(DAG_CBOR, hash);
     let signing_bytes = message_cid.to_bytes();
 
     let result = pk.verify(sig, signing_bytes);
@@ -462,7 +476,9 @@ fn extract_bls_signing_bytes_from_message(cbor_message: &Vec<u8>) -> Result<Vec<
     let message = transaction_parse(cbor_message, true)?;
     let unsigned_message_api = message.get_message();
 
-    let message_cid = unsigned_message_api.cid()?;
+    let message_ser = to_vec(&unsigned_message_api)?;
+    let hash = cid::multihash::Code::Blake2b256.digest(&message_ser);
+    let message_cid = cid::Cid::new_v1(DAG_CBOR, hash);
     Ok(message_cid.to_bytes())
 }
 
@@ -579,7 +595,14 @@ pub fn create_voucher(
     nonce: u64,
     min_settle_height: i64,
 ) -> Result<String, SignerError> {
-    let pch = fvm_shared::address::Address::from_str(&payment_channel_address)?;
+    let network: Network;
+    if payment_channel_address.starts_with("f") {
+        network = Network::Mainnet;
+    } else {
+        network = Network::Testnet;
+    }
+
+    let pch = network.parse_address(&payment_channel_address)?;
     let amount = match fvm_shared::bigint::BigInt::parse_bytes(amount.as_bytes(), 10) {
         Some(value) => value,
         None => {
@@ -763,7 +786,13 @@ pub fn verify_voucher_signature(
     let decoded_voucher = base64::decode(voucher_base64_string)?;
     let signed_voucher: paych::SignedVoucher = from_slice(&decoded_voucher)?;
 
-    let address = Address::from_str(&address_signer)?;
+    let network: Network;
+    if address_signer.starts_with("f") {
+        network = Network::Mainnet;
+    } else {
+        network = Network::Testnet;
+    }
+    let address = network.parse_address(&address_signer)?;
 
     let sv_bytes = signed_voucher
         .signing_bytes()
@@ -778,7 +807,6 @@ pub fn verify_voucher_signature(
                 let message = libsecp256k1::Message::parse(&digest);
                 let public_key = libsecp256k1::recover(&message, &sig, &recovery_id)?;
                 let mut signer = Address::new_secp256k1(public_key.serialize().as_ref())?;
-                signer.set_network(address.network());
 
                 if signer.to_string() != address.to_string() {
                     Err(SignerError::GenericString(
@@ -861,14 +889,18 @@ pub fn compute_proposal_hash(
 pub fn get_cid(message_api: MessageTxAPI) -> Result<String, SignerError> {
     match message_api {
         MessageTxAPI::Message(message) => {
-            let cid = message.cid()?;
+            let message_ser = to_vec(&message)?;
+            let hash = cid::multihash::Code::Blake2b256.digest(&message_ser);
+            let message_cid = cid::Cid::new_v1(DAG_CBOR, hash);
 
-            Ok(cid.to_string())
+            Ok(message_cid.to_string())
         }
         MessageTxAPI::SignedMessage(signed_message) => {
-            let cid = signed_message.cid()?;
+            let message_ser = to_vec(&signed_message)?;
+            let hash = cid::multihash::Code::Blake2b256.digest(&message_ser);
+            let message_cid = cid::Cid::new_v1(DAG_CBOR, hash);
 
-            Ok(cid.to_string())
+            Ok(message_cid.to_string())
         }
     }
 }

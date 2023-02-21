@@ -10,10 +10,14 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 
+use cid::multihash::MultihashDigest;
 use fil_actor_multisig as multisig;
 use filecoin_signer::api::{MessageParams, MessageTxAPI};
 use filecoin_signer::*;
+use fvm_ipld_encoding::DAG_CBOR;
 use fvm_shared::address::Address;
+use fvm_shared::address::Network;
+use fvm_shared::address::{current_network, set_current_network};
 use fvm_shared::crypto::signature::Signature;
 use fvm_shared::econ::TokenAmount;
 
@@ -139,8 +143,10 @@ fn test_key_recover_mainnet() {
 fn parse_unsigned_transaction() {
     let test_value = common::load_test_vectors("../test_vectors/txs.json").unwrap();
     let cbor = test_value[0]["cbor"].as_str().unwrap();
-    let to_expected =
-        Address::from_str(test_value[0]["transaction"]["To"].as_str().unwrap()).unwrap();
+
+    let to_expected = Network::Testnet
+        .parse_address(test_value[0]["transaction"]["To"].as_str().unwrap())
+        .unwrap();
 
     let cbor_data = hex::decode(&cbor).unwrap();
 
@@ -176,8 +182,25 @@ fn parse_transaction_with_network() {
     let tc = test_value[1].to_owned();
     let cbor = tc["cbor"].as_str().unwrap();
     let testnet = tc["testnet"].as_bool().unwrap();
-    let to_expected = Address::from_str(tc["transaction"]["To"].as_str().unwrap()).unwrap();
-    let from_expected = Address::from_str(tc["transaction"]["From"].as_str().unwrap()).unwrap();
+
+    let mut to_expected: Address;
+    let mut from_expected: Address;
+
+    if testnet {
+        to_expected = Network::Testnet
+            .parse_address(tc["transaction"]["To"].as_str().unwrap())
+            .unwrap();
+        from_expected = Network::Testnet
+            .parse_address(tc["transaction"]["From"].as_str().unwrap())
+            .unwrap();
+    } else {
+        to_expected = Network::Mainnet
+            .parse_address(tc["transaction"]["To"].as_str().unwrap())
+            .unwrap();
+        from_expected = Network::Mainnet
+            .parse_address(tc["transaction"]["From"].as_str().unwrap())
+            .unwrap();
+    }
 
     let cbor_data = RawBytes::new(hex::decode(&cbor).unwrap());
 
@@ -197,8 +220,25 @@ fn parse_transaction_with_network_testnet() {
     let tc = test_value[0].to_owned();
     let cbor = tc["cbor"].as_str().unwrap();
     let testnet = tc["testnet"].as_bool().unwrap();
-    let to_expected = Address::from_str(tc["transaction"]["To"].as_str().unwrap()).unwrap();
-    let from_expected = Address::from_str(tc["transaction"]["From"].as_str().unwrap()).unwrap();
+
+    let mut to_expected: Address;
+    let mut from_expected: Address;
+
+    if testnet {
+        to_expected = Network::Testnet
+            .parse_address(tc["transaction"]["To"].as_str().unwrap())
+            .unwrap();
+        from_expected = Network::Testnet
+            .parse_address(tc["transaction"]["From"].as_str().unwrap())
+            .unwrap();
+    } else {
+        to_expected = Network::Mainnet
+            .parse_address(tc["transaction"]["To"].as_str().unwrap())
+            .unwrap();
+        from_expected = Network::Mainnet
+            .parse_address(tc["transaction"]["From"].as_str().unwrap())
+            .unwrap();
+    }
 
     let cbor_data = RawBytes::new(hex::decode(&cbor).unwrap());
 
@@ -225,11 +265,15 @@ fn parse_transaction_signed_with_network() {
 
     assert_eq!(
         to,
-        Address::from_str("f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy").unwrap()
+        Network::Mainnet
+            .parse_address("f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy")
+            .unwrap()
     );
     assert_eq!(
         from,
-        Address::from_str("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba").unwrap()
+        Network::Mainnet
+            .parse_address("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba")
+            .unwrap()
     );
 }
 
@@ -246,11 +290,15 @@ fn parse_transaction_signed_with_network_testnet() {
 
     assert_eq!(
         to,
-        Address::from_str("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy").unwrap()
+        Network::Testnet
+            .parse_address("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy")
+            .unwrap()
     );
     assert_eq!(
         from,
-        Address::from_str("t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba").unwrap()
+        Network::Testnet
+            .parse_address("t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba")
+            .unwrap()
     );
 }
 
@@ -271,7 +319,7 @@ fn verify_invalid_signature() {
     let signature = transaction_sign_raw(&message_user_api.get_message(), &pk).unwrap();
 
     // Verify
-    let message_cbor = message_user_api.get_message().marshal_cbor().unwrap();
+    let message_cbor = to_vec(&message_user_api.get_message()).unwrap();
 
     let valid_signature = verify_signature(&signature, &message_cbor);
     assert!(valid_signature.unwrap());
@@ -304,7 +352,9 @@ fn sign_bls_transaction() {
     // Prepare message with BLS address
     let message = Message {
         version: 0,
-        to: Address::from_str("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy").unwrap(),
+        to: Network::Testnet
+            .parse_address("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy")
+            .unwrap(),
         from: bls_address,
         sequence: 1,
         value: TokenAmount::from_atto(BigInt::from_str("100000").unwrap()),
@@ -323,11 +373,13 @@ fn sign_bls_transaction() {
 
     let bls_pk = bls_signatures::PublicKey::from_bytes(&bls_pubkey).unwrap();
 
-    let message_cbor = message.marshal_cbor().expect("FIX ME");
+    let message_cbor = to_vec(&message).expect("FIX ME");
 
     dbg!(hex::encode(&message_cbor));
 
-    let message_cid = message.cid().unwrap();
+    let hash = cid::multihash::Code::Blake2b256.digest(&message_cbor);
+    let message_cid = cid::Cid::new_v1(DAG_CBOR, hash);
+
     assert!(bls_pk.verify(sig, &message_cid.to_bytes()));
 }
 
@@ -364,7 +416,9 @@ fn test_verify_aggregated_signature() {
 
             Message {
                 version: 0,
-                to: Address::from_str("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy").unwrap(),
+                to: Network::Testnet
+                    .parse_address("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy")
+                    .unwrap(),
                 from: bls_address,
                 sequence: 1,
                 value: TokenAmount::from_atto(BigInt::from_str("100000").unwrap()),
@@ -412,6 +466,8 @@ fn payment_channel_creation_secp256k1_signing() {
         .unwrap()
         .to_string();
     let privkey = PrivateKey::try_from(from_key).unwrap();
+
+    dbg!(&tc_creation_secp256k1["message"].to_owned());
 
     let pch_create_message_api: MessageTxAPI =
         serde_json::from_value(tc_creation_secp256k1["message"].to_owned())
@@ -547,4 +603,13 @@ fn test_serialize() {
     };
 
     assert_eq!(params_multisig.new_threshold, expected_params.new_threshold);
+}
+
+#[test]
+fn test_serialize_f4_address() {
+    let _address = Network::Mainnet
+        .parse_address("f410f2qreez6evnfbqs6rvidgwm3b44hpxpvpeuoddga")
+        .unwrap();
+
+    assert!(true);
 }

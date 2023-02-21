@@ -41,13 +41,14 @@ tiny-bip39 = "0.8.0"
 zx-bip44 = "0.1.0"
 
 extras = { path = "../extras"}
-fil_actor_init = "9.0.1"
-fil_actor_multisig = "9.0.1"
-fil_actor_paych = "9.0.1"
-fil_actor_miner = "9.0.1"
+fil_actor_cron = { version = "10.0.0-alpha.1", git = "https://github.com/filecoin-project/builtin-actors", tag = "v10.0.0-rc.1" }
+fil_actor_init = { version = "10.0.0-alpha.1", git = "https://github.com/filecoin-project/builtin-actors", tag = "v10.0.0-rc.1" }
+fil_actor_multisig = { version = "10.0.0-alpha.1", git = "https://github.com/filecoin-project/builtin-actors", tag = "v10.0.0-rc.1" }
+fil_actor_paych = { version = "10.0.0-alpha.1", git = "https://github.com/filecoin-project/builtin-actors", tag = "v10.0.0-rc.1" }
+fil_actor_miner = { version = "10.0.0-alpha.1", git = "https://github.com/filecoin-project/builtin-actors", tag = "v10.0.0-rc.1" }
 
-fvm_shared = "2.0.0"
-fvm_ipld_encoding = "0.2.3"
+fvm_shared = "3.0.0-alpha.20"
+fvm_ipld_encoding = "0.3.3"
 cid = { version = "0.8.3", default-features = false, features = ["serde-codec"] }
 
 
