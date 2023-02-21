@@ -279,10 +279,12 @@ pub fn transaction_sign_lotus(
     set_panic_hook();
 
     let testnet = match js_sys::Reflect::get(&unsigned_tx_js, &"To".into())?.as_string() {
-        Some(a) => {
-            a.starts_with("t")
-        },
-        None => return Err(JsValue::from("'To' key not find in message. We cannot tell if it is testnet or mainnet")),
+        Some(a) => a.starts_with("t"),
+        None => {
+            return Err(JsValue::from(
+                "'To' key not find in message. We cannot tell if it is testnet or mainnet",
+            ))
+        }
     };
 
     let unsigned_message = unsigned_tx_js
@@ -301,10 +303,10 @@ pub fn transaction_sign_lotus(
     let signed_message = filecoin_signer::transaction_sign(&msg, &private_key_bytes)
         .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
 
-    let tx = JsValue::from_serde(&MessageTxAPI::SignedMessage(signed_message)).map_err(|e| JsValue::from(e.to_string()))?;
+    let tx = JsValue::from_serde(&MessageTxAPI::SignedMessage(signed_message))
+        .map_err(|e| JsValue::from(e.to_string()))?;
 
     if testnet {
-
         let message = js_sys::Reflect::get(&tx, &"Message".into())?;
 
         let to_addr = match js_sys::Reflect::get(&message, &"To".into())?.as_string() {
@@ -327,15 +329,11 @@ pub fn transaction_sign_lotus(
             &("t".to_owned() + &from_addr[1..].to_string()).into(),
         )?;
 
-        js_sys::Reflect::set(
-            &tx,
-            &"Message".into(),
-            &message.into(),
-        )?;
+        js_sys::Reflect::set(&tx, &"Message".into(), &message.into())?;
     }
 
     /*let signed_message_lotus = serde_json::to_string(&tx)
-        .map_err(|e| JsValue::from_str(format!("Error converting into JSON: {}", e).as_str()))?;*/
+    .map_err(|e| JsValue::from_str(format!("Error converting into JSON: {}", e).as_str()))?;*/
 
     Ok(tx)
 }

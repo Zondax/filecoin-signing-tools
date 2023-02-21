@@ -15,17 +15,17 @@ use fil_actor_init::{ExecParams, Method as MethodInit};
 use fil_actor_multisig as multisig;
 use fil_actor_paych as paych;
 use fvm_ipld_encoding::{from_slice, to_vec, Cbor, RawBytes};
-use fvm_shared::address::{Address, Network, Protocol, set_current_network};
+use fvm_shared::address::{set_current_network, Address, Network, Protocol};
 
 use bls_signatures::PublicKey as BLSPublicKey;
 use libsecp256k1::PublicKey as SECP256K1PublicKey;
 
 use extras::signed_message::ref_fvm::SignedMessage;
 
-use fvm_shared::econ::TokenAmount;
-use fvm_shared::MethodNum;
 use cid::multihash::MultihashDigest;
 use fvm_ipld_encoding::DAG_CBOR;
+use fvm_shared::econ::TokenAmount;
+use fvm_shared::MethodNum;
 
 use crate::api::{MessageParams, MessageTx, MessageTxAPI, MessageTxNetwork};
 use crate::error::SignerError;
@@ -595,7 +595,7 @@ pub fn create_voucher(
     nonce: u64,
     min_settle_height: i64,
 ) -> Result<String, SignerError> {
-    let network : Network;
+    let network: Network;
     if payment_channel_address.starts_with("f") {
         network = Network::Mainnet;
     } else {
@@ -786,7 +786,7 @@ pub fn verify_voucher_signature(
     let decoded_voucher = base64::decode(voucher_base64_string)?;
     let signed_voucher: paych::SignedVoucher = from_slice(&decoded_voucher)?;
 
-    let network : Network;
+    let network: Network;
     if address_signer.starts_with("f") {
         network = Network::Mainnet;
     } else {

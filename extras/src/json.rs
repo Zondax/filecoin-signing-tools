@@ -16,12 +16,16 @@ pub mod address {
         D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        
+
         // If mainnet address
         if s.starts_with("f") {
-            return Network::Mainnet.parse_address(&s).map_err(de::Error::custom);
+            return Network::Mainnet
+                .parse_address(&s)
+                .map_err(de::Error::custom);
         } else {
-            return Network::Testnet.parse_address(&s).map_err(de::Error::custom);
+            return Network::Testnet
+                .parse_address(&s)
+                .map_err(de::Error::custom);
         }
     }
 }

@@ -10,16 +10,16 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 
+use cid::multihash::MultihashDigest;
 use fil_actor_multisig as multisig;
 use filecoin_signer::api::{MessageParams, MessageTxAPI};
 use filecoin_signer::*;
+use fvm_ipld_encoding::DAG_CBOR;
 use fvm_shared::address::Address;
+use fvm_shared::address::Network;
+use fvm_shared::address::{current_network, set_current_network};
 use fvm_shared::crypto::signature::Signature;
 use fvm_shared::econ::TokenAmount;
-use cid::multihash::MultihashDigest;
-use fvm_ipld_encoding::DAG_CBOR;
-use fvm_shared::address::{current_network, set_current_network};
-use fvm_shared::address::Network;
 
 mod common;
 
@@ -144,8 +144,9 @@ fn parse_unsigned_transaction() {
     let test_value = common::load_test_vectors("../test_vectors/txs.json").unwrap();
     let cbor = test_value[0]["cbor"].as_str().unwrap();
 
-    let to_expected =
-        Network::Testnet.parse_address(test_value[0]["transaction"]["To"].as_str().unwrap()).unwrap();
+    let to_expected = Network::Testnet
+        .parse_address(test_value[0]["transaction"]["To"].as_str().unwrap())
+        .unwrap();
 
     let cbor_data = hex::decode(&cbor).unwrap();
 
@@ -186,11 +187,19 @@ fn parse_transaction_with_network() {
     let mut from_expected: Address;
 
     if testnet {
-        to_expected = Network::Testnet.parse_address(tc["transaction"]["To"].as_str().unwrap()).unwrap();
-        from_expected = Network::Testnet.parse_address(tc["transaction"]["From"].as_str().unwrap()).unwrap();
+        to_expected = Network::Testnet
+            .parse_address(tc["transaction"]["To"].as_str().unwrap())
+            .unwrap();
+        from_expected = Network::Testnet
+            .parse_address(tc["transaction"]["From"].as_str().unwrap())
+            .unwrap();
     } else {
-        to_expected = Network::Mainnet.parse_address(tc["transaction"]["To"].as_str().unwrap()).unwrap();
-        from_expected = Network::Mainnet.parse_address(tc["transaction"]["From"].as_str().unwrap()).unwrap();
+        to_expected = Network::Mainnet
+            .parse_address(tc["transaction"]["To"].as_str().unwrap())
+            .unwrap();
+        from_expected = Network::Mainnet
+            .parse_address(tc["transaction"]["From"].as_str().unwrap())
+            .unwrap();
     }
 
     let cbor_data = RawBytes::new(hex::decode(&cbor).unwrap());
@@ -216,11 +225,19 @@ fn parse_transaction_with_network_testnet() {
     let mut from_expected: Address;
 
     if testnet {
-        to_expected = Network::Testnet.parse_address(tc["transaction"]["To"].as_str().unwrap()).unwrap();
-        from_expected = Network::Testnet.parse_address(tc["transaction"]["From"].as_str().unwrap()).unwrap();
+        to_expected = Network::Testnet
+            .parse_address(tc["transaction"]["To"].as_str().unwrap())
+            .unwrap();
+        from_expected = Network::Testnet
+            .parse_address(tc["transaction"]["From"].as_str().unwrap())
+            .unwrap();
     } else {
-        to_expected = Network::Mainnet.parse_address(tc["transaction"]["To"].as_str().unwrap()).unwrap();
-        from_expected = Network::Mainnet.parse_address(tc["transaction"]["From"].as_str().unwrap()).unwrap();
+        to_expected = Network::Mainnet
+            .parse_address(tc["transaction"]["To"].as_str().unwrap())
+            .unwrap();
+        from_expected = Network::Mainnet
+            .parse_address(tc["transaction"]["From"].as_str().unwrap())
+            .unwrap();
     }
 
     let cbor_data = RawBytes::new(hex::decode(&cbor).unwrap());
@@ -248,11 +265,15 @@ fn parse_transaction_signed_with_network() {
 
     assert_eq!(
         to,
-        Network::Mainnet.parse_address("f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy").unwrap()
+        Network::Mainnet
+            .parse_address("f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy")
+            .unwrap()
     );
     assert_eq!(
         from,
-        Network::Mainnet.parse_address("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba").unwrap()
+        Network::Mainnet
+            .parse_address("f1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba")
+            .unwrap()
     );
 }
 
@@ -269,11 +290,15 @@ fn parse_transaction_signed_with_network_testnet() {
 
     assert_eq!(
         to,
-        Network::Testnet.parse_address("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy").unwrap()
+        Network::Testnet
+            .parse_address("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy")
+            .unwrap()
     );
     assert_eq!(
         from,
-        Network::Testnet.parse_address("t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba").unwrap()
+        Network::Testnet
+            .parse_address("t1d2xrzcslx7xlbbylc5c3d5lvandqw4iwl6epxba")
+            .unwrap()
     );
 }
 
@@ -327,7 +352,9 @@ fn sign_bls_transaction() {
     // Prepare message with BLS address
     let message = Message {
         version: 0,
-        to: Network::Testnet.parse_address("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy").unwrap(),
+        to: Network::Testnet
+            .parse_address("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy")
+            .unwrap(),
         from: bls_address,
         sequence: 1,
         value: TokenAmount::from_atto(BigInt::from_str("100000").unwrap()),
@@ -389,7 +416,9 @@ fn test_verify_aggregated_signature() {
 
             Message {
                 version: 0,
-                to: Network::Testnet.parse_address("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy").unwrap(),
+                to: Network::Testnet
+                    .parse_address("t17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy")
+                    .unwrap(),
                 from: bls_address,
                 sequence: 1,
                 value: TokenAmount::from_atto(BigInt::from_str("100000").unwrap()),
@@ -578,7 +607,9 @@ fn test_serialize() {
 
 #[test]
 fn test_serialize_f4_address() {
-    let _address = Network::Mainnet.parse_address("f410f2qreez6evnfbqs6rvidgwm3b44hpxpvpeuoddga").unwrap();
+    let _address = Network::Mainnet
+        .parse_address("f410f2qreez6evnfbqs6rvidgwm3b44hpxpvpeuoddga")
+        .unwrap();
 
     assert!(true);
 }
