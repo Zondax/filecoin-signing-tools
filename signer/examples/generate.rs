@@ -5,12 +5,14 @@ use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 use rayon::prelude::*;
 
-use fvm_ipld_encoding::Cbor;
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::address::Address;
 use fvm_shared::econ::TokenAmount;
 use fvm_shared::message::Message;
 use std::str::FromStr;
+use cid::multihash::MultihashDigest;
+use fvm_ipld_encoding::DAG_CBOR;
+use fvm_ipld_encoding::to_vec;
 
 use hex::encode;
 use std::fs;
@@ -64,7 +66,9 @@ fn run(num_messages: usize) {
         .par_iter()
         .zip(private_keys.par_iter())
         .map(|(message, sk)| {
-            let message_cid = message.cid().unwrap();
+            let message_ser = to_vec(&message).unwrap();
+            let hash = cid::multihash::Code::Blake2b256.digest(&message_ser);
+            let message_cid = cid::Cid::new_v1(DAG_CBOR, hash);
             let sign_bytes = message_cid.to_bytes();
 
             sk.sign(sign_bytes)

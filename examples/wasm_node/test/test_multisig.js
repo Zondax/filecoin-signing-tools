@@ -104,7 +104,7 @@ describeCall('createMultisig', function() {
 
     let signature = filecoin_signer.transactionSignLotus(multisig_create.message, privateKey)
 
-    assert(JSON.parse(signature).Signature)
+    assert(signature.Signature)
   })
 
   it('should fail because of bigint', function() {
@@ -169,9 +169,7 @@ describeCall('proposeMultisig', function() {
 
     let signature = filecoin_signer.transactionSignLotus(multisig_propose.message, privateKey)
 
-    console.log(signature)
-
-    assert(JSON.parse(signature).Signature)
+    assert(signature.Signature)
   })
 })
 
@@ -231,7 +229,7 @@ describeCall('approveMultisig', function() {
 
     let signature = filecoin_signer.transactionSignLotus(multisig_approve.message, privateKey)
 
-    assert(JSON.parse(signature).Signature)
+    assert(signature.Signature)
   })
 })
 
@@ -287,7 +285,7 @@ describeCall('cancelMultisig', function() {
 
     let signature = filecoin_signer.transactionSignLotus(multisig_cancel.message, privateKey)
 
-    assert(JSON.parse(signature).Signature)
+    assert(signature.Signature)
   })
 })
 

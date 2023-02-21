@@ -14,7 +14,7 @@ use super::json::tokenamount;
 #[serde(remote = "Message", rename_all = "PascalCase")]
 pub struct MessageAPI {
     #[serde(skip)]
-    pub version: i64,
+    pub version: u64,
     #[serde(with = "address")]
     pub from: Address,
     #[serde(with = "address")]
@@ -27,7 +27,7 @@ pub struct MessageAPI {
     pub method_num: MethodNum,
     #[serde(with = "rawbytes")]
     pub params: RawBytes,
-    pub gas_limit: i64,
+    pub gas_limit: u64,
     #[serde(with = "tokenamount")]
     pub gas_fee_cap: TokenAmount,
     #[serde(with = "tokenamount")]

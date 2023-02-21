@@ -222,6 +222,7 @@ impl MessageTxAPI {
 }
 
 /// Message structure with network parameter
+/// NOTES: we don't need anymore since Address removed set_network (https://github.com/filecoin-project/ref-fvm/issues/1678)
 pub struct MessageTxNetwork {
     pub message_tx: MessageTxAPI,
     pub testnet: bool,
@@ -231,19 +232,11 @@ impl TryFrom<MessageTxNetwork> for MessageTxAPI {
     type Error = SignerError;
 
     fn try_from(message_tx_network: MessageTxNetwork) -> Result<MessageTxAPI, Self::Error> {
-        let network = if message_tx_network.testnet {
-            fvm_shared::address::Network::Testnet
-        } else {
-            fvm_shared::address::Network::Mainnet
-        };
-
         match message_tx_network.message_tx {
             MessageTxAPI::Message(message_tx) => {
                 let mut to_address: fvm_shared::address::Address = message_tx.to.to_owned();
-                to_address.set_network(network);
 
                 let mut from_address: fvm_shared::address::Address = message_tx.from.to_owned();
-                from_address.set_network(network);
 
                 let message_with_network = Message {
                     to: to_address,
@@ -255,11 +248,9 @@ impl TryFrom<MessageTxNetwork> for MessageTxAPI {
             }
             MessageTxAPI::SignedMessage(message_tx) => {
                 let mut to_address: fvm_shared::address::Address = message_tx.message.to.to_owned();
-                to_address.set_network(network);
 
                 let mut from_address: fvm_shared::address::Address =
                     message_tx.message.from.to_owned();
-                from_address.set_network(network);
 
                 let tmp = message_tx.message.clone();
 

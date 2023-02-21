@@ -214,6 +214,31 @@ pub fn transaction_parse(cbor_js: JsValue, testnet: bool) -> Result<JsValue, JsV
 
     let tx = JsValue::from_serde(&message_parsed).map_err(|e| JsValue::from(e.to_string()))?;
 
+    // from_serde can't know if we are on testnet or mainnet and take a current_network value which is by default mainnet.
+    // Changing the current_network is not reliable and Filecoin removed the Address network leaving us with no way to format the address for the network we want.
+
+    if testnet {
+        let to_addr = match js_sys::Reflect::get(&tx, &"To".into())?.as_string() {
+            Some(a) => a,
+            None => return Err(JsValue::from("'To' key not fnd in message.")),
+        };
+        let from_addr = match js_sys::Reflect::get(&tx, &"From".into())?.as_string() {
+            Some(a) => a,
+            None => return Err(JsValue::from("'From' key not fnd in message.")),
+        };
+
+        js_sys::Reflect::set(
+            &tx,
+            &"To".into(),
+            &("t".to_owned() + &to_addr[1..].to_string()).into(),
+        )?;
+        js_sys::Reflect::set(
+            &tx,
+            &"From".into(),
+            &("t".to_owned() + &from_addr[1..].to_string()).into(),
+        )?;
+    }
+
     Ok(tx)
 }
 
@@ -250,8 +275,15 @@ pub fn transaction_sign(
 pub fn transaction_sign_lotus(
     unsigned_tx_js: JsValue,
     private_key_js: JsValue,
-) -> Result<String, JsValue> {
+) -> Result<JsValue, JsValue> {
     set_panic_hook();
+
+    let testnet = match js_sys::Reflect::get(&unsigned_tx_js, &"To".into())?.as_string() {
+        Some(a) => {
+            a.starts_with("t")
+        },
+        None => return Err(JsValue::from("'To' key not find in message. We cannot tell if it is testnet or mainnet")),
+    };
 
     let unsigned_message = unsigned_tx_js
         .into_serde()
@@ -269,10 +301,43 @@ pub fn transaction_sign_lotus(
     let signed_message = filecoin_signer::transaction_sign(&msg, &private_key_bytes)
         .map_err(|e| JsValue::from_str(format!("Error signing transaction: {}", e).as_str()))?;
 
-    let signed_message_lotus = serde_json::to_string(&MessageTxAPI::SignedMessage(signed_message))
-        .map_err(|e| JsValue::from_str(format!("Error converting into JSON: {}", e).as_str()))?;
+    let tx = JsValue::from_serde(&MessageTxAPI::SignedMessage(signed_message)).map_err(|e| JsValue::from(e.to_string()))?;
 
-    Ok(signed_message_lotus)
+    if testnet {
+
+        let message = js_sys::Reflect::get(&tx, &"Message".into())?;
+
+        let to_addr = match js_sys::Reflect::get(&message, &"To".into())?.as_string() {
+            Some(a) => a,
+            None => return Err(JsValue::from("'To' key not find in message.")),
+        };
+        let from_addr = match js_sys::Reflect::get(&message, &"From".into())?.as_string() {
+            Some(a) => a,
+            None => return Err(JsValue::from("'From' key not find in message.")),
+        };
+
+        js_sys::Reflect::set(
+            &message,
+            &"To".into(),
+            &("t".to_owned() + &to_addr[1..].to_string()).into(),
+        )?;
+        js_sys::Reflect::set(
+            &message,
+            &"From".into(),
+            &("t".to_owned() + &from_addr[1..].to_string()).into(),
+        )?;
+
+        js_sys::Reflect::set(
+            &tx,
+            &"Message".into(),
+            &message.into(),
+        )?;
+    }
+
+    /*let signed_message_lotus = serde_json::to_string(&tx)
+        .map_err(|e| JsValue::from_str(format!("Error converting into JSON: {}", e).as_str()))?;*/
+
+    Ok(tx)
 }
 
 #[wasm_bindgen(js_name = transactionSignRaw)]

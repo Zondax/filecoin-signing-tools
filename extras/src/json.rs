@@ -1,5 +1,5 @@
 pub mod address {
-    use fvm_shared::address::Address;
+    use fvm_shared::address::{Address, Network};
     use serde::{de, Deserialize, Deserializer, Serializer};
     use std::str::FromStr;
 
@@ -16,7 +16,13 @@ pub mod address {
         D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        Address::from_str(&s).map_err(de::Error::custom)
+        
+        // If mainnet address
+        if s.starts_with("f") {
+            return Network::Mainnet.parse_address(&s).map_err(de::Error::custom);
+        } else {
+            return Network::Testnet.parse_address(&s).map_err(de::Error::custom);
+        }
     }
 }
 
@@ -66,7 +72,7 @@ pub mod rawbytes {
 }
 
 pub mod vec_address {
-    use fvm_shared::address::Address;
+    use fvm_shared::address::{Address, Network};
     use serde::{de, Deserialize, Deserializer, Serializer};
     use std::str::FromStr;
 
@@ -94,7 +100,14 @@ pub mod vec_address {
 
         for s in a {
             let s: String = s;
-            let address = Address::from_str(&s).map_err(de::Error::custom)?;
+            let network: Network;
+            // If mainnet address
+            if s.starts_with("f") {
+                network = Network::Mainnet;
+            } else {
+                network = Network::Testnet;
+            }
+            let address = network.parse_address(&s).map_err(de::Error::custom)?;
             result.push(address);
         }
 
