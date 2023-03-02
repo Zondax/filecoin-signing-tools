@@ -6,7 +6,7 @@ import secp256k1 from 'secp256k1'
 import BN from 'bn.js'
 
 import ExtendedKey from './extendedkey.js'
-import { getDigest, getCoinTypeFromPath, addressAsBytes, bytesToAddress, tryToPrivateKeyBuffer } from './utils.js'
+import { getDigest, getCoinTypeFromPath, addressAsBytes, bytesToAddress, tryToPrivateKeyBuffer, getPayloadSECP256K1 } from './utils.js'
 import { ProtocolIndicator } from './constants.js'
 import { SignedMessage, TransactionRaw } from './types'
 import { ByteView } from '@ipld/dag-cbor'
@@ -89,7 +89,7 @@ export function serializeBigNum(gasprice: string): Buffer {
   return Buffer.concat([Buffer.from('00', 'hex'), gaspriceBuffer])
 }
 
-export function transactionSerializeRaw(message: TransactionRaw): ByteView<any[]> {
+export function transactionSerializeRaw(message: TransactionRaw): ByteView<Buffer> {
   if (!('To' in message) || typeof message['To'] !== 'string') {
     throw new Error("'To' is a required field and has to be a 'string'")
   }
@@ -138,7 +138,7 @@ export function transactionSerializeRaw(message: TransactionRaw): ByteView<any[]
     Buffer.from(message['Params'], 'base64'),
   ]
 
-  return cbor.encode<any[]>(message_to_encode)
+  return cbor.encode(message_to_encode)
 }
 
 export function transactionSerialize(message: TransactionRaw): string {
@@ -208,8 +208,8 @@ export function transactionSign(unsignedMessage: TransactionRaw, privateKey: str
 
 // TODO: new function 'verifySignature(signedMessage)'; Makes more sense ?
 export function verifySignature(signature: string | Buffer, message: TransactionRaw | string): boolean {
-  let messageBuf: ArrayLike<number>
-  if (typeof message === 'object') messageBuf = transactionSerializeRaw(message)
+  let messageBuf: Buffer
+  if (typeof message === 'object') messageBuf = Buffer.from(transactionSerializeRaw(message).buffer)
   else if (typeof message === 'string') messageBuf = Buffer.from(message, 'hex')
   else throw new Error('message must be TransactionRaw or hex string')
 
@@ -228,7 +228,18 @@ export function verifySignature(signature: string | Buffer, message: Transaction
   const messageDigest = getDigest(messageBuf)
 
   const publicKey = secp256k1.ecdsaRecover(signatureBuf.slice(0, -1), signatureBuf[64], messageDigest, false)
-  return secp256k1.ecdsaVerify(signatureBuf.slice(0, -1), messageDigest, publicKey)
+  if (!secp256k1.ecdsaVerify(signatureBuf.slice(0, -1), messageDigest, publicKey)) {
+    return false
+  }
+
+  const addrBytes = Buffer.concat([Buffer.from([ProtocolIndicator.SECP256K1]), getPayloadSECP256K1(publicKey)])
+  const messageParsed = transactionParse(messageBuf.toString('hex'), false)
+
+  if (bytesToAddress(addrBytes, false) != messageParsed.From) {
+    return false
+  }
+
+  return true
 }
 
 // eslint-disable-next-line no-unused-vars
