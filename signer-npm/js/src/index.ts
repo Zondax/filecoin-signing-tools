@@ -9,7 +9,6 @@ import ExtendedKey from './extendedkey.js'
 import { getDigest, getCoinTypeFromPath, addressAsBytes, bytesToAddress, tryToPrivateKeyBuffer, getPayloadSECP256K1 } from './utils.js'
 import { ProtocolIndicator } from './constants.js'
 import { SignedMessage, TransactionRaw } from './types'
-import { ByteView } from '@ipld/dag-cbor'
 
 // You must wrap a tiny-secp256k1 compatible implementation
 const bip32 = bip32Default.BIP32Factory(ecc)
@@ -89,7 +88,7 @@ export function serializeBigNum(gasprice: string): Buffer {
   return Buffer.concat([Buffer.from('00', 'hex'), gaspriceBuffer])
 }
 
-export function transactionSerializeRaw(message: TransactionRaw): ByteView<Buffer> {
+export function transactionSerializeRaw(message: TransactionRaw): Buffer {
   if (!('To' in message) || typeof message['To'] !== 'string') {
     throw new Error("'To' is a required field and has to be a 'string'")
   }
@@ -138,7 +137,7 @@ export function transactionSerializeRaw(message: TransactionRaw): ByteView<Buffe
     Buffer.from(message['Params'], 'base64'),
   ]
 
-  return cbor.encode(message_to_encode)
+  return Buffer.from(cbor.encode(message_to_encode))
 }
 
 export function transactionSerialize(message: TransactionRaw): string {
@@ -209,7 +208,7 @@ export function transactionSign(unsignedMessage: TransactionRaw, privateKey: str
 // TODO: new function 'verifySignature(signedMessage)'; Makes more sense ?
 export function verifySignature(signature: string | Buffer, message: TransactionRaw | string): boolean {
   let messageBuf: Buffer
-  if (typeof message === 'object') messageBuf = Buffer.from(transactionSerializeRaw(message).buffer)
+  if (typeof message === 'object') messageBuf = transactionSerializeRaw(message)
   else if (typeof message === 'string') messageBuf = Buffer.from(message, 'hex')
   else throw new Error('message must be TransactionRaw or hex string')
 
