@@ -7,7 +7,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "mocha -r esm",
+    "test": "mocha -r esm --exclude test/test_only_js.js",
     "test:js": "PURE_JS=True mocha -r esm",
     "test:spec": "mocha test/test.spec.js",
     "test:pc": "node payment_channel.js"
