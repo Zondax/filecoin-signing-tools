@@ -4,7 +4,7 @@
 [![GithubActions](https://github.com/zondax/filecoin-signing-tools/actions/workflows/main.yaml/badge.svg)](https://github.com/Zondax/filecoin-signing-tools/blob/main/.github/workflows/main.yaml)
 [![npm version](https://badge.fury.io/js/%40zondax%2Ffilecoin-signing-tools.svg)](https://badge.fury.io/js/%40zondax%2Ffilecoin-signing-tools)
 
-You can find more information in the [Documentation Site](https://docs.zondax.ch/docs/filecoin/filecoin-signing-tools/)
+You can find more information in the [Documentation Site](https://docs.zondax.ch/filecoin-signing-tools)
 
 - Rust Native Library
   - Secp256k1
