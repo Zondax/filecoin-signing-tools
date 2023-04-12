@@ -47,6 +47,7 @@ jobs:
 
   publish_npm_package:
     needs: [ build ]
+    if: startsWith("npm@")
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -69,14 +70,12 @@ jobs:
         run: npm install -g yarn
       - run: make install_wasmpack SILENT=true
       - run: make build_npm
-      - name: Get latest release version number
-        id: get_version
-        uses: battila7/get-version-action@v2
       - name: Update tag
         run: |
+          export TAG_NAME=${{ github.event.release.tag_name }}
           cd signer-npm/pkg
-          echo Publishing as ${{ steps.get_version.outputs.version }}
-          npm --allow-same-version --no-git-tag-version version ${{ steps.get_version.outputs.version }}
+          echo Publishing as ${TAG_NAME:4}
+          npm --allow-same-version --no-git-tag-version version ${TAG_NAME:4}
       - name: Publish package
         run: |
           cd signer-npm/pkg
@@ -86,7 +85,7 @@ jobs:
 
   rust_publish:
     needs: [ build ]
-    if: startsWith("filecoin_signer@")
+    if: startsWith("rust@")
     runs-on: ubuntu-latest
     container:
       image: zondax/rust-ci:latest
@@ -102,7 +101,10 @@ jobs:
             ~/.cache/sccache
           key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
       - name: Cargo publish
+        # version is inside the tag name e.g rust@v0.1.0 (and we don't want the v)
         run: |
+          export TAG_NAME=${{ github.event.release.tag_name }}
+          sed -i "s/0.0.0/${TAG_NAME:6}/g" Cargo.toml
           cargo publish -p filecoin-signer --allow-dirty
         env:
            CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
