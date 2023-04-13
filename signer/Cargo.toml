@@ -1,6 +1,6 @@
 [package]
 name = "filecoin-signer"
-version = "0.10.1"
+version = "0.0.0"
 authors = ["Zondax <info@zondax.ch>"]
 edition = "2018"
 license = "Apache-2.0"
