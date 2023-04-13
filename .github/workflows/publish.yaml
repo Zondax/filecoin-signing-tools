@@ -47,7 +47,7 @@ jobs:
 
   publish_npm_package:
     needs: [ build ]
-    if: startsWith("npm@")
+    if: startsWith("npm")
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -85,7 +85,7 @@ jobs:
 
   rust_publish:
     needs: [ build ]
-    if: startsWith("rust@")
+    if: startsWith("rust")
     runs-on: ubuntu-latest
     container:
       image: zondax/rust-ci:latest
