@@ -107,6 +107,6 @@ jobs:
           cat signer/Cargo.toml
           sed -i "s/0.0.0/${TAG_NAME:6}/g" signer/Cargo.toml
           cat signer/Cargo.toml
-          cargo publish -p filecoin-signer --allow-dirty
+          cargo publish -p filecoin-signer --dry-run --allow-dirty
         env:
            CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
