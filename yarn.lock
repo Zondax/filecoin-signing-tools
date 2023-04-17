@@ -1373,10 +1373,10 @@ multiformats@^11.0.0, multiformats@^11.0.2:
   resolved "https://registry.yarnpkg.com/multiformats/-/multiformats-11.0.2.tgz#b14735efc42cd8581e73895e66bebb9752151b60"
   integrity sha512-b5mYMkOkARIuVZCpvijFj9a6m5wMVLC7cf/jIPd5D/ARDOfLC5+IFkbgDXQgcU2goIsTD/O9NY4DI/Mt4OGvlg==
 
-n@^9.0.1:
-  version "9.0.1"
-  resolved "https://registry.npmjs.org/n/-/n-9.0.1.tgz"
-  integrity sha512-SsKwY5iFdKd3xpsT4ISFmRLnCVcx+eNMc2NIlxMQL+w6zKK4hjaMvSZf8V+Fq2ipVCuuLD2fhVJSA6cszfJq9g==
+n@^9.1.0:
+  version "9.1.0"
+  resolved "https://registry.yarnpkg.com/n/-/n-9.1.0.tgz#c60fd42281cdd44e41f84a137d526425d1dd5769"
+  integrity sha512-fFezMcaE/xD1UXIeC1vKgxzCrAwOjlj4AaX3x7slEdxA/NTQhFKK2JK7iU1d897xf5dJyv8HDrDzk83PEkaZAA==
 
 natural-compare-lite@^1.4.0:
   version "1.4.0"
