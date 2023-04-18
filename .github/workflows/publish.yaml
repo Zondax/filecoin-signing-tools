@@ -106,7 +106,8 @@ jobs:
         run: |
           export TAG_NAME=rust@v0.10.1
           export VERSION=$(echo ${TAG_NAME} | cut -c 7-)
-          sed -i "s/\"0.0.0\"/\"${VERSION\"/g" signer/Cargo.toml
+          echo $VERSION
+          sed -i "s/\"0.0.0\"/\"${VERSION}\"/g" signer/Cargo.toml
           cat signer/Cargo.toml
           cargo publish -p filecoin-signer --manifest-path signer/Cargo.toml --dry-run --allow-dirty
         env:
