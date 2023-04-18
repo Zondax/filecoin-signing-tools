@@ -105,6 +105,7 @@ jobs:
         # version is inside the tag name e.g rust@v0.1.0 (and we don't want the v)
         run: |
           export TAG_NAME=rust@v0.10.1
+          ls signer/
           cat signer/Cargo.toml
           sed -i "s/\"0.0.0\"/\"0.10.1\"/g" signer/Cargo.toml
           cat signer/Cargo.toml
