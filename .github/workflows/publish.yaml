@@ -1,11 +1,12 @@
 name: "Publish packages"
 
 on:
-  release:
-    types:
-      - created
-    tags:
-      - "v[0-9]+(\\.[0-9]+)*"
+  push
+  # release:
+  #   types:
+  #     - created
+  #   tags:
+  #     - "v[0-9]+(\\.[0-9]+)*"
 
 jobs:
   configure:
@@ -85,7 +86,7 @@ jobs:
 
   rust_publish:
     needs: [ build ]
-    if: startsWith(github.event.release.tag_name, 'rust')
+    #if: startsWith(github.event.release.tag_name, 'rust')
     runs-on: ubuntu-latest
     container:
       image: zondax/rust-ci:latest
@@ -103,7 +104,7 @@ jobs:
       - name: Cargo publish
         # version is inside the tag name e.g rust@v0.1.0 (and we don't want the v)
         run: |
-          export TAG_NAME=${{ github.event.release.tag_name }}
+          export TAG_NAME=rust@v0.10.1
           cat signer/Cargo.toml
           sed -i "s/\"0.0.0\"/\"${TAG_NAME:6}\"/g" signer/Cargo.toml
           cat signer/Cargo.toml
