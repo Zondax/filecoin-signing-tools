@@ -40,7 +40,7 @@ tiny-bip39 = "0.8.0"
 
 zx-bip44 = "0.1.0"
 
-extras = { path = "../extras"}
+extras = { version = "0.1.0", path = "../extras"}
 fil_actor_cron = { version = "10.0.0-alpha.1", git = "https://github.com/filecoin-project/builtin-actors", tag = "v10.0.0-rc.1" }
 fil_actor_init = { version = "10.0.0-alpha.1", git = "https://github.com/filecoin-project/builtin-actors", tag = "v10.0.0-rc.1" }
 fil_actor_multisig = { version = "10.0.0-alpha.1", git = "https://github.com/filecoin-project/builtin-actors", tag = "v10.0.0-rc.1" }
