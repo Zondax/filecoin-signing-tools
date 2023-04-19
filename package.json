@@ -8,7 +8,7 @@
   "license": "private",
   "scripts": {},
   "dependencies": {
-    "n": "^9.0.1"
+    "n": "^9.1.0"
   },
   "devDependencies": {
     "@ipld/dag-cbor": "^9.0.0",
