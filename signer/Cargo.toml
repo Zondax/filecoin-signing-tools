@@ -24,7 +24,7 @@ getrandom = "0.1.14"
 libsecp256k1 = "0.6"
 blake2b_simd = "0.5.10"
 hmac = "0.8.1"
-zeroize = { version = "=1.1", default-features = false, features = ["zeroize_derive"] }
+zeroize = { version = "^1.1", default-features = false, features = ["zeroize_derive"] }
 sha2 = "0.9.2"
 
 # logging
