@@ -10,9 +10,9 @@ jobs:
       datetime: ${{ steps.get-datetime.outputs.datetime }}
     steps:
       - id: get-user
-        run: echo "::set-output name=uid_gid::$(id -u):$(id -g)"
+        run: echo "uid_gid=$(id -u):$(id -g)" >> $GITHUB_OUTPUT
       - id: get-datetime
-        run: echo "::set-output name=datetime::$(date +'%Y%m%d%H%M%S')"
+        run: echo "datetime=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
 
   build:
     needs: [ configure ]
