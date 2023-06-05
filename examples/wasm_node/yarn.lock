@@ -786,10 +786,10 @@ supports-color@^7.1.0:
   dependencies:
     has-flag "^4.0.0"
 
-tiny-secp256k1@^2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/tiny-secp256k1/-/tiny-secp256k1-2.2.1.tgz#a61d4791b7031aa08a9453178a131349c3e10f9b"
-  integrity sha512-/U4xfVqnVxJXN4YVsru0E6t5wVncu2uunB8+RVR40fYUxkKYUPS10f+ePQZgFBoE/Jbf9H1NBveupF2VmB58Ng==
+tiny-secp256k1@^2.2.2:
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/tiny-secp256k1/-/tiny-secp256k1-2.2.2.tgz#3600e24844cb6390876ef11174116c0386d129bf"
+  integrity sha512-KP3eqslmiUH9jxhyQuLY+GqI4wt1EiHWNHHqKVUxCZV41+MT+esucaK4mb6Ji0vKWVKBffJ6tlxU83Pq5TIUwg==
   dependencies:
     uint8array-tools "0.0.7"
 
