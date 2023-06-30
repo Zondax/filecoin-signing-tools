@@ -26,7 +26,7 @@
     "axios": "^1.4.0",
     "cids": "^1.1.9",
     "esm": "^3.2.25",
-    "tiny-secp256k1": "^2.2.1"
+    "tiny-secp256k1": "^2.2.3"
   },
   "devDependencies": {
     "bip32": "^4.0.0",
