@@ -121,7 +121,7 @@ impl MessageParams {
 }
 
 /// Structure containing an `UnsignedMessageAPI` or a `SignedMessageAPI`
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 #[serde(untagged)]
 pub enum MessageTxAPI {
     #[serde(with = "MessageAPI")]
