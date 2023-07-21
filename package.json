@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "@ipld/dag-cbor": "^9.0.1",
-    "@types/node": "^20.3.3",
+    "@types/node": "^20.4.2",
     "@typescript-eslint/eslint-plugin": "^5.61.0",
     "@typescript-eslint/parser": "^5.61.0",
     "eslint": "^8.44.0",
