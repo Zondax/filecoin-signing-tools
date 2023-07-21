@@ -65,13 +65,13 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@ipld/dag-cbor@^9.0.1":
-  version "9.0.1"
-  resolved "https://registry.yarnpkg.com/@ipld/dag-cbor/-/dag-cbor-9.0.1.tgz#fc7c76af284b74b3a67b003a768d2c4758841272"
-  integrity sha512-tImDka4akO7cuD24+nRLOU1kYXoai3VZ1cMeWCFUzwhKrRXyOLfVd9RZGI6aTsE/PYvHmkFobKvTeK9NPVtajA==
+"@ipld/dag-cbor@^9.0.3":
+  version "9.0.3"
+  resolved "https://registry.yarnpkg.com/@ipld/dag-cbor/-/dag-cbor-9.0.3.tgz#9d9206f1e72cbbb953760daf654d9fb847ea3147"
+  integrity sha512-A2UFccS0+sARK9xwXiVZIaWbLbPxLGP3UZOjBeOMWfDY04SXi8h1+t4rHBzOlKYF/yWNm3RbFLyclWO7hZcy4g==
   dependencies:
-    cborg "^1.10.0"
-    multiformats "^11.0.0"
+    cborg "^2.0.1"
+    multiformats "^12.0.1"
 
 "@mdn/browser-compat-data@^5.2.34", "@mdn/browser-compat-data@^5.2.47":
   version "5.2.48"
@@ -376,10 +376,10 @@ caniuse-lite@^1.0.30001449, caniuse-lite@^1.0.30001473:
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001474.tgz#13b6fe301a831fe666cce8ca4ef89352334133d5"
   integrity sha512-iaIZ8gVrWfemh5DG3T9/YqarVZoYf0r188IjaGwx68j4Pf0SGY6CQkmJUIE+NZHkkecQGohzXmBGEwWDr9aM3Q==
 
-cborg@^1.10.0:
-  version "1.10.0"
-  resolved "https://registry.npmjs.org/cborg/-/cborg-1.10.0.tgz"
-  integrity sha512-/eM0JCaL99HDHxjySNQJLaolZFVdl6VA0/hEKIoiQPcQzE5LrG5QHdml0HaBt31brgB9dNe1zMr3f8IVrpotRQ==
+cborg@^2.0.1:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/cborg/-/cborg-2.0.3.tgz#b460840e994019a96eb2afc92d8ab6fb0dedf2bc"
+  integrity sha512-f1IbyqgRLQK4ruNM+V3WikfYfXQg/f/zC1oneOw1P7F/Dn2OJX6MaXIdei3JMpz361IjY7OENBKcE53nkJFVCQ==
 
 chalk@^4.0.0:
   version "4.1.2"
@@ -1366,11 +1366,6 @@ ms@^2.1.1:
   version "2.1.3"
   resolved "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
-
-multiformats@^11.0.0:
-  version "11.0.2"
-  resolved "https://registry.yarnpkg.com/multiformats/-/multiformats-11.0.2.tgz#b14735efc42cd8581e73895e66bebb9752151b60"
-  integrity sha512-b5mYMkOkARIuVZCpvijFj9a6m5wMVLC7cf/jIPd5D/ARDOfLC5+IFkbgDXQgcU2goIsTD/O9NY4DI/Mt4OGvlg==
 
 multiformats@^12.0.1:
   version "12.0.1"
