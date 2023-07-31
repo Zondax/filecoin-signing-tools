@@ -182,8 +182,7 @@ pub fn transaction_serialize(message: JsValue) -> Result<String, JsValue> {
 pub fn transaction_serialize_raw(unsigned_message: JsValue) -> Result<Vec<u8>, JsValue> {
     set_panic_hook();
 
-    let unsigned_message: MessageTxAPI = unsigned_message
-        .into_serde()
+    let unsigned_message: MessageTxAPI = serde_wasm_bindgen::from_value(unsigned_message)
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
     // TODO: support SignedMessage
@@ -249,8 +248,7 @@ pub fn transaction_sign(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let unsigned_message = unsigned_tx_js
-        .into_serde()
+    let unsigned_message = serde_wasm_bindgen::from_value(unsigned_tx_js)
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
     let msg = match unsigned_message {
@@ -287,8 +285,7 @@ pub fn transaction_sign_lotus(
         }
     };
 
-    let unsigned_message = unsigned_tx_js
-        .into_serde()
+    let unsigned_message = serde_wasm_bindgen::from_value(unsigned_tx_js)
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
     let msg = match unsigned_message {
@@ -345,8 +342,7 @@ pub fn transaction_sign_raw(
 ) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
-    let unsigned_message = unsigned_tx_js
-        .into_serde()
+    let unsigned_message = serde_wasm_bindgen::from_value(unsigned_tx_js)
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
     let msg = match unsigned_message {
@@ -460,8 +456,7 @@ pub fn create_voucher(
 pub fn serialize_params(params_value: JsValue) -> Result<Vec<u8>, JsValue> {
     set_panic_hook();
 
-    let params: MessageParams = params_value
-        .into_serde()
+    let params: MessageParams = serde_wasm_bindgen::from_value(params_value)
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
     let params_cbor = filecoin_signer::serialize_params(params)
@@ -524,8 +519,7 @@ pub fn verify_voucher_signature(
 pub fn serialize_voucher(voucher_api: JsValue) -> Result<String, JsValue> {
     set_panic_hook();
 
-    let voucher: SignedVoucherWrapper = voucher_api
-        .into_serde()
+    let voucher: SignedVoucherWrapper = serde_wasm_bindgen::from_value(voucher_api)
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
     let result = filecoin_signer::serialize_voucher(voucher)
@@ -555,8 +549,7 @@ pub fn deserialize_voucher(voucher_base64_string: String) -> Result<JsValue, JsV
 pub fn compute_proposal_hash(proposal_data_api: JsValue) -> Result<String, JsValue> {
     set_panic_hook();
 
-    let proposal_data: ProposalHashDataAPI = proposal_data_api
-        .into_serde()
+    let proposal_data: ProposalHashDataAPI = serde_wasm_bindgen::from_value(proposal_data_api)
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
     let result = filecoin_signer::compute_proposal_hash(proposal_data)
@@ -569,8 +562,7 @@ pub fn compute_proposal_hash(proposal_data_api: JsValue) -> Result<String, JsVal
 pub fn get_cid(message: JsValue) -> Result<String, JsValue> {
     set_panic_hook();
 
-    let message_api: MessageTxAPI = message
-        .into_serde()
+    let message_api: MessageTxAPI = serde_wasm_bindgen::from_value(message)
         .map_err(|e| JsValue::from(format!("Error parsing parameters: {}", e)))?;
 
     let result = filecoin_signer::get_cid(message_api)

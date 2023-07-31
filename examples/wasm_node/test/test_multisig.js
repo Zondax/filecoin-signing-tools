@@ -119,7 +119,7 @@ describeCall('createMultisig', function() {
 
     assert.throws(
       () => filecoin_signer.serializeParams(constructor_params),
-      /(Error parsing parameters: data did not match any variant of untagged enum MessageParams)/,
+      /(Error parsing parameters: Error: data did not match any variant of untagged enum MessageParams)/,
     )
 
   })
