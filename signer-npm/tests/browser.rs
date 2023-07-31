@@ -88,10 +88,10 @@ fn sign() {
     }))
     .unwrap();
 
-    let answer_str = serde_json::to_string(&answer.into_serde::<MessageTxAPI>().unwrap()).unwrap();
+    let answer_str = serde_json::to_string(&serde_wasm_bindgen::from_value::<MessageTxAPI>(answer).unwrap()).unwrap();
 
     let expected_answer_str =
-        serde_json::to_string(&expected_answer.into_serde::<MessageTxAPI>().unwrap()).unwrap();
+        serde_json::to_string(&serde_wasm_bindgen::from_value::<MessageTxAPI>(expected_answer).unwrap()).unwrap();
 
     assert_eq!(answer_str, expected_answer_str);
 }
