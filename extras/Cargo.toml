@@ -30,3 +30,5 @@ base64 = "0.13.0"
 
 fvm_ipld_encoding = "0.3.3"
 fvm_ipld_bitfield = "0.5.1"
+
+frc42_dispatch = "=3.2.0"

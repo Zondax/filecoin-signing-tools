@@ -1,7 +1,6 @@
 pub mod address {
     use fvm_shared::address::{Address, Network};
     use serde::{de, Deserialize, Deserializer, Serializer};
-    use std::str::FromStr;
 
     pub fn serialize<S>(address: &Address, serializer: S) -> Result<S::Ok, S::Error>
     where
