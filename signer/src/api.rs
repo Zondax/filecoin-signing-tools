@@ -249,8 +249,7 @@ impl TryFrom<MessageTxNetwork> for MessageTxAPI {
             MessageTxAPI::SignedMessage(message_tx) => {
                 let to_address: fvm_shared::address::Address = message_tx.message.to.to_owned();
 
-                let from_address: fvm_shared::address::Address =
-                    message_tx.message.from.to_owned();
+                let from_address: fvm_shared::address::Address = message_tx.message.from.to_owned();
 
                 let tmp = message_tx.message.clone();
 

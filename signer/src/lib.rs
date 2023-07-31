@@ -1,7 +1,6 @@
 #![cfg_attr(not(test), deny(clippy::expect_used,))]
 use std::convert::TryFrom;
 
-
 use bip39::{Language, MnemonicType, Seed};
 use bls_signatures::Serialize;
 use fvm_shared::crypto::signature::{Signature, SignatureType};
