@@ -234,9 +234,9 @@ impl TryFrom<MessageTxNetwork> for MessageTxAPI {
     fn try_from(message_tx_network: MessageTxNetwork) -> Result<MessageTxAPI, Self::Error> {
         match message_tx_network.message_tx {
             MessageTxAPI::Message(message_tx) => {
-                let mut to_address: fvm_shared::address::Address = message_tx.to.to_owned();
+                let to_address: fvm_shared::address::Address = message_tx.to.to_owned();
 
-                let mut from_address: fvm_shared::address::Address = message_tx.from.to_owned();
+                let from_address: fvm_shared::address::Address = message_tx.from.to_owned();
 
                 let message_with_network = Message {
                     to: to_address,
@@ -247,10 +247,9 @@ impl TryFrom<MessageTxNetwork> for MessageTxAPI {
                 Ok(MessageTxAPI::Message(message_with_network))
             }
             MessageTxAPI::SignedMessage(message_tx) => {
-                let mut to_address: fvm_shared::address::Address = message_tx.message.to.to_owned();
+                let to_address: fvm_shared::address::Address = message_tx.message.to.to_owned();
 
-                let mut from_address: fvm_shared::address::Address =
-                    message_tx.message.from.to_owned();
+                let from_address: fvm_shared::address::Address = message_tx.message.from.to_owned();
 
                 let tmp = message_tx.message.clone();
 
