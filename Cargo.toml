@@ -4,7 +4,7 @@ members = [
     "signer-ffi",
     "signer-npm",
     "hfuzz-signer",
-    "extras",
+    "extras-filecoin",
 ]
 
 [profile.release]
