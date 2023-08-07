@@ -41,7 +41,7 @@ tiny-bip39 = "0.8.0"
 zx-bip44 = "0.1.0"
 
 # extras = { package = "extras-filecoin", version = "0.1.0" }
-extras = { path = "../extras", version = "0.1.0"}
+extras = { package = "extras-filecoin", path = "../extras" }
 
 
 # fil_actor_cron = { version = "10.0.0", git = "https://github.com/filecoin-project/builtin-actors", tag = "v10.0.0" }
