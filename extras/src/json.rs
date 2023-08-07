@@ -77,7 +77,6 @@ pub mod rawbytes {
 pub mod vec_address {
     use fvm_shared::address::{Address, Network};
     use serde::{de, Deserialize, Deserializer, Serializer};
-    use std::str::FromStr;
 
     pub fn serialize<S>(addresses: &Vec<Address>, serializer: S) -> Result<S::Ok, S::Error>
     where

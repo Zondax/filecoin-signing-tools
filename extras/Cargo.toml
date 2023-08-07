@@ -1,11 +1,11 @@
 [package]
-name = "extras"
-version = "0.1.0"
+name = "extras-filecoin"
+version = "0.0.0"
 authors = ["Zondax <info@zondax.ch>"]
 edition = "2018"
 license = "Apache-2.0"
 repository = "https://github.com/Zondax/filecoin-signing-tools"
-description ="Temporary lib used for compatibility with wasm"
+description = "Temporary lib used for compatibility with wasm"
 
 [dependencies]
 serde = { version = "1.0.136", features = ["derive"] }

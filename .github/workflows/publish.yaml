@@ -83,6 +83,35 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_PUBLISH_AUTO }}
 
+  extras_publish:
+    needs: [ build ]
+    if: startsWith(github.event.release.tag_name, 'extras')
+    runs-on: ubuntu-latest
+    container:
+      image: zondax/rust-ci:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Restore/Save sscache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/sccache
+          key: ${{ runner.os }}-${{ github.run_id }}-${{ needs.configure.outputs.datetime }}
+      - name: Cargo publish
+        # version is inside the tag name e.g extras@v0.1.0 (and we don't want the v)
+        run: |
+          export TAG_NAME=${{ github.event.release.tag_name }}
+          echo ${TAG_NAME:6}
+          cat signer/Cargo.toml
+          sed -i "s/\"0.0.0\"/\"${TAG_NAME:6}\"/g" extras/Cargo.toml
+          cat signer/Cargo.toml
+          cargo publish -p extras-filecoin --dry-run --allow-dirty
+        env:
+           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
   rust_publish:
     needs: [ build ]
     if: startsWith(github.event.release.tag_name, 'rust')
