@@ -87,13 +87,17 @@ jobs:
     needs: [ build ]
     if: startsWith(github.event.release.tag_name, 'extras')
     runs-on: ubuntu-latest
-    container:
-      image: zondax/rust-ci:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           submodules: true
+      - name: Install latest stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
       - name: Restore/Save sscache
         uses: actions/cache@v2
         with:
@@ -117,13 +121,17 @@ jobs:
     needs: [ build ]
     if: startsWith(github.event.release.tag_name, 'rust')
     runs-on: ubuntu-latest
-    container:
-      image: zondax/rust-ci:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           submodules: true
+      - name: Install latest stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
       - name: Restore/Save sscache
         uses: actions/cache@v2
         with:
