@@ -105,9 +105,9 @@ jobs:
         run: |
           export TAG_NAME=${{ github.event.release.tag_name }}
           echo $TAG_NAME
-          echo ${TAG_NAME:6}
+          echo ${TAG_NAME:8}
           cat signer/Cargo.toml
-          sed -i "s/0.0.0/${TAG_NAME:6}/g" extras/Cargo.toml
+          sed -i "s/0.0.0/${TAG_NAME:8}/g" extras/Cargo.toml
           cat signer/Cargo.toml
           cargo publish -p extras-filecoin --dry-run --allow-dirty
         env:
