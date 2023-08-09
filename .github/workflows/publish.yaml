@@ -109,7 +109,7 @@ jobs:
         run: |
           export TAG_NAME=${{ github.event.release.tag_name }}
           sed -i "s/0.0.0/${TAG_NAME:8}/g" extras/Cargo.toml
-          cargo publish -p extras-filecoin --dry-run --allow-dirty
+          cargo publish -p extras-filecoin --allow-dirty
         env:
            CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
