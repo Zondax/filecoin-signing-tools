@@ -24,7 +24,7 @@ its new features and benefits.
 
 ---
 
-You can find more information in the [Documentation Site](https://docs.zondax.ch/docs/filecoin/filecoin-signing-tools/)
+You can find more information in the [Documentation Site](https://docs.zondax.ch/filecoin-signing-tools)
 
 - Rust Native Library
   - Secp256k1
