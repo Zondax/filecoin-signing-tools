@@ -42,6 +42,8 @@ pub enum MessageParams {
     UpdateChannelStateParams(fil_actor_paych::UpdateChannelStateParams),
     //#[serde(with = "miner::MinerConstructorParamsAPI")]
     //MinerConstructorParams(fil_actor_miner::MinerConstructorParams),
+    #[serde(with = "miner::ChangeOwnerAddressParamsAPI")]
+    ChangeOwnerAddressParamsAPI(fil_actor_miner::ChangeOwnerAddressParams),
     #[serde(with = "miner::ChangeWorkerAddressParamsAPI")]
     ChangeWorkerAddressParams(fil_actor_miner::ChangeWorkerAddressParams),
     #[serde(with = "miner::ChangePeerIDParamsAPI")]
@@ -104,6 +106,8 @@ impl MessageParams {
                 .map_err(|err| SignerError::GenericString(err.to_string()))?,
             //MessageParams::MinerConstructorParams(params) => RawBytes::serialize(&params)
             //    .map_err(|err| SignerError::GenericString(err.to_string()))?,
+            MessageParams::ChangeOwnerAddressParamsAPI(params) => RawBytes::serialize(&params)
+                .map_err(|err| SignerError::GenericString(err.to_string()))?,
             MessageParams::ChangeWorkerAddressParams(params) => RawBytes::serialize(&params)
                 .map_err(|err| SignerError::GenericString(err.to_string()))?,
             MessageParams::ChangePeerIDParams(params) => RawBytes::serialize(&params)

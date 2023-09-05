@@ -40,7 +40,7 @@ tiny-bip39 = "0.8.0"
 
 zx-bip44 = "0.1.0"
 
-extras = { package = "extras-filecoin", version = "0.1.0" }
+extras = { package = "extras-filecoin", version = "0.2.0" }
 # extras = { package = "extras-filecoin", path = "../extras" }
 
 
