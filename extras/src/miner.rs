@@ -1,12 +1,12 @@
 use cid::Cid;
 use fil_actor_miner::CompactCommD;
 use fil_actor_miner::{
-    ApplyRewardParams, ChangeMultiaddrsParams, ChangePeerIDParams, ChangeOwnerAddressParams, ChangeWorkerAddressParams,
-    CheckSectorProvenParams, CompactPartitionsParams, CompactSectorNumbersParams,
-    ConfirmSectorProofsParams, DeclareFaultsParams, DeclareFaultsRecoveredParams,
-    DeferredCronEventParams, DisputeWindowedPoStParams, ExpirationExtension,
-    ExtendSectorExpirationParams, FaultDeclaration, MinerConstructorParams, PoStPartition,
-    PreCommitSectorBatchParams, PreCommitSectorBatchParams2, PreCommitSectorParams,
+    ApplyRewardParams, ChangeMultiaddrsParams, ChangeOwnerAddressParams, ChangePeerIDParams,
+    ChangeWorkerAddressParams, CheckSectorProvenParams, CompactPartitionsParams,
+    CompactSectorNumbersParams, ConfirmSectorProofsParams, DeclareFaultsParams,
+    DeclareFaultsRecoveredParams, DeferredCronEventParams, DisputeWindowedPoStParams,
+    ExpirationExtension, ExtendSectorExpirationParams, FaultDeclaration, MinerConstructorParams,
+    PoStPartition, PreCommitSectorBatchParams, PreCommitSectorBatchParams2, PreCommitSectorParams,
     ProveCommitAggregateParams, ProveCommitSectorParams, ProveReplicaUpdatesParams,
     RecoveryDeclaration, ReplicaUpdate, ReportConsensusFaultParams, SectorPreCommitInfo,
     SubmitWindowedPoStParams, TerminateSectorsParams, TerminationDeclaration,
