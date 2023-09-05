@@ -1,12 +1,12 @@
 use cid::Cid;
 use fil_actor_miner::CompactCommD;
 use fil_actor_miner::{
-    ApplyRewardParams, ChangeMultiaddrsParams, ChangePeerIDParams, ChangeWorkerAddressParams,
-    CheckSectorProvenParams, CompactPartitionsParams, CompactSectorNumbersParams,
-    ConfirmSectorProofsParams, DeclareFaultsParams, DeclareFaultsRecoveredParams,
-    DeferredCronEventParams, DisputeWindowedPoStParams, ExpirationExtension,
-    ExtendSectorExpirationParams, FaultDeclaration, MinerConstructorParams, PoStPartition,
-    PreCommitSectorBatchParams, PreCommitSectorBatchParams2, PreCommitSectorParams,
+    ApplyRewardParams, ChangeMultiaddrsParams, ChangeOwnerAddressParams, ChangePeerIDParams,
+    ChangeWorkerAddressParams, CheckSectorProvenParams, CompactPartitionsParams,
+    CompactSectorNumbersParams, ConfirmSectorProofsParams, DeclareFaultsParams,
+    DeclareFaultsRecoveredParams, DeferredCronEventParams, DisputeWindowedPoStParams,
+    ExpirationExtension, ExtendSectorExpirationParams, FaultDeclaration, MinerConstructorParams,
+    PoStPartition, PreCommitSectorBatchParams, PreCommitSectorBatchParams2, PreCommitSectorParams,
     ProveCommitAggregateParams, ProveCommitSectorParams, ProveReplicaUpdatesParams,
     RecoveryDeclaration, ReplicaUpdate, ReportConsensusFaultParams, SectorPreCommitInfo,
     SubmitWindowedPoStParams, TerminateSectorsParams, TerminationDeclaration,
@@ -47,6 +47,13 @@ pub struct MinerConstructorParamsAPI {
     #[serde(with = "serde_base64_vector")]
     pub peer_id: Vec<u8>,
     pub multi_addresses: Vec<BytesDe>,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(remote = "ChangeOwnerAddressParams", rename_all = "PascalCase")]
+pub struct ChangeOwnerAddressParamsAPI {
+    #[serde(with = "address")]
+    pub new_owner: Address,
 }
 
 #[derive(Serialize, Deserialize)]
