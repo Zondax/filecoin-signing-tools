@@ -51,5 +51,12 @@
       "AmountRequested": "120"
     },
     "serialized_params": "gUIAeA=="
+  },
+  {
+    "description": "serialize parameters to cbor data test with PascalCase n°7",
+    "params": {
+      "NewOwner": "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy"
+    },
+    "serialized_params": "VQH9HQ9N/Nfpmvy5moMmt9xFnTLGKA=="
   }
 ]
