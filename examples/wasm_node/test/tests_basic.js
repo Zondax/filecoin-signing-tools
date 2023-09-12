@@ -314,6 +314,23 @@ describeCall('transactionSignLotus', function () {
 
     assert.deepStrictEqual(signed_tx, tc.tx)
   })
+
+  it('transfer money from f4 address address #974', function () {
+    const pk = '8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo='
+    const message = {
+      To: 'f410f4l4zcbgdw62qyhpbs2wjrspk344j2rk7xe75ivi',
+      From: 'f1iuj7atowet37tsmeehwxfvyjv2pqhsnyvb6niay',
+      Nonce: 37,
+      Value: '1000000000000000',
+      GasLimit: 2101318,
+      GasFeeCap: '1890700000',
+      GasPremium: '150000',
+      Method: 0,
+      Params: '',
+    }
+
+    filecoin_signer.transactionSignLotus(message, pk)
+  })
 })
 
 describe('transactionSignRaw', function () {
@@ -494,6 +511,7 @@ describeCall('GetCid', function () {
     assert(cid)
   })
 })
+
 
 /* ------------------------------------------------------------------------------------------------- */
 
