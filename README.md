@@ -13,7 +13,14 @@ _Please visit our website at [zondax.ch](https://www.zondax.ch)_
 
 ---
 
-## Relevant Note :warning::warning:
+---
+## 🚫 PROJECT MAINTENANCE NOTICE 🚫
+
+This package will continue to be actively maintained until **2023-12-31**. After this date, it will no longer receive updates or bug fixes. Users are encouraged to seek alternative solutions after this period and are welcome to fork the project for continued development.
+
+--- 
+
+## :warning: Relevant Note :warning:
 We are excited to announce that we have created a new package called [izari-filecoin :link:](https://github.com/zondax/izari-filecoin), 
 which will be the successor to filecoin-signing-tools. Izari Filecoin is an advanced and 
 user-friendly package that includes several new features and improvements that were not 
