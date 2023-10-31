@@ -315,7 +315,7 @@ println!("{}", result);
 
 ## deserialize_constructor_params
 
-Utilitary function to deserialize specificaly constructor parameters. Return decode MessageParams.
+Utilitary function to deserialize specifically constructor parameters. Return decode MessageParams.
 
 Arguments
 

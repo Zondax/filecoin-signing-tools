@@ -488,7 +488,7 @@ fn payment_channel_creation_secp256k1_signing() {
 #[test]
 fn test_sign_voucher() {
     let wallet = common::load_test_vectors("../test_vectors/wallet.json").unwrap();
-    // TODO: the privatekey should be added to voucher.json to keep test vectors seperated
+    // TODO: the privatekey should be added to voucher.json to keep test vectors separated
     let mnemonic = wallet["mnemonic"].as_str().unwrap();
     let language_code = wallet["language_code"].as_str().unwrap();
 

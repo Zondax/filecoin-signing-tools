@@ -334,7 +334,7 @@ console.log(params);
 
 ## deserializeConstructorParams
 
-Deserialize specificaly constructor parameters into javascript object given the code CID associated with the parameter.
+Deserialize specifically constructor parameters into javascript object given the code CID associated with the parameter.
 
 Arguments :
 

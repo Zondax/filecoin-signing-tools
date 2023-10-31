@@ -226,7 +226,7 @@ async function main() {
 
   console.log(signedMessage)
 
-  console.log("##### COLLECTE PAYMENT CHANNEL #####")
+  console.log("##### COLLECT PAYMENT CHANNEL #####")
 
   result = await sendSignedMessage(signedMessage)
 
