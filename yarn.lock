@@ -65,12 +65,12 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@ipld/dag-cbor@^9.0.4":
-  version "9.0.4"
-  resolved "https://registry.yarnpkg.com/@ipld/dag-cbor/-/dag-cbor-9.0.4.tgz#5e1bc63aeabf882a750be88bb6879017c5c41930"
-  integrity sha512-HBNVngk/47pKNLTAelN6ORWgKkjJtQj96Xb+jIBtRShJGCsXgghj1TzTynTTIp1dZxwPe5rVIL6yjZmvdyP2Wg==
+"@ipld/dag-cbor@^9.0.6":
+  version "9.0.6"
+  resolved "https://registry.yarnpkg.com/@ipld/dag-cbor/-/dag-cbor-9.0.6.tgz#cfc63d7a5f65ad1bfdd628ba01d025d9b759e3b7"
+  integrity sha512-3kNab5xMppgWw6DVYx2BzmFq8t7I56AGWfp5kaU1fIPkwHVpBRglJJTYsGtbVluCi/s/q97HZM3bC+aDW4sxbQ==
   dependencies:
-    cborg "^2.0.1"
+    cborg "^4.0.0"
     multiformats "^12.0.1"
 
 "@mdn/browser-compat-data@^5.2.34", "@mdn/browser-compat-data@^5.3.13":
@@ -477,10 +477,10 @@ caniuse-lite@^1.0.30001517, caniuse-lite@^1.0.30001524:
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001524.tgz#1e14bce4f43c41a7deaeb5ebfe86664fe8dadb80"
   integrity sha512-Jj917pJtYg9HSJBF95HVX3Cdr89JUyLT4IZ8SvM5aDRni95swKgYi3TgYLH5hnGfPE/U1dg6IfZ50UsIlLkwSA==
 
-cborg@^2.0.1:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/cborg/-/cborg-2.0.3.tgz#b460840e994019a96eb2afc92d8ab6fb0dedf2bc"
-  integrity sha512-f1IbyqgRLQK4ruNM+V3WikfYfXQg/f/zC1oneOw1P7F/Dn2OJX6MaXIdei3JMpz361IjY7OENBKcE53nkJFVCQ==
+cborg@^4.0.0:
+  version "4.0.5"
+  resolved "https://registry.yarnpkg.com/cborg/-/cborg-4.0.5.tgz#20680c0e8d0521e5700b5d9a1d0a644207ca2878"
+  integrity sha512-q8TAjprr8pn9Fp53rOIGp/UFDdFY6os2Nq62YogPSIzczJD9M6g2b6igxMkpCiZZKJ0kn/KzDLDvG+EqBIEeCg==
 
 chalk@^4.0.0:
   version "4.1.2"
